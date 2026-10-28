@@ -169,8 +169,13 @@ async function fromJsonFile(){
   if (!res.ok) throw new Error('Não foi possível carregar o arquivo dados.json (HTTP ' + res.status + ').');
   const data = await res.json();
   
-  const rawRows = data.dados1926 || [];
-  const rawAddr = data.dados1682 || data.enderecos || data.ocupacao || [];
+  const rawRows = Array.isArray(data.dados1926) ? data.dados1926 : [];
+  let rawAddr = data.dados1682 || data.enderecos || data.ocupacao || [];
+  
+  // Garantia de segurança se rawAddr não for uma lista (array)
+  if (!Array.isArray(rawAddr)) {
+    rawAddr = [];
+  }
   
   const rows = rawRows.map(o => ({
     est: String(o["Local de Estoque"] || o["local de estoque"] || '').trim(),
@@ -301,7 +306,6 @@ function occData(){
   const A = CONFIG.AREAS, by = {};
   D.addr.forEach(a=>{
     const p = a.end.split('.'); 
-    // Aceita formatos como 01.01.1.05.10 (3º elemento área) ou 1.05.10 (1º elemento área)
     const ar = p.length >= 3 ? p[2] : p[0]; 
     const rua = p.length >= 4 ? +p[3] : +p[1] || 0; 
     const k = ar; 
@@ -379,7 +383,7 @@ $('#tv').addEventListener('click',()=>{
   const on = $('#tv').getAttribute('aria-pressed')!=='true';
   $('#tv').setAttribute('aria-pressed',on); document.body.classList.toggle('tvmode',on);
   clearInterval(tvTimer); $('#bar').style.width='0';
-  if(on){ tvStart=Date.now(); tvTimer=setInterval(tvTick,250); try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{});}catch(e){} }
+  if(on){ tvStart=Date.now(); tvTimer=setInterval(tvTick,250); try{document.documentElement.requestFullscreen&&document.exitFullscreen().catch(()=>{});}catch(e){} }
   else { try{document.fullscreenElement&&document.exitFullscreen();}catch(e){} }
 });
 const h = (location.hash||'').slice(1); const hi = TABS.findIndex(([id])=>id.slice(2)===h);
