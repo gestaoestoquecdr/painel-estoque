@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Estoque - Cloudflare BI</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+
+  <!-- Navbar -->
+  <header class="bg-slate-900 text-white p-4 shadow-md">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold tracking-wide">📦 Painel de Gestão de Estoque</h1>
+      <span id="update-time" class="text-xs bg-slate-800 px-3 py-1 rounded text-slate-300">Carregando dados...</span>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-6 space-y-6">
+
+    <!-- KPIs Principais -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-500 uppercase font-semibold">Qtd. Endereçada Total</p>
+        <p id="kpi-qtd-total" class="text-2xl font-bold text-slate-900 mt-1">-</p>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-500 uppercase font-semibold">Custo Bruto Total (R$)</p>
+        <p id="kpi-custo-total" class="text-2xl font-bold text-emerald-600 mt-1">-</p>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-500 uppercase font-semibold">Taxa de Ocupação</p>
+        <p id="kpi-taxa-ocupacao" class="text-2xl font-bold text-blue-600 mt-1">-</p>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-500 uppercase font-semibold">Estoque Saudável</p>
+        <p id="kpi-saudavel" class="text-2xl font-bold text-indigo-600 mt-1">-</p>
+      </div>
+    </div>
+
+    <!-- Gráficos Principais -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Status Estoque Revenda -->
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold mb-4 text-slate-800">Status - Estoque Revenda</h2>
+        <div class="h-64 flex justify-center">
+          <canvas id="chartStatusRevenda"></canvas>
+        </div>
+      </div>
+
+      <!-- Distribuição por Local de Estoque -->
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold mb-4 text-slate-800">Valor em R$ por Local de Estoque</h2>
+        <div class="h-64 flex justify-center">
+          <canvas id="chartLocalEstoque"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabelas de Saúde: Aging e Shelf Life -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Tabela Aging -->
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold mb-3 text-slate-800">Faixas de Aging (Tempo no Endereço)</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-50 border-b">
+                <th class="p-2 font-semibold">Faixa</th>
+                <th class="p-2 font-semibold">Itens</th>
+                <th class="p-2 font-semibold">Custo Total (R$)</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-aging"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tabela Shelf Life -->
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold mb-3 text-slate-800">Faixas de Shelf Life (Validade)</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-50 border-b">
+                <th class="p-2 font-semibold">Faixa Shelf</th>
+                <th class="p-2 font-semibold">Itens</th>
+                <th class="p-2 font-semibold">Custo Total (R$)</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-shelf"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // URL do Web App gerada no Google Apps Script
+    const API_URL = "https://script.google.com/a/macros/roldao.com.br/s/AKfyCbyQNk-EA15trK8BtoKIo3PxYz2m-2tpUkTMEbPc2_Hv_dRHp3v3qmJ5WQqzeEjyz8SHWw/exec";
+
+    async function carregarDashboard() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        
+        const dados = data.dados1926;
+        const ocup = data.ocupacao;
+
+        // Atualizar horário
+        document.getElementById("update-time").innerText = "Atualizado: " + new Date(data.ultimaAtualizacao).toLocaleTimeString();
+
+        // 1. Métricas / KPIs
+        let qtdTotal = 0;
+        let custoTotal = 0;
+        let revendaStatus = {};
+        let localEstoqueValor = {};
+        let agingMap = {};
+        let shelfMap = {};
+        let saudavelCount = 0;
+
+        dados.forEach(row => {
+          const qtd = parseFloat(row["Qtd. Endereçada"] || 0);
+          const custo = parseFloat(row["Custo Bruto Total"] || 0);
+          const local = row["Local de Estoque"] || "Outros";
+          const status = row["Status"] || "Outros";
+          const aging = row["Faixa Anging "] || row["Faixa Anging"] || "Não definido";
+          const shelf = row["Desc Shelf"] || "Não definido";
+
+          qtdTotal += qtd;
+          custoTotal += custo;
+
+          // Local de Estoque
+          localEstoqueValor[local] = (localEstoqueValor[local] || 0) + custo;
+
+          // Status apenas de Estoque Revenda
+          if (local === "ESTOQUE REVENDA") {
+            revendaStatus[status] = (revendaStatus[status] || 0) + 1;
+          }
+
+          // Aging
+          if (!agingMap[aging]) agingMap[aging] = { count: 0, valor: 0 };
+          agingMap[aging].count += 1;
+          agingMap[aging].valor += custo;
+
+          // Shelf Life
+          if (!shelfMap[shelf]) shelfMap[shelf] = { count: 0, valor: 0 };
+          shelfMap[shelf].count += 1;
+          shelfMap[shelf].valor += custo;
+
+          // Regra Estoque Saudável (Shelf > 60 dias)
+          if (shelf === "Acima de 90 dias" || shelf === "61 a 90 dias") {
+            saudavelCount++;
+          }
+        });
+
+        // Preencher Cards
+        document.getElementById("kpi-qtd-total").innerText = qtdTotal.toLocaleString('pt-BR');
+        document.getElementById("kpi-custo-total").innerText = "R$ " + custoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        
+        const pctOcup = ocup.total > 0 ? ((ocup.ocupado / ocup.total) * 100).toFixed(1) : 0;
+        document.getElementById("kpi-taxa-ocupacao").innerText = pctOcup + "%";
+
+        const pctSaudavel = dados.length > 0 ? ((saudavelCount / dados.length) * 100).toFixed(1) : 0;
+        document.getElementById("kpi-saudavel").innerText = pctSaudavel + "%";
+
+        // Renderizar Gráfico Status Revenda
+        new Chart(document.getElementById('chartStatusRevenda'), {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(revendaStatus),
+            datasets: [{
+              data: Object.values(revendaStatus),
+              backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // Renderizar Gráfico Local de Estoque
+        new Chart(document.getElementById('chartLocalEstoque'), {
+          type: 'bar',
+          data: {
+            labels: Object.keys(localEstoqueValor),
+            datasets: [{
+              label: 'Custo Total (R$)',
+              data: Object.values(localEstoqueValor),
+              backgroundColor: '#059669'
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // Renderizar Tabela Aging
+        const tbodyAging = document.getElementById("tbody-aging");
+        tbodyAging.innerHTML = "";
+        Object.keys(agingMap).forEach(key => {
+          tbodyAging.innerHTML += `
+            <tr class="border-b hover:bg-slate-50">
+              <td class="p-2">${key}</td>
+              <td class="p-2">${agingMap[key].count}</td>
+              <td class="p-2">R$ ${agingMap[key].valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+            </tr>`;
+        });
+
+        // Renderizar Tabela Shelf Life
+        const tbodyShelf = document.getElementById("tbody-shelf");
+        tbodyShelf.innerHTML = "";
+        Object.keys(shelfMap).forEach(key => {
+          tbodyShelf.innerHTML += `
+            <tr class="border-b hover:bg-slate-50">
+              <td class="p-2">${key}</td>
+              <td class="p-2">${shelfMap[key].count}</td>
+              <td class="p-2">R$ ${shelfMap[key].valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+            </tr>`;
+        });
+
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+      }
+    }
+
+    carregarDashboard();
+  </script>
+</body>
+</html>
