@@ -132,16 +132,13 @@ body.tvmode .kpi .v{font-size:46px}
 <script>
 /* ============ CONFIGURAÇÃO ============ */
 const CONFIG = {
-  SHEET_ID: "1AXpoylFgQCE9xn-NbDigfacmqLfsb3H3d7F9TmM7jzc",
-  ABA_ESTOQUE: "1926 - Custo Bruto",
-  ABA_ENDERECOS: "1682_Manutenção de Endereços Logísticos",
+  // URL do JSON gerado no seu repositório no GitHub
+  DATA_URL: "https://raw.githubusercontent.com/gestaoestoquecdr/painel-estoque/principal/dados.json",
   ESTOQUE_FISICO: "ESTOQUE REVENDA",
   AREAS: { galpao1: "1", galpao2: "7", blocados: "5" },
   ATUALIZAR_MIN: 5,
   TV_SEGUNDOS: 20
 };
-
-const EMBED = null;
 </script>
 <script>
 const $ = s => document.querySelector(s);
@@ -167,53 +164,56 @@ const AGING_CLASS = {'0 a 15 dias':'ok','16 a 30 dias':'ok','30 a 60 dias':'warn
 const CLS = {ok:{n:'Saudável',c:'var(--ok)'},warn:{n:'Atenção',c:'var(--warn)'},crit:{n:'Crítico',c:'var(--crit)'},none:{n:'Sem validade',c:'var(--none)'}};
 const normF = s => String(s||'').replace(/\s+/g,' ').trim();
 
-/* ---------- Normalização dos Dados ---------- */
-function fromEmbed(){
-  const rows = EMBED.rows.map(r=>({est:EMBED.est[r[0]],status:EMBED.sts[r[1]],shelf:EMBED.SF[r[2]],aging:EMBED.AF[r[3]],qtd:r[4],custo:r[5],prod:r[6],end:r[7]}));
-  return {rows,addr:EMBED.addr.map(a=>({end:a[0],occ:a[1]===1})),live:false,when:'Demonstração · Excel de '+EMBED.snap};
+/* ---------- Carregamento a partir do dados.json ---------- */
+async function fromJsonFile(){
+  const res = await fetch(CONFIG.DATA_URL + '?t=' + Date.now(), { cache: 'no-store' });
+  if (!res.ok) throw new Error('Não foi possível carregar o arquivo dados.json.');
+  const data = await res.json();
+  
+  const rawRows = data.dados1926 || [];
+  const rawAddr = data.enderecos || data.dados1682 || [];
+  
+  const rows = rawRows.map(o => ({
+    est: String(o["Local de Estoque"] || o["local de estoque"] || '').trim(),
+    status: normF(o["Status"] || o["status"]),
+    shelf: normF(o["Desc Shelf"] || o["desc shelf"]),
+    aging: normF(o["Faixa Anging "] || o["Faixa Anging"] || o["faixa anging"]),
+    qtd: +(o["Qtd. Endereçada"] || o["qtd. enderecada"] || 0),
+    custo: +(o["Custo Bruto Total"] || o["custo bruto total"] || 0),
+    prod: String(o["Produto"] || o["produto"] || '').slice(0,50),
+    end: String(o["Endereço Logístico"] || o["endereco logistico"] || '')
+  }));
+
+  const addr = rawAddr.map(o => ({
+    end: String(o["Endereço"] || o["endereco"] || ''),
+    occ: normF(o["Endereço Ocupado"] || o["endereco ocupado"]) === 'Ocupado'
+  }));
+
+  let timeStr = 'JSON';
+  if (data.ultimaAtualizacao) {
+    const dt = new Date(data.ultimaAtualizacao);
+    timeStr = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  return { rows, addr, live: true, when: 'Atualizado às ' + timeStr };
 }
-const key = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
-async function gviz(aba,where){
-  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(aba)}&tq=${encodeURIComponent('select * where '+where)}`;
-  const res = await fetch(url,{cache:'no-store'});
-  if(!res.ok) throw new Error('HTTP '+res.status);
-  const txt = await res.text();
-  const m = txt.match(/setResponse\(([\s\S]*)\);?\s*$/);
-  if(!m) throw new Error('Resposta inesperada');
-  const j = JSON.parse(m[1]);
-  if(j.status==='error') throw new Error((j.errors&&j.errors[0]&&j.errors[0].message)||'Erro na planilha');
-  const cols = j.table.cols.map(c=>key(c.label));
-  return j.table.rows.map(r=>{const o={};cols.forEach((c,i)=>{const x=r.c[i];o[c]=x?x.v:null});return o});
-}
-async function fromSheets(){
-  const [e,a] = await Promise.all([gviz(CONFIG.ABA_ESTOQUE,'B is not null'),gviz(CONFIG.ABA_ENDERECOS,'K is not null')]);
-  const rows = e.filter(o=>o['local de estoque']).map(o=>({
-    est:String(o['local de estoque']).trim(), status:normF(o['status']), shelf:normF(o['desc shelf']), aging:normF(o['faixa anging']),
-    qtd:+o['qtd. enderecada']||0, custo:+o['custo bruto total']||0, prod:String(o['produto']||'').slice(0,50), end:String(o['endereco logistico']||'')}));
-  const addr = a.filter(o=>normF(o['status'])==='Ativo').map(o=>({end:String(o['endereco']),occ:normF(o['endereco ocupado'])==='Ocupado'}));
-  if(!rows.length||!addr.length) throw new Error('Planilha sem linhas');
-  return {rows,addr,live:true,when:'Google Planilhas · '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})};
-}
+
 function aviso(msg){
   $('#srctxt').textContent = msg;
   document.querySelectorAll('section').forEach(s=>{ s.innerHTML = '<div class="card"><h3>Sem dados</h3><p>'+esc(msg)+'</p></div>'; });
 }
+
 async function load(){
-  let d;
-  const ok = CONFIG.SHEET_ID && !CONFIG.SHEET_ID.startsWith('COLE_');
-  if(ok){
-    try{ d = await fromSheets(); }
-    catch(err){
-      console.warn('Planilha indisponível:',err);
-      if(EMBED){ d = fromEmbed(); d.when += ' (planilha indisponível: '+err.message+')'; }
-      else return aviso('Não foi possível ler a planilha ('+err.message+'). Confira o ID, os nomes das abas e garanta que o compartilhamento esteja como "Qualquer pessoa com o link".');
-    }
-  } else if(EMBED){ d = fromEmbed(); }
-  else return aviso('Cole o ID da planilha no bloco CONFIG no topo do código do script.');
-  D = d;
-  $('#src').className = d.live?'live':'';
-  $('#srctxt').textContent = (d.live?'Ao vivo · ':'')+d.when;
-  render();
+  try {
+    const d = await fromJsonFile();
+    D = d;
+    $('#src').className = 'live';
+    $('#srctxt').textContent = d.when;
+    render();
+  } catch(err) {
+    console.error('Erro ao carregar dados:', err);
+    aviso('Erro ao carregar dados do repositório: ' + err.message);
+  }
 }
 
 /* ---------- Componentes ---------- */
@@ -242,7 +242,7 @@ function secGeral(){
   const stRows = Object.entries(st).sort((a,b)=>b[1].custo-a[1].custo);
   const rc = rev.reduce((s,r)=>s+r.custo,0), rq = rev.reduce((s,r)=>s+r.qtd,0);
   const occ = occData();
-  $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos 5 locais de estoque, com o valor a custo bruto.</p>
+  $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque, com o valor a custo bruto.</p>
   <div class="grid kpis">
     ${kpi('Custo bruto total',brlShort(totC),brl(totC),'hl')}
     ${kpi('Qtd. endereçada total',fmtN.format(totQ),fmtN.format(R.length)+' linhas de palete')}
@@ -314,7 +314,7 @@ function secOcup(){
   const donutItems=[{n:'Livre',v:O.total-O.ocup,c:'var(--blue)'},{n:'Ocupado',v:O.ocup,c:'var(--cream)'}];
   const prev=basis; basis='qtd';
   const dn = donut(donutItems,fmtP(O.pct,2),'ocupação CD'); basis=prev;
-  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos. Galpão 1 é a área ${esc(CONFIG.AREAS.galpao1)} e Galpão 2 é a área ${esc(CONFIG.AREAS.galpao2)}. Os demais endereços são virtuais e ficam fora do cálculo.</p>
+  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos. Galpão 1 é a área ${esc(CONFIG.AREAS.galpao1)} e Galpão 2 é a área ${esc(CONFIG.AREAS.galpao2)}.</p>
   <div class="grid occ">
     ${box('g1','Galpão 1',O.g1)}${box('g2','Galpão 2',O.g2)}${box('','Endereços',all)}${box('','Blocados',O.bl)}
     <div class="card donutcard"><h3>% de ocupação CD</h3><div class="donutwrap" style="justify-content:center">${dn}</div></div>
