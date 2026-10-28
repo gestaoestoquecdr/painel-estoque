@@ -100,19 +100,26 @@
   </main>
 
   <script>
-    // URL do Web App gerada no Google Apps Script
-    const API_URL = "https://script.google.com/a/macros/roldao.com.br/s/AKfyCbyQNk-EA15trK8BtoKIo3PxYz2m-2tpUkTMEbPc2_Hv_dRHp3v3qmJ5WQqzeEjyz8SHWw/exec";
-
     async function carregarDashboard() {
       try {
-        const res = await fetch(API_URL);
+        const res = await fetch('https://raw.githubusercontent.com/gestaoestoquecdr/painel-estoque/principal/dados.json');
+        
+        if (!res.ok) {
+          throw new Error('Não foi possível carregar o arquivo de dados JSON.');
+        }
+
         const data = await res.json();
         
-        const dados = data.dados1926;
-        const ocup = data.ocupacao;
+        const dados = data.dados1926 || [];
+        const ocup = data.ocupacao || { livre: 0, ocupado: 0, total: 0 };
 
-        // Atualizar horário
-        document.getElementById("update-time").innerText = "Atualizado: " + new Date(data.ultimaAtualizacao).toLocaleTimeString();
+        // Atualizar horário de atualização
+        if (data.ultimaAtualizacao) {
+          const dataAtualizacao = new Date(data.ultimaAtualizacao);
+          document.getElementById("update-time").innerText = "Atualizado: " + dataAtualizacao.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        } else {
+          document.getElementById("update-time").innerText = "Dados Atualizados";
+        }
 
         // 1. Métricas / KPIs
         let qtdTotal = 0;
@@ -160,7 +167,7 @@
 
         // Preencher Cards
         document.getElementById("kpi-qtd-total").innerText = qtdTotal.toLocaleString('pt-BR');
-        document.getElementById("kpi-custo-total").innerText = "R$ " + custoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        document.getElementById("kpi-custo-total").innerText = "R$ " + custoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         
         const pctOcup = ocup.total > 0 ? ((ocup.ocupado / ocup.total) * 100).toFixed(1) : 0;
         document.getElementById("kpi-taxa-ocupacao").innerText = pctOcup + "%";
@@ -203,7 +210,7 @@
             <tr class="border-b hover:bg-slate-50">
               <td class="p-2">${key}</td>
               <td class="p-2">${agingMap[key].count}</td>
-              <td class="p-2">R$ ${agingMap[key].valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+              <td class="p-2">R$ ${agingMap[key].valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
             </tr>`;
         });
 
@@ -215,12 +222,14 @@
             <tr class="border-b hover:bg-slate-50">
               <td class="p-2">${key}</td>
               <td class="p-2">${shelfMap[key].count}</td>
-              <td class="p-2">R$ ${shelfMap[key].valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+              <td class="p-2">R$ ${shelfMap[key].valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
             </tr>`;
         });
 
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
+        document.getElementById("update-time").innerText = "Erro ao carregar dados";
+        document.getElementById("update-time").classList.add("bg-red-800", "text-red-200");
       }
     }
 
