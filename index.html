@@ -132,8 +132,8 @@ body.tvmode .kpi .v{font-size:46px}
 <script>
 /* ============ CONFIGURAÇÃO ============ */
 const CONFIG = {
-  // URL do JSON gerado no seu repositório no GitHub
-  DATA_URL: "https://raw.githubusercontent.com/gestaoestoquecdr/painel-estoque/principal/dados.json",
+  // Caminho relativo direto para o ficheiro no mesmo alojamento
+  DATA_URL: "./dados.json",
   ESTOQUE_FISICO: "ESTOQUE REVENDA",
   AREAS: { galpao1: "1", galpao2: "7", blocados: "5" },
   ATUALIZAR_MIN: 5,
@@ -167,7 +167,7 @@ const normF = s => String(s||'').replace(/\s+/g,' ').trim();
 /* ---------- Carregamento a partir do dados.json ---------- */
 async function fromJsonFile(){
   const res = await fetch(CONFIG.DATA_URL + '?t=' + Date.now(), { cache: 'no-store' });
-  if (!res.ok) throw new Error('Não foi possível carregar o arquivo dados.json.');
+  if (!res.ok) throw new Error('Não foi possível carregar o arquivo dados.json (HTTP ' + res.status + ').');
   const data = await res.json();
   
   const rawRows = data.dados1926 || [];
