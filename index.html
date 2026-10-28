@@ -102,10 +102,11 @@
   <script>
     async function carregarDashboard() {
       try {
-        const res = await fetch('https://raw.githubusercontent.com/gestaoestoquecdr/painel-estoque/principal/dados.json');
+        // Busca relativa direta do arquivo publicado na mesma pasta do Cloudflare Pages
+        const res = await fetch('dados.json');
         
         if (!res.ok) {
-          throw new Error('Não foi possível carregar o arquivo de dados JSON.');
+          throw new Error('Não foi possível carregar o arquivo dados.json.');
         }
 
         const data = await res.json();
