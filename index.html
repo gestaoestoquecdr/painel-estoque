@@ -132,7 +132,6 @@ body.tvmode .kpi .v{font-size:46px}
 <script>
 /* ============ CONFIGURAÇÃO ============ */
 const CONFIG = {
-  // Caminho relativo direto para o ficheiro no mesmo alojamento
   DATA_URL: "./dados.json",
   ESTOQUE_FISICO: "ESTOQUE REVENDA",
   AREAS: { galpao1: "1", galpao2: "7", blocados: "5" },
@@ -171,7 +170,7 @@ async function fromJsonFile(){
   const data = await res.json();
   
   const rawRows = data.dados1926 || [];
-  const rawAddr = data.enderecos || data.dados1682 || [];
+  const rawAddr = data.dados1682 || data.enderecos || data.ocupacao || [];
   
   const rows = rawRows.map(o => ({
     est: String(o["Local de Estoque"] || o["local de estoque"] || '').trim(),
@@ -181,13 +180,18 @@ async function fromJsonFile(){
     qtd: +(o["Qtd. Endereçada"] || o["qtd. enderecada"] || 0),
     custo: +(o["Custo Bruto Total"] || o["custo bruto total"] || 0),
     prod: String(o["Produto"] || o["produto"] || '').slice(0,50),
-    end: String(o["Endereço Logístico"] || o["endereco logistico"] || '')
+    end: String(o["Endereço Logístico"] || o["endereco logistico"] || o["Endereço"] || o["endereco"] || '')
   }));
 
-  const addr = rawAddr.map(o => ({
-    end: String(o["Endereço"] || o["endereco"] || ''),
-    occ: normF(o["Endereço Ocupado"] || o["endereco ocupado"]) === 'Ocupado'
-  }));
+  const addr = rawAddr.map(o => {
+    const status = normF(o["Status"] || o["status"] || 'Ativo');
+    const ocup = normF(o["Endereço Ocupado"] || o["endereco ocupado"] || o["Ocupado"] || o["ocupado"]);
+    return {
+      end: String(o["Endereço Logístico"] || o["endereco logistico"] || o["Endereço"] || o["endereco"] || ''),
+      occ: ocup === 'Ocupado' || ocup === 'Sim' || ocup === '1' || o["occ"] === true,
+      ativo: status === 'Ativo' || status === ''
+    };
+  }).filter(a => a.ativo);
 
   let timeStr = 'JSON';
   if (data.ultimaAtualizacao) {
@@ -295,18 +299,35 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle){
 
 function occData(){
   const A = CONFIG.AREAS, by = {};
-  D.addr.forEach(a=>{const p=a.end.split('.'); const ar=p[2], rua=+p[3]; const k=ar; (by[k]=by[k]||{total:0,ocup:0,ruas:{}}); by[k].total++; if(a.occ) by[k].ocup++; const r=(by[k].ruas[rua]=by[k].ruas[rua]||{t:0,o:0}); r.t++; if(a.occ) r.o++;});
-  const g1=by[A.galpao1]||{total:0,ocup:0,ruas:{}}, g2=by[A.galpao2]||{total:0,ocup:0,ruas:{}}, bl=by[A.blocados]||{total:0,ocup:0};
-  const total=g1.total+g2.total, ocup=g1.ocup+g2.ocup;
-  return {g1,g2,bl,total,ocup,pct:total?ocup/total*100:0};
+  D.addr.forEach(a=>{
+    const p = a.end.split('.'); 
+    // Aceita formatos como 01.01.1.05.10 (3º elemento área) ou 1.05.10 (1º elemento área)
+    const ar = p.length >= 3 ? p[2] : p[0]; 
+    const rua = p.length >= 4 ? +p[3] : +p[1] || 0; 
+    const k = ar; 
+    (by[k] = by[k] || {total:0, ocup:0, ruas:{}}); 
+    by[k].total++; 
+    if(a.occ) by[k].ocup++; 
+    if(rua > 0){
+      const r = (by[k].ruas[rua] = by[k].ruas[rua] || {t:0, o:0}); 
+      r.t++; 
+      if(a.occ) r.o++;
+    }
+  });
+  const g1 = by[A.galpao1] || {total:0, ocup:0, ruas:{}}, g2 = by[A.galpao2] || {total:0, ocup:0, ruas:{}}, bl = by[A.blocados] || {total:0, ocup:0};
+  const total = g1.total + g2.total, ocup = g1.ocup + g2.ocup;
+  return {g1, g2, bl, total, ocup, pct: total ? ocup/total*100 : 0};
 }
+
 function ruaBars(g,livreCor){
-  const ruas = Object.entries(g.ruas).filter(([,r])=>r.t>=10).sort((a,b)=>+b[0]-+a[0]);
+  const ruas = Object.entries(g.ruas).filter(([,r])=>r.t>=5).sort((a,b)=>+a[0]-+b[0]);
+  if(!ruas.length) return '<p style="color:var(--mute)">Nenhuma rua mapeada para esta área.</p>';
   return `<div class="lg"><span><i style="background:${livreCor}"></i>Livre</span><span><i style="background:var(--cream)"></i>Ocupado</span></div>
   <div class="rua">${ruas.map(([n,r])=>{const o=r.o/r.t*100,l=100-o;return `<div class="c"><div class="stk" title="Rua ${n}: ${fmtN.format(r.o)} ocupados de ${fmtN.format(r.t)}">
-    <div class="lv" style="flex:${l};background:${livreCor};color:#fff">${l>=8?fmtP(l,2):''}</div>
-    <div class="lv oc" style="flex:${Math.max(o,2)}">${o>=8?fmtP(o,2):''}</div></div><div class="name">${n}</div></div>`}).join('')}</div>`;
+    <div class="lv" style="flex:${l};background:${livreCor};color:#fff">${l>=8?fmtP(l,1):''}</div>
+    <div class="lv oc" style="flex:${Math.max(o,2)}">${o>=8?fmtP(o,1):''}</div></div><div class="name">${n}</div></div>`}).join('')}</div>`;
 }
+
 function secOcup(){
   const O = occData(), v = o=>o.total-o.ocup;
   const box = (cls,t,o)=>`<div class="mini ${cls}"><div class="b"><small>${t}</small><strong>${fmtN.format(o.total)}</strong></div><div class="b"><small>Ocupados</small><strong>${fmtN.format(o.ocup)}</strong></div><div class="b"><small>Vazios</small><strong>${fmtN.format(v(o))}</strong></div></div>`;
@@ -318,12 +339,12 @@ function secOcup(){
   <div class="grid occ">
     ${box('g1','Galpão 1',O.g1)}${box('g2','Galpão 2',O.g2)}${box('','Endereços',all)}${box('','Blocados',O.bl)}
     <div class="card donutcard"><h3>% de ocupação CD</h3><div class="donutwrap" style="justify-content:center">${dn}</div></div>
-    <div class="pcts"><div class="row"><div class="b"><small>% Galpão 1</small><strong>${fmtP(O.g1.ocup/O.g1.total*100,2)}</strong></div><div class="b"><small>% Galpão 2</small><strong>${fmtP(O.g2.ocup/O.g2.total*100,2)}</strong></div></div>
+    <div class="pcts"><div class="row"><div class="b"><small>% Galpão 1</small><strong>${fmtP(O.g1.total?O.g1.ocup/O.g1.total*100:0,2)}</strong></div><div class="b"><small>% Galpão 2</small><strong>${fmtP(O.g2.total?O.g2.ocup/O.g2.total*100:0,2)}</strong></div></div>
       <div class="b big"><small>% Ocupação total CD</small><strong>${fmtP(O.pct,2)}</strong></div></div>
   </div>
   <div class="card" style="margin-top:14px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'var(--blue)')}</div>
   <div class="card" style="margin-top:14px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'var(--navy)')}</div>
-  <p class="foot">Ruas com menos de 10 endereços não aparecem nos gráficos, mas contam nos totais.</p>`;
+  <p class="foot">Ruas com menos de 5 endereços não aparecem nos gráficos, mas contam nos totais.</p>`;
 }
 
 function render(){
