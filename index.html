@@ -182,13 +182,11 @@ async function fromJsonFile(){
   if (!res.ok) throw new Error('Não foi possível carregar o arquivo dados.json (HTTP ' + res.status + ').');
   const data = await res.json();
   
-  const chavesJSON = Object.keys(data).join(', ');
+  // Utiliza diretamente a chave "ocupacao" encontrada no dados.json
+  let rawAddr = data.ocupacao || data.dados1682 || data.enderecos || [];
   
-  // Tenta encontrar a aba 1682 testando vários nomes comuns
-  let rawAddr = data.dados1682 || data["1682"] || data.dados1682_Manutencao || data.enderecos || data.ocupacao || [];
-  
-  if (!Array.isArray(rawAddr) || rawAddr.length === 0) {
-    throw new Error('Chaves encontradas no dados.json: [' + chavesJSON + ']. Nenhuma lista de endereços válida foi identificada.');
+  if (!Array.isArray(rawAddr)) {
+    rawAddr = [];
   }
   
   const rawRows = Array.isArray(data.dados1926) ? data.dados1926 : [];
@@ -217,7 +215,7 @@ async function fromJsonFile(){
     // Coluna V: Rua
     const ruaVal = getProp(o, ["Rua", "RUA"]);
     
-    // Coluna K: Endereço (Backup)
+    // Coluna K: Endereço
     const endStr = getProp(o, ["Endereço", "Endereco", "Endereço Logístico", "Endereco Logistico"]);
     
     const isAtivo = statusVal.toLowerCase() === 'ativo' || statusVal.toLowerCase() === 'ativa' || statusVal === '';
