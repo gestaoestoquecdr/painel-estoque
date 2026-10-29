@@ -5785,40 +5785,6 @@
       "Local de Estoque": "ESTOQUE REVENDA",
       "Status": "A Endereçar",
       "Setor de Armazenagem": "",
-      "Data de validade": "2026-11-24T08:00:00.000Z",
-      "GTIN": 7897395060107,
-      "Código Interno": 245456857,
-      "Produto": "CERVEJA CRYSTAL LT 350ML CX 12",
-      "Curva": "B1",
-      "Marca": "",
-      "Endereço Logístico": "205.1041.0.0.0.0.2",
-      "Palete": 505769,
-      "Embalagem": "CX 12",
-      "Qtd. Endereçada": 286,
-      "Estoque Total Unidades": 3432,
-      "Custo Bruto": 2.510832,
-      "Custo Bruto Total": 8617.175424,
-      "Idade": 0,
-      "Tipo de Endereço": "Picking",
-      "Area Desc": "RESERVADO",
-      "Deposito": 1041,
-      "Area": 0,
-      "Rua": 0,
-      "Coluna": 0,
-      "Nivel": 0,
-      "Sequencia": 2,
-      "Entrada no Endereço": "0 a 15 dias",
-      "Shelf Life": 26.208333333328483,
-      "Anging": "2026-07-27T03:00:00.000Z",
-      "Desc Shelf": "16 a 30 dias",
-      "Faixa Anging": "Acima de 60 dias",
-      "Departamento": "LIQUIDA FRIA"
-    },
-    {
-      "Loja": 205,
-      "Local de Estoque": "ESTOQUE REVENDA",
-      "Status": "A Endereçar",
-      "Setor de Armazenagem": "",
       "Data de validade": "2028-06-14T07:00:00.000Z",
       "GTIN": 7891242211308,
       "Código Interno": 245456859,
@@ -729875,5 +729841,5 @@
       "Rua": "9"
     }
   ],
-  "ultimaAtualizacao": "2026-10-29T14:04:18.811Z"
+  "ultimaAtualizacao": "2026-10-29T19:14:28.898Z"
 }
