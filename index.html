@@ -134,7 +134,6 @@ body.tvmode .kpi .v{font-size:46px}
 const CONFIG = {
   DATA_URL: "./dados.json",
   ESTOQUE_FISICO: "ESTOQUE REVENDA",
-  AREAS: { galpao1: "1041", galpao2: "1045", blocados: "1066" }, // IDs das áreas da planilha
   ATUALIZAR_MIN: 5,
   TV_SEGUNDOS: 20
 };
@@ -189,14 +188,15 @@ async function fromJsonFile(){
 
   const addr = rawAddr.map(o => {
     const status = normF(o["Status"] || o["status"] || 'Ativa');
-    const ocupStatus = normF(o["Status da Ocupação"] || o["status da ocupacao"] || o["Endereço Ocupado"] || o["endereco ocupado"] || '');
+    const ocupStatus = normF(o["Endereço ocupado"] || o["Endereço Ocupado"] || o["endereco ocupado"] || o["Status da Ocupação"] || '');
+    const endStr = String(o["Endereço"] || o["endereco"] || o["Endereço Logístico"] || o["endereco logistico"] || '');
     
-    // Considera ocupado quando NÃO estiver livre / disponível / a endereçar
-    const isLivre = ocupStatus === 'Disponível' || ocupStatus === 'A Endereçar' || ocupStatus === 'Livre' || ocupStatus === 'Vazio';
+    // Regra do SQL: 'Ocupado' ou diferente de Vazio/Livre
+    const isOcupado = ocupStatus === 'Ocupado' || (ocupStatus !== 'Vazio' && ocupStatus !== 'Livre' && ocupStatus !== 'Disponível' && ocupStatus !== 'A Endereçar' && ocupStatus !== '');
     
     return {
-      end: String(o["Endereço"] || o["endereco"] || o["Endereço Logístico"] || o["endereco logistico"] || ''),
-      occ: !isLivre && ocupStatus !== '',
+      end: endStr,
+      occ: isOcupado,
       ativo: status === 'Ativa' || status === 'Ativo' || status === ''
     };
   }).filter(a => a.ativo);
@@ -306,27 +306,45 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle){
 }
 
 function occData(){
-  const A = CONFIG.AREAS, by = {};
+  const g1 = {total:0, ocup:0, ruas:{}};
+  const g2 = {total:0, ocup:0, ruas:{}};
+  const bl = {total:0, ocup:0};
+  
   D.addr.forEach(a=>{
-    const p = a.end.split('.'); 
-    // No formato 205.1041.0.0.0.1, a área é o 2º elemento (index 1) e a rua é o 3º elemento (index 2)
-    const ar = p.length >= 2 ? p[1] : p[0]; 
-    const rua = p.length >= 3 ? +p[2] : 0; 
-    const k = ar; 
+    const end = a.end;
+    const p = end.split('.');
     
-    (by[k] = by[k] || {total:0, ocup:0, ruas:{}}); 
-    by[k].total++; 
-    if(a.occ) by[k].ocup++; 
-    if(rua > 0){
-      const r = (by[k].ruas[rua] = by[k].ruas[rua] || {t:0, o:0}); 
-      r.t++; 
-      if(a.occ) r.o++;
+    // Regra exata do SQL do Looker Studio
+    const isG1 = end.startsWith("205.1041.1.");
+    const isG2 = end.startsWith("205.1041.7.");
+    const isBlocado = end.startsWith("205.1066.");
+    
+    // Extrai o número da rua (4ª posição no endereço: 205.1041.1.X)
+    const rua = p.length >= 4 ? +p[3] : 0;
+    
+    if (isG1) {
+      g1.total++;
+      if (a.occ) g1.ocup++;
+      if (rua > 0) {
+        const r = (g1.ruas[rua] = g1.ruas[rua] || {t:0, o:0});
+        r.t++; if (a.occ) r.o++;
+      }
+    } else if (isG2) {
+      g2.total++;
+      if (a.occ) g2.ocup++;
+      if (rua > 0) {
+        const r = (g2.ruas[rua] = g2.ruas[rua] || {t:0, o:0});
+        r.t++; if (a.occ) r.o++;
+      }
+    } else if (isBlocado) {
+      bl.total++;
+      if (a.occ) bl.ocup++;
     }
   });
-  
-  const g1 = by[A.galpao1] || {total:0, ocup:0, ruas:{}}, g2 = by[A.galpao2] || {total:0, ocup:0, ruas:{}}, bl = by[A.blocados] || {total:0, ocup:0};
-  const total = g1.total + g2.total, ocup = g1.ocup + g2.ocup;
-  return {g1, g2, bl, total, ocup, pct: total ? ocup/total*100 : 0};
+
+  const total = g1.total + g2.total;
+  const ocup = g1.ocup + g2.ocup;
+  return {g1, g2, bl, total, ocup, pct: total ? (ocup/total)*100 : 0};
 }
 
 function ruaBars(g,livreCor){
@@ -345,7 +363,7 @@ function secOcup(){
   const donutItems=[{n:'Livre',v:O.total-O.ocup,c:'var(--blue)'},{n:'Ocupado',v:O.ocup,c:'var(--cream)'}];
   const prev=basis; basis='qtd';
   const dn = donut(donutItems,fmtP(O.pct,2),'ocupação CD'); basis=prev;
-  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos. Galpão 1 é a área ${esc(CONFIG.AREAS.galpao1)} e Galpão 2 é a área ${esc(CONFIG.AREAS.galpao2)}.</p>
+  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos. Galpão 1 (205.1041.1) e Galpão 2 (205.1041.7).</p>
   <div class="grid occ">
     ${box('g1','Galpão 1',O.g1)}${box('g2','Galpão 2',O.g2)}${box('','Endereços',all)}${box('','Blocados',O.bl)}
     <div class="card donutcard"><h3>% de ocupação CD</h3><div class="donutwrap" style="justify-content:center">${dn}</div></div>
