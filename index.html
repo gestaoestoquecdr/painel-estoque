@@ -164,7 +164,7 @@ const normF = s => String(s||'').replace(/\s+/g,' ').trim();
 
 // Busca flexível de propriedades no objeto JSON ignorando maiúsculas, minúsculas e espaços
 function getProp(obj, propNames) {
-  if (!obj) return '';
+  if (!obj || typeof obj !== 'object') return '';
   const keys = Object.keys(obj);
   for (let name of propNames) {
     const target = name.toLowerCase().replace(/\s+/g, '');
@@ -176,20 +176,32 @@ function getProp(obj, propNames) {
   return '';
 }
 
+// Extrai uma lista uniforme de objetos independentemente da estrutura do JSON
+function extractList(source) {
+  if (Array.isArray(source)) return source;
+  if (source && typeof source === 'object') {
+    if (Array.isArray(source.data)) return source.data;
+    if (Array.isArray(source.rows)) return source.rows;
+    if (Array.isArray(source.items)) return source.items;
+    return Object.values(source).filter(v => v && typeof v === 'object');
+  }
+  return [];
+}
+
 /* ---------- Carregamento a partir do dados.json ---------- */
 async function fromJsonFile(){
   const res = await fetch(CONFIG.DATA_URL + '?t=' + Date.now(), { cache: 'no-store' });
   if (!res.ok) throw new Error('Não foi possível carregar o arquivo dados.json (HTTP ' + res.status + ').');
   const data = await res.json();
   
-  // Utiliza diretamente a chave "ocupacao" encontrada no dados.json
-  let rawAddr = data.ocupacao || data.dados1682 || data.enderecos || [];
+  // Extrai lista da chave ocupacao ou similares de forma resiliente
+  let rawAddr = extractList(data.ocupacao || data.dados1682 || data.enderecos);
+  const rawRows = extractList(data.dados1926);
   
-  if (!Array.isArray(rawAddr)) {
-    rawAddr = [];
+  let sampleKeys = [];
+  if (rawAddr.length > 0 && rawAddr[0]) {
+    sampleKeys = Object.keys(rawAddr[0]);
   }
-  
-  const rawRows = Array.isArray(data.dados1926) ? data.dados1926 : [];
   
   const rows = rawRows.map(o => ({
     est: getProp(o, ["Local de Estoque"]).trim(),
@@ -236,7 +248,7 @@ async function fromJsonFile(){
     timeStr = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   }
 
-  return { rows, addr, live: true, when: 'Atualizado às ' + timeStr };
+  return { rows, addr, sampleKeys, rawAddrCount: rawAddr.length, live: true, when: 'Atualizado às ' + timeStr };
 }
 
 function aviso(msg){
@@ -394,6 +406,15 @@ function secOcup(){
   const donutItems=[{n:'Livre',v:O.total-O.ocup,c:'var(--blue)'},{n:'Ocupado',v:O.ocup,c:'var(--cream)'}];
   const prev=basis; basis='qtd';
   const dn = donut(donutItems,fmtP(O.pct,2),'ocupação CD'); basis=prev;
+  
+  // Painel de autodiagnóstico integrado se os dados estiverem zerados
+  const diagHtml = (O.total === 0) ? `
+    <div class="card" style="margin-top:14px;border:1px solid var(--warn)">
+      <h3 style="color:var(--warn)">Diagnóstico de Leitura dos Dados</h3>
+      <p>Total de registros lidos da aba de ocupação: <strong>${D.rawAddrCount}</strong></p>
+      <p>Chaves/Colunas encontradas no primeiro registro: <code>${D.sampleKeys.join(', ') || 'Nenhuma coluna identificada'}</code></p>
+    </div>` : '';
+
   $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos. Galpão 1 (Área 1) e Galpão 2 (Área 7).</p>
   <div class="grid occ">
     ${box('g1','Galpão 1',O.g1)}${box('g2','Galpão 2',O.g2)}${box('','Endereços',all)}${box('','Blocados',O.bl)}
@@ -401,6 +422,7 @@ function secOcup(){
     <div class="pcts"><div class="row"><div class="b"><small>% Galpão 1</small><strong>${fmtP(O.g1.total?O.g1.ocup/O.g1.total*100:0,2)}</strong></div><div class="b"><small>% Galpão 2</small><strong>${fmtP(O.g2.total?O.g2.ocup/O.g2.total*100:0,2)}</strong></div></div>
       <div class="b big"><small>% Ocupação total CD</small><strong>${fmtP(O.pct,2)}</strong></div></div>
   </div>
+  ${diagHtml}
   <div class="card" style="margin-top:14px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'var(--blue)')}</div>
   <div class="card" style="margin-top:14px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'var(--navy)')}</div>
   <p class="foot">Todas as ruas ativas são exibidas nos gráficos e contam nos totais.</p>`;
