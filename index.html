@@ -134,7 +134,7 @@ body.tvmode .kpi .v{font-size:46px}
 const CONFIG = {
   DATA_URL: "./dados.json",
   ESTOQUE_FISICO: "ESTOQUE REVENDA",
-  AREAS: { galpao1: "1", galpao2: "7", blocados: "5" },
+  AREAS: { galpao1: "1041", galpao2: "1045", blocados: "1066" }, // IDs das áreas da planilha
   ATUALIZAR_MIN: 5,
   TV_SEGUNDOS: 20
 };
@@ -172,7 +172,6 @@ async function fromJsonFile(){
   const rawRows = Array.isArray(data.dados1926) ? data.dados1926 : [];
   let rawAddr = data.dados1682 || data.enderecos || data.ocupacao || [];
   
-  // Garantia de segurança se rawAddr não for uma lista (array)
   if (!Array.isArray(rawAddr)) {
     rawAddr = [];
   }
@@ -189,12 +188,16 @@ async function fromJsonFile(){
   }));
 
   const addr = rawAddr.map(o => {
-    const status = normF(o["Status"] || o["status"] || 'Ativo');
-    const ocup = normF(o["Endereço Ocupado"] || o["endereco ocupado"] || o["Ocupado"] || o["ocupado"]);
+    const status = normF(o["Status"] || o["status"] || 'Ativa');
+    const ocupStatus = normF(o["Status da Ocupação"] || o["status da ocupacao"] || o["Endereço Ocupado"] || o["endereco ocupado"] || '');
+    
+    // Considera ocupado quando NÃO estiver livre / disponível / a endereçar
+    const isLivre = ocupStatus === 'Disponível' || ocupStatus === 'A Endereçar' || ocupStatus === 'Livre' || ocupStatus === 'Vazio';
+    
     return {
-      end: String(o["Endereço Logístico"] || o["endereco logistico"] || o["Endereço"] || o["endereco"] || ''),
-      occ: ocup === 'Ocupado' || ocup === 'Sim' || ocup === '1' || o["occ"] === true,
-      ativo: status === 'Ativo' || status === ''
+      end: String(o["Endereço"] || o["endereco"] || o["Endereço Logístico"] || o["endereco logistico"] || ''),
+      occ: !isLivre && ocupStatus !== '',
+      ativo: status === 'Ativa' || status === 'Ativo' || status === ''
     };
   }).filter(a => a.ativo);
 
@@ -306,9 +309,11 @@ function occData(){
   const A = CONFIG.AREAS, by = {};
   D.addr.forEach(a=>{
     const p = a.end.split('.'); 
-    const ar = p.length >= 3 ? p[2] : p[0]; 
-    const rua = p.length >= 4 ? +p[3] : +p[1] || 0; 
+    // No formato 205.1041.0.0.0.1, a área é o 2º elemento (index 1) e a rua é o 3º elemento (index 2)
+    const ar = p.length >= 2 ? p[1] : p[0]; 
+    const rua = p.length >= 3 ? +p[2] : 0; 
     const k = ar; 
+    
     (by[k] = by[k] || {total:0, ocup:0, ruas:{}}); 
     by[k].total++; 
     if(a.occ) by[k].ocup++; 
@@ -318,13 +323,14 @@ function occData(){
       if(a.occ) r.o++;
     }
   });
+  
   const g1 = by[A.galpao1] || {total:0, ocup:0, ruas:{}}, g2 = by[A.galpao2] || {total:0, ocup:0, ruas:{}}, bl = by[A.blocados] || {total:0, ocup:0};
   const total = g1.total + g2.total, ocup = g1.ocup + g2.ocup;
   return {g1, g2, bl, total, ocup, pct: total ? ocup/total*100 : 0};
 }
 
 function ruaBars(g,livreCor){
-  const ruas = Object.entries(g.ruas).filter(([,r])=>r.t>=5).sort((a,b)=>+a[0]-+b[0]);
+  const ruas = Object.entries(g.ruas).filter(([,r])=>r.t>=1).sort((a,b)=>+a[0]-+b[0]);
   if(!ruas.length) return '<p style="color:var(--mute)">Nenhuma rua mapeada para esta área.</p>';
   return `<div class="lg"><span><i style="background:${livreCor}"></i>Livre</span><span><i style="background:var(--cream)"></i>Ocupado</span></div>
   <div class="rua">${ruas.map(([n,r])=>{const o=r.o/r.t*100,l=100-o;return `<div class="c"><div class="stk" title="Rua ${n}: ${fmtN.format(r.o)} ocupados de ${fmtN.format(r.t)}">
@@ -348,7 +354,7 @@ function secOcup(){
   </div>
   <div class="card" style="margin-top:14px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'var(--blue)')}</div>
   <div class="card" style="margin-top:14px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'var(--navy)')}</div>
-  <p class="foot">Ruas com menos de 5 endereços não aparecem nos gráficos, mas contam nos totais.</p>`;
+  <p class="foot">Todas as ruas ativas são exibidas nos gráficos e contam nos totais.</p>`;
 }
 
 function render(){
