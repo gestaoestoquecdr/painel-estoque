@@ -162,7 +162,7 @@ const AGING_CLASS = {'0 a 15 dias':'ok','16 a 30 dias':'ok','30 a 60 dias':'warn
 const CLS = {ok:{n:'Saudável',c:'var(--ok)'},warn:{n:'Atenção',c:'var(--warn)'},crit:{n:'Crítico',c:'var(--crit)'},none:{n:'Sem validade',c:'var(--none)'}};
 const normF = s => String(s||'').replace(/\s+/g,' ').trim();
 
-// Busca flexível de propriedades no objeto JSON
+// Busca flexível de propriedades no objeto JSON ignorando maiúsculas, minúsculas e espaços
 function getProp(obj, propNames) {
   if (!obj) return '';
   const keys = Object.keys(obj);
@@ -182,12 +182,16 @@ async function fromJsonFile(){
   if (!res.ok) throw new Error('Não foi possível carregar o arquivo dados.json (HTTP ' + res.status + ').');
   const data = await res.json();
   
-  const rawRows = Array.isArray(data.dados1926) ? data.dados1926 : [];
-  let rawAddr = data.dados1682 || data.dados1682_Manutencao || data.enderecos || data.ocupacao || [];
+  const chavesJSON = Object.keys(data).join(', ');
   
-  if (!Array.isArray(rawAddr)) {
-    rawAddr = [];
+  // Tenta encontrar a aba 1682 testando vários nomes comuns
+  let rawAddr = data.dados1682 || data["1682"] || data.dados1682_Manutencao || data.enderecos || data.ocupacao || [];
+  
+  if (!Array.isArray(rawAddr) || rawAddr.length === 0) {
+    throw new Error('Chaves encontradas no dados.json: [' + chavesJSON + ']. Nenhuma lista de endereços válida foi identificada.');
   }
+  
+  const rawRows = Array.isArray(data.dados1926) ? data.dados1926 : [];
   
   const rows = rawRows.map(o => ({
     est: getProp(o, ["Local de Estoque"]).trim(),
@@ -216,10 +220,7 @@ async function fromJsonFile(){
     // Coluna K: Endereço (Backup)
     const endStr = getProp(o, ["Endereço", "Endereco", "Endereço Logístico", "Endereco Logistico"]);
     
-    // Filtro Ativo
     const isAtivo = statusVal.toLowerCase() === 'ativo' || statusVal.toLowerCase() === 'ativa' || statusVal === '';
-    
-    // Status de Ocupação
     const isOcupado = ocupVal.toLowerCase() === 'ocupado';
     
     return {
@@ -341,20 +342,13 @@ function occData(){
   const bl = {total:0, ocup:0};
   
   D.addr.forEach(a=>{
-    // Lê a área da Coluna U ou do formato do texto
     const area = String(a.area);
     const end = String(a.end);
     
-    // Identifica se é Galpão 1 (Area = 1 ou começa com 205.1041.1)
     const isG1 = area === '1' || end.includes("205.1041.1.");
-    
-    // Identifica se é Galpão 2 (Area = 7 ou começa com 205.1041.7)
     const isG2 = area === '7' || end.includes("205.1041.7.");
-    
-    // Identifica se é Blocado (Area = 5 ou começa com 205.1066)
     const isBlocado = area === '5' || end.includes("205.1066.");
     
-    // Lê a rua da Coluna V ou tenta extrair do texto do endereço
     let rua = a.rua;
     if (!rua) {
       const p = end.split('.');
