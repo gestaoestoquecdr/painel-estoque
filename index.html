@@ -162,7 +162,7 @@ const AGING_CLASS = {'0 a 15 dias':'ok','16 a 30 dias':'ok','30 a 60 dias':'warn
 const CLS = {ok:{n:'Saudável',c:'var(--ok)'},warn:{n:'Atenção',c:'var(--warn)'},crit:{n:'Crítico',c:'var(--crit)'},none:{n:'Sem validade',c:'var(--none)'}};
 const normF = s => String(s||'').replace(/\s+/g,' ').trim();
 
-// Busca flexível de propriedades no objeto JSON ignorando maiúsculas, minúsculas e espaços
+// Busca flexível de propriedades no objeto JSON
 function getProp(obj, propNames) {
   if (!obj || typeof obj !== 'object') return '';
   const keys = Object.keys(obj);
@@ -176,7 +176,7 @@ function getProp(obj, propNames) {
   return '';
 }
 
-// Extrai uma lista uniforme de objetos independentemente da estrutura do JSON
+// Extrai uma lista de registros testando chaves diretas ou sub-objetos do JSON
 function extractList(source) {
   if (Array.isArray(source)) return source;
   if (source && typeof source === 'object') {
@@ -194,9 +194,21 @@ async function fromJsonFile(){
   if (!res.ok) throw new Error('Não foi possível carregar o arquivo dados.json (HTTP ' + res.status + ').');
   const data = await res.json();
   
-  // Extrai lista da chave ocupacao ou similares de forma resiliente
-  let rawAddr = extractList(data.ocupacao || data.dados1682 || data.enderecos);
-  const rawRows = extractList(data.dados1926);
+  // Tenta encontrar a aba 1682 testando o nome exato da página da planilha e variações
+  const jsonKeys = Object.keys(data);
+  let addrSource = null;
+  
+  // Procura por chaves que contenham "1682" ou "ocupacao"
+  for (let k of jsonKeys) {
+    const kNorm = k.toLowerCase();
+    if (kNorm.includes('1682') || kNorm.includes('ocupac') || kNorm.includes('enderec')) {
+      addrSource = data[k];
+      break;
+    }
+  }
+  
+  let rawAddr = extractList(addrSource || data.ocupacao || data.dados1682);
+  const rawRows = extractList(data.dados1926 || data["1926"]);
   
   let sampleKeys = [];
   if (rawAddr.length > 0 && rawAddr[0]) {
@@ -248,7 +260,7 @@ async function fromJsonFile(){
     timeStr = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   }
 
-  return { rows, addr, sampleKeys, rawAddrCount: rawAddr.length, live: true, when: 'Atualizado às ' + timeStr };
+  return { rows, addr, sampleKeys, rawAddrCount: rawAddr.length, jsonKeys, live: true, when: 'Atualizado às ' + timeStr };
 }
 
 function aviso(msg){
@@ -407,15 +419,15 @@ function secOcup(){
   const prev=basis; basis='qtd';
   const dn = donut(donutItems,fmtP(O.pct,2),'ocupação CD'); basis=prev;
   
-  // Painel de autodiagnóstico integrado se os dados estiverem zerados
   const diagHtml = (O.total === 0) ? `
     <div class="card" style="margin-top:14px;border:1px solid var(--warn)">
-      <h3 style="color:var(--warn)">Diagnóstico de Leitura dos Dados</h3>
-      <p>Total de registros lidos da aba de ocupação: <strong>${D.rawAddrCount}</strong></p>
-      <p>Chaves/Colunas encontradas no primeiro registro: <code>${D.sampleKeys.join(', ') || 'Nenhuma coluna identificada'}</code></p>
+      <h3 style="color:var(--warn)">Diagnóstico de Leitura</h3>
+      <p>Total de registros lidos: <strong>${D.rawAddrCount}</strong></p>
+      <p>Chaves do JSON: <code>${D.jsonKeys.join(', ')}</code></p>
+      <p>Colunas do 1º registro: <code>${D.sampleKeys.join(', ')}</code></p>
     </div>` : '';
 
-  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos. Galpão 1 (Área 1) e Galpão 2 (Área 7).</p>
+  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos da página 1682_Manutenção de Endereços Logísticos.</p>
   <div class="grid occ">
     ${box('g1','Galpão 1',O.g1)}${box('g2','Galpão 2',O.g2)}${box('','Endereços',all)}${box('','Blocados',O.bl)}
     <div class="card donutcard"><h3>% de ocupação CD</h3><div class="donutwrap" style="justify-content:center">${dn}</div></div>
