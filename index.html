@@ -446,31 +446,64 @@ function render(){
 const D_SF = ()=>['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'];
 const D_AF = ()=>['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'];
 
-/* ---------- Abas, Medida e Modo TV ---------- */
+/* ---------- Abas, Medida e Modo TV Resiliente ---------- */
 const TABS = [['s-geral','Visão geral'],['s-shelf','Shelf life'],['s-aging','Aging'],['s-ocup','Ocupação']];
 let cur = 0;
+
 function show(i){
   cur = i;
   TABS.forEach(([id],k)=>{ $('#'+id).classList.toggle('on',k===i); });
   document.querySelectorAll('#tabs button').forEach((b,k)=>b.setAttribute('aria-selected',k===i));
   try{ history.replaceState(null,'','#'+TABS[i][0].slice(2)); }catch(e){}
 }
+
 $('#tabs').innerHTML = TABS.map(([id,n],i)=>`<button role="tab" aria-selected="false" data-i="${i}">${n}</button>`).join('');
 $('#tabs').addEventListener('click',e=>{const b=e.target.closest('button'); if(b) show(+b.dataset.i);});
 $('#basis').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; basis=b.dataset.b; document.querySelectorAll('#basis button').forEach(x=>x.setAttribute('aria-pressed',x===b)); render();});
-let tvTimer=null, tvStart=0;
+
+let tvTimer = null, tvStart = 0;
+
 function tvTick(){
-  const el=(Date.now()-tvStart)/1000;
-  $('#bar').style.width=Math.min(100,el/CONFIG.TV_SEGUNDOS*100)+'%';
-  if(el>=CONFIG.TV_SEGUNDOS){ tvStart=Date.now(); show((cur+1)%TABS.length); }
+  const el = (Date.now() - tvStart) / 1000;
+  const pct = Math.min(100, (el / CONFIG.TV_SEGUNDOS) * 100);
+  const bar = $('#bar');
+  if (bar) bar.style.width = pct + '%';
+  
+  if (el >= CONFIG.TV_SEGUNDOS) {
+    tvStart = Date.now();
+    show((cur + 1) % TABS.length);
+  }
 }
-$('#tv').addEventListener('click',()=>{
-  const on = $('#tv').getAttribute('aria-pressed')!=='true';
-  $('#tv').setAttribute('aria-pressed',on); document.body.classList.toggle('tvmode',on);
-  clearInterval(tvTimer); $('#bar').style.width='0';
-  if(on){ tvStart=Date.now(); tvTimer=setInterval(tvTick,250); try{document.documentElement.requestFullscreen&&document.exitFullscreen().catch(()=>{});}catch(e){} }
-  else { try{document.fullscreenElement&&document.exitFullscreen();}catch(e){} }
+
+$('#tv').addEventListener('click', function() {
+  const on = this.getAttribute('aria-pressed') !== 'true';
+  this.setAttribute('aria-pressed', on);
+  document.body.classList.toggle('tvmode', on);
+  
+  clearInterval(tvTimer);
+  const bar = $('#bar');
+  if (bar) bar.style.width = '0%';
+  
+  if (on) {
+    tvStart = Date.now();
+    tvTimer = setInterval(tvTick, 200);
+    
+    try {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(function(err) {
+          console.warn("Ecrã inteiro bloqueado pelo navegador:", err);
+        });
+      }
+    } catch (e) {}
+  } else {
+    try {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(function() {});
+      }
+    } catch (e) {}
+  }
 });
+
 const h = (location.hash||'').slice(1); const hi = TABS.findIndex(([id])=>id.slice(2)===h);
 show(hi>=0?hi:0);
 load();
