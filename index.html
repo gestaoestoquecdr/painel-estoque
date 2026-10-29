@@ -187,17 +187,19 @@ async function fromJsonFile(){
   }));
 
   const addr = rawAddr.map(o => {
-    const status = normF(o["Status"] || o["status"] || 'Ativa');
-    const ocupStatus = normF(o["Endereço ocupado"] || o["Endereço Ocupado"] || o["endereco ocupado"] || o["Status da Ocupação"] || '');
-    const endStr = String(o["Endereço"] || o["endereco"] || o["Endereço Logístico"] || o["endereco logistico"] || '');
+    // Coluna A - Status (ex: "Ativo" / "Ativa")
+    const statusVal = normF(o["Status"] || o["status"] || '');
     
-    // Regra do SQL: 'Ocupado' ou diferente de Vazio/Livre
-    const isOcupado = ocupStatus === 'Ocupado' || (ocupStatus !== 'Vazio' && ocupStatus !== 'Livre' && ocupStatus !== 'Disponível' && ocupStatus !== 'A Endereçar' && ocupStatus !== '');
+    // Coluna T - Endereço ocupado (ex: "Ocupado" / "Livre")
+    const ocupVal = normF(o["Endereço ocupado"] || o["Endereço Ocupado"] || o["endereco ocupado"] || '');
+    
+    // Coluna K - Endereço (ex: "205.1041.1.0.0.0.1")
+    const endStr = normF(o["Endereço"] || o["endereco"] || o["Endereço Logístico"] || o["endereco logistico"] || '');
     
     return {
       end: endStr,
-      occ: isOcupado,
-      ativo: status === 'Ativa' || status === 'Ativo' || status === ''
+      occ: ocupVal === 'Ocupado',
+      ativo: statusVal.toLowerCase().startsWith('at') // Aceita "Ativo", "Ativa", "ATIVO", etc.
     };
   }).filter(a => a.ativo);
 
@@ -314,7 +316,7 @@ function occData(){
     const end = a.end;
     const p = end.split('.');
     
-    // Regra exata do SQL do Looker Studio
+    // Filtros baseados na regra SQL
     const isG1 = end.startsWith("205.1041.1.");
     const isG2 = end.startsWith("205.1041.7.");
     const isBlocado = end.startsWith("205.1066.");
@@ -360,7 +362,7 @@ function secOcup(){
   const O = occData(), v = o=>o.total-o.ocup;
   const box = (cls,t,o)=>`<div class="mini ${cls}"><div class="b"><small>${t}</small><strong>${fmtN.format(o.total)}</strong></div><div class="b"><small>Ocupados</small><strong>${fmtN.format(o.ocup)}</strong></div><div class="b"><small>Vazios</small><strong>${fmtN.format(v(o))}</strong></div></div>`;
   const all = {total:O.total,ocup:O.ocup};
-  const donutItems=[{n:'Livre',v:O.total-O.ocup,c:'var(--blue)'},{n:'Ocupado',v:O.ocup,c:'var(--cream)'}];
+  const donutItems=[{n:'Livre',v:O.total-O.ocup,c:'var(--blue)'},{n:'Ocupado',v:O.cream||'var(--cream)'}];
   const prev=basis; basis='qtd';
   const dn = donut(donutItems,fmtP(O.pct,2),'ocupação CD'); basis=prev;
   $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos. Galpão 1 (205.1041.1) e Galpão 2 (205.1041.7).</p>
