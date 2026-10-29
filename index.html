@@ -162,6 +162,20 @@ const AGING_CLASS = {'0 a 15 dias':'ok','16 a 30 dias':'ok','30 a 60 dias':'warn
 const CLS = {ok:{n:'Saudável',c:'var(--ok)'},warn:{n:'Atenção',c:'var(--warn)'},crit:{n:'Crítico',c:'var(--crit)'},none:{n:'Sem validade',c:'var(--none)'}};
 const normF = s => String(s||'').replace(/\s+/g,' ').trim();
 
+// Função para buscar valor de um objeto ignorando diferença de maiúsculas/minúsculas/espaços na chave
+function getProp(obj, propNames) {
+  if (!obj) return '';
+  const keys = Object.keys(obj);
+  for (let name of propNames) {
+    const target = name.toLowerCase().replace(/\s+/g, '');
+    const foundKey = keys.find(k => k.toLowerCase().replace(/\s+/g, '') === target);
+    if (foundKey && obj[foundKey] !== undefined && obj[foundKey] !== null) {
+      return String(obj[foundKey]).trim();
+    }
+  }
+  return '';
+}
+
 /* ---------- Carregamento a partir do dados.json ---------- */
 async function fromJsonFile(){
   const res = await fetch(CONFIG.DATA_URL + '?t=' + Date.now(), { cache: 'no-store' });
@@ -169,39 +183,40 @@ async function fromJsonFile(){
   const data = await res.json();
   
   const rawRows = Array.isArray(data.dados1926) ? data.dados1926 : [];
-  let rawAddr = data.dados1682 || data.enderecos || data.ocupacao || [];
+  let rawAddr = data.dados1682 || data.dados1682_Manutencao || data.enderecos || data.ocupacao || [];
   
   if (!Array.isArray(rawAddr)) {
     rawAddr = [];
   }
   
   const rows = rawRows.map(o => ({
-    est: String(o["Local de Estoque"] || o["local de estoque"] || '').trim(),
-    status: normF(o["Status"] || o["status"]),
-    shelf: normF(o["Desc Shelf"] || o["desc shelf"]),
-    aging: normF(o["Faixa Anging "] || o["Faixa Anging"] || o["faixa anging"]),
-    qtd: +(o["Qtd. Endereçada"] || o["qtd. enderecada"] || 0),
-    custo: +(o["Custo Bruto Total"] || o["custo bruto total"] || 0),
-    prod: String(o["Produto"] || o["produto"] || '').slice(0,50),
-    end: String(o["Endereço Logístico"] || o["endereco logistico"] || o["Endereço"] || o["endereco"] || '')
+    est: getProp(o, ["Local de Estoque"]).trim(),
+    status: normF(getProp(o, ["Status"])),
+    shelf: normF(getProp(o, ["Desc Shelf"])),
+    aging: normF(getProp(o, ["Faixa Anging ", "Faixa Anging", "Faixa Aging"])),
+    qtd: +(getProp(o, ["Qtd. Endereçada", "Qtd Enderecada"]) || 0),
+    custo: +(getProp(o, ["Custo Bruto Total"]) || 0),
+    prod: getProp(o, ["Produto"]).slice(0,50),
+    end: getProp(o, ["Endereço Logístico", "Endereco Logistico", "Endereço", "Endereco"])
   }));
 
   const addr = rawAddr.map(o => {
-    // Coluna A - Status (ex: "Ativo" / "Ativa")
-    const statusVal = normF(o["Status"] || o["status"] || '');
+    const statusVal = getProp(o, ["Status"]);
+    const ocupVal = getProp(o, ["Endereço ocupado", "Endereco ocupado", "Status da Ocupação", "Status da Ocupacao"]);
+    const endStr = getProp(o, ["Endereço", "Endereco", "Endereço Logístico", "Endereco Logistico"]);
     
-    // Coluna T - Endereço ocupado (ex: "Ocupado" / "Livre")
-    const ocupVal = normF(o["Endereço ocupado"] || o["Endereço Ocupado"] || o["endereco ocupado"] || '');
+    // Regra flexível: Ativo se não for explicitamente "Inativo"
+    const isAtivo = !statusVal.toLowerCase().includes('inativ');
     
-    // Coluna K - Endereço (ex: "205.1041.1.0.0.0.1")
-    const endStr = normF(o["Endereço"] || o["endereco"] || o["Endereço Logístico"] || o["endereco logistico"] || '');
+    // Regra flexível: Ocupado se contiver "ocupad" no texto
+    const isOcupado = ocupVal.toLowerCase().includes('ocupad');
     
     return {
       end: endStr,
-      occ: ocupVal === 'Ocupado',
-      ativo: statusVal.toLowerCase().startsWith('at') // Aceita "Ativo", "Ativa", "ATIVO", etc.
+      occ: isOcupado,
+      ativo: isAtivo
     };
-  }).filter(a => a.ativo);
+  }).filter(a => a.ativo && a.end !== '');
 
   let timeStr = 'JSON';
   if (data.ultimaAtualizacao) {
@@ -313,15 +328,14 @@ function occData(){
   const bl = {total:0, ocup:0};
   
   D.addr.forEach(a=>{
-    const end = a.end;
+    const end = a.end.trim();
     const p = end.split('.');
     
-    // Filtros baseados na regra SQL
-    const isG1 = end.startsWith("205.1041.1.");
-    const isG2 = end.startsWith("205.1041.7.");
-    const isBlocado = end.startsWith("205.1066.");
+    // Filtro tolerante (ignora espaços extras)
+    const isG1 = end.includes("205.1041.1.");
+    const isG2 = end.includes("205.1041.7.");
+    const isBlocado = end.includes("205.1066.");
     
-    // Extrai o número da rua (4ª posição no endereço: 205.1041.1.X)
     const rua = p.length >= 4 ? +p[3] : 0;
     
     if (isG1) {
@@ -362,7 +376,7 @@ function secOcup(){
   const O = occData(), v = o=>o.total-o.ocup;
   const box = (cls,t,o)=>`<div class="mini ${cls}"><div class="b"><small>${t}</small><strong>${fmtN.format(o.total)}</strong></div><div class="b"><small>Ocupados</small><strong>${fmtN.format(o.ocup)}</strong></div><div class="b"><small>Vazios</small><strong>${fmtN.format(v(o))}</strong></div></div>`;
   const all = {total:O.total,ocup:O.ocup};
-  const donutItems=[{n:'Livre',v:O.total-O.ocup,c:'var(--blue)'},{n:'Ocupado',v:O.cream||'var(--cream)'}];
+  const donutItems=[{n:'Livre',v:O.total-O.ocup,c:'var(--blue)'},{n:'Ocupado',v:O.ocup,c:'var(--cream)'}];
   const prev=basis; basis='qtd';
   const dn = donut(donutItems,fmtP(O.pct,2),'ocupação CD'); basis=prev;
   $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos. Galpão 1 (205.1041.1) e Galpão 2 (205.1041.7).</p>
