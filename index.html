@@ -162,7 +162,7 @@ const AGING_CLASS = {'0 a 15 dias':'ok','16 a 30 dias':'ok','30 a 60 dias':'warn
 const CLS = {ok:{n:'Saudável',c:'var(--ok)'},warn:{n:'Atenção',c:'var(--warn)'},crit:{n:'Crítico',c:'var(--crit)'},none:{n:'Sem validade',c:'var(--none)'}};
 const normF = s => String(s||'').replace(/\s+/g,' ').trim();
 
-// Função para buscar valor de um objeto ignorando diferença de maiúsculas/minúsculas/espaços na chave
+// Busca flexível de propriedades no objeto JSON
 function getProp(obj, propNames) {
   if (!obj) return '';
   const keys = Object.keys(obj);
@@ -201,22 +201,35 @@ async function fromJsonFile(){
   }));
 
   const addr = rawAddr.map(o => {
+    // Coluna A: Status
     const statusVal = getProp(o, ["Status"]);
+    
+    // Coluna T: Endereço ocupado
     const ocupVal = getProp(o, ["Endereço ocupado", "Endereco ocupado", "Status da Ocupação", "Status da Ocupacao"]);
+    
+    // Coluna U: Area
+    const areaVal = getProp(o, ["Area", "AREA"]);
+    
+    // Coluna V: Rua
+    const ruaVal = getProp(o, ["Rua", "RUA"]);
+    
+    // Coluna K: Endereço (Backup)
     const endStr = getProp(o, ["Endereço", "Endereco", "Endereço Logístico", "Endereco Logistico"]);
     
-    // Regra flexível: Ativo se não for explicitamente "Inativo"
-    const isAtivo = !statusVal.toLowerCase().includes('inativ');
+    // Filtro Ativo
+    const isAtivo = statusVal.toLowerCase() === 'ativo' || statusVal.toLowerCase() === 'ativa' || statusVal === '';
     
-    // Regra flexível: Ocupado se contiver "ocupad" no texto
-    const isOcupado = ocupVal.toLowerCase().includes('ocupad');
+    // Status de Ocupação
+    const isOcupado = ocupVal.toLowerCase() === 'ocupado';
     
     return {
       end: endStr,
+      area: areaVal,
+      rua: +ruaVal || 0,
       occ: isOcupado,
       ativo: isAtivo
     };
-  }).filter(a => a.ativo && a.end !== '');
+  }).filter(a => a.ativo);
 
   let timeStr = 'JSON';
   if (data.ultimaAtualizacao) {
@@ -328,15 +341,25 @@ function occData(){
   const bl = {total:0, ocup:0};
   
   D.addr.forEach(a=>{
-    const end = a.end.trim();
-    const p = end.split('.');
+    // Lê a área da Coluna U ou do formato do texto
+    const area = String(a.area);
+    const end = String(a.end);
     
-    // Filtro tolerante (ignora espaços extras)
-    const isG1 = end.includes("205.1041.1.");
-    const isG2 = end.includes("205.1041.7.");
-    const isBlocado = end.includes("205.1066.");
+    // Identifica se é Galpão 1 (Area = 1 ou começa com 205.1041.1)
+    const isG1 = area === '1' || end.includes("205.1041.1.");
     
-    const rua = p.length >= 4 ? +p[3] : 0;
+    // Identifica se é Galpão 2 (Area = 7 ou começa com 205.1041.7)
+    const isG2 = area === '7' || end.includes("205.1041.7.");
+    
+    // Identifica se é Blocado (Area = 5 ou começa com 205.1066)
+    const isBlocado = area === '5' || end.includes("205.1066.");
+    
+    // Lê a rua da Coluna V ou tenta extrair do texto do endereço
+    let rua = a.rua;
+    if (!rua) {
+      const p = end.split('.');
+      rua = p.length >= 4 ? +p[3] : 0;
+    }
     
     if (isG1) {
       g1.total++;
@@ -379,7 +402,7 @@ function secOcup(){
   const donutItems=[{n:'Livre',v:O.total-O.ocup,c:'var(--blue)'},{n:'Ocupado',v:O.ocup,c:'var(--cream)'}];
   const prev=basis; basis='qtd';
   const dn = donut(donutItems,fmtP(O.pct,2),'ocupação CD'); basis=prev;
-  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos. Galpão 1 (205.1041.1) e Galpão 2 (205.1041.7).</p>
+  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos. Galpão 1 (Área 1) e Galpão 2 (Área 7).</p>
   <div class="grid occ">
     ${box('g1','Galpão 1',O.g1)}${box('g2','Galpão 2',O.g2)}${box('','Endereços',all)}${box('','Blocados',O.bl)}
     <div class="card donutcard"><h3>% de ocupação CD</h3><div class="donutwrap" style="justify-content:center">${dn}</div></div>
