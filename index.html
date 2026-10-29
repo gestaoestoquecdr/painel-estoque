@@ -176,14 +176,15 @@ function getProp(obj, propNames) {
   return '';
 }
 
-// Extrai uma lista de registros testando chaves diretas ou sub-objetos do JSON
+// Extrai uma lista de registros testando profundidades de objetos
 function extractList(source) {
   if (Array.isArray(source)) return source;
   if (source && typeof source === 'object') {
     if (Array.isArray(source.data)) return source.data;
     if (Array.isArray(source.rows)) return source.rows;
     if (Array.isArray(source.items)) return source.items;
-    return Object.values(source).filter(v => v && typeof v === 'object');
+    const vals = Object.values(source).filter(v => v && typeof v === 'object');
+    if (vals.length > 0) return vals;
   }
   return [];
 }
@@ -194,25 +195,29 @@ async function fromJsonFile(){
   if (!res.ok) throw new Error('Não foi possível carregar o arquivo dados.json (HTTP ' + res.status + ').');
   const data = await res.json();
   
-  // Tenta encontrar a aba 1682 testando o nome exato da página da planilha e variações
   const jsonKeys = Object.keys(data);
-  let addrSource = null;
+  let rawAddr = extractList(data.ocupacao);
   
-  // Procura por chaves que contenham "1682" ou "ocupacao"
-  for (let k of jsonKeys) {
-    const kNorm = k.toLowerCase();
-    if (kNorm.includes('1682') || kNorm.includes('ocupac') || kNorm.includes('enderec')) {
-      addrSource = data[k];
-      break;
+  // Fallback para outras variações se ocupacao não retornar lista válida
+  if (rawAddr.length === 0) {
+    for (let k of jsonKeys) {
+      const kNorm = k.toLowerCase();
+      if (kNorm.includes('1682') || kNorm.includes('enderec')) {
+        rawAddr = extractList(data[k]);
+        if (rawAddr.length > 0) break;
+      }
     }
   }
   
-  let rawAddr = extractList(addrSource || data.ocupacao || data.dados1682);
-  const rawRows = extractList(data.dados1926 || data["1926"]);
+  const rawRows = extractList(data.dados1926);
   
   let sampleKeys = [];
+  let sampleRaw = '';
   if (rawAddr.length > 0 && rawAddr[0]) {
     sampleKeys = Object.keys(rawAddr[0]);
+    sampleRaw = JSON.stringify(rawAddr[0]).slice(0, 150);
+  } else if (data.ocupacao) {
+    sampleRaw = typeof data.ocupacao === 'string' ? data.ocupacao.slice(0, 150) : JSON.stringify(data.ocupacao).slice(0, 150);
   }
   
   const rows = rawRows.map(o => ({
@@ -227,19 +232,10 @@ async function fromJsonFile(){
   }));
 
   const addr = rawAddr.map(o => {
-    // Coluna A: Status
     const statusVal = getProp(o, ["Status"]);
-    
-    // Coluna T: Endereço ocupado
     const ocupVal = getProp(o, ["Endereço ocupado", "Endereco ocupado", "Status da Ocupação", "Status da Ocupacao"]);
-    
-    // Coluna U: Area
     const areaVal = getProp(o, ["Area", "AREA"]);
-    
-    // Coluna V: Rua
     const ruaVal = getProp(o, ["Rua", "RUA"]);
-    
-    // Coluna K: Endereço
     const endStr = getProp(o, ["Endereço", "Endereco", "Endereço Logístico", "Endereco Logistico"]);
     
     const isAtivo = statusVal.toLowerCase() === 'ativo' || statusVal.toLowerCase() === 'ativa' || statusVal === '';
@@ -260,7 +256,7 @@ async function fromJsonFile(){
     timeStr = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   }
 
-  return { rows, addr, sampleKeys, rawAddrCount: rawAddr.length, jsonKeys, live: true, when: 'Atualizado às ' + timeStr };
+  return { rows, addr, sampleKeys, sampleRaw, rawAddrCount: rawAddr.length, jsonKeys, live: true, when: 'Atualizado às ' + timeStr };
 }
 
 function aviso(msg){
@@ -421,13 +417,13 @@ function secOcup(){
   
   const diagHtml = (O.total === 0) ? `
     <div class="card" style="margin-top:14px;border:1px solid var(--warn)">
-      <h3 style="color:var(--warn)">Diagnóstico de Leitura</h3>
-      <p>Total de registros lidos: <strong>${D.rawAddrCount}</strong></p>
-      <p>Chaves do JSON: <code>${D.jsonKeys.join(', ')}</code></p>
-      <p>Colunas do 1º registro: <code>${D.sampleKeys.join(', ')}</code></p>
+      <h3 style="color:var(--warn)">Diagnóstico de Leitura dos Dados</h3>
+      <p>Registros processados: <strong>${D.rawAddrCount}</strong></p>
+      <p>Amostra do conteúdo recebido na chave 'ocupacao':</p>
+      <pre style="background:#050b18;padding:10px;border-radius:4px;overflow-x:auto;font-size:12px;color:var(--accent)">${esc(D.sampleRaw || 'Vazio/Nulo')}</pre>
     </div>` : '';
 
-  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos da página 1682_Manutenção de Endereços Logísticos.</p>
+  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos processados da chave ocupacao.</p>
   <div class="grid occ">
     ${box('g1','Galpão 1',O.g1)}${box('g2','Galpão 2',O.g2)}${box('','Endereços',all)}${box('','Blocados',O.bl)}
     <div class="card donutcard"><h3>% de ocupação CD</h3><div class="donutwrap" style="justify-content:center">${dn}</div></div>
