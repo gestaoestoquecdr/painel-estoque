@@ -51,12 +51,31 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 .two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px;min-width:0}
 .card h3{margin:0 0 14px;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:700}
-.card-header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.card-header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
 .card-header-action h3 { margin: 0; }
 .kpi .v{font-family:var(--f-num);font-size:40px;font-weight:700;line-height:1.05}
 .kpi .s{color:var(--mute);font-size:14px;margin-top:6px}
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
+
+/* BANNER DE ALERTA SEM FÍSICO */
+.sem-fisico-badge {
+  background: rgba(255, 93, 98, 0.15);
+  border: 1px solid var(--crit);
+  border-radius: 6px;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #ff8b8f;
+  font-weight: 600;
+}
+.sem-fisico-badge b {
+  color: var(--crit);
+  font-family: var(--f-num);
+  font-size: 16px;
+}
 
 .donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center}
 .donut{width:200px;height:200px;flex:none}
@@ -173,7 +192,7 @@ const nice = s => String(s).replace(/^ESTOQUE\s+/i,'').toLowerCase().replace(/(^
 
 let D = null;
 let basis = 'custo';
-let resFilter = 'todos'; // Estado do filtro da tabela Geração Reserva
+let resFilter = 'todos';
 const val = r => basis==='custo' ? r.custo : r.qtd;
 const fmtV = v => basis==='custo' ? brlShort(v) : fmtN.format(v);
 
@@ -315,10 +334,20 @@ function legend(items){
 
 const kpi = (l,v,s,cls='') => `<div class="card kpi ${cls}"><h3>${l}</h3><div class="v">${v}</div><div class="s">${s||''}</div></div>`;
 
-const ESTCOL = ['#ffc400','#4285f4','#35d49a','#c084fc','#ff7a9c','#ffb020','#3a5db0'];
+// PALETA DE CORES COM DESTAQUE EM VERMELHO PARA SEM FÍSICO (VIRTUAL E PRE ALERTA)
+const COLOR_MAP = {
+  'revenda': '#ffc400',       // Amarelo
+  'virtual': '#ff5d62',       // Vermelho Crítico
+  'pre alerta': '#ff8b8f',    // Coral / Vermelho claro
+  'pré alerta': '#ff8b8f',
+  'suprimentos': '#c084fc'    // Roxo
+};
+const DEFAULT_COLORS = ['#ffc400','#ff5d62','#ff8b8f','#c084fc','#35d49a','#3a5db0'];
 
 function secGeral(){
   const R = D.rows, by = {};
+  let semFisicoVal = 0; // Somatório de Pre Alerta + Virtual
+
   R.forEach(r => {
     by[r.est] = by[r.est] || {custo:0, qtd:0, n:0};
     by[r.est].custo += r.custo;
@@ -330,11 +359,21 @@ function secGeral(){
   const totC = R.reduce((s,r)=>s+r.custo,0), totQ = R.reduce((s,r)=>s+r.qtd,0);
   const totV = basis==='custo' ? totC : totQ;
   
-  const items = ests.map(([n,o],i) => ({
-    n: nice(n),
-    v: basis==='custo' ? o.custo : o.qtd,
-    c: ESTCOL[i%ESTCOL.length]
-  }));
+  const items = ests.map(([n,o],i) => {
+    const key = n.toLowerCase().trim();
+    const valItem = basis==='custo' ? o.custo : o.qtd;
+    
+    // Calcula o acumulado dos estoques não-físicos
+    if (key.includes('virtual') || key.includes('pre alerta') || key.includes('pré alerta')) {
+      semFisicoVal += valItem;
+    }
+
+    return {
+      n: nice(n),
+      v: valItem,
+      c: COLOR_MAP[key] || DEFAULT_COLORS[i % DEFAULT_COLORS.length]
+    };
+  });
   
   const rev = R.filter(r=>r.est.trim()===CONFIG.ESTOQUE_FISICO);
   const st = {}; 
@@ -352,6 +391,7 @@ function secGeral(){
   const centerLabel = basis==='custo' ? brlShort(totC).replace('R$ ','') : fmtN.format(totQ);
   const subLabel = basis==='custo' ? 'custo bruto' : 'qtd. endereçada';
   const cardTitle = basis==='custo' ? 'VALOR POR LOCAL DE ESTOQUE (R$)' : 'QUANTIDADE POR LOCAL DE ESTOQUE';
+  const semFisicoPct = totV ? (semFisicoVal / totV) * 100 : 0;
 
   $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque.</p>
   <div class="grid kpis">
@@ -361,8 +401,15 @@ function secGeral(){
     ${kpi('Ocupação do CD',fmtP(occ.pct,2),fmtN.format(occ.ocup)+' de '+fmtN.format(occ.total)+' endereços')}
   </div>
   <div class="grid two" style="margin-top:16px">
-    <div class="card"><h3>${cardTitle}</h3>
-      <div class="donutwrap">${donut(items, centerLabel, subLabel)}${legend(items)}</div></div>
+    <div class="card">
+      <div class="card-header-action">
+        <h3>${cardTitle}</h3>
+        <div class="sem-fisico-badge" title="Soma do estoque Virtual e Pré Alerta">
+          🚨 Sem Físico: <b>${fmtV(semFisicoVal)} (${fmtP(semFisicoPct)})</b>
+        </div>
+      </div>
+      <div class="donutwrap">${donut(items, centerLabel, subLabel)}${legend(items)}</div>
+    </div>
     <div class="card"><h3>Status do estoque revenda</h3><div class="tw"><table>
       <tr><th>Status</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th class="r">% do valor</th></tr>
       ${stRows.map(([n,o])=>`<tr><td>${esc(n)}</td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r">${brl(o.custo)}</td><td class="r">${fmtP(o.custo/rc*100)}</td></tr>`).join('')}
@@ -372,7 +419,9 @@ function secGeral(){
     <tr><th>Local</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th>Participação</th></tr>
     ${ests.map(([n,o],i) => {
       const v = basis==='custo' ? o.custo : o.qtd;
-      return `<tr><td><span class="dot" style="background:${ESTCOL[i%5]}"></span>${esc(nice(n))}</td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r">${brl(o.custo)}</td><td><span class="num">${fmtP(v/totV*100)}</span><span class="bar"><b style="width:${v/totV*100}%;background:${ESTCOL[i%5]}"></b></span></td></tr>`;
+      const key = n.toLowerCase().trim();
+      const color = COLOR_MAP[key] || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+      return `<tr><td><span class="dot" style="background:${color}"></span>${esc(nice(n))}</td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r">${brl(o.custo)}</td><td><span class="num">${fmtP(v/totV*100)}</span><span class="bar"><b style="width:${v/totV*100}%;background:${color}"></b></span></td></tr>`;
     }).join('')}
   </table></div></div>`;
 }
@@ -547,7 +596,6 @@ function secCarteira(){
   });
   const destRows = Object.entries(byDest).sort((a,b) => b[1].pedida - a[1].pedida);
 
-  // AGRUPAMENTO GERAÇÃO RESERVA COM AVALIAÇÃO DE STATUS
   const byRes = {};
   C.forEach(r => {
     const k = r.gerReserva;
@@ -563,7 +611,6 @@ function secCarteira(){
     }
   });
 
-  // FILTRAGEM DINÂMICA DA TABELA
   let resRows = Object.entries(byRes).sort((a,b) => a[0].localeCompare(b[0]));
   if (resFilter === 'pendente') {
     resRows = resRows.filter(([, o]) => o.pendentes > 0);
@@ -582,7 +629,7 @@ function secCarteira(){
   const deptItems = deptRows.map(([n,o],i) => ({
     n: n,
     v: basis==='custo' ? o.valor : o.qtd,
-    c: ESTCOL[i % ESTCOL.length]
+    c: DEFAULT_COLORS[i % DEFAULT_COLORS.length]
   }));
 
   const prodDer = bySep["Produção Derrubada"] || {qtd:0, valor:0};
@@ -716,7 +763,6 @@ function secCarteira(){
     </div>
 
     <div style="display:flex; flex-direction:column; gap:16px;">
-      <!-- TABELA GERAÇÃO RESERVA COM BOTOES DE FILTRO -->
       <div class="card">
         <div class="card-header-action">
           <h3>Geração Reserva</h3>
@@ -762,7 +808,6 @@ function secCarteira(){
     </div>
   </div>`;
 
-  // EVENTO DE CLIQUE NOS BOTÕES DE FILTRO DENTRO DA SEÇÃO
   const filterGroup = $('#res-filter-group');
   if (filterGroup) {
     filterGroup.addEventListener('click', e => {
