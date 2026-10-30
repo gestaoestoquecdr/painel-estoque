@@ -162,7 +162,6 @@ const AGING_CLASS = {'0 a 15 dias':'ok','16 a 30 dias':'ok','30 a 60 dias':'warn
 const CLS = {ok:{n:'Saudável',c:'var(--ok)'},warn:{n:'Atenção',c:'var(--warn)'},crit:{n:'Crítico',c:'var(--crit)'},none:{n:'Sem validade',c:'var(--none)'}};
 const normF = s => String(s||'').replace(/\s+/g,' ').trim();
 
-// Busca flexível de propriedades no objeto JSON
 function getProp(obj, propNames) {
   if (!obj || typeof obj !== 'object') return '';
   const keys = Object.keys(obj);
@@ -176,7 +175,6 @@ function getProp(obj, propNames) {
   return '';
 }
 
-// Extrai uma lista de registros testando profundidades de objetos
 function extractList(source) {
   if (Array.isArray(source)) return source;
   if (source && typeof source === 'object') {
@@ -189,7 +187,7 @@ function extractList(source) {
   return [];
 }
 
-/* ---------- Carregamento a partir do dados.json ---------- */
+/* ---------- Carregamento ---------- */
 async function fromJsonFile(){
   const res = await fetch(CONFIG.DATA_URL + '?t=' + Date.now(), { cache: 'no-store' });
   if (!res.ok) throw new Error('Não foi possível carregar o arquivo dados.json (HTTP ' + res.status + ').');
@@ -198,7 +196,6 @@ async function fromJsonFile(){
   const jsonKeys = Object.keys(data);
   let rawAddr = extractList(data.ocupacao);
   
-  // Fallback para outras variações se ocupacao não retornar lista válida
   if (rawAddr.length === 0) {
     for (let k of jsonKeys) {
       const kNorm = k.toLowerCase();
@@ -292,18 +289,44 @@ const kpi = (l,v,s,cls='') => `<div class="card kpi ${cls}"><h3>${l}</h3><div cl
 
 /* ---------- Seções ---------- */
 const ESTCOL = ['#ffc400','#4285f4','#35d49a','#c084fc','#ff7a9c'];
+
 function secGeral(){
   const R = D.rows, by = {};
-  R.forEach(r=>{(by[r.est]=by[r.est]||{custo:0,qtd:0,n:0}); by[r.est].custo+=r.custo; by[r.est].qtd+=r.qtd; by[r.est].n++;});
-  const ests = Object.entries(by).sort((a,b)=>b[1].custo-a[1].custo);
+  R.forEach(r => {
+    by[r.est] = by[r.est] || {custo:0, qtd:0, n:0};
+    by[r.est].custo += r.custo;
+    by[r.est].qtd += r.qtd;
+    by[r.est].n++;
+  });
+  
+  const ests = Object.entries(by).sort((a,b) => (basis==='custo' ? b[1].custo - a[1].custo : b[1].qtd - a[1].qtd));
   const totC = R.reduce((s,r)=>s+r.custo,0), totQ = R.reduce((s,r)=>s+r.qtd,0);
-  const items = ests.map(([n,o],i)=>({n:nice(n),v:o.custo,c:ESTCOL[i%ESTCOL.length]}));
+  const totV = basis==='custo' ? totC : totQ;
+  
+  const items = ests.map(([n,o],i) => ({
+    n: nice(n),
+    v: basis==='custo' ? o.custo : o.qtd,
+    c: ESTCOL[i%ESTCOL.length]
+  }));
+  
   const rev = R.filter(r=>r.est.trim()===CONFIG.ESTOQUE_FISICO);
-  const st = {}; rev.forEach(r=>{(st[r.status]=st[r.status]||{custo:0,qtd:0,n:0}); st[r.status].custo+=r.custo; st[r.status].qtd+=r.qtd; st[r.status].n++;});
-  const stRows = Object.entries(st).sort((a,b)=>b[1].custo-a[1].custo);
+  const st = {}; 
+  rev.forEach(r => {
+    st[r.status] = st[r.status] || {custo:0, qtd:0, n:0};
+    st[r.status].custo += r.custo;
+    st[r.status].qtd += r.qtd;
+    st[r.status].n++;
+  });
+  
+  const stRows = Object.entries(st).sort((a,b) => b[1].custo - a[1].custo);
   const rc = rev.reduce((s,r)=>s+r.custo,0), rq = rev.reduce((s,r)=>s+r.qtd,0);
   const occ = occData();
-  $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque, com o valor a custo bruto.</p>
+  
+  const centerLabel = basis==='custo' ? brlShort(totC).replace('R$ ','') : fmtN.format(totQ);
+  const subLabel = basis==='custo' ? 'custo bruto' : 'qtd. endereçada';
+  const cardTitle = basis==='custo' ? 'VALOR POR LOCAL DE ESTOQUE (R$)' : 'QUANTIDADE POR LOCAL DE ESTOQUE';
+
+  $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque.</p>
   <div class="grid kpis">
     ${kpi('Custo bruto total',brlShort(totC),brl(totC),'hl')}
     ${kpi('Qtd. endereçada total',fmtN.format(totQ),fmtN.format(R.length)+' linhas de palete')}
@@ -311,8 +334,8 @@ function secGeral(){
     ${kpi('Ocupação do CD',fmtP(occ.pct,2),fmtN.format(occ.ocup)+' de '+fmtN.format(occ.total)+' endereços')}
   </div>
   <div class="grid two" style="margin-top:14px">
-    <div class="card"><h3>Valor por local de estoque (R$)</h3>
-      <div class="donutwrap">${donut(items,brlShort(totC).replace('R$ ',''),'custo bruto')}${legend(items)}</div></div>
+    <div class="card"><h3>${cardTitle}</h3>
+      <div class="donutwrap">${donut(items, centerLabel, subLabel)}${legend(items)}</div></div>
     <div class="card"><h3>Status do estoque revenda</h3><div class="tw"><table>
       <tr><th>Status</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th class="r">% do valor</th></tr>
       ${stRows.map(([n,o])=>`<tr><td>${esc(n)}</td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r">${brl(o.custo)}</td><td class="r">${fmtP(o.custo/rc*100)}</td></tr>`).join('')}
@@ -320,7 +343,10 @@ function secGeral(){
   </div>
   <div class="card" style="margin-top:14px"><h3>Valor e quantidade por local de estoque</h3><div class="tw"><table>
     <tr><th>Local</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th>Participação</th></tr>
-    ${ests.map(([n,o],i)=>`<tr><td><span class="dot" style="background:${ESTCOL[i%5]}"></span>${esc(nice(n))}</td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r">${brl(o.custo)}</td><td><span class="num">${fmtP(o.custo/totC*100)}</span><span class="bar"><b style="width:${o.custo/totC*100}%;background:${ESTCOL[i%5]}"></b></span></td></tr>`).join('')}
+    ${ests.map(([n,o],i) => {
+      const v = basis==='custo' ? o.custo : o.qtd;
+      return `<tr><td><span class="dot" style="background:${ESTCOL[i%5]}"></span>${esc(nice(n))}</td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r">${brl(o.custo)}</td><td><span class="num">${fmtP(v/totV*100)}</span><span class="bar"><b style="width:${v/totV*100}%;background:${ESTCOL[i%5]}"></b></span></td></tr>`;
+    }).join('')}
   </table></div></div>`;
 }
 
