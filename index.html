@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-/* Layout: barra superior com abas, uma seção por vez (modo TV gira as abas). Visual escuro azul-marinho com amarelo de destaque. */
+/* Layout: barra superior com abas. Visual escuro azul-marinho com amarelo de destaque. */
 :root{
   color-scheme:dark;
   --bg:#071022; --panel:#0c1a38; --panel2:#10224a; --line:#1b2f5e;
@@ -57,7 +57,7 @@ h2{font-family:var(--f-num);font-size:26px;margin:0 0 4px;letter-spacing:.01em}
 .kpi.hl{border-top:3px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-.donutwrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.donutwrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:center}
 .donut{width:210px;height:210px;flex:none}
 .donut text{fill:var(--text);font-family:var(--f-num)}
 .legend{display:flex;flex-direction:column;gap:8px;min-width:200px;flex:1}
@@ -75,40 +75,49 @@ td .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right
 .bar{display:block;height:6px;background:#162a58;border-radius:3px;min-width:70px;margin-top:5px}
 .bar b{display:block;height:100%;border-radius:3px}
 
-/* Barras de Proporção Derrubada / Sorter */
-.sep-progress {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 10px;
+/* OCUPAÇÃO - ESTILOS CORRIGIDOS */
+.occ {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
 }
-.sep-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.sep-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-}
-.sep-bar-bg {
-  height: 10px;
-  background: var(--panel2);
-  border-radius: 5px;
-  overflow: hidden;
-  display: flex;
-}
-.sep-bar-fill {
-  height: 100%;
-}
+.mini { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.mini .b { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 8px; text-align: center; }
+.mini .b small { display: block; color: var(--mute); font-size: 12px; text-transform: uppercase; margin-bottom: 4px; }
+.mini .b strong { font-family: var(--f-num); font-size: 26px; line-height: 1.1; }
+.mini.g1 .b { border-left: 3px solid var(--blue); border-right: 3px solid var(--blue); }
+.mini.g2 .b { border-left: 3px solid var(--navy); border-right: 3px solid var(--navy); }
+
+.pcts { display: flex; flex-direction: column; gap: 10px; justify-content: center; min-width: 0; }
+.pcts .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pcts .b { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 12px; text-align: center; min-width: 0; }
+.pcts .b small { display: block; color: var(--mute); font-size: 12px; margin-bottom: 4px; }
+.pcts .b strong { font-family: var(--f-num); font-size: 24px; }
+.pcts .big strong { font-size: 42px; color: var(--accent); }
+
+.rua-container { overflow-x: auto; width: 100%; }
+.rua { display: flex; gap: 12px; align-items: flex-end; height: 220px; padding-top: 10px; min-width: 600px; }
+.rua .c { flex: 1; min-width: 32px; display: flex; flex-direction: column; align-items: stretch; height: 100%; }
+.rua .stk { flex: 1; display: flex; flex-direction: column; border-radius: 4px; overflow: hidden; min-height: 0; }
+.rua .lv { display: flex; align-items: center; justify-content: center; font-family: var(--f-num); font-size: 11px; font-weight: 600; overflow: hidden; min-height: 0; }
+.rua .oc { background: var(--cream); color: #2b2205; }
+.rua .name { text-align: center; font-family: var(--f-num); font-size: 14px; font-weight: 600; margin-top: 8px; color: var(--mute); }
+.lg { display: flex; gap: 16px; font-size: 13px; color: var(--mute); margin-bottom: 8px; justify-content: center; }
+.lg i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.foot { color: var(--mute); font-size: 12px; margin-top: 18px; }
+
+/* BARRAS DE PROPORÇÃO DERRUBADA / SORTER */
+.sep-progress { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+.sep-item { display: flex; flex-direction: column; gap: 4px; }
+.sep-header { display: flex; justify-content: space-between; font-size: 13px; }
+.sep-bar-bg { height: 10px; background: var(--panel2); border-radius: 5px; overflow: hidden; display: flex; }
+.sep-bar-fill { height: 100%; }
 
 body.tvmode header nav,body.tvmode .seg{display:none}
 body.tvmode .card{padding:22px}
 body.tvmode h2{font-size:34px}
 body.tvmode .kpi .v{font-size:46px}
 
-@media (max-width:1100px){.occ{grid-template-columns:repeat(2,minmax(0,1fr))}.pcts,.donutcard{grid-column:1/-1}}
 @media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:no-preference){#bar{transition:width .3s linear}}
 </style>
@@ -457,9 +466,9 @@ function ruaBars(g,livreCor){
   const ruas = Object.entries(g.ruas).filter(([,r])=>r.t>=1).sort((a,b)=>+a[0]-+b[0]);
   if(!ruas.length) return '<p style="color:var(--mute)">Nenhuma rua mapeada para esta área.</p>';
   return `<div class="lg"><span><i style="background:${livreCor}"></i>Livre</span><span><i style="background:var(--cream)"></i>Ocupado</span></div>
-  <div class="rua">${ruas.map(([n,r])=>{const o=r.o/r.t*100,l=100-o;return `<div class="c"><div class="stk" title="Rua ${n}: ${fmtN.format(r.o)} ocupados de ${fmtN.format(r.t)}">
+  <div class="rua-container"><div class="rua">${ruas.map(([n,r])=>{const o=r.o/r.t*100,l=100-o;return `<div class="c"><div class="stk" title="Rua ${n}: ${fmtN.format(r.o)} ocupados de ${fmtN.format(r.t)}">
     <div class="lv" style="flex:${l};background:${livreCor};color:#fff">${l>=8?fmtP(l,1):''}</div>
-    <div class="lv oc" style="flex:${Math.max(o,2)}">${o>=8?fmtP(o,1):''}</div></div><div class="name">${n}</div></div>`}).join('')}</div>`;
+    <div class="lv oc" style="flex:${Math.max(o,2)}">${o>=8?fmtP(o,1):''}</div></div><div class="name">${n}</div></div>`}).join('')}</div></div>`;
 }
 
 function secOcup(){
@@ -469,23 +478,22 @@ function secOcup(){
   const donutItems=[{n:'Livre',v:O.total-O.ocup,c:'var(--blue)'},{n:'Ocupado',v:O.cream||'var(--cream)'}];
   const prev=basis; basis='qtd';
   const dn = donut(donutItems,fmtP(O.pct,2),'ocupação CD'); basis=prev;
-  
-  const diagHtml = (O.total === 0) ? `
-    <div class="card" style="margin-top:14px;border:1px solid var(--warn)">
-      <h3 style="color:var(--warn)">Diagnóstico de Leitura dos Dados</h3>
-      <p>Registros processados: <strong>${D.rawAddrCount}</strong></p>
-      <p>Amostra do conteúdo recebido na chave 'ocupacao':</p>
-      <pre style="background:#050b18;padding:10px;border-radius:4px;overflow-x:auto;font-size:12px;color:var(--accent)">${esc(D.sampleRaw || 'Vazio/Nulo')}</pre>
-    </div>` : '';
 
   $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos processados da chave ocupacao.</p>
-  <div class="grid occ">
-    ${box('g1','Galpão 1',O.g1)}${box('g2','Galpão 2',O.g2)}${box('','Endereços',all)}${box('','Blocados',O.bl)}
-    <div class="card donutcard"><h3>% de ocupação CD</h3><div class="donutwrap" style="justify-content:center">${dn}</div></div>
-    <div class="pcts"><div class="row"><div class="b"><small>% Galpão 1</small><strong>${fmtP(O.g1.total?O.g1.ocup/O.g1.total*100:0,2)}</strong></div><div class="b"><small>% Galpão 2</small><strong>${fmtP(O.g2.total?O.g2.ocup/O.g2.total*100:0,2)}</strong></div></div>
-      <div class="b big"><small>% Ocupação total CD</small><strong>${fmtP(O.pct,2)}</strong></div></div>
+  <div class="occ">
+    ${box('g1','Galpão 1',O.g1)}
+    ${box('g2','Galpão 2',O.g2)}
+    ${box('','Endereços',all)}
+    ${box('','Blocados',O.bl)}
+    <div class="card donutcard"><h3>% de ocupação CD</h3><div class="donutwrap">${dn}</div></div>
+    <div class="pcts">
+      <div class="row">
+        <div class="b"><small>% Galpão 1</small><strong>${fmtP(O.g1.total?O.g1.ocup/O.g1.total*100:0,2)}</strong></div>
+        <div class="b"><small>% Galpão 2</small><strong>${fmtP(O.g2.total?O.g2.ocup/O.g2.total*100:0,2)}</strong></div>
+      </div>
+      <div class="b big"><small>% Ocupação total CD</small><strong>${fmtP(O.pct,2)}</strong></div>
+    </div>
   </div>
-  ${diagHtml}
   <div class="card" style="margin-top:14px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'var(--blue)')}</div>
   <div class="card" style="margin-top:14px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'var(--navy)')}</div>
   <p class="foot">Todas as ruas ativas são exibidas nos gráficos e contam nos totais.</p>`;
