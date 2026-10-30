@@ -57,7 +57,7 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
 .donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center}
-.donut{width:220px;height:220px;flex:none}
+.donut{width:200px;height:200px;flex:none}
 .donut text{fill:var(--text);font-family:var(--f-num)}
 .legend{display:flex;flex-direction:column;gap:10px;min-width:210px;flex:1}
 .legend div{display:flex;align-items:center;gap:10px;font-size:15px}
@@ -74,12 +74,12 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .bar{display:block;height:8px;background:#162a58;border-radius:4px;min-width:70px;margin-top:6px}
 .bar b{display:block;height:100%;border-radius:4px}
 
-/* OCUPAÇÃO - GRID E CONTRASTE CORRIGIDOS */
+/* CORREÇÃO DO LAYOUT DE OCUPAÇÃO */
 .occ {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 .mini { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .mini .b { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 10px; text-align: center; }
@@ -92,8 +92,8 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100%;
+  justify-content: flex-start;
+  padding: 16px;
 }
 
 .pcts { display: flex; flex-direction: column; gap: 12px; justify-content: center; min-width: 0; }
@@ -114,7 +114,7 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .lg i { display: inline-block; width: 14px; height: 14px; border-radius: 2px; margin-right: 6px; vertical-align: -2px; }
 .foot { color: var(--mute); font-size: 13px; margin-top: 18px; }
 
-/* BARRAS DE PROPORÇÃO DERRUBADA / SORTER */
+/* BARRAS DERRUBADA / SORTER */
 .sep-progress { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
 .sep-item { display: flex; flex-direction: column; gap: 6px; }
 .sep-header { display: flex; justify-content: space-between; font-size: 15px; font-weight:500; }
@@ -303,7 +303,7 @@ async function load(){
 function donut(items,center,sub){
   const tot = items.reduce((s,i)=>s+i.v,0)||1, R=70, C=2*Math.PI*R; let off=0, segs='';
   items.forEach(i=>{ const L=C*i.v/tot; if(L>0) segs+=`<circle r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="30" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)"><title>${esc(i.n)}: ${fmtV(i.v)} (${fmtP(i.v/tot*100)})</title></circle>`; off+=L; });
-  return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle r="${R}" cx="100" cy="100" fill="none" stroke="#10224a" stroke-width="30"/>${segs}
+  return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle r="${R}" cx="100" cy="100" fill="none" stroke="#162e5c" stroke-width="30"/>${segs}
     <text x="100" y="${sub?98:106}" text-anchor="middle" font-size="${String(center).length>5?24:30}" font-weight="700">${center}</text>${sub?`<text x="100" y="122" text-anchor="middle" font-size="13" style="fill:var(--mute)">${sub}</text>`:''}</svg>`;
 }
 
@@ -459,16 +459,16 @@ function ruaBars(g,livreCor){
     <div class="lv oc" style="flex:${Math.max(o,2)}">${o>=8?fmtP(o,1):''}</div></div><div class="name">${n}</div></div>`}).join('')}</div></div>`;
 }
 
-/* FUNÇÃO SEC_OCUP CORRIGIDA */
+/* FUNÇÃO SEC_OCUP COM A COR DO DONUT REPARADA (#ffc400 e #4285f4) */
 function secOcup(){
   const O = occData(), v = o=>o.total-o.ocup;
   const box = (cls,t,o)=>`<div class="mini ${cls}"><div class="b"><small>${t}</small><strong>${fmtN.format(o.total)}</strong></div><div class="b"><small>Ocupados</small><strong>${fmtN.format(o.ocup)}</strong></div><div class="b"><small>Vazios</small><strong>${fmtN.format(v(o))}</strong></div></div>`;
   const all = {total:O.total,ocup:O.ocup};
   
-  // CORES DO DONUT COM ELEVADO CONTRASTE VISÍVEL:
+  // CORES EXPLÍCITAS CORRIGIDAS:
   const donutItems = [
-    { n: 'Livre', v: O.total - O.ocup, c: 'var(--blue)' },
-    { n: 'Ocupado', v: O.ocup, c: 'var(--accent)' }
+    { n: 'Livre', v: O.total - O.ocup, c: '#4285f4' },
+    { n: 'Ocupado', v: O.ocup, c: '#ffc400' }
   ];
 
   const prev = basis; 
@@ -494,8 +494,8 @@ function secOcup(){
       <div class="b big"><small>% Ocupação total CD</small><strong>${fmtP(O.pct,2)}</strong></div>
     </div>
   </div>
-  <div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'var(--blue)')}</div>
-  <div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'var(--navy)')}</div>
+  <div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'#4285f4')}</div>
+  <div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'#3a5db0')}</div>
   <p class="foot">Todas as ruas ativas são exibidas nos gráficos e contam nos totais.</p>`;
 }
 
