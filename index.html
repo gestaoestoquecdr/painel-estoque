@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-/* Layout: barra superior com abas. Visual escuro azul-marinho com amarelo de destaque. */
 :root{
   color-scheme:dark;
   --bg:#071022; --panel:#0c1a38; --panel2:#10224a; --line:#1b2f5e;
@@ -19,7 +18,6 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-/* Fonte base aumentada para 17px */
 body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:17px;line-height:1.4;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 28px}
 button{font:inherit;color:inherit;cursor:pointer}
@@ -66,7 +64,6 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 .legend i{width:12px;height:12px;border-radius:2px;flex:none}
 .legend span:last-child{margin-left:auto;font-family:var(--f-num);font-weight:600;white-space:nowrap}
 
-/* TABELAS COM FONTE AMPLIADA */
 .tw{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:16px}
 th{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
@@ -77,11 +74,12 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .bar{display:block;height:8px;background:#162a58;border-radius:4px;min-width:70px;margin-top:6px}
 .bar b{display:block;height:100%;border-radius:4px}
 
-/* OCUPAÇÃO */
+/* OCUPAÇÃO - GRID E CONTRASTE CORRIGIDOS */
 .occ {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
+  align-items: start;
 }
 .mini { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .mini .b { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 10px; text-align: center; }
@@ -89,6 +87,14 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .mini .b strong { font-family: var(--f-num); font-size: 28px; line-height: 1.1; }
 .mini.g1 .b { border-left: 3px solid var(--blue); border-right: 3px solid var(--blue); }
 .mini.g2 .b { border-left: 3px solid var(--navy); border-right: 3px solid var(--navy); }
+
+.donutcard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
 
 .pcts { display: flex; flex-direction: column; gap: 12px; justify-content: center; min-width: 0; }
 .pcts .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -146,15 +152,13 @@ body.tvmode .kpi .v{font-size:52px}
 <section id="s-carteira"></section>
 
 <script>
-/* ============ CONFIGURAÇÃO ============ */
 const CONFIG = {
   DATA_URL: "./dados.json",
   ESTOQUE_FISICO: "ESTOQUE REVENDA",
   ATUALIZAR_MIN: 5,
   TV_SEGUNDOS: 20
 };
-</script>
-<script>
+
 const $ = s => document.querySelector(s);
 const fmtN = new Intl.NumberFormat('pt-BR',{maximumFractionDigits:0});
 const fmtP = (v,d=1)=> (isFinite(v)?v:0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d})+'%';
@@ -172,7 +176,6 @@ let basis = 'custo';
 const val = r => basis==='custo' ? r.custo : r.qtd;
 const fmtV = v => basis==='custo' ? brlShort(v) : fmtN.format(v);
 
-/* ---------- Classificação ---------- */
 const SHELF_CLASS = {'0 a 5 dias':'crit','06 a 15 dias':'crit','16 a 30 dias':'warn','31 a 60 dias':'warn','61 a 90 dias':'ok','Acima de 90 dias':'ok','Sem data de Validade':'none'};
 const AGING_CLASS = {'0 a 15 dias':'ok','16 a 30 dias':'ok','30 a 60 dias':'warn','Acima de 60 dias':'crit'};
 const CLS = {ok:{n:'Saudável',c:'var(--ok)'},warn:{n:'Atenção',c:'var(--warn)'},crit:{n:'Crítico',c:'var(--crit)'},none:{n:'Sem validade',c:'var(--none)'}};
@@ -203,19 +206,16 @@ function extractList(source) {
   return [];
 }
 
-/* ---------- Carregamento ---------- */
 async function fromJsonFile(){
   const res = await fetch(CONFIG.DATA_URL + '?t=' + Date.now(), { cache: 'no-store' });
-  if (!res.ok) throw new Error('Não foi possível carregar o arquivo dados.json (HTTP ' + res.status + ').');
+  if (!res.ok) throw new Error('Não foi possível carregar dados.json (HTTP ' + res.status + ').');
   const data = await res.json();
   
   const jsonKeys = Object.keys(data);
   let rawAddr = extractList(data.ocupacao);
-  
   if (rawAddr.length === 0) {
     for (let k of jsonKeys) {
-      const kNorm = k.toLowerCase();
-      if (kNorm.includes('1682') || kNorm.includes('enderec')) {
+      if (k.toLowerCase().includes('1682') || k.toLowerCase().includes('enderec')) {
         rawAddr = extractList(data[k]);
         if (rawAddr.length > 0) break;
       }
@@ -224,15 +224,6 @@ async function fromJsonFile(){
   
   const rawRows = extractList(data.dados1926);
   const rawCart = extractList(data.carteira || data.dados1666 || data["1666 - Carteira de Pedido"]);
-  
-  let sampleKeys = [];
-  let sampleRaw = '';
-  if (rawAddr.length > 0 && rawAddr[0]) {
-    sampleKeys = Object.keys(rawAddr[0]);
-    sampleRaw = JSON.stringify(rawAddr[0]).slice(0, 150);
-  } else if (data.ocupacao) {
-    sampleRaw = typeof data.ocupacao === 'string' ? data.ocupacao.slice(0, 150) : JSON.stringify(data.ocupacao).slice(0, 150);
-  }
   
   const rows = rawRows.map(o => ({
     est: getProp(o, ["Local de Estoque"]).trim(),
@@ -252,21 +243,17 @@ async function fromJsonFile(){
     const ruaVal = getProp(o, ["Rua", "RUA"]);
     const endStr = getProp(o, ["Endereço", "Endereco", "Endereço Logístico", "Endereco Logistico"]);
     
-    const isAtivo = statusVal.toLowerCase() === 'ativo' || statusVal.toLowerCase() === 'ativa' || statusVal === '';
-    const isOcupado = ocupVal.toLowerCase() === 'ocupado';
-    
     return {
       end: endStr,
       area: areaVal,
       rua: +ruaVal || 0,
-      occ: isOcupado,
-      ativo: isAtivo
+      occ: ocupVal.toLowerCase() === 'ocupado',
+      ativo: statusVal.toLowerCase() === 'ativo' || statusVal.toLowerCase() === 'ativa' || statusVal === ''
     };
   }).filter(a => a.ativo);
 
   const cart = rawCart.map(o => {
     let dtRes = getProp(o, ["Geração Reserva", "Geracao Reserva"]);
-    let rawDateStr = dtRes;
     if (dtRes && dtRes.includes('T')) dtRes = dtRes.split('T')[0];
     if (dtRes && dtRes.includes(' ')) dtRes = dtRes.split(' ')[0];
     let formattedDt = dtRes;
@@ -279,7 +266,6 @@ async function fromJsonFile(){
       dept: getProp(o, ["Departamento CD", "Departamento"]) || "Outros",
       tipoSep: getProp(o, ["Tipo de separação", "Tipo de separacao", "Tipo Separação"]) || "Não informado",
       gerReserva: formattedDt || "Sem data",
-      rawDate: rawDateStr,
       qtdPedida: +(getProp(o, ["Qtd Pedida", "Qtd. Pedida"]) || 0),
       qtdSeparada: +(getProp(o, ["Qtd Separada", "Qtd. Separada"]) || 0),
       valorTotal: +(getProp(o, ["Valor Total", "Valor"]) || 0),
@@ -293,7 +279,7 @@ async function fromJsonFile(){
     timeStr = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   }
 
-  return { rows, addr, cart, sampleKeys, sampleRaw, rawAddrCount: rawAddr.length, jsonKeys, live: true, when: 'Atualizado às ' + timeStr };
+  return { rows, addr, cart, live: true, when: 'Atualizado às ' + timeStr };
 }
 
 function aviso(msg){
@@ -314,20 +300,20 @@ async function load(){
   }
 }
 
-/* ---------- Componentes ---------- */
 function donut(items,center,sub){
   const tot = items.reduce((s,i)=>s+i.v,0)||1, R=70, C=2*Math.PI*R; let off=0, segs='';
   items.forEach(i=>{ const L=C*i.v/tot; if(L>0) segs+=`<circle r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="30" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)"><title>${esc(i.n)}: ${fmtV(i.v)} (${fmtP(i.v/tot*100)})</title></circle>`; off+=L; });
-  return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle r="${R}" cx="100" cy="100" fill="none" stroke="#12244b" stroke-width="30"/>${segs}
+  return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle r="${R}" cx="100" cy="100" fill="none" stroke="#10224a" stroke-width="30"/>${segs}
     <text x="100" y="${sub?98:106}" text-anchor="middle" font-size="${String(center).length>5?24:30}" font-weight="700">${center}</text>${sub?`<text x="100" y="122" text-anchor="middle" font-size="13" style="fill:var(--mute)">${sub}</text>`:''}</svg>`;
 }
+
 function legend(items){
   const tot = items.reduce((s,i)=>s+i.v,0)||1;
   return `<div class="legend">${items.map(i=>`<div><i style="background:${i.c}"></i><span>${esc(i.n)}</span><span>${fmtV(i.v)} · ${fmtP(i.v/tot*100)}</span></div>`).join('')}</div>`;
 }
+
 const kpi = (l,v,s,cls='') => `<div class="card kpi ${cls}"><h3>${l}</h3><div class="v">${v}</div><div class="s">${s||''}</div></div>`;
 
-/* ---------- Seções ---------- */
 const ESTCOL = ['#ffc400','#4285f4','#35d49a','#c084fc','#ff7a9c','#ffb020','#3a5db0'];
 
 function secGeral(){
@@ -473,13 +459,22 @@ function ruaBars(g,livreCor){
     <div class="lv oc" style="flex:${Math.max(o,2)}">${o>=8?fmtP(o,1):''}</div></div><div class="name">${n}</div></div>`}).join('')}</div></div>`;
 }
 
+/* FUNÇÃO SEC_OCUP CORRIGIDA */
 function secOcup(){
   const O = occData(), v = o=>o.total-o.ocup;
   const box = (cls,t,o)=>`<div class="mini ${cls}"><div class="b"><small>${t}</small><strong>${fmtN.format(o.total)}</strong></div><div class="b"><small>Ocupados</small><strong>${fmtN.format(o.ocup)}</strong></div><div class="b"><small>Vazios</small><strong>${fmtN.format(v(o))}</strong></div></div>`;
   const all = {total:O.total,ocup:O.ocup};
-  const donutItems=[{n:'Livre',v:O.total-O.ocup,c:'var(--blue)'},{n:'Ocupado',v:O.cream||'var(--cream)'}];
-  const prev=basis; basis='qtd';
-  const dn = donut(donutItems,fmtP(O.pct,2),'ocupação CD'); basis=prev;
+  
+  // CORES DO DONUT COM ELEVADO CONTRASTE VISÍVEL:
+  const donutItems = [
+    { n: 'Livre', v: O.total - O.ocup, c: 'var(--blue)' },
+    { n: 'Ocupado', v: O.ocup, c: 'var(--accent)' }
+  ];
+
+  const prev = basis; 
+  basis = 'qtd';
+  const dn = donut(donutItems, fmtP(O.pct, 2), 'ocupação CD'); 
+  basis = prev;
 
   $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos processados da chave ocupacao.</p>
   <div class="occ">
@@ -487,7 +482,10 @@ function secOcup(){
     ${box('g2','Galpão 2',O.g2)}
     ${box('','Endereços',all)}
     ${box('','Blocados',O.bl)}
-    <div class="card donutcard"><h3>% de ocupação CD</h3><div class="donutwrap">${dn}</div></div>
+    <div class="card donutcard">
+      <h3>% de ocupação CD</h3>
+      <div class="donutwrap">${dn}</div>
+    </div>
     <div class="pcts">
       <div class="row">
         <div class="b"><small>% Galpão 1</small><strong>${fmtP(O.g1.total?O.g1.ocup/O.g1.total*100:0,2)}</strong></div>
@@ -501,7 +499,6 @@ function secOcup(){
   <p class="foot">Todas as ruas ativas são exibidas nos gráficos e contam nos totais.</p>`;
 }
 
-/* ---------- SEÇÃO: CARTEIRA DE PEDIDO ---------- */
 function secCarteira(){
   const C = D.cart || [];
   if (!C.length) {
@@ -514,7 +511,6 @@ function secCarteira(){
   const totValor = C.reduce((s,r) => s + r.valorTotal, 0);
   const pctAtendimento = totPedida ? (totSeparada / totPedida) * 100 : 0;
 
-  // FILTRA EXCLUSIVAMENTE OS REGISTROS PENDENTES OU EM PRODUÇÃO (Status != "Separado")
   const datasPendentesSet = new Set();
   C.forEach(r => {
     if (r.tipoSep !== 'Separado') {
@@ -524,7 +520,6 @@ function secCarteira(){
     }
   });
 
-  // Quantidade de datas pendentes não concluídas
   const qtdDatasPendentes = datasPendentesSet.size;
   const diasAtraso = qtdDatasPendentes; 
   const isCritico = diasAtraso >= 2;
@@ -533,7 +528,6 @@ function secCarteira(){
   const kpiClassAtraso = isCritico ? 'hl' : '';
   const valStyleAtraso = isCritico ? 'color:var(--crit); font-weight:800;' : 'color:var(--warn);';
 
-  // Agrupamento por Tipo de separação
   const bySep = {};
   C.forEach(r => {
     const k = r.tipoSep;
@@ -544,7 +538,6 @@ function secCarteira(){
   });
   const sepRows = Object.entries(bySep).sort((a,b) => (basis==='custo' ? b[1].valor - a[1].valor : b[1].qtd - a[1].qtd));
 
-  // Agrupamento por Destinatário (Loja / Destino)
   const byDest = {};
   C.forEach(r => {
     const k = r.dest || "Sem Destino";
@@ -555,7 +548,6 @@ function secCarteira(){
   });
   const destRows = Object.entries(byDest).sort((a,b) => b[1].pedida - a[1].pedida);
 
-  // Agrupamento por Geração Reserva
   const byRes = {};
   C.forEach(r => {
     const k = r.gerReserva;
@@ -565,7 +557,6 @@ function secCarteira(){
   });
   const resRows = Object.entries(byRes).sort((a,b) => a[0].localeCompare(b[0]));
 
-  // Agrupamento por Departamento
   const byDept = {};
   C.forEach(r => {
     const k = r.dept;
@@ -580,7 +571,6 @@ function secCarteira(){
     c: ESTCOL[i % ESTCOL.length]
   }));
 
-  // Métricas Derrubada vs Sorter
   const prodDer = bySep["Produção Derrubada"] || {qtd:0, valor:0};
   const prodSor = bySep["Produção Sorter"] || {qtd:0, valor:0};
   const pendDer = bySep["Pendente Derrubada"] || {qtd:0, valor:0};
@@ -606,7 +596,6 @@ function secCarteira(){
   <h2>Carteira de Pedido</h2>
   <p class="sub">Visão consolidada da carteira, SLAs de atraso, tipos de separação e destinos.</p>
 
-  <!-- KPIS PRINCIPAIS -->
   <div class="grid kpis">
     ${kpi('Atraso Separação (SLA)', `<span style="${valStyleAtraso}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso)}
     ${kpi('Qtd Pedida Total', fmtN.format(totPedida), fmtN.format(C.length) + ' itens na carteira')}
@@ -614,9 +603,7 @@ function secCarteira(){
     ${kpi('Status Separação', fmtP(pctAtendimento), fmtN.format(totPedida - totSeparada) + ' pendentes')}
   </div>
 
-  <!-- SEÇÃO SUPERIOR: TIPO DE SEPARAÇÃO E GRÁFICOS DERRUBADA VS. SORTER -->
   <div class="grid two" style="margin-top:16px">
-    <!-- Tabela Tipo de Separação -->
     <div class="card">
       <h3>Tipo de separação</h3>
       <div class="tw">
@@ -637,9 +624,7 @@ function secCarteira(){
       </div>
     </div>
 
-    <!-- Cards Produção e Pendente (Derrubada vs Sorter) -->
     <div style="display:flex; flex-direction:column; gap:16px;">
-      <!-- Card Produção -->
       <div class="card">
         <h3>Produção (Derrubada vs. Sorter)</h3>
         <div style="font-size:26px; font-weight:700; margin-bottom:10px;" class="num">
@@ -667,7 +652,6 @@ function secCarteira(){
         </div>
       </div>
 
-      <!-- Card Pendente -->
       <div class="card">
         <h3>Pendente (Derrubada vs. Sorter)</h3>
         <div style="font-size:26px; font-weight:700; margin-bottom:10px;" class="num">
@@ -697,9 +681,7 @@ function secCarteira(){
     </div>
   </div>
 
-  <!-- SEÇÃO INFERIOR: SEPARAÇÃO POR DESTINATÁRIO, GERAÇÃO RESERVA E DEPARTAMENTO CD -->
   <div class="grid two" style="margin-top:16px">
-    <!-- Tabela Separação por Destinatário / Loja Destino -->
     <div class="card">
       <h3>Separação por Destinatário (Destino)</h3>
       <div class="tw">
@@ -720,7 +702,6 @@ function secCarteira(){
     </div>
 
     <div style="display:flex; flex-direction:column; gap:16px;">
-      <!-- Tabela Geração Reserva -->
       <div class="card">
         <h3>Geração Reserva</h3>
         <div class="tw">
@@ -740,7 +721,6 @@ function secCarteira(){
         </div>
       </div>
 
-      <!-- Gráfico Departamento CD -->
       <div class="card">
         <h3>Participação por Departamento CD</h3>
         <div class="donutwrap">
@@ -763,7 +743,6 @@ function render(){
 const D_SF = ()=>['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'];
 const D_AF = ()=>['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'];
 
-/* ---------- Abas, Medida e Modo TV Resiliente ---------- */
 const TABS = [
   ['s-geral','Visão geral'],
   ['s-shelf','Shelf life'],
