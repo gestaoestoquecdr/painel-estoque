@@ -128,6 +128,7 @@ body.tvmode .kpi .v{font-size:46px}
 <section id="s-shelf"></section>
 <section id="s-aging"></section>
 <section id="s-ocup"></section>
+<section id="s-carteira"></section>
 
 <script>
 /* ============ CONFIGURAÇÃO ============ */
@@ -207,6 +208,7 @@ async function fromJsonFile(){
   }
   
   const rawRows = extractList(data.dados1926);
+  const rawCart = extractList(data.carteira || data.dados1666 || data["1666 - Carteira de Pedido"]);
   
   let sampleKeys = [];
   let sampleRaw = '';
@@ -247,13 +249,33 @@ async function fromJsonFile(){
     };
   }).filter(a => a.ativo);
 
+  const cart = rawCart.map(o => {
+    let dtRes = getProp(o, ["Geração Reserva", "Geracao Reserva"]);
+    if (dtRes && dtRes.includes('T')) dtRes = dtRes.split('T')[0];
+    if (dtRes && dtRes.includes(' ')) dtRes = dtRes.split(' ')[0];
+    if (dtRes && dtRes.includes('-')) {
+      const parts = dtRes.split('-');
+      if (parts.length === 3) dtRes = parts[2] + '.' + parts[1];
+    }
+    return {
+      dest: getProp(o, ["Destinatário", "Destinatario", "Loja"]),
+      dept: getProp(o, ["Departamento CD", "Departamento"]) || "Outros",
+      tipoSep: getProp(o, ["Tipo de separação", "Tipo de separacao", "Tipo Separação"]) || "Não informado",
+      gerReserva: dtRes || "Sem data",
+      qtdPedida: +(getProp(o, ["Qtd Pedida", "Qtd. Pedida"]) || 0),
+      qtdSeparada: +(getProp(o, ["Qtd Separada", "Qtd. Separada"]) || 0),
+      valorTotal: +(getProp(o, ["Valor Total", "Valor"]) || 0),
+      lote: getProp(o, ["Nº do lote", "Lote"])
+    };
+  });
+
   let timeStr = 'JSON';
   if (data.ultimaAtualizacao) {
     const dt = new Date(data.ultimaAtualizacao);
     timeStr = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   }
 
-  return { rows, addr, sampleKeys, sampleRaw, rawAddrCount: rawAddr.length, jsonKeys, live: true, when: 'Atualizado às ' + timeStr };
+  return { rows, addr, cart, sampleKeys, sampleRaw, rawAddrCount: rawAddr.length, jsonKeys, live: true, when: 'Atualizado às ' + timeStr };
 }
 
 function aviso(msg){
@@ -288,7 +310,7 @@ function legend(items){
 const kpi = (l,v,s,cls='') => `<div class="card kpi ${cls}"><h3>${l}</h3><div class="v">${v}</div><div class="s">${s||''}</div></div>`;
 
 /* ---------- Seções ---------- */
-const ESTCOL = ['#ffc400','#4285f4','#35d49a','#c084fc','#ff7a9c'];
+const ESTCOL = ['#ffc400','#4285f4','#35d49a','#c084fc','#ff7a9c','#ffb020','#3a5db0'];
 
 function secGeral(){
   const R = D.rows, by = {};
@@ -462,18 +484,174 @@ function secOcup(){
   <p class="foot">Todas as ruas ativas são exibidas nos gráficos e contam nos totais.</p>`;
 }
 
+/* ---------- NOVA SEÇÃO: CARTEIRA DE PEDIDO ---------- */
+function secCarteira(){
+  const C = D.cart || [];
+  if (!C.length) {
+    $('#s-carteira').innerHTML = `<h2>Carteira de Pedido</h2><p class="sub">Nenhum dado encontrado na chave 'carteira' do JSON.</p>`;
+    return;
+  }
+
+  const totPedida = C.reduce((s,r) => s + r.qtdPedida, 0);
+  const totSeparada = C.reduce((s,r) => s + r.qtdSeparada, 0);
+  const totValor = C.reduce((s,r) => s + r.valorTotal, 0);
+  const pctAtendimento = totPedida ? (totSeparada / totPedida) * 100 : 0;
+
+  // Agrupamento por Geração Reserva
+  const byRes = {};
+  C.forEach(r => {
+    const k = r.gerReserva;
+    byRes[k] = byRes[k] || {qtd:0, valor:0};
+    byRes[k].qtd += r.qtdPedida;
+    byRes[k].valor += r.valorTotal;
+  });
+  const resRows = Object.entries(byRes).sort((a,b) => a[0].localeCompare(b[0]));
+
+  // Agrupamento por Tipo de separação
+  const bySep = {};
+  C.forEach(r => {
+    const k = r.tipoSep;
+    bySep[k] = bySep[k] || {qtd:0, valor:0, lotes: new Set()};
+    bySep[k].qtd += r.qtdPedida;
+    bySep[k].valor += r.valorTotal;
+    if (r.lote) bySep[k].lotes.add(r.lote);
+  });
+  const sepRows = Object.entries(bySep).sort((a,b) => (basis==='custo' ? b[1].valor - a[1].valor : b[1].qtd - a[1].qtd));
+
+  // Agrupamento por Departamento
+  const byDept = {};
+  C.forEach(r => {
+    const k = r.dept;
+    byDept[k] = byDept[k] || {qtd:0, valor:0};
+    byDept[k].qtd += r.qtdPedida;
+    byDept[k].valor += r.valorTotal;
+  });
+  const deptRows = Object.entries(byDept).sort((a,b) => (basis==='custo' ? b[1].valor - a[1].valor : b[1].qtd - a[1].qtd));
+  const deptItems = deptRows.map(([n,o],i) => ({
+    n: n,
+    v: basis==='custo' ? o.valor : o.qtd,
+    c: ESTCOL[i % ESTCOL.length]
+  }));
+
+  // Agrupamento por Destinatário (Loja / Destino)
+  const byDest = {};
+  C.forEach(r => {
+    const k = r.dest || "Sem Destino";
+    byDest[k] = byDest[k] || {pedida:0, separada:0, valor:0};
+    byDest[k].pedida += r.qtdPedida;
+    byDest[k].separada += r.qtdSeparada;
+    byDest[k].valor += r.valorTotal;
+  });
+  const destRows = Object.entries(byDest).sort((a,b) => b[1].pedida - a[1].pedida);
+
+  const centerLabel = basis==='custo' ? brlShort(totValor).replace('R$ ','') : fmtN.format(totPedida);
+  const subLabel = basis==='custo' ? 'valor carteira' : 'qtd. pedida';
+
+  $('#s-carteira').innerHTML = `
+  <h2>Carteira de Pedido</h2>
+  <p class="sub">Visão consolidada da carteira, tipos de separação e destinos.</p>
+
+  <div class="grid kpis">
+    ${kpi('Qtd Pedida Total', fmtN.format(totPedida), fmtN.format(C.length) + ' itens na carteira', 'hl')}
+    ${kpi('Valor Total Carteira', brlShort(totValor), brl(totValor))}
+    ${kpi('Qtd Separada Total', fmtN.format(totSeparada), fmtP(pctAtendimento) + ' atendido')}
+    ${kpi('Status Separação', fmtP(pctAtendimento), fmtN.format(totPedida - totSeparada) + ' pendentes')}
+  </div>
+
+  <div class="grid two" style="margin-top:14px">
+    <!-- Tabela Geração Reserva -->
+    <div class="card">
+      <h3>Geração Reserva</h3>
+      <div class="tw">
+        <table>
+          <tr><th>Data Reserva</th><th class="r">Qtd Pedida</th><th class="r">Valor Total</th><th class="r">% Representada</th></tr>
+          ${resRows.map(([dt, o]) => {
+            const vBase = basis==='custo' ? o.valor : o.qtd;
+            const totB = basis==='custo' ? totValor : totPedida;
+            return `<tr>
+              <td><b>${esc(dt)}</b></td>
+              <td class="r">${fmtN.format(o.qtd)}</td>
+              <td class="r">${brlShort(o.valor)}</td>
+              <td class="r">${fmtP(totB ? (vBase/totB)*100 : 0)}</td>
+            </tr>`;
+          }).join('')}
+        </table>
+      </div>
+    </div>
+
+    <!-- Gráfico Departamento CD -->
+    <div class="card">
+      <h3>Participação por Departamento CD</h3>
+      <div class="donutwrap">
+        ${donut(deptItems, centerLabel, subLabel)}
+        ${legend(deptItems)}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid two" style="margin-top:14px">
+    <!-- Tabela Tipo de Separação -->
+    <div class="card">
+      <h3>Tipo de separação</h3>
+      <div class="tw">
+        <table>
+          <tr><th>Tipo</th><th class="r">Qtd Pedida</th><th class="r">Valor Total</th><th class="r">% Representada</th><th class="r">Nº do lote</th></tr>
+          ${sepRows.map(([tipo, o]) => {
+            const vBase = basis==='custo' ? o.valor : o.qtd;
+            const totB = basis==='custo' ? totValor : totPedida;
+            return `<tr>
+              <td><b>${esc(tipo)}</b></td>
+              <td class="r">${fmtN.format(o.qtd)}</td>
+              <td class="r">${brlShort(o.valor)}</td>
+              <td class="r">${fmtP(totB ? (vBase/totB)*100 : 0)}</td>
+              <td class="r">${fmtN.format(o.lotes.size)}</td>
+            </tr>`;
+          }).join('')}
+        </table>
+      </div>
+    </div>
+
+    <!-- Tabela Separação por Destinatário / Loja Destino -->
+    <div class="card">
+      <h3>Separação por Destinatário (Destino)</h3>
+      <div class="tw">
+        <table>
+          <tr><th>Destinatário</th><th class="r">Qtd Pedida</th><th class="r">Qtd Separada</th><th class="r">Valor Total</th><th class="r">% Atend.</th></tr>
+          ${destRows.map(([dest, o]) => {
+            const pct = o.pedida ? (o.separada / o.pedida) * 100 : 0;
+            return `<tr>
+              <td><b>Loja/Destino ${esc(dest)}</b></td>
+              <td class="r">${fmtN.format(o.pedida)}</td>
+              <td class="r" style="color:var(--ok)">${fmtN.format(o.separada)}</td>
+              <td class="r">${brlShort(o.valor)}</td>
+              <td class="r">${fmtP(pct)}</td>
+            </tr>`;
+          }).join('')}
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
 function render(){
   if(!D) return;
   secGeral();
   faixaSection('#s-shelf','Shelf life · Estoque revenda','Validade dos produtos. Saudável é acima de 60 dias, atenção de 16 a 60 e crítico até 15 dias.','shelf',D_SF(),SHELF_CLASS,['0 a 5 dias','06 a 15 dias'],'Produtos mais críticos (validade até 15 dias)');
   faixaSection('#s-aging','Aging · Estoque revenda','Tempo parado, pela faixa de aging. Saudável é até 30 dias, atenção de 30 a 60 e crítico acima de 60.','aging',D_AF(),AGING_CLASS,['Acima de 60 dias'],'Itens mais antigos (aging acima de 60 dias)');
   secOcup();
+  secCarteira();
 }
 const D_SF = ()=>['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'];
 const D_AF = ()=>['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'];
 
 /* ---------- Abas, Medida e Modo TV Resiliente ---------- */
-const TABS = [['s-geral','Visão geral'],['s-shelf','Shelf life'],['s-aging','Aging'],['s-ocup','Ocupação']];
+const TABS = [
+  ['s-geral','Visão geral'],
+  ['s-shelf','Shelf life'],
+  ['s-aging','Aging'],
+  ['s-ocup','Ocupação'],
+  ['s-carteira','Carteira de Pedido']
+];
 let cur = 0;
 
 function show(i){
