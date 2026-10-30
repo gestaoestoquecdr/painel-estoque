@@ -504,41 +504,23 @@ function secCarteira(){
   const totValor = C.reduce((s,r) => s + r.valorTotal, 0);
   const pctAtendimento = totPedida ? (totSeparada / totPedida) * 100 : 0;
 
-  // CÁLCULO DE ATRASO EM DIAS (SLA/BACKLOG D-X)
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-
-  let menorDataNaoSeparada = null;
-  let datasPendentes = new Set();
-
+  // FILTRA EXCLUSIVAMENTE OS REGISTROS PENDENTES OU EM PRODUÇÃO (Status != "Separado")
+  const datasPendentesSet = new Set();
   C.forEach(r => {
-    // Se o item ainda não estiver totalmente separado
-    if (r.tipoSep !== 'Separado' && r.qtdSeparada < r.qtdPedida) {
-      if (r.rawDate) {
-        const dStr = String(r.rawDate).split('T')[0].split(' ')[0];
-        const p = dStr.split('-');
-        if (p.length === 3) {
-          const dObj = new Date(p[0], p[1] - 1, p[2]);
-          datasPendentes.add(dStr);
-          if (!menorDataNaoSeparada || dObj < menorDataNaoSeparada) {
-            menorDataNaoSeparada = dObj;
-          }
-        }
+    if (r.tipoSep !== 'Separado') {
+      if (r.gerReserva && r.gerReserva !== 'Sem data') {
+        datasPendentesSet.add(r.gerReserva);
       }
     }
   });
 
-  let diasAtraso = 0;
-  if (menorDataNaoSeparada) {
-    const diffTime = Math.abs(hoje - menorDataNaoSeparada);
-    diasAtraso = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  } else if (datasPendentes.size > 0) {
-    diasAtraso = datasPendentes.size;
-  }
-
+  // Quantidade de datas pendentes não concluídas
+  const qtdDatasPendentes = datasPendentesSet.size;
+  // D-X é exatamente a quantidade de datas de reserva pendentes de finalização
+  const diasAtraso = qtdDatasPendentes; 
   const isCritico = diasAtraso >= 2;
   const atrasoStr = `D-${diasAtraso}`;
-  const atrasoSub = isCritico ? `🚨 CRÍTICO (${datasPendentes.size} datas pendentes)` : `Dentro da Meta (${datasPendentes.size} datas pendentes)`;
+  const atrasoSub = isCritico ? `🚨 CRÍTICO (${qtdDatasPendentes} datas pendentes)` : `Dentro da Meta (${qtdDatasPendentes} datas pendentes)`;
   const kpiClassAtraso = isCritico ? 'hl' : '';
   const valStyleAtraso = isCritico ? 'color:var(--crit); font-weight:800;' : 'color:var(--warn);';
 
