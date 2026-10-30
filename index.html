@@ -75,31 +75,7 @@ td .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right
 .bar{display:block;height:6px;background:#162a58;border-radius:3px;min-width:70px;margin-top:5px}
 .bar b{display:block;height:100%;border-radius:3px}
 
-/* Ocupação */
-.occ{grid-template-columns:repeat(4,minmax(0,1fr)) minmax(0,1.5fr) minmax(0,1.3fr);align-items:stretch}
-.mini{display:flex;flex-direction:column;gap:10px;min-width:0}
-.mini .b{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 6px;text-align:center}
-.mini .b small{display:block;color:var(--mute);font-size:13px}
-.mini .b strong{font-family:var(--f-num);font-size:28px;line-height:1.1}
-.mini.g1 .b{border-left:3px solid var(--blue);border-right:3px solid var(--blue)}
-.mini.g2 .b{border-left:3px solid var(--navy);border-right:3px solid var(--navy)}
-.pcts{display:flex;flex-direction:column;gap:12px;justify-content:center;min-width:0}
-.pcts .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.pcts .b{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;min-width:0}
-.pcts .b small{display:block;color:var(--mute);font-size:13px}
-.pcts .b strong{font-family:var(--f-num);font-size:clamp(18px,1.7vw,26px)}
-.pcts .big strong{font-size:clamp(34px,4vw,54px);color:var(--accent)}
-.rua{display:flex;gap:10px;align-items:flex-end;height:210px;padding-top:6px}
-.rua .c{flex:1;min-width:0;display:flex;flex-direction:column;align-items:stretch;height:100%}
-.rua .stk{flex:1;display:flex;flex-direction:column;border-radius:3px;overflow:hidden;min-height:0}
-.rua .lv{display:flex;align-items:center;justify-content:center;font-family:var(--f-num);font-size:13px;font-weight:600;overflow:hidden;min-height:0}
-.rua .oc{background:var(--cream);color:#2b2205}
-.rua .name{text-align:center;font-family:var(--f-num);font-size:18px;font-weight:600;margin-top:6px}
-.lg{display:flex;gap:16px;font-size:13px;color:var(--mute);margin-bottom:8px;justify-content:center}
-.lg i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
-.foot{color:var(--mute);font-size:12px;margin-top:18px}
-
-/* Estilos de Barras de Proporção Derrubada / Sorter */
+/* Barras de Proporção Derrubada / Sorter */
 .sep-progress {
   display: flex;
   flex-direction: column;
@@ -279,17 +255,20 @@ async function fromJsonFile(){
 
   const cart = rawCart.map(o => {
     let dtRes = getProp(o, ["Geração Reserva", "Geracao Reserva"]);
+    let rawDateStr = dtRes;
     if (dtRes && dtRes.includes('T')) dtRes = dtRes.split('T')[0];
     if (dtRes && dtRes.includes(' ')) dtRes = dtRes.split(' ')[0];
+    let formattedDt = dtRes;
     if (dtRes && dtRes.includes('-')) {
       const parts = dtRes.split('-');
-      if (parts.length === 3) dtRes = parts[2] + '.' + parts[1];
+      if (parts.length === 3) formattedDt = parts[2] + '.' + parts[1];
     }
     return {
       dest: getProp(o, ["Destinatário", "Destinatario", "Loja"]),
       dept: getProp(o, ["Departamento CD", "Departamento"]) || "Outros",
       tipoSep: getProp(o, ["Tipo de separação", "Tipo de separacao", "Tipo Separação"]) || "Não informado",
-      gerReserva: dtRes || "Sem data",
+      gerReserva: formattedDt || "Sem data",
+      rawDate: rawDateStr,
       qtdPedida: +(getProp(o, ["Qtd Pedida", "Qtd. Pedida"]) || 0),
       qtdSeparada: +(getProp(o, ["Qtd Separada", "Qtd. Separada"]) || 0),
       valorTotal: +(getProp(o, ["Valor Total", "Valor"]) || 0),
@@ -525,6 +504,44 @@ function secCarteira(){
   const totValor = C.reduce((s,r) => s + r.valorTotal, 0);
   const pctAtendimento = totPedida ? (totSeparada / totPedida) * 100 : 0;
 
+  // CÁLCULO DE ATRASO EM DIAS (SLA/BACKLOG D-X)
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  let menorDataNaoSeparada = null;
+  let datasPendentes = new Set();
+
+  C.forEach(r => {
+    // Se o item ainda não estiver totalmente separado
+    if (r.tipoSep !== 'Separado' && r.qtdSeparada < r.qtdPedida) {
+      if (r.rawDate) {
+        const dStr = String(r.rawDate).split('T')[0].split(' ')[0];
+        const p = dStr.split('-');
+        if (p.length === 3) {
+          const dObj = new Date(p[0], p[1] - 1, p[2]);
+          datasPendentes.add(dStr);
+          if (!menorDataNaoSeparada || dObj < menorDataNaoSeparada) {
+            menorDataNaoSeparada = dObj;
+          }
+        }
+      }
+    }
+  });
+
+  let diasAtraso = 0;
+  if (menorDataNaoSeparada) {
+    const diffTime = Math.abs(hoje - menorDataNaoSeparada);
+    diasAtraso = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  } else if (datasPendentes.size > 0) {
+    diasAtraso = datasPendentes.size;
+  }
+
+  const isCritico = diasAtraso >= 2;
+  const atrasoStr = `D-${diasAtraso}`;
+  const atrasoSub = isCritico ? `🚨 CRÍTICO (${datasPendentes.size} datas pendentes)` : `Dentro da Meta (${datasPendentes.size} datas pendentes)`;
+  const kpiClassAtraso = isCritico ? 'hl' : '';
+  const valStyleAtraso = isCritico ? 'color:var(--crit); font-weight:800;' : 'color:var(--warn);';
+
   // Agrupamento por Tipo de separação
   const bySep = {};
   C.forEach(r => {
@@ -572,7 +589,7 @@ function secCarteira(){
     c: ESTCOL[i % ESTCOL.length]
   }));
 
-  // Métricas Específicas: Produção (Derrubada + Sorter) vs Pendente (Derrubada + Sorter)
+  // Métricas Derrubada vs Sorter
   const prodDer = bySep["Produção Derrubada"] || {qtd:0, valor:0};
   const prodSor = bySep["Produção Sorter"] || {qtd:0, valor:0};
   const pendDer = bySep["Pendente Derrubada"] || {qtd:0, valor:0};
@@ -596,16 +613,17 @@ function secCarteira(){
 
   $('#s-carteira').innerHTML = `
   <h2>Carteira de Pedido</h2>
-  <p class="sub">Visão consolidada da carteira, tipos de separação e destinos.</p>
+  <p class="sub">Visão consolidada da carteira, SLAs de atraso, tipos de separação e destinos.</p>
 
+  <!-- KPIS PRINCIPAIS -->
   <div class="grid kpis">
-    ${kpi('Qtd Pedida Total', fmtN.format(totPedida), fmtN.format(C.length) + ' itens na carteira', 'hl')}
+    ${kpi('Atraso Separação (SLA)', `<span style="${valStyleAtraso}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso)}
+    ${kpi('Qtd Pedida Total', fmtN.format(totPedida), fmtN.format(C.length) + ' itens na carteira')}
     ${kpi('Valor Total Carteira', brlShort(totValor), brl(totValor))}
-    ${kpi('Qtd Separada Total', fmtN.format(totSeparada), fmtP(pctAtendimento) + ' atendido')}
     ${kpi('Status Separação', fmtP(pctAtendimento), fmtN.format(totPedida - totSeparada) + ' pendentes')}
   </div>
 
-  <!-- SEÇÃO SUPERIOR: TIPO DE SEPARAÇÃO E SEPARAÇÃO POR DESTINATÁRIO -->
+  <!-- SEÇÃO SUPERIOR: TIPO DE SEPARAÇÃO E GRÁFICOS DERRUBADA VS. SORTER -->
   <div class="grid two" style="margin-top:14px">
     <!-- Tabela Tipo de Separação -->
     <div class="card">
@@ -628,6 +646,68 @@ function secCarteira(){
       </div>
     </div>
 
+    <!-- Cards Produção e Pendente (Derrubada vs Sorter) -->
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <!-- Card Produção -->
+      <div class="card">
+        <h3>Produção (Derrubada vs. Sorter)</h3>
+        <div style="font-size:24px; font-weight:700; margin-bottom:8px;" class="num">
+          ${basis==='custo' ? brlShort(prodDer.valor + prodSor.valor) : fmtN.format(prodDer.qtd + prodSor.qtd)}
+        </div>
+        <div class="sep-progress">
+          <div class="sep-item">
+            <div class="sep-header">
+              <span>Derrubada (${fmtP(prodDerPct)})</span>
+              <span class="num">${basis==='custo' ? brlShort(prodDer.valor) : fmtN.format(prodDer.qtd)}</span>
+            </div>
+            <div class="sep-bar-bg">
+              <div class="sep-bar-fill" style="width:${prodDerPct}%; background:var(--blue);"></div>
+            </div>
+          </div>
+          <div class="sep-item">
+            <div class="sep-header">
+              <span>Sorter (${fmtP(prodSorPct)})</span>
+              <span class="num">${basis==='custo' ? brlShort(prodSor.valor) : fmtN.format(prodSor.qtd)}</span>
+            </div>
+            <div class="sep-bar-bg">
+              <div class="sep-bar-fill" style="width:${prodSorPct}%; background:var(--accent);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Pendente -->
+      <div class="card">
+        <h3>Pendente (Derrubada vs. Sorter)</h3>
+        <div style="font-size:24px; font-weight:700; margin-bottom:8px;" class="num">
+          ${basis==='custo' ? brlShort(pendDer.valor + pendSor.valor) : fmtN.format(pendDer.qtd + pendSor.qtd)}
+        </div>
+        <div class="sep-progress">
+          <div class="sep-item">
+            <div class="sep-header">
+              <span>Derrubada (${fmtP(pendDerPct)})</span>
+              <span class="num">${basis==='custo' ? brlShort(pendDer.valor) : fmtN.format(pendDer.qtd)}</span>
+            </div>
+            <div class="sep-bar-bg">
+              <div class="sep-bar-fill" style="width:${pendDerPct}%; background:var(--warn);"></div>
+            </div>
+          </div>
+          <div class="sep-item">
+            <div class="sep-header">
+              <span>Sorter (${fmtP(pendSorPct)})</span>
+              <span class="num">${basis==='custo' ? brlShort(pendSor.valor) : fmtN.format(pendSor.qtd)}</span>
+            </div>
+            <div class="sep-bar-bg">
+              <div class="sep-bar-fill" style="width:${pendSorPct}%; background:var(--crit);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEÇÃO INFERIOR: SEPARAÇÃO POR DESTINATÁRIO, GERAÇÃO RESERVA E DEPARTAMENTO CD -->
+  <div class="grid two" style="margin-top:14px">
     <!-- Tabela Separação por Destinatário / Loja Destino -->
     <div class="card">
       <h3>Separação por Destinatário (Destino)</h3>
@@ -647,95 +727,35 @@ function secCarteira(){
         </table>
       </div>
     </div>
-  </div>
 
-  <!-- CARDS VISUAIS: DERRUBADA vs. SORTER (PRODUÇÃO E PENDENTE) -->
-  <div class="grid two" style="margin-top:14px">
-    <!-- Card Produção -->
-    <div class="card">
-      <h3>Produção (Derrubada vs. Sorter)</h3>
-      <div style="font-size:24px; font-weight:700; margin-bottom:12px;" class="num">
-        ${basis==='custo' ? brlShort(prodDer.valor + prodSor.valor) : fmtN.format(prodDer.qtd + prodSor.qtd)}
-      </div>
-      <div class="sep-progress">
-        <div class="sep-item">
-          <div class="sep-header">
-            <span>Derrubada (${fmtP(prodDerPct)})</span>
-            <span class="num">${basis==='custo' ? brlShort(prodDer.valor) : fmtN.format(prodDer.qtd)}</span>
-          </div>
-          <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${prodDerPct}%; background:var(--blue);"></div>
-          </div>
-        </div>
-        <div class="sep-item">
-          <div class="sep-header">
-            <span>Sorter (${fmtP(prodSorPct)})</span>
-            <span class="num">${basis==='custo' ? brlShort(prodSor.valor) : fmtN.format(prodSor.qtd)}</span>
-          </div>
-          <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${prodSorPct}%; background:var(--accent);"></div>
-          </div>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <!-- Tabela Geração Reserva -->
+      <div class="card">
+        <h3>Geração Reserva</h3>
+        <div class="tw">
+          <table>
+            <tr><th>Data Reserva</th><th class="r">Qtd Pedida</th><th class="r">Valor Total</th><th class="r">% Representada</th></tr>
+            ${resRows.map(([dt, o]) => {
+              const vBase = basis==='custo' ? o.valor : o.qtd;
+              const totB = basis==='custo' ? totValor : totPedida;
+              return `<tr>
+                <td><b>${esc(dt)}</b></td>
+                <td class="r">${fmtN.format(o.qtd)}</td>
+                <td class="r">${brlShort(o.valor)}</td>
+                <td class="r">${fmtP(totB ? (vBase/totB)*100 : 0)}</td>
+              </tr>`;
+            }).join('')}
+          </table>
         </div>
       </div>
-    </div>
 
-    <!-- Card Pendente -->
-    <div class="card">
-      <h3>Pendente (Derrubada vs. Sorter)</h3>
-      <div style="font-size:24px; font-weight:700; margin-bottom:12px;" class="num">
-        ${basis==='custo' ? brlShort(pendDer.valor + pendSor.valor) : fmtN.format(pendDer.qtd + pendSor.qtd)}
-      </div>
-      <div class="sep-progress">
-        <div class="sep-item">
-          <div class="sep-header">
-            <span>Derrubada (${fmtP(pendDerPct)})</span>
-            <span class="num">${basis==='custo' ? brlShort(pendDer.valor) : fmtN.format(pendDer.qtd)}</span>
-          </div>
-          <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${pendDerPct}%; background:var(--warn);"></div>
-          </div>
+      <!-- Gráfico Departamento CD -->
+      <div class="card">
+        <h3>Participação por Departamento CD</h3>
+        <div class="donutwrap">
+          ${donut(deptItems, centerLabel, subLabel)}
+          ${legend(deptItems)}
         </div>
-        <div class="sep-item">
-          <div class="sep-header">
-            <span>Sorter (${fmtP(pendSorPct)})</span>
-            <span class="num">${basis==='custo' ? brlShort(pendSor.valor) : fmtN.format(pendSor.qtd)}</span>
-          </div>
-          <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${pendSorPct}%; background:var(--crit);"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SEÇÃO INFERIOR: GERAÇÃO RESERVA E DEPARTAMENTO CD -->
-  <div class="grid two" style="margin-top:14px">
-    <!-- Tabela Geração Reserva -->
-    <div class="card">
-      <h3>Geração Reserva</h3>
-      <div class="tw">
-        <table>
-          <tr><th>Data Reserva</th><th class="r">Qtd Pedida</th><th class="r">Valor Total</th><th class="r">% Representada</th></tr>
-          ${resRows.map(([dt, o]) => {
-            const vBase = basis==='custo' ? o.valor : o.qtd;
-            const totB = basis==='custo' ? totValor : totPedida;
-            return `<tr>
-              <td><b>${esc(dt)}</b></td>
-              <td class="r">${fmtN.format(o.qtd)}</td>
-              <td class="r">${brlShort(o.valor)}</td>
-              <td class="r">${fmtP(totB ? (vBase/totB)*100 : 0)}</td>
-            </tr>`;
-          }).join('')}
-        </table>
-      </div>
-    </div>
-
-    <!-- Gráfico Departamento CD -->
-    <div class="card">
-      <h3>Participação por Departamento CD</h3>
-      <div class="donutwrap">
-        ${donut(deptItems, centerLabel, subLabel)}
-        ${legend(deptItems)}
       </div>
     </div>
   </div>`;
