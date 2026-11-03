@@ -28,7 +28,6 @@ button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 
-/* HEADER & BRANDING */
 header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
 .brand-container { display: flex; align-items: center; gap: 16px; }
 
@@ -250,7 +249,7 @@ let D = null;
 let basis = 'custo';
 let resFilter = 'todos';
 let sepFilter = 'todos';
-let targetDestFilter = 'todos'; // Filtro de Destino/Loja selecionado
+let targetDestFilter = 'todos';
 let statusFilter = 'pendente'; 
 let destExpanded = false;
 let destSearch = '';
@@ -971,7 +970,6 @@ function secCarteira(){
     destRows = destRows.filter(([k]) => k.toLowerCase().includes(destSearch.toLowerCase()));
   }
 
-  // --- AGRUPAMENTO DE PRODUTOS SOMANDO AS QUANTIDADES ---
   const prodAggMap = {};
   filteredC.forEach(r => {
     const pendQtd = r.qtdPedida - r.qtdSeparada;
