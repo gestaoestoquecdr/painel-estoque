@@ -216,6 +216,12 @@ let prodSearch = '';
 let prodSortOrder = 'valor';
 let estoqueProdSearch = '';
 let estoqueProdSortOrder = 'valor';
+
+let shelfSearch = '';
+let shelfSortOrder = 'critico';
+let agingSearch = '';
+let agingSortOrder = 'critico';
+
 let tvTimer = null;
 
 const val = r => basis==='custo' ? r.custo : r.qtd;
@@ -429,12 +435,13 @@ function secGeral(){
   R.forEach(r => {
     const k = (r.codProd && r.codProd !== '-') ? r.codProd : r.prod;
     if (!prodMap[k]) {
-      prodMap[k] = { codProd: r.codProd, gtin: r.gtin, prod: r.prod, qtd: 0, custo: 0, est: r.est };
+      prodMap[k] = { codProd: r.codProd, gtin: r.gtin, prod: r.prod, qtd: 0, custo: 0, est: r.est, end: r.end };
     }
     prodMap[k].qtd += r.qtd;
     prodMap[k].custo += r.custo;
     if (r.gtin && r.gtin !== '-') prodMap[k].gtin = r.gtin;
     if (r.codProd && r.codProd !== '-') prodMap[k].codProd = r.codProd;
+    if (r.end && !prodMap[k].end) prodMap[k].end = r.end;
   });
 
   let listEstoqueProds = Object.values(prodMap);
@@ -444,7 +451,8 @@ function secGeral(){
       p.prod.toLowerCase().includes(q) || 
       p.codProd.toLowerCase().includes(q) || 
       p.gtin.toLowerCase().includes(q) || 
-      p.est.toLowerCase().includes(q)
+      p.est.toLowerCase().includes(q) ||
+      (p.end && p.end.toLowerCase().includes(q))
     );
   }
 
@@ -492,7 +500,7 @@ function secGeral(){
     <div class="card-header-action">
       <h3>📦 TOP PRODUTOS EM ESTOQUE NO CD (${listEstoqueProds.length} encontrados)</h3>
       <div class="prod-controls">
-        <input type="text" id="inputEstoqueProdSearch" placeholder="🔍 Buscar código / GTIN / produto..." value="${esc(estoqueProdSearch)}" style="width:280px" />
+        <input type="text" id="inputEstoqueProdSearch" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:300px" />
         <select id="selectEstoqueProdSort">
           <option value="valor" ${estoqueProdSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
           <option value="qtd" ${estoqueProdSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Endereçada</option>
@@ -554,9 +562,10 @@ function secShelf(){
     'shelf',
     ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'],
     SHELF_CLASS,
-    ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias'], // Crítico e Atenção
-    'PRODUTOS EM CRÍTICO E ATENÇÃO (ORDENADOS DO MAIS CRÍTICO AO MENOS CRÍTICO)',
-    true
+    ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias'],
+    'PRODUTOS EM CRÍTICO E ATENÇÃO',
+    true,
+    'shelf'
   );
 }
 
@@ -564,17 +573,18 @@ function secAging(){
   faixaSection(
     '#s-aging',
     'Tempo de permanência (Aging)',
-    'Tempo em que o palete está no endereço.',
+    'Tempo em que o palete está no endereço (Apenas status Disponível, Reservado e Pendente de Saída).',
     'aging',
     ['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'],
     AGING_CLASS,
-    ['Acima de 60 dias','30 a 60 dias'], // Crítico e Atenção
-    'PRODUTOS EM CRÍTICO E ATENÇÃO (ORDENADOS DO MAIS CRÍTICO AO MENOS CRÍTICO)',
-    false
+    ['Acima de 60 dias','30 a 60 dias'],
+    'PRODUTOS EM CRÍTICO E ATENÇÃO',
+    true,
+    'aging'
   );
 }
 
-function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisicoOnly = false){
+function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisicoOnly = false, tabType = 'shelf'){
   const allowedStatus = ['disponivel', 'disponível', 'reservado', 'pendente de saída', 'pendente de saida', 'pendente saída', 'pendente saida'];
   
   const rev = D.rows.filter(r => {
@@ -593,15 +603,38 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   const items = ['ok','warn','crit','none'].filter(k=>cls[k]>0).map(k=>({n:CLS[k].n,v:cls[k],c:CLS[k].c}));
   const pctOk = cls.ok/comVal*100, totB = Object.values(g).reduce((s,o)=>s+(basis==='custo'?o.custo:o.qtd),0)||1;
   
-  // ORDENAÇÃO: Filtrar os itens das faixas informadas em topCls e ordenar na ordem do array topCls (do mais crítico para o menos crítico) e por valor dentro da faixa
-  const top = rev.filter(r => topCls.includes(r[field])).sort((a, b) => {
-    const idxA = topCls.indexOf(a[field]);
-    const idxB = topCls.indexOf(b[field]);
-    if (idxA !== idxB) {
-      return idxA - idxB; // Respeita rigorosamente a hierarquia das faixas críticas primeiro
-    }
-    return b.custo - a.custo; // Dentro da mesma faixa, ordena do maior valor para o menor
-  });
+  let top = rev.filter(r => topCls.includes(r[field]));
+
+  const currentSearch = tabType === 'shelf' ? shelfSearch : agingSearch;
+  const currentSort = tabType === 'shelf' ? shelfSortOrder : agingSortOrder;
+
+  if (currentSearch) {
+    const q = currentSearch.toLowerCase();
+    top = top.filter(r => 
+      r.prod.toLowerCase().includes(q) || 
+      r.codProd.toLowerCase().includes(q) || 
+      r.gtin.toLowerCase().includes(q) || 
+      (r.end && r.end.toLowerCase().includes(q))
+    );
+  }
+
+  if (currentSort === 'critico') {
+    top.sort((a, b) => {
+      const idxA = topCls.indexOf(a[field]);
+      const idxB = topCls.indexOf(b[field]);
+      if (idxA !== idxB) {
+        return idxA - idxB;
+      }
+      return b.custo - a.custo;
+    });
+  } else if (currentSort === 'valor') {
+    top.sort((a, b) => b.custo - a.custo);
+  } else if (currentSort === 'qtd') {
+    top.sort((a, b) => b.qtd - a.qtd);
+  }
+
+  const inputId = tabType === 'shelf' ? 'inputShelfSearch' : 'inputAgingSearch';
+  const selectId = tabType === 'shelf' ? 'selectShelfSort' : 'selectAgingSort';
 
   const critV = cls.crit, critN = rev.filter(r=>cmap[r[field]]==='crit').length;
   $(id).innerHTML = `<h2>${title}</h2><p class="sub">${sub}</p>
@@ -619,7 +652,17 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     </table></div></div>
   </div>
   <div class="card" style="margin-top:16px">
-    <h3>${topTitle} (${top.length} linhas encontradas)</h3>
+    <div class="card-header-action">
+      <h3>${topTitle} (${top.length} linhas encontradas)</h3>
+      <div class="prod-controls">
+        <input type="text" id="${inputId}" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:300px" />
+        <select id="${selectId}">
+          <option value="critico" ${currentSort==='critico'?'selected':''}>Ordenar por Mais Crítico</option>
+          <option value="valor" ${currentSort==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
+          <option value="qtd" ${currentSort==='qtd'?'selected':''}>Ordenar por Maior Qtd Endereçada</option>
+        </select>
+      </div>
+    </div>
     <div class="tw">
       <table>
         <thead>
@@ -648,11 +691,35 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
               <td class="r" style="font-weight:700">${fmtN.format(r.qtd)}</td>
               <td class="r" style="font-weight:700">${brl(r.custo)}</td>
             </tr>`;
-          }).join('') : '<tr><td colspan="8">Nenhum item nesta faixa.</td></tr>'}
+          }).join('') : '<tr><td colspan="8">Nenhum item encontrado nesta faixa.</td></tr>'}
         </tbody>
       </table>
     </div>
   </div>`;
+
+  const sInput = $('#' + inputId);
+  if (sInput) {
+    sInput.addEventListener('input', (e) => {
+      if (tabType === 'shelf') shelfSearch = e.target.value;
+      else agingSearch = e.target.value;
+      if (tabType === 'shelf') secShelf(); else secAging();
+      const el = $('#' + inputId);
+      if (el) { 
+        const valLen = (tabType === 'shelf' ? shelfSearch : agingSearch).length;
+        el.focus(); 
+        el.setSelectionRange(valLen, valLen); 
+      }
+    });
+  }
+
+  const sSort = $('#' + selectId);
+  if (sSort) {
+    sSort.addEventListener('change', (e) => {
+      if (tabType === 'shelf') shelfSortOrder = e.target.value;
+      else agingSortOrder = e.target.value;
+      if (tabType === 'shelf') secShelf(); else secAging();
+    });
+  }
 }
 
 function occData(){
