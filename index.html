@@ -31,7 +31,7 @@ button{cursor:pointer}
 header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
 .brand-container { display: flex; align-items: center; gap: 16px; }
 
-/* Efeito Premium no Logo */
+/* Logo Efeito Premium */
 .roldao-logo-wrap {
   display: flex;
   align-items: center;
@@ -63,7 +63,7 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
 .brand b{font-family:var(--f-body);font-size:20px;font-weight:700;letter-spacing:-.01em;color:#fff}
 .brand small{color:var(--mute);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
 
-/* Estilização Neon dos Botões de Navegação (Abas) */
+/* Botões de Navegação (Abas) */
 nav{display:flex;gap:8px;flex-wrap:wrap}
 nav button{
   background: linear-gradient(135deg, #071530 0%, #0e234c 100%);
@@ -93,7 +93,7 @@ nav button[aria-selected="true"]{
 
 .tools{margin-left:auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 
-/* Estilização Segmentada (R$ / Qtd) */
+/* Segmented R$ / Qtd */
 .seg{
   display:inline-flex;
   border:1px solid rgba(255, 196, 0, 0.3);
@@ -113,9 +113,7 @@ nav button[aria-selected="true"]{
   border-radius: 8px;
   transition:all .3s ease;
 }
-.seg button:hover {
-  color: #fff;
-}
+.seg button:hover { color: #fff; }
 .seg button[aria-pressed="true"]{
   background: linear-gradient(135deg, #102958 0%, #1a3c7e 100%);
   color: var(--accent);
@@ -123,7 +121,6 @@ nav button[aria-selected="true"]{
   box-shadow: 0 0 12px rgba(255, 196, 0, 0.3);
 }
 
-/* Botão Modo TV */
 .tv{
   background: linear-gradient(135deg, #071530 0%, #0e234c 100%);
   border: 1px solid rgba(255, 196, 0, 0.3);
@@ -161,7 +158,6 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .kpis{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:stretch}
 
-/* Cards Interativos */
 .card{
   background:var(--panel);
   border:1px solid var(--line);
@@ -188,12 +184,13 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-/* BARRA DE FILTROS ATIVOS */
+/* BARRA DE FILTROS ATIVOS EM TODAS AS PÁGINAS */
 .active-filters-bar {
   display: none;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  background: rgba(255, 196, 0, 0.1);
+  background: rgba(255, 196, 0, 0.12);
   border: 1px solid var(--accent);
   padding: 10px 16px;
   border-radius: 8px;
@@ -208,7 +205,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   background: var(--accent);
   color: #1a1400;
   border: 0;
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 6px;
   font-weight: 800;
   font-size: 12px;
@@ -216,10 +213,10 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 }
 .active-filters-bar button:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 10px rgba(255, 196, 0, 0.5);
+  box-shadow: 0 0 12px rgba(255, 196, 0, 0.5);
 }
 
-/* SISTEMA DE TOOLTIP FLUTUANTE (DINÂMICO) */
+/* TOOLTIP FLUTUANTE DINÂMICO */
 #floating-tooltip {
   position: fixed;
   z-index: 9999;
@@ -256,14 +253,8 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   line-height: 1.35;
 }
 
-#floating-tooltip .tt-item b {
-  color: #fff;
-  display: block;
-}
-
-#floating-tooltip .tt-item span {
-  color: var(--mute);
-}
+#floating-tooltip .tt-item b { color: #fff; display: block; }
+#floating-tooltip .tt-item span { color: var(--mute); }
 
 .filter-bar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; background: var(--panel2); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--line); }
 .filter-bar label { font-size: 14px; font-weight: 600; color: var(--mute); display: flex; align-items: center; gap: 8px; }
@@ -343,7 +334,8 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .bar b{display:block;height:100%;border-radius:4px}
 
 .sep-progress { display: flex; flex-direction: column; gap: 14px; margin-top: 6px; }
-.sep-item { display: flex; flex-direction: column; gap: 6px; }
+.sep-item { display: flex; flex-direction: column; gap: 6px; cursor: pointer; padding: 4px; border-radius: 6px; transition: background 0.2s; }
+.sep-item:hover { background: rgba(255,255,255,0.05); }
 .sep-header { display: flex; justify-content: space-between; font-size: 14px; font-weight:600; }
 .sep-bar-bg { height: 12px; background: var(--panel2); border-radius: 6px; overflow: hidden; display: flex; }
 .sep-bar-fill { height: 100%; transition: width 0.3s ease; }
@@ -361,7 +353,8 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .info-note b { color: var(--accent); }
 
 .occ { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; align-items: stretch; }
-.mini { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.mini { display: flex; flex-direction: column; gap: 8px; min-width: 0; cursor: pointer; transition: transform 0.2s; }
+.mini:hover { transform: translateY(-2px); }
 .mini .b { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 10px; text-align: center; }
 .mini .b small { display: block; color: var(--mute); font-size: 11px; text-transform: uppercase; margin-bottom: 4px; font-weight:600; }
 .mini .b strong { font-family: var(--f-num); font-size: 26px; line-height: 1.1; }
@@ -441,7 +434,7 @@ const CONFIG = {
   TV_SEGUNDOS: 20
 };
 
-// --- DICIONÁRIO AUXILIAR DE LOJAS ---
+// --- MAPA DE LOJAS ---
 const MAPA_LOJAS = {
   "2": "BP02 - ROLDAO FREGUESIA",
   "3": "BP03 - ROLDAO MOOCA",
@@ -504,9 +497,11 @@ const nice = s => String(s).replace(/^ESTOQUE\s+/i,'').toLowerCase().replace(/(^
 let D = null;
 let basis = 'custo';
 
-/* ESTADO DOS FILTROS INTERATIVOS DE SELEÇÃO */
+/* ESTADO GLOBAL DE FILTROS INTERATIVOS */
 let filterLocalEst = 'todos'; 
 let filterStatusEst = 'todos';
+let filterShelfFaixa = 'todos';
+let filterAgingFaixa = 'todos';
 
 let resFilter = 'todos';
 let sepFilter = 'todos';
@@ -654,7 +649,7 @@ async function load(){
   }
 }
 
-/* SISTEMA DE TOOLTIP DINÂMICO JS */
+/* SISTEMA DE TOOLTIP DINÂMICO */
 function attachTooltipEvents() {
   const tt = $('#floating-tooltip');
   if (!tt) return;
@@ -701,17 +696,17 @@ function attachTooltipEvents() {
   });
 }
 
-function donut(items,center,sub){
+function donut(items,center,sub, filterAttr = 'data-filter-local', activeValue = 'todos'){
   if (!items || !items.length) return '<p style="color:var(--mute)">Sem dados para gráfico</p>';
   const tot = items.reduce((s,i)=>s+i.v,0)||1, R=75, C=2*Math.PI*R; let off=0, segs='';
   items.forEach(i=>{ 
     const L=C*i.v/tot; 
     const topProd = i.topProd ? [{prod: i.topProd, sub: `${brlShort(i.v)} (${fmtP(i.v/tot*100)})`}] : [];
     const tooltipData = JSON.stringify(topProd).replace(/"/g, '&quot;');
-    const isSelected = filterLocalEst !== 'todos' && filterLocalEst.toLowerCase() === i.rawKey.toLowerCase();
+    const isSelected = activeValue !== 'todos' && activeValue.toLowerCase() === i.rawKey.toLowerCase();
     
     if(L>0) {
-      segs+=`<circle class="${isSelected ? 'active-slice' : ''}" r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="26" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)" data-filter-local="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"></circle>`; 
+      segs+=`<circle class="${isSelected ? 'active-slice' : ''}" r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="26" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)" ${filterAttr}="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"></circle>`; 
     }
     off+=L; 
   });
@@ -719,14 +714,14 @@ function donut(items,center,sub){
     <text x="100" y="${sub?98:106}" text-anchor="middle" font-size="${String(center).length>5?24:30}" font-weight="700">${center}</text>${sub?`<text x="100" y="122" text-anchor="middle" font-size="13" style="fill:var(--mute)">${sub}</text>`:''}</svg>`;
 }
 
-function legend(items){
+function legend(items, filterAttr = 'data-filter-local', activeValue = 'todos'){
   if (!items || !items.length) return '';
   const tot = items.reduce((s,i)=>s+i.v,0)||1;
   return `<div class="legend">${items.map(i=> {
     const topProd = i.topProd ? [{prod: i.topProd, sub: `${brlShort(i.v)} (${fmtP(i.v/tot*100)})`}] : [];
     const tooltipData = JSON.stringify(topProd).replace(/"/g, '&quot;');
-    const isSelected = filterLocalEst !== 'todos' && filterLocalEst.toLowerCase() === i.rawKey.toLowerCase();
-    return `<div class="${isSelected ? 'active-item' : ''}" data-filter-local="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"><i style="background:${i.c}"></i><span>${esc(i.n)}</span><span>${fmtV(i.v)} · ${fmtP(i.v/tot*100)}</span></div>`;
+    const isSelected = activeValue !== 'todos' && activeValue.toLowerCase() === i.rawKey.toLowerCase();
+    return `<div class="${isSelected ? 'active-item' : ''}" ${filterAttr}="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"><i style="background:${i.c}"></i><span>${esc(i.n)}</span><span>${fmtV(i.v)} · ${fmtP(i.v/tot*100)}</span></div>`;
   }).join('')}</div>`;
 }
 
@@ -744,16 +739,20 @@ const COLOR_MAP = {
 };
 const DEFAULT_COLORS = ['#ffc400','#ff5d62','#ff8b8f','#c084fc','#35d49a','#3a5db0','#4285f4'];
 
-function clearFilters() {
+function clearAllFilters() {
   filterLocalEst = 'todos';
   filterStatusEst = 'todos';
-  secGeral();
+  filterShelfFaixa = 'todos';
+  filterAgingFaixa = 'todos';
+  sepFilter = 'todos';
+  targetDestFilter = 'todos';
+  render();
 }
 
+/* 1. SEÇÃO VISÃO GERAL */
 function secGeral(){
   const R_all = D.rows;
   
-  /* FILTRAGEM DINÂMICA CRUZADA */
   let R = R_all;
   if (filterLocalEst !== 'todos') {
     R = R.filter(r => r.est.toLowerCase().trim() === filterLocalEst.toLowerCase().trim());
@@ -780,11 +779,9 @@ function secGeral(){
   const items = ests.map(([n,o],i) => {
     const key = n.toLowerCase().trim();
     const valItem = basis==='custo' ? o.custo : o.qtd;
-    
     if (key.includes('virtual') || key.includes('pre alerta') || key.includes('pré alerta')) {
       semFisicoVal += valItem;
     }
-
     const topItem = R_all.filter(r => r.est === n).sort((a,b) => b.custo - a.custo)[0];
 
     return {
@@ -846,7 +843,6 @@ function secGeral(){
   }
 
   const topEstoqueProds = listEstoqueProds.slice(0, 25);
-
   const top3Estoque = listEstoqueProds.slice(0,3).map(p => ({
     prod: p.prod,
     sub: `${brl(p.custo)} | Qtd: ${fmtN.format(p.qtd)}`
@@ -859,7 +855,7 @@ function secGeral(){
 
   <div class="active-filters-bar ${hasActiveFilters ? 'visible' : ''}">
     <span>🔍 <b>${esc(activeFiltersText)}</b></span>
-    <button onclick="clearFilters()">✕ Limpar Filtros</button>
+    <button onclick="clearAllFilters()">✕ Limpar Filtros</button>
   </div>
 
   <div class="grid kpis">
@@ -876,7 +872,7 @@ function secGeral(){
           🚨 Sem Físico: <b>${fmtV(semFisicoVal)} (${fmtP(semFisicoPct)})</b>
         </div>
       </div>
-      <div class="donutwrap">${donut(items, centerLabel, subLabel)}${legend(items)}</div>
+      <div class="donutwrap">${donut(items, centerLabel, subLabel, 'data-filter-local', filterLocalEst)}${legend(items, 'data-filter-local', filterLocalEst)}</div>
     </div>
     <div class="card">
       <h3>Status do estoque (Clique para filtrar)</h3>
@@ -949,15 +945,10 @@ function secGeral(){
     </div>
   </div>`;
 
-  /* EVENTOS DE CLIQUE PARA FILTRAGEM DINÂMICA */
   document.querySelectorAll('[data-filter-local]').forEach(el => {
     el.addEventListener('click', () => {
       const targetLocal = el.getAttribute('data-filter-local');
-      if (filterLocalEst === targetLocal) {
-        filterLocalEst = 'todos'; 
-      } else {
-        filterLocalEst = targetLocal;
-      }
+      filterLocalEst = (filterLocalEst === targetLocal) ? 'todos' : targetLocal;
       secGeral();
     });
   });
@@ -965,11 +956,7 @@ function secGeral(){
   document.querySelectorAll('[data-filter-status]').forEach(el => {
     el.addEventListener('click', () => {
       const targetStatus = el.getAttribute('data-filter-status');
-      if (filterStatusEst === targetStatus) {
-        filterStatusEst = 'todos'; 
-      } else {
-        filterStatusEst = targetStatus;
-      }
+      filterStatusEst = (filterStatusEst === targetStatus) ? 'todos' : targetStatus;
       secGeral();
     });
   });
@@ -995,6 +982,7 @@ function secGeral(){
   attachTooltipEvents();
 }
 
+/* 2. SEÇÕES FAIXA (SHELF LIFE E AGING) COM DRILL-DOWN INTEGRADO */
 function secShelf(){
   faixaSection(
     '#s-shelf',
@@ -1028,7 +1016,7 @@ function secAging(){
 function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisicoOnly = false, tabType = 'shelf'){
   const allowedStatus = ['disponivel', 'disponível', 'reservado', 'pendente de saída', 'pendente de saida', 'pendente saída', 'pendente saida'];
   
-  const rev = D.rows.filter(r => {
+  let rev = D.rows.filter(r => {
     if (r.est.trim() !== CONFIG.ESTOQUE_FISICO) return false;
     if (filterFisicoOnly) {
       const st = r.status.toLowerCase().trim();
@@ -1037,6 +1025,11 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     return true;
   });
 
+  const activeFaixa = (tabType === 'shelf') ? filterShelfFaixa : filterAgingFaixa;
+  if (activeFaixa !== 'todos') {
+    rev = rev.filter(r => r[field].toLowerCase().trim() === activeFaixa.toLowerCase().trim());
+  }
+
   const g = {}; order.forEach(f=>g[f]={custo:0,qtd:0,n:0});
   rev.forEach(r=>{const f=r[field]; (g[f]=g[f]||{custo:0,qtd:0,n:0}); g[f].custo+=r.custo; g[f].qtd+=r.qtd; g[f].n++;});
   const cls = {ok:0,warn:0,crit:0,none:0}; rev.forEach(r=>cls[cmap[r[field]]||'none']+=val(r));
@@ -1044,6 +1037,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   const items = ['ok','warn','crit','none'].filter(k=>cls[k]>0).map(k=> {
     const topItem = rev.filter(r => cmap[r[field]] === k).sort((a,b) => b.custo - a.custo)[0];
     return {
+      rawKey: k,
       n: CLS[k].n,
       v: cls[k],
       c: CLS[k].c,
@@ -1053,7 +1047,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   
   const pctOk = cls.ok/comVal*100, totB = Object.values(g).reduce((s,o)=>s+(basis==='custo'?o.custo:o.qtd),0)||1;
   
-  let top = rev.filter(r => topCls.includes(r[field]));
+  let top = (activeFaixa !== 'todos') ? rev : rev.filter(r => topCls.includes(r[field]));
 
   const currentSearch = tabType === 'shelf' ? shelfSearch : agingSearch;
   const currentSort = tabType === 'shelf' ? shelfSortOrder : agingSortOrder;
@@ -1072,7 +1066,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     top.sort((a, b) => {
       const idxA = topCls.indexOf(a[field]);
       const idxB = topCls.indexOf(b[field]);
-      if (idxA !== idxB) {
+      if (idxA !== idxB && idxA !== -1 && idxB !== -1) {
         return idxA - idxB;
       }
       return b.custo - a.custo;
@@ -1097,7 +1091,15 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   const selectId = tabType === 'shelf' ? 'selectShelfSort' : 'selectAgingSort';
 
   const critV = cls.crit, critN = rev.filter(r=>cmap[r[field]]==='crit').length;
+  const hasActiveFaixa = activeFaixa !== 'todos';
+
   $(id).innerHTML = `<h2>${title}</h2><p class="sub">${sub}</p>
+
+  <div class="active-filters-bar ${hasActiveFaixa ? 'visible' : ''}">
+    <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeFaixa)}</b></span>
+    <button onclick="clearAllFilters()">✕ Limpar Filtro de Faixa</button>
+  </div>
+
   <div class="grid kpis">
     ${kpi('Estoque revenda',fmtV(rev.reduce((s,r)=>s+val(r),0)),fmtN.format(rev.length)+' linhas de palete')}
     ${kpi('Saudável',`<span class="good">${fmtP(pctOk)}</span>`,fmtV(cls.ok)+(cls.none?' · sem validade fora da conta':''))}
@@ -1105,15 +1107,17 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     ${kpi('Crítico',`<span class="critc">${fmtP(cls.crit/comVal*100)}</span>`,fmtV(critV)+' · '+fmtN.format(critN)+' linhas', '', 'Top 3 Críticos (Maior Valor)', topCriticos, 'var(--crit)')}
   </div>
   <div class="grid two" style="margin-top:16px">
-    <div class="card"><h3>Saúde do estoque revenda</h3><div class="donutwrap">${donut(items,fmtP(pctOk,0),'saudável')}${legend(items)}</div></div>
-    <div class="card"><h3>Por faixa</h3><div class="tw"><table>
+    <div class="card"><h3>Saúde do estoque revenda</h3><div class="donutwrap">${donut(items,fmtP(pctOk,0),'saudável', 'data-filter-faixa', activeFaixa)}${legend(items, 'data-filter-faixa', activeFaixa)}</div></div>
+    <div class="card"><h3>Por faixa (Clique para filtrar)</h3><div class="tw"><table>
       <tr><th>Faixa</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th>Participação</th></tr>
       ${order.map(f=>{
         const o=g[f],c=CLS[cmap[f]||'none'].c,v=basis==='custo'?o.custo:o.qtd;
         const topF = rev.filter(r => r[field] === f).sort((a,b) => b.custo - a.custo)[0];
         const topData = topF ? [{prod: topF.prod, sub: `Maior Valor: ${brl(topF.custo)}`}] : [];
-        return `<tr data-tooltip-title="${esc(f)}" data-tooltip-color="${c}" data-tooltip-items="${JSON.stringify(topData).replace(/"/g, '&quot;')}" style="cursor:pointer">
-          <td><span class="dot" style="background:${c}"></span>${esc(f)}</td>
+        const isSelectedFaixa = activeFaixa.toLowerCase() === f.toLowerCase();
+
+        return `<tr class="clickable-row ${isSelectedFaixa ? 'active-row' : ''}" data-filter-faixa="${esc(f)}" data-tooltip-title="${esc(f)}" data-tooltip-color="${c}" data-tooltip-items="${JSON.stringify(topData).replace(/"/g, '&quot;')}">
+          <td><span class="dot" style="background:${c}"></span><b>${esc(f)}</b></td>
           <td class="r">${fmtN.format(o.n)}</td>
           <td class="r">${fmtN.format(o.qtd)}</td>
           <td class="r">${brl(o.custo)}</td>
@@ -1168,6 +1172,19 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     </div>
   </div>`;
 
+  document.querySelectorAll('[data-filter-faixa]').forEach(el => {
+    el.addEventListener('click', () => {
+      const targetFaixa = el.getAttribute('data-filter-faixa');
+      if (tabType === 'shelf') {
+        filterShelfFaixa = (filterShelfFaixa === targetFaixa) ? 'todos' : targetFaixa;
+        secShelf();
+      } else {
+        filterAgingFaixa = (filterAgingFaixa === targetFaixa) ? 'todos' : targetFaixa;
+        secAging();
+      }
+    });
+  });
+
   const sInput = $('#' + inputId);
   if (sInput) {
     sInput.addEventListener('input', (e) => {
@@ -1195,6 +1212,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   attachTooltipEvents();
 }
 
+/* 3. SEÇÃO OCUPAÇÃO DO CD */
 function occData(){
   const g1 = {total:0, ocup:0, ruas:{}};
   const g2 = {total:0, ocup:0, ruas:{}};
@@ -1260,8 +1278,8 @@ function secOcup(){
   const all = {total:O.total,ocup:O.ocup};
   
   const donutItems = [
-    { n: 'Livre', v: O.total - O.ocup, c: '#4285f4' },
-    { n: 'Ocupado', v: O.ocup, c: '#ffc400' }
+    { rawKey: 'Livre', n: 'Livre', v: O.total - O.ocup, c: '#4285f4' },
+    { rawKey: 'Ocupado', n: 'Ocupado', v: O.ocup, c: '#ffc400' }
   ];
 
   const prev = basis; 
@@ -1273,7 +1291,7 @@ function secOcup(){
   <div class="occ">
     ${box('g1','Galpão 1',O.g1)}
     ${box('g2','Galpão 2',O.g2)}
-    ${box('','Endereços',all)}
+    ${box('','Endereços Total',all)}
     ${box('','Blocados',O.bl)}
     <div class="card donutcard">
       <h3>% de ocupação CD</h3>
@@ -1294,6 +1312,7 @@ function secOcup(){
   attachTooltipEvents();
 }
 
+/* 4. SEÇÃO CARTEIRA DE PEDIDO COM FILTRO INTERATIVO EM TODOS OS ITENS */
 function secCarteira(){
   let C = (D && D.cart) ? D.cart : [];
   if (!C.length) {
@@ -1306,7 +1325,7 @@ function secCarteira(){
 
   let filteredC = C;
   if (sepFilter !== 'todos') {
-    filteredC = filteredC.filter(r => r.tipoSep === sepFilter);
+    filteredC = filteredC.filter(r => r.tipoSep.toLowerCase().trim() === sepFilter.toLowerCase().trim());
   }
   if (targetDestFilter !== 'todos') {
     filteredC = filteredC.filter(r => String(r.dest) === String(targetDestFilter));
@@ -1485,9 +1504,16 @@ function secCarteira(){
     ? 'PRODUTOS PENDENTES DE SEPARAÇÃO' 
     : (statusFilter === 'separado' ? 'PRODUTOS SEPARADOS' : 'TODOS OS PRODUTOS DA CARTEIRA');
 
+  const hasActiveCartFilter = sepFilter !== 'todos' || targetDestFilter !== 'todos';
+
   $('#s-carteira').innerHTML = `
   <h2>Carteira de Pedido</h2>
   <p class="sub">Acompanhamento e status das reservas e solicitações do CD.</p>
+
+  <div class="active-filters-bar ${hasActiveCartFilter ? 'visible' : ''}">
+    <span>🔍 <b>Filtro Ativo: ${sepFilter !== 'todos' ? `Tipo = ${sepFilter}` : ''} ${targetDestFilter !== 'todos' ? `| Destino = ${targetDestFilter}` : ''}</b></span>
+    <button onclick="clearAllFilters()">✕ Limpar Filtros da Carteira</button>
+  </div>
   
   <div class="filter-bar">
     <label>⚡ Tipo de Separação:
@@ -1514,9 +1540,9 @@ function secCarteira(){
 
   <div class="grid two" style="margin-top:16px">
     <div class="card">
-      <h3>Progresso e Status da Separação</h3>
+      <h3>Progresso da Separação (Clique para filtrar)</h3>
       <div class="sep-progress">
-        <div class="sep-item">
+        <div class="sep-item" data-filter-carteira-sep="Produção Derrubada">
           <div class="sep-header">
             <span>Derrubada (Total: ${fmtN.format(derTotQtd)})</span>
             <span>Prod: ${fmtP(derPctProd)} | Pend: ${fmtP(derPctPend)}</span>
@@ -1527,7 +1553,7 @@ function secCarteira(){
           </div>
         </div>
 
-        <div class="sep-item" style="margin-top: 8px;">
+        <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Produção Sorter">
           <div class="sep-header">
             <span>Sorter (Total: ${fmtN.format(sorTotQtd)})</span>
             <span>Prod: ${fmtP(sorPctProd)} | Pend: ${fmtP(sorPctPend)}</span>
@@ -1538,7 +1564,7 @@ function secCarteira(){
           </div>
         </div>
 
-        <div class="sep-item" style="margin-top: 8px;">
+        <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Cross Docking">
           <div class="sep-header">
             <span>Cross Docking (Total: ${fmtN.format(cdTotQtd)})</span>
             <span>Sep: ${fmtP(cdPctSep)} | Pend: ${fmtP(cdPctPend)}</span>
@@ -1549,7 +1575,7 @@ function secCarteira(){
           </div>
         </div>
 
-        <div class="sep-item" style="margin-top: 8px;">
+        <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Full">
           <div class="sep-header">
             <span>Full (Total: ${fmtN.format(fullTotQtd)})</span>
             <span>Sep: ${fmtP(fullPctSep)} | Pend: ${fmtP(fullPctPend)}</span>
@@ -1562,7 +1588,7 @@ function secCarteira(){
       </div>
 
       <div class="info-note">
-        💡 <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> não possuem etapa intermediária de rastreamento de produção (Derrubada/Sorter). Eles permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
+        💡 <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
       </div>
     </div>
 
@@ -1683,7 +1709,7 @@ function secCarteira(){
           </thead>
           <tbody>
             ${destRows.length ? destRows.map(([k,o]) => `
-              <tr>
+              <tr class="clickable-row" onclick="targetDestFilter='${esc(k)}'; secCarteira();">
                 <td><b>${esc(k)}</b></td>
                 <td class="r">${fmtN.format(o.pedida)}</td>
                 <td class="r" style="color:${o.separada > 0 ? 'var(--ok)' : 'var(--mute)'}">${fmtN.format(o.separada)}</td>
@@ -1696,6 +1722,14 @@ function secCarteira(){
     </div>
   </div>
   `;
+
+  document.querySelectorAll('[data-filter-carteira-sep]').forEach(el => {
+    el.addEventListener('click', () => {
+      const targetSep = el.getAttribute('data-filter-carteira-sep');
+      sepFilter = (sepFilter === targetSep) ? 'todos' : targetSep;
+      secCarteira();
+    });
+  });
 
   const selectSep = $('#sepFilterSelect');
   if (selectSep) {
@@ -1812,7 +1846,7 @@ function render(){
           s.render();
         } catch(err) {
           console.error('Erro ao renderizar seção ' + s.id, err);
-          el.innerHTML = '<div class="card"><h3>Erro de Exibição</h3><p>Ocorreu um erro ao carregar esta aba. Verifique a estrutura dos dados.</p></div>';
+          el.innerHTML = '<div class="card"><h3>Erro de Exibição</h3><p>Ocorreu um erro ao carregar esta aba.</p></div>';
         }
       } else {
         el.classList.remove('on');
