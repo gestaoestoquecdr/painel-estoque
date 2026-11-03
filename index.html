@@ -90,13 +90,14 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 }
 .sem-fisico-badge b { color: var(--crit); font-family: var(--f-num); font-size: 16px; }
 
-.donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;margin:auto 0}
-.donut{width:180px;height:180px;flex:none}
+/* AJUSTE NO GRÁFICO PARA PREENCHER MELHOR A ALTURA */
+.donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;margin:auto 0;padding:12px 0;width:100%}
+.donut{width:210px;height:210px;flex:none}
 .donut text{fill:var(--text);font-family:var(--f-num)}
-.legend{display:flex;flex-direction:column;gap:10px;min-width:200px;flex:1}
-.legend div{display:flex;align-items:center;gap:10px;font-size:14px}
-.legend i{width:12px;height:12px;border-radius:3px;flex:none}
-.legend span:last-child{margin-left:auto;font-family:var(--f-num);font-weight:600;white-space:nowrap}
+.legend{display:flex;flex-direction:column;gap:12px;min-width:200px;flex:1}
+.legend div{display:flex;align-items:center;gap:10px;font-size:15px}
+.legend i{width:14px;height:14px;border-radius:3px;flex:none}
+.legend span:last-child{margin-left:auto;font-family:var(--f-num);font-weight:700;white-space:nowrap}
 
 .tw{overflow-x:auto;width:100%}
 table{border-collapse:collapse;width:100%;font-size:15px}
@@ -155,10 +156,12 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .lg i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
 .foot { color: var(--mute); font-size: 13px; margin-top: 18px; }
 
-body.tvmode header nav,body.tvmode .seg{display:none}
-body.tvmode .card{padding:24px}
-body.tvmode h2{font-size:36px}
-body.tvmode .kpi .v{font-size:52px}
+/* ESTILOS ESPECÍFICOS DO MODO TV */
+body.tvmode header nav, body.tvmode .seg, body.tvmode #src { display: none !important; }
+body.tvmode header { border-bottom: 0; padding: 10px 0; }
+body.tvmode .card { padding: 24px; }
+body.tvmode h2 { font-size: 36px; }
+body.tvmode .kpi .v { font-size: 52px; }
 
 @media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:no-preference){#bar{transition:width .3s linear}}
@@ -174,7 +177,7 @@ body.tvmode .kpi .v{font-size:52px}
       <button data-b="custo" aria-pressed="true">R$</button>
       <button data-b="qtd" aria-pressed="false">Qtd. endereçada</button>
     </div>
-    <button class="tv" id="tv" aria-pressed="false">Modo TV</button>
+    <button class="tv" id="tv" aria-pressed="false">📺 Modo TV</button>
   </div>
   <div id="src"><i></i><span id="srctxt">Carregando…</span></div>
 </header>
@@ -215,6 +218,7 @@ let prodSearch = '';
 let prodSortOrder = 'valor';
 let estoqueProdSearch = '';
 let estoqueProdSortOrder = 'valor';
+let tvTimer = null;
 
 const val = r => basis==='custo' ? r.custo : r.qtd;
 const fmtV = v => basis==='custo' ? brlShort(v) : fmtN.format(v);
@@ -351,9 +355,9 @@ async function load(){
 
 function donut(items,center,sub){
   if (!items || !items.length) return '<p style="color:var(--mute)">Sem dados para gráfico</p>';
-  const tot = items.reduce((s,i)=>s+i.v,0)||1, R=70, C=2*Math.PI*R; let off=0, segs='';
-  items.forEach(i=>{ const L=C*i.v/tot; if(L>0) segs+=`<circle r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="30" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)"><title>${esc(i.n)}: ${fmtV(i.v)} (${fmtP(i.v/tot*100)})</title></circle>`; off+=L; });
-  return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle r="${R}" cx="100" cy="100" fill="none" stroke="#162e5c" stroke-width="30"/>${segs}
+  const tot = items.reduce((s,i)=>s+i.v,0)||1, R=75, C=2*Math.PI*R; let off=0, segs='';
+  items.forEach(i=>{ const L=C*i.v/tot; if(L>0) segs+=`<circle r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="26" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)"><title>${esc(i.n)}: ${fmtV(i.v)} (${fmtP(i.v/tot*100)})</title></circle>`; off+=L; });
+  return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle r="${R}" cx="100" cy="100" fill="none" stroke="#162e5c" stroke-width="26"/>${segs}
     <text x="100" y="${sub?98:106}" text-anchor="middle" font-size="${String(center).length>5?24:30}" font-weight="700">${center}</text>${sub?`<text x="100" y="122" text-anchor="middle" font-size="13" style="fill:var(--mute)">${sub}</text>`:''}</svg>`;
 }
 
@@ -423,7 +427,6 @@ function secGeral(){
   const cardTitle = basis==='custo' ? 'VALOR POR LOCAL DE ESTOQUE (R$)' : 'QUANTIDADE POR LOCAL DE ESTOQUE';
   const semFisicoPct = totV ? (semFisicoVal / totV) * 100 : 0;
 
-  // AGRUPAMENTO DE PRODUTOS EM ESTOQUE (AGORA COM CÓDIGO INTERNO E GTIN)
   const prodMap = {};
   R.forEach(r => {
     const k = (r.codProd && r.codProd !== '-') ? r.codProd : r.prod;
@@ -645,7 +648,7 @@ function secOcup(){
   
   const donutItems = [
     { n: 'Livre', v: O.total - O.ocup, c: '#4285f4' },
-    { n: 'Ocupado', v: O.ocup, c: '#ffc400' }
+    { n: 'Ocupado', v: O.accent || '#ffc400' }
   ];
 
   const prev = basis; 
@@ -1127,12 +1130,55 @@ document.querySelectorAll('#basis button').forEach(btn => {
   });
 });
 
+/* MODO TV COM FULLSCREEN E ROTAÇÃO AUTOMÁTICA DE ABAS */
+function toggleTvMode() {
+  const isTv = document.body.classList.toggle('tvmode');
+  const btnTv = $('#tv');
+  if (btnTv) btnTv.setAttribute('aria-pressed', isTv);
+
+  if (isTv) {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+    startTvRotation();
+  } else {
+    if (document.exitFullscreen && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+    stopTvRotation();
+  }
+}
+
+function startTvRotation() {
+  stopTvRotation();
+  tvTimer = setInterval(() => {
+    const currentIndex = SECTIONS.findIndex(s => s.id === activeTab);
+    const nextIndex = (currentIndex + 1) % SECTIONS.length;
+    activeTab = SECTIONS[nextIndex].id;
+    window.location.hash = activeTab;
+    render();
+  }, CONFIG.TV_SEGUNDOS * 1000);
+}
+
+function stopTvRotation() {
+  if (tvTimer) {
+    clearInterval(tvTimer);
+    tvTimer = null;
+  }
+}
+
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && document.body.classList.contains('tvmode')) {
+    document.body.classList.remove('tvmode');
+    const btnTv = $('#tv');
+    if (btnTv) btnTv.setAttribute('aria-pressed', 'false');
+    stopTvRotation();
+  }
+});
+
 const btnTv = $('#tv');
 if (btnTv) {
-  btnTv.addEventListener('click', () => {
-    const isTv = document.body.classList.toggle('tvmode');
-    btnTv.setAttribute('aria-pressed', isTv);
-  });
+  btnTv.addEventListener('click', toggleTvMode);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
