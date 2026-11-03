@@ -161,7 +161,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .kpis{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:stretch}
 
-/* Cards com Efeito de Destaque Suave */
+/* Cards Interativos */
 .card{
   background:var(--panel);
   border:1px solid var(--line);
@@ -172,11 +172,12 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   display:flex;
   flex-direction:column;
   justify-content:flex-start;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
+  position: relative;
 }
 .card:hover {
-  border-color: rgba(66, 133, 244, 0.3);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  border-color: rgba(255, 196, 0, 0.35);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 0 15px rgba(255, 196, 0, 0.1);
 }
 
 .card h3{margin:0 0 14px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:700}
@@ -187,6 +188,52 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
+/* SISTEMA DE TOOLTIP FLUTUANTE (DINÂMICO) */
+#floating-tooltip {
+  position: fixed;
+  z-index: 9999;
+  display: none;
+  pointer-events: none;
+  background: rgba(8, 20, 48, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 12px 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 15px rgba(255, 196, 0, 0.25);
+  max-width: 320px;
+  animation: tooltipFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes tooltipFadeIn {
+  from { opacity: 0; transform: scale(0.95) translateY(5px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+#floating-tooltip .tt-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 196, 0, 0.2);
+  padding-bottom: 4px;
+}
+
+#floating-tooltip .tt-item {
+  font-size: 12px;
+  margin-top: 6px;
+  line-height: 1.35;
+}
+
+#floating-tooltip .tt-item b {
+  color: #fff;
+  display: block;
+}
+
+#floating-tooltip .tt-item span {
+  color: var(--mute);
+}
+
 .filter-bar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; background: var(--panel2); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--line); }
 .filter-bar label { font-size: 14px; font-weight: 600; color: var(--mute); display: flex; align-items: center; gap: 8px; }
 .filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 7px 12px; border-radius: 6px; font-size: 14px; outline: none; transition: border-color .2s ease; }
@@ -194,7 +241,6 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 
 .prod-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
 
-/* Botão Toggle Sanfona com Neon */
 .toggle-btn {
   display: inline-flex;
   align-items: center;
@@ -232,14 +278,23 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   font-size: 13px;
   color: #ff8b8f;
   font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.sem-fisico-badge:hover {
+  background: rgba(255, 93, 98, 0.3);
+  box-shadow: 0 0 10px rgba(255, 93, 98, 0.4);
 }
 .sem-fisico-badge b { color: var(--crit); font-family: var(--f-num); font-size: 16px; }
 
 .donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;margin:auto 0;padding:12px 0;width:100%}
-.donut{width:210px;height:210px;flex:none}
+.donut{width:210px;height:210px;flex:none; cursor: pointer;}
+.donut circle { transition: stroke-width 0.2s ease, opacity 0.2s ease; }
+.donut circle:hover { stroke-width: 32; opacity: 0.9; }
 .donut text{fill:var(--text);font-family:var(--f-num)}
 .legend{display:flex;flex-direction:column;gap:12px;min-width:200px;flex:1}
-.legend div{display:flex;align-items:center;gap:10px;font-size:14px}
+.legend div{display:flex;align-items:center;gap:10px;font-size:14px; cursor: pointer; padding: 4px; border-radius: 6px; transition: background 0.2s;}
+.legend div:hover { background: rgba(255,255,255,0.05); }
 .legend i{width:14px;height:14px;border-radius:3px;flex:none}
 .legend span:last-child{margin-left:auto;font-family:var(--f-num);font-weight:700;white-space:nowrap}
 
@@ -247,7 +302,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 table{border-collapse:collapse;width:100%;font-size:14px}
 th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
 td{padding:11px 12px;border-bottom:1px solid #12244b;white-space:nowrap}
-tr:hover td{background:rgba(255,255,255,0.02)}
+tr:hover td{background:rgba(255,255,255,0.04)}
 th.r,td.r{text-align:right;font-family:var(--f-num)}
 tr.tot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
 td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
@@ -312,6 +367,10 @@ body.tvmode .kpi .v { font-size: 52px; }
 </head>
 <body>
 <div id="bar"></div>
+
+<!-- TOOLTIP DINÂMICO FLUTUANTE -->
+<div id="floating-tooltip"></div>
+
 <header>
   <div class="brand-container">
     <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
@@ -557,10 +616,66 @@ async function load(){
   }
 }
 
+/* SISTEMA DE TOOLTIP DINÂMICO JS */
+function attachTooltipEvents() {
+  const tt = $('#floating-tooltip');
+  if (!tt) return;
+
+  document.querySelectorAll('[data-tooltip-title]').forEach(el => {
+    el.addEventListener('mouseenter', (e) => {
+      const title = el.getAttribute('data-tooltip-title');
+      const items = JSON.parse(el.getAttribute('data-tooltip-items') || '[]');
+      const color = el.getAttribute('data-tooltip-color') || 'var(--accent)';
+
+      let html = `<div class="tt-title" style="color:${color}; border-color:${color}">${esc(title)}</div>`;
+      if (items.length) {
+        items.forEach(it => {
+          html += `<div class="tt-item"><b>${esc(it.prod)}</b><span>${esc(it.sub || '')}</span></div>`;
+        });
+      } else {
+        html += `<div class="tt-item"><span>Sem detalhes disponíveis.</span></div>`;
+      }
+
+      tt.innerHTML = html;
+      tt.style.borderColor = color;
+      tt.style.display = 'block';
+    });
+
+    el.addEventListener('mousemove', (e) => {
+      const x = e.clientX + 15;
+      const y = e.clientY + 15;
+      
+      // Ajuste para não sair da tela
+      const ttWidth = tt.offsetWidth;
+      const ttHeight = tt.offsetHeight;
+      const winWidth = window.innerWidth;
+      const winHeight = window.innerHeight;
+
+      const finalX = (x + ttWidth > winWidth) ? e.clientX - ttWidth - 10 : x;
+      const finalY = (y + ttHeight > winHeight) ? e.clientY - ttHeight - 10 : y;
+
+      tt.style.left = finalX + 'px';
+      tt.style.top = finalY + 'px';
+    });
+
+    el.addEventListener('mouseleave', () => {
+      tt.style.display = 'none';
+    });
+  });
+}
+
 function donut(items,center,sub){
   if (!items || !items.length) return '<p style="color:var(--mute)">Sem dados para gráfico</p>';
   const tot = items.reduce((s,i)=>s+i.v,0)||1, R=75, C=2*Math.PI*R; let off=0, segs='';
-  items.forEach(i=>{ const L=C*i.v/tot; if(L>0) segs+=`<circle r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="26" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)"><title>${esc(i.n)}: ${fmtV(i.v)} (${fmtP(i.v/tot*100)})</title></circle>`; off+=L; });
+  items.forEach(i=>{ 
+    const L=C*i.v/tot; 
+    const topProd = i.topProd ? [{prod: i.topProd, sub: `${brlShort(i.v)} (${fmtP(i.v/tot*100)})`}] : [];
+    const tooltipData = JSON.stringify(topProd).replace(/"/g, '&quot;');
+    if(L>0) {
+      segs+=`<circle r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="26" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"></circle>`; 
+    }
+    off+=L; 
+  });
   return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle r="${R}" cx="100" cy="100" fill="none" stroke="#162e5c" stroke-width="26"/>${segs}
     <text x="100" y="${sub?98:106}" text-anchor="middle" font-size="${String(center).length>5?24:30}" font-weight="700">${center}</text>${sub?`<text x="100" y="122" text-anchor="middle" font-size="13" style="fill:var(--mute)">${sub}</text>`:''}</svg>`;
 }
@@ -568,10 +683,17 @@ function donut(items,center,sub){
 function legend(items){
   if (!items || !items.length) return '';
   const tot = items.reduce((s,i)=>s+i.v,0)||1;
-  return `<div class="legend">${items.map(i=>`<div><i style="background:${i.c}"></i><span>${esc(i.n)}</span><span>${fmtV(i.v)} · ${fmtP(i.v/tot*100)}</span></div>`).join('')}</div>`;
+  return `<div class="legend">${items.map(i=> {
+    const topProd = i.topProd ? [{prod: i.topProd, sub: `${brlShort(i.v)} (${fmtP(i.v/tot*100)})`}] : [];
+    const tooltipData = JSON.stringify(topProd).replace(/"/g, '&quot;');
+    return `<div data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"><i style="background:${i.c}"></i><span>${esc(i.n)}</span><span>${fmtV(i.v)} · ${fmtP(i.v/tot*100)}</span></div>`;
+  }).join('')}</div>`;
 }
 
-const kpi = (l,v,s,cls='') => `<div class="card kpi ${cls}"><h3>${l}</h3><div class="v">${v}</div><div class="s">${s||''}</div></div>`;
+const kpi = (l,v,s,cls='', tooltipTitle='', tooltipItems=[], tooltipColor='') => {
+  const ttAttr = tooltipTitle ? `data-tooltip-title="${esc(tooltipTitle)}" data-tooltip-color="${tooltipColor || 'var(--accent)'}" data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}" style="cursor:pointer"` : '';
+  return `<div class="card kpi ${cls}" ${ttAttr}><h3>${l}</h3><div class="v">${v}</div><div class="s">${s||''}</div></div>`;
+};
 
 const COLOR_MAP = {
   'revenda': '#ffc400',
@@ -606,10 +728,13 @@ function secGeral(){
       semFisicoVal += valItem;
     }
 
+    const topItem = R.filter(r => r.est === n).sort((a,b) => b.custo - a.custo)[0];
+
     return {
       n: nice(n),
       v: valItem,
-      c: COLOR_MAP[key] || DEFAULT_COLORS[i % DEFAULT_COLORS.length]
+      c: COLOR_MAP[key] || DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+      topProd: topItem ? `Maior Item: ${topItem.prod}` : ''
     };
   });
   
@@ -664,9 +789,14 @@ function secGeral(){
 
   const topEstoqueProds = listEstoqueProds.slice(0, 25);
 
+  const top3Estoque = listEstoqueProds.slice(0,3).map(p => ({
+    prod: p.prod,
+    sub: `${brl(p.custo)} | Qtd: ${fmtN.format(p.qtd)}`
+  }));
+
   $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque.</p>
   <div class="grid kpis">
-    ${kpi('Custo bruto total',brlShort(totC),brl(totC),'hl')}
+    ${kpi('Custo bruto total',brlShort(totC),brl(totC),'hl', 'Maior Valor em Estoque', top3Estoque)}
     ${kpi('Qtd. endereçada total',fmtN.format(totQ),fmtN.format(R.length)+' linhas de palete')}
     ${kpi('Estoque revenda',brlShort(rc),fmtN.format(rq)+' endereçados · '+fmtP(rc/totC*100)+' do valor')}
     ${kpi('Ocupação do CD',fmtP(occ.pct,2),fmtN.format(occ.ocup)+' de '+fmtN.format(occ.total)+' endereços')}
@@ -752,6 +882,8 @@ function secGeral(){
       secGeral();
     });
   }
+
+  attachTooltipEvents();
 }
 
 function secShelf(){
@@ -800,7 +932,16 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   rev.forEach(r=>{const f=r[field]; (g[f]=g[f]||{custo:0,qtd:0,n:0}); g[f].custo+=r.custo; g[f].qtd+=r.qtd; g[f].n++;});
   const cls = {ok:0,warn:0,crit:0,none:0}; rev.forEach(r=>cls[cmap[r[field]]||'none']+=val(r));
   const tot = Object.values(cls).reduce((a,b)=>a+b,0)||1, comVal = tot-cls.none||1;
-  const items = ['ok','warn','crit','none'].filter(k=>cls[k]>0).map(k=>({n:CLS[k].n,v:cls[k],c:CLS[k].c}));
+  const items = ['ok','warn','crit','none'].filter(k=>cls[k]>0).map(k=> {
+    const topItem = rev.filter(r => cmap[r[field]] === k).sort((a,b) => b.custo - a.custo)[0];
+    return {
+      n: CLS[k].n,
+      v: cls[k],
+      c: CLS[k].c,
+      topProd: topItem ? `Líder: ${topItem.prod}` : ''
+    };
+  });
+  
   const pctOk = cls.ok/comVal*100, totB = Object.values(g).reduce((s,o)=>s+(basis==='custo'?o.custo:o.qtd),0)||1;
   
   let top = rev.filter(r => topCls.includes(r[field]));
@@ -833,6 +974,16 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     top.sort((a, b) => b.qtd - a.qtd);
   }
 
+  const topCriticos = rev.filter(r => cmap[r[field]] === 'crit').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({
+    prod: r.prod,
+    sub: `${brl(r.custo)} | Faixa: ${r[field]}`
+  }));
+
+  const topAtencao = rev.filter(r => cmap[r[field]] === 'warn').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({
+    prod: r.prod,
+    sub: `${brl(r.custo)} | Faixa: ${r[field]}`
+  }));
+
   const inputId = tabType === 'shelf' ? 'inputShelfSearch' : 'inputAgingSearch';
   const selectId = tabType === 'shelf' ? 'selectShelfSort' : 'selectAgingSort';
 
@@ -841,14 +992,25 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   <div class="grid kpis">
     ${kpi('Estoque revenda',fmtV(rev.reduce((s,r)=>s+val(r),0)),fmtN.format(rev.length)+' linhas de palete')}
     ${kpi('Saudável',`<span class="good">${fmtP(pctOk)}</span>`,fmtV(cls.ok)+(cls.none?' · sem validade fora da conta':''))}
-    ${kpi('Em atenção',`<span class="warnc">${fmtP(cls.warn/comVal*100)}</span>`,fmtV(cls.warn))}
-    ${kpi('Crítico',`<span class="critc">${fmtP(cls.crit/comVal*100)}</span>`,fmtV(critV)+' · '+fmtN.format(critN)+' linhas')}
+    ${kpi('Em atenção',`<span class="warnc">${fmtP(cls.warn/comVal*100)}</span>`,fmtV(cls.warn), '', 'Top 3 em Atenção', topAtencao, 'var(--warn)')}
+    ${kpi('Crítico',`<span class="critc">${fmtP(cls.crit/comVal*100)}</span>`,fmtV(critV)+' · '+fmtN.format(critN)+' linhas', '', 'Top 3 Críticos (Maior Valor)', topCriticos, 'var(--crit)')}
   </div>
   <div class="grid two" style="margin-top:16px">
     <div class="card"><h3>Saúde do estoque revenda</h3><div class="donutwrap">${donut(items,fmtP(pctOk,0),'saudável')}${legend(items)}</div></div>
     <div class="card"><h3>Por faixa</h3><div class="tw"><table>
       <tr><th>Faixa</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th>Participação</th></tr>
-      ${order.map(f=>{const o=g[f],c=CLS[cmap[f]||'none'].c,v=basis==='custo'?o.custo:o.qtd;return `<tr><td><span class="dot" style="background:${c}"></span>${esc(f)}</td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r">${brl(o.custo)}</td><td><span class="num">${fmtP(v/totB*100)}</span><span class="bar"><b style="width:${v/totB*100}%;background:${c}"></b></span></td></tr>`}).join('')}
+      ${order.map(f=>{
+        const o=g[f],c=CLS[cmap[f]||'none'].c,v=basis==='custo'?o.custo:o.qtd;
+        const topF = rev.filter(r => r[field] === f).sort((a,b) => b.custo - a.custo)[0];
+        const topData = topF ? [{prod: topF.prod, sub: `Maior Valor: ${brl(topF.custo)}`}] : [];
+        return `<tr data-tooltip-title="${esc(f)}" data-tooltip-color="${c}" data-tooltip-items="${JSON.stringify(topData).replace(/"/g, '&quot;')}" style="cursor:pointer">
+          <td><span class="dot" style="background:${c}"></span>${esc(f)}</td>
+          <td class="r">${fmtN.format(o.n)}</td>
+          <td class="r">${fmtN.format(o.qtd)}</td>
+          <td class="r">${brl(o.custo)}</td>
+          <td><span class="num">${fmtP(v/totB*100)}</span><span class="bar"><b style="width:${v/totB*100}%;background:${c}"></b></span></td>
+        </tr>`;
+      }).join('')}
     </table></div></div>
   </div>
   <div class="card" style="margin-top:16px">
@@ -920,6 +1082,8 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
       if (tabType === 'shelf') secShelf(); else secAging();
     });
   }
+
+  attachTooltipEvents();
 }
 
 function occData(){
@@ -972,9 +1136,13 @@ function ruaBars(g,livreCor){
   const ruas = Object.entries(g.ruas).filter(([,r])=>r.t>=1).sort((a,b)=>+a[0]-+b[0]);
   if(!ruas.length) return '<p style="color:var(--mute)">Nenhuma rua mapeada para esta área.</p>';
   return `<div class="lg"><span><i style="background:${livreCor}"></i>Livre</span><span><i style="background:var(--cream)"></i>Ocupado</span></div>
-  <div class="rua-container"><div class="rua">${ruas.map(([n,r])=>{const o=r.o/r.t*100,l=100-o;return `<div class="c"><div class="stk" title="Rua ${n}: ${fmtN.format(r.o)} ocupados de ${fmtN.format(r.t)}">
+  <div class="rua-container"><div class="rua">${ruas.map(([n,r])=>{
+    const o=r.o/r.t*100,l=100-o;
+    const ttData = [{prod: `Rua ${n}`, sub: `Ocupados: ${fmtN.format(r.o)} / Total: ${fmtN.format(r.t)} (${fmtP(o)})`}];
+    return `<div class="c"><div class="stk" data-tooltip-title="Detalhamento Rua ${n}" data-tooltip-color="var(--accent)" data-tooltip-items="${JSON.stringify(ttData).replace(/"/g, '&quot;')}" style="cursor:pointer">
     <div class="lv" style="flex:${l};background:${livreCor};color:#fff">${l>=8?fmtP(l,1):''}</div>
-    <div class="lv oc" style="flex:${Math.max(o,2)}">${o>=8?fmtP(o,1):''}</div></div><div class="name">${n}</div></div>`}).join('')}</div></div>`;
+    <div class="lv oc" style="flex:${Math.max(o,2)}">${o>=8?fmtP(o,1):''}</div></div><div class="name">${n}</div></div>`;
+  }).join('')}</div></div>`;
 }
 
 function secOcup(){
@@ -984,7 +1152,7 @@ function secOcup(){
   
   const donutItems = [
     { n: 'Livre', v: O.total - O.ocup, c: '#4285f4' },
-    { n: 'Ocupado', v: O.accent || '#ffc400' }
+    { n: 'Ocupado', v: O.ocup, c: '#ffc400' }
   ];
 
   const prev = basis; 
@@ -1013,6 +1181,8 @@ function secOcup(){
   <div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'#4285f4')}</div>
   <div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'#3a5db0')}</div>
   <p class="foot">Todas as ruas ativas são exibidas nos gráficos e contam nos totais.</p>`;
+
+  attachTooltipEvents();
 }
 
 function secCarteira(){
@@ -1053,6 +1223,11 @@ function secCarteira(){
   const atrasoStr = `D-${diasAtraso}`;
   const atrasoSub = isCritico ? `🚨 CRÍTICO (${qtdDatasPendentes} datas pendentes)` : `Dentro da Meta (${qtdDatasPendentes} datas pendentes)`;
   const kpiClassAtraso = isCritico ? 'hl' : '';
+
+  const topPedentesCrit = filteredC.filter(r => r.qtdPedida > r.qtdSeparada).sort((a,b) => b.valorTotal - a.valorTotal).slice(0, 3).map(r => ({
+    prod: r.prod,
+    sub: `Destino: ${r.dest} | Valor: ${brlShort(r.valorTotal)}`
+  }));
 
   const bySep = {};
   filteredC.forEach(r => {
@@ -1097,11 +1272,15 @@ function secCarteira(){
     byDept[k].valor += r.valorTotal;
   });
   const deptRows = Object.entries(byDept).sort((a,b) => (basis==='custo' ? b[1].valor - a[1].valor : b[1].qtd - a[1].qtd));
-  const deptItems = deptRows.map(([n,o],i) => ({
-    n: n,
-    v: basis==='custo' ? o.valor : o.qtd,
-    c: DEFAULT_COLORS[i % DEFAULT_COLORS.length]
-  }));
+  const deptItems = deptRows.map(([n,o],i) => {
+    const topD = filteredC.filter(r => r.dept === n).sort((a,b) => b.valorTotal - a.valorTotal)[0];
+    return {
+      n: n,
+      v: basis==='custo' ? o.valor : o.qtd,
+      c: DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+      topProd: topD ? `Líder: ${topD.prod}` : ''
+    };
+  });
   const centerDept = basis==='custo' ? brlShort(totValor).replace('R$ ','') : fmtN.format(totPedida);
 
   const byRes = {};
@@ -1219,8 +1398,8 @@ function secCarteira(){
   <div class="grid kpis">
     ${kpi('Total Pedido', fmtN.format(totPedida), brlShort(totValor))}
     ${kpi('Total Separado', fmtN.format(totSeparada), fmtP(pctAtendimento) + ' atendido')}
-    ${kpi('Pendente de Separação', fmtN.format(totPedida - totSeparada), brlShort(filteredC.reduce((s,r) => s + (r.tipoSep !== 'Separado' ? r.valorTotal : 0), 0)))}
-    ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso)}
+    ${kpi('Pendente de Separação', fmtN.format(totPedida - totSeparada), brlShort(filteredC.reduce((s,r) => s + (r.tipoSep !== 'Separado' ? r.valorTotal : 0), 0)), '', 'Maiores Pedidos Pendentes', topPedentesCrit, 'var(--warn)')}
+    ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso, 'Datas em Atraso Crítico', Array.from(datasPendentesSet).map(d => ({prod: `Data Reserva: ${d}`, sub: 'Pendente de liberação'})), isCritico ? 'var(--crit)' : 'var(--warn)')}
   </div>
 
   <div class="grid two" style="margin-top:16px">
@@ -1475,6 +1654,8 @@ function secCarteira(){
       if (el) { el.focus(); el.setSelectionRange(destSearch.length, destSearch.length); }
     });
   }
+
+  attachTooltipEvents();
 }
 
 const SECTIONS = [
