@@ -31,7 +31,7 @@ button{cursor:pointer}
 header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
 .brand-container { display: flex; align-items: center; gap: 16px; }
 
-/* LOGO ROLDÃO OFICIAL VETORIZADO */
+/* LOGO ROLDÃO OFICIAL COM EFEITO MODERN */
 .roldao-logo-wrap {
   display: flex;
   align-items: center;
@@ -39,7 +39,7 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
   overflow: hidden;
   border-radius: 8px;
   padding: 6px 14px;
-  background: #002248;
+  background: #001e42;
   border: 1px solid rgba(255, 196, 0, 0.25);
   animation: logoEntrance 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
@@ -57,15 +57,17 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
   left: -150%;
   width: 100%;
   height: 200%;
-  background: linear-gradient(60deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  background: linear-gradient(60deg, transparent, rgba(255, 255, 255, 0.35), transparent);
   transform: rotate(25deg);
   animation: logoShimmer 4s infinite 1s;
 }
 
-.roldao-logo-svg {
-  height: 38px;
+.roldao-logo-img {
+  height: 40px;
   width: auto;
   display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
 }
 
 @keyframes logoEntrance {
@@ -220,31 +222,9 @@ body.tvmode .kpi .v { font-size: 52px; }
 <div id="bar"></div>
 <header>
   <div class="brand-container">
-    <!-- LOGO OFICIAL ROLDÃO ATACADISTA (EXATAMENTE COMO NA FOTO) -->
+    <!-- LOGO OFICIAL ROLDÃO ATACADISTA COM EFEITO MODERN -->
     <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
-      <svg class="roldao-logo-svg" viewBox="0 0 210 65" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- ROLDÃO -->
-        <g fill="#FFC400">
-          <!-- R -->
-          <path d="M 8,14 C 8,14 26,13.5 28,14 C 36,14.5 40,19 39,26 C 38,32.5 32,36 24,36 L 18,36 L 27,53 L 15,53 L 7,37.5 L 7,53 L 0,53 L 0,14 Z M 8,21 L 8,30 L 19,30 C 23.5,30 26.5,28.5 27,25.5 C 27.5,22.5 25,21 20,21 Z" />
-          <!-- o -->
-          <path d="M 44,38 C 44,28 50.5,23.5 59,23.5 C 67.5,23.5 73.5,28 73.5,38 C 73.5,48 67,53.5 59,53.5 C 50.5,53.5 44,48 44,38 Z M 52.5,38.5 C 52.5,44 55,47.5 58.8,47.5 C 62.5,47.5 65,44 65,38.5 C 65,33 62.5,29.5 58.8,29.5 C 55,29.5 52.5,33 52.5,38.5 Z" />
-          <!-- l -->
-          <path d="M 76,11 L 84,11 L 84,53 L 76,53 Z" />
-          <!-- d -->
-          <path d="M 112,11 L 120,11 L 120,53 L 112,53 L 112,47 C 109,51.5 104,53.5 97.5,53.5 C 89,53.5 83,47.5 83,38.5 C 83,29 89.5,23.5 98,23.5 C 104,23.5 109,26 112,30 Z M 91.5,38.5 C 91.5,44 94,47.5 98,47.5 C 102,47.5 104.5,44 104.5,38.5 C 104.5,33 102,29.5 98,29.5 C 94,29.5 91.5,33 91.5,38.5 Z" />
-          <!-- ã -->
-          <path d="M 124,38 C 124,28 131,23.5 140,23.5 C 147,23.5 152,26.5 154,31.5 L 146.5,33.5 C 145.5,30.5 143,29.5 140,29.5 C 136,29.5 132.5,33 132.5,38.5 C 132.5,44 135.5,47.5 140,47.5 C 144,47.5 146.5,45 147.5,41.5 L 139,41.5 L 139,36 L 155.5,36 L 155.5,53 L 148,53 L 148,48 C 146,51.5 142,53.5 137,53.5 C 129,53.5 124,48 124,38 Z" />
-          <!-- o -->
-          <path d="M 158,38 C 158,28 164.5,23.5 173,23.5 C 181.5,23.5 187.5,28 187.5,38 C 187.5,48 181,53.5 173,53.5 C 164.5,53.5 158,48 158,38 Z M 166.5,38.5 C 166.5,44 169,47.5 172.8,47.5 C 176.5,47.5 179,44 179,38.5 C 179,33 176.5,29.5 172.8,29.5 C 169,29.5 166.5,33 166.5,38.5 Z" />
-          
-          <!-- EXTENSÃO CURVA DA MARCA (O TRAÇO SOBRE O Ã/O) -->
-          <path d="M 112,19 C 112,19 146,18.5 152,18.5 C 160,18.5 168,14 168,14 C 168,14 156,22.5 148,22.5 C 138,22.5 112,22.5 112,22.5 Z" />
-        </g>
-        
-        <!-- ATACADISTA (TEXTO BRANCO FIEL À LOGO DA FOTO) -->
-        <text x="105" y="62" font-family="'Montserrat', sans-serif" font-weight="700" font-size="7.5" fill="#FFFFFF" letter-spacing="3.8" text-anchor="middle">ATACADISTA</text>
-      </svg>
+      <img class="roldao-logo-img" src="https://roldao.com.br/wp-content/uploads/2022/05/logo-roldao-atacadista.png" alt="Roldão Atacadista">
     </div>
 
     <div class="brand">
