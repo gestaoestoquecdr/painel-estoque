@@ -182,7 +182,7 @@ function brlShort(v){
   if(Math.abs(v)>=1e3) return 'R$ '+(v/1e3).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+' mil';
   return brl(v);
 }
-const esc = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);
+const esc = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nice = s => String(s).replace(/^ESTOQUE\s+/i,'').toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase());
 
 let D = null;
@@ -561,10 +561,8 @@ function secCarteira(){
     return;
   }
 
-  // Lista de tipos de separação disponíveis
   const tiposSepDisponiveis = Array.from(new Set(C.map(r => r.tipoSep))).filter(Boolean);
 
-  // Aplicação de filtro por Tipo de Separação se selecionado
   let filteredC = C;
   if (sepFilter !== 'todos') {
     filteredC = C.filter(r => r.tipoSep === sepFilter);
@@ -591,7 +589,6 @@ function secCarteira(){
   const atrasoSub = isCritico ? `🚨 CRÍTICO (${qtdDatasPendentes} datas pendentes)` : `Dentro da Meta (${qtdDatasPendentes} datas pendentes)`;
   const kpiClassAtraso = isCritico ? 'hl' : '';
 
-  // Destinatários (Lojas)
   const byDest = {};
   filteredC.forEach(r => {
     const k = r.dest || "Sem Destino";
@@ -606,7 +603,6 @@ function secCarteira(){
     destRows = destRows.filter(([k]) => k.toLowerCase().includes(destSearch.toLowerCase()));
   }
 
-  // Produtos Pendentes (Qtd Pedida > Qtd Separada)
   const prodsPendentes = [];
   filteredC.forEach(r => {
     const pendQtd = r.qtdPedida - r.qtdSeparada;
@@ -623,7 +619,6 @@ function secCarteira(){
     }
   });
 
-  // Ordena produtos por maior volume pendente
   prodsPendentes.sort((a,b) => (basis==='custo' ? b.valorPend - a.valorPend : b.qtdPend - a.qtdPend));
   const topProdsPendentes = prodsPendentes.slice(0, 15);
 
@@ -647,9 +642,8 @@ function secCarteira(){
     ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso)}
   </div>
 
-  <!-- MAIORES PRODUTOS PENDENTES -->
   <div class="card" style="margin-top:16px">
-    <h3>🔥 Top Produits Pendentes de Separação (${prodsPendentes.length} itens no total)</h3>
+    <h3>🔥 Top Produtos Pendentes de Separação (${prodsPendentes.length} itens no total)</h3>
     <div class="tw">
       <table>
         <thead>
@@ -678,7 +672,6 @@ function secCarteira(){
     </div>
   </div>
 
-  <!-- SEÇÃO RECOLHÍVEL DE DESTINOS -->
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
       <h3>SEPARAÇÃO POR DESTINATÁRIO (DESTINO)</h3>
@@ -717,7 +710,6 @@ function secCarteira(){
   </div>
   `;
 
-  // Event Listeners locais
   $('#sepFilterSelect').addEventListener('change', (e) => {
     sepFilter = e.target.value;
     secCarteira();
@@ -733,19 +725,17 @@ function secCarteira(){
     searchInp.addEventListener('input', (e) => {
       destSearch = e.target.value;
       secCarteira();
-      // reaplica foco no input
       const el = $('#inputDestSearch');
       if (el) { el.focus(); el.setSelectionRange(destSearch.length, destSearch.length); }
     });
   }
 }
 
-// ROUTER E NAVEGAÇÃO
 const SECTIONS = [
-  {id:'geral', title:'Visao Geral', render:secGeral},
+  {id:'geral', title:'Visão Geral', render:secGeral},
   {id:'shelf', title:'Shelf Life', render:secShelf},
   {id:'aging', title:'Aging', render:secAging},
-  {id:'ocup', title:'Ocupacao', render:secOcup},
+  {id:'ocup', title:'Ocupação', render:secOcup},
   {id:'carteira', title:'Carteira', render:secCarteira}
 ];
 
@@ -786,7 +776,6 @@ function render(){
   });
 }
 
-// EVENTOS DE MÍDIA E TEMA
 document.querySelectorAll('#basis button').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#basis button').forEach(b => b.setAttribute('aria-pressed', 'false'));
@@ -801,8 +790,11 @@ $('#tv').addEventListener('click', () => {
   $('#tv').setAttribute('aria-pressed', isTv);
 });
 
-// INICIALIZAÇÃO
-window.addEventListener('DOMContentLoaded', load);
+window.addEventListener('DOMContentLoaded', () => {
+  renderNav();
+  load();
+});
+
 window.addEventListener('hashchange', render);
 setInterval(load, CONFIG.ATUALIZAR_MIN * 60 * 1000);
 </script>
