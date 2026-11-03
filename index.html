@@ -61,7 +61,6 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-/* CONTROLES E FILTROS */
 .filter-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; background: var(--panel2); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--line); }
 .filter-bar label { font-size: 14px; font-weight: 600; color: var(--mute); display: flex; align-items: center; gap: 8px; }
 .filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 7px 12px; border-radius: 6px; font-size: 14px; outline: none; }
@@ -109,7 +108,6 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .bar{display:block;height:8px;background:#162a58;border-radius:4px;min-width:70px;margin-top:6px}
 .bar b{display:block;height:100%;border-radius:4px}
 
-/* ESTILOS DE PROGRESSO DE SEPARAÇÃO (PRODUÇÃO vs PENDENTE) */
 .sep-progress { display: flex; flex-direction: column; gap: 14px; margin-top: 6px; }
 .sep-item { display: flex; flex-direction: column; gap: 6px; }
 .sep-header { display: flex; justify-content: space-between; font-size: 14px; font-weight:600; }
@@ -191,7 +189,7 @@ function brlShort(v){
   if(Math.abs(v)>=1e3) return 'R$ '+(v/1e3).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+' mil';
   return brl(v);
 }
-const esc = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);
+const esc = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nice = s => String(s).replace(/^ESTOQUE\s+/i,'').toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase());
 
 let D = null;
@@ -201,7 +199,7 @@ let sepFilter = 'todos';
 let destExpanded = false;
 let destSearch = '';
 let prodSearch = '';
-let prodSortOrder = 'valor'; // 'valor' ou 'qtd'
+let prodSortOrder = 'valor';
 
 const val = r => basis==='custo' ? r.custo : r.qtd;
 const fmtV = v => basis==='custo' ? brlShort(v) : fmtN.format(v);
@@ -314,8 +312,9 @@ async function fromJsonFile(){
 }
 
 function aviso(msg){
-  $('#srctxt').textContent = msg;
-  document.querySelectorAll('section').forEach(s=>{ s.innerHTML = '<div class="card"><h3>Sem dados</h3><p>'+esc(msg)+'</p></div>'; });
+  const srcTxt = $('#srctxt');
+  if (srcTxt) srcTxt.textContent = msg;
+  document.querySelectorAll('section').forEach(s=>{ s.innerHTML = '<div class="card"><h3>Aviso</h3><p>'+esc(msg)+'</p></div>'; });
 }
 
 async function load(){
@@ -328,11 +327,12 @@ async function load(){
     render();
   } catch(err) {
     console.error('Erro ao carregar dados:', err);
-    aviso('Erro ao carregar dados do repositório: ' + err.message);
+    aviso('Erro ao carregar dados: ' + err.message);
   }
 }
 
 function donut(items,center,sub){
+  if (!items || !items.length) return '<p style="color:var(--mute)">Sem dados para gráfico</p>';
   const tot = items.reduce((s,i)=>s+i.v,0)||1, R=70, C=2*Math.PI*R; let off=0, segs='';
   items.forEach(i=>{ const L=C*i.v/tot; if(L>0) segs+=`<circle r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="30" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)"><title>${esc(i.n)}: ${fmtV(i.v)} (${fmtP(i.v/tot*100)})</title></circle>`; off+=L; });
   return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle r="${R}" cx="100" cy="100" fill="none" stroke="#162e5c" stroke-width="30"/>${segs}
@@ -340,6 +340,7 @@ function donut(items,center,sub){
 }
 
 function legend(items){
+  if (!items || !items.length) return '';
   const tot = items.reduce((s,i)=>s+i.v,0)||1;
   return `<div class="legend">${items.map(i=>`<div><i style="background:${i.c}"></i><span>${esc(i.n)}</span><span>${fmtV(i.v)} · ${fmtP(i.v/tot*100)}</span></div>`).join('')}</div>`;
 }
@@ -479,39 +480,41 @@ function occData(){
   const g2 = {total:0, ocup:0, ruas:{}};
   const bl = {total:0, ocup:0};
   
-  D.addr.forEach(a=>{
-    const area = String(a.area);
-    const end = String(a.end);
-    
-    const isG1 = area === '1' || end.includes("205.1041.1.");
-    const isG2 = area === '7' || end.includes("205.1041.7.");
-    const isBlocado = area === '5' || end.includes("205.1066.");
-    
-    let rua = a.rua;
-    if (!rua) {
-      const p = end.split('.');
-      rua = p.length >= 4 ? +p[3] : 0;
-    }
-    
-    if (isG1) {
-      g1.total++;
-      if (a.occ) g1.ocup++;
-      if (rua > 0) {
-        const r = (g1.ruas[rua] = g1.ruas[rua] || {t:0, o:0});
-        r.t++; if (a.occ) r.o++;
+  if (D && D.addr) {
+    D.addr.forEach(a=>{
+      const area = String(a.area);
+      const end = String(a.end);
+      
+      const isG1 = area === '1' || end.includes("205.1041.1.");
+      const isG2 = area === '7' || end.includes("205.1041.7.");
+      const isBlocado = area === '5' || end.includes("205.1066.");
+      
+      let rua = a.rua;
+      if (!rua) {
+        const p = end.split('.');
+        rua = p.length >= 4 ? +p[3] : 0;
       }
-    } else if (isG2) {
-      g2.total++;
-      if (a.occ) g2.ocup++;
-      if (rua > 0) {
-        const r = (g2.ruas[rua] = g2.ruas[rua] || {t:0, o:0});
-        r.t++; if (a.occ) r.o++;
+      
+      if (isG1) {
+        g1.total++;
+        if (a.occ) g1.ocup++;
+        if (rua > 0) {
+          const r = (g1.ruas[rua] = g1.ruas[rua] || {t:0, o:0});
+          r.t++; if (a.occ) r.o++;
+        }
+      } else if (isG2) {
+        g2.total++;
+        if (a.occ) g2.ocup++;
+        if (rua > 0) {
+          const r = (g2.ruas[rua] = g2.ruas[rua] || {t:0, o:0});
+          r.t++; if (a.occ) r.o++;
+        }
+      } else if (isBlocado) {
+        bl.total++;
+        if (a.occ) bl.ocup++;
       }
-    } else if (isBlocado) {
-      bl.total++;
-      if (a.occ) bl.ocup++;
-    }
-  });
+    });
+  }
 
   const total = g1.total + g2.total;
   const ocup = g1.ocup + g2.ocup;
@@ -566,7 +569,7 @@ function secOcup(){
 }
 
 function secCarteira(){
-  let C = D.cart || [];
+  let C = (D && D.cart) ? D.cart : [];
   if (!C.length) {
     $('#s-carteira').innerHTML = `<h2>Carteira de Pedido</h2><p class="sub">Nenhum dado encontrado na chave 'carteira' do JSON.</p>`;
     return;
@@ -600,10 +603,9 @@ function secCarteira(){
   const atrasoSub = isCritico ? `🚨 CRÍTICO (${qtdDatasPendentes} datas pendentes)` : `Dentro da Meta (${qtdDatasPendentes} datas pendentes)`;
   const kpiClassAtraso = isCritico ? 'hl' : '';
 
-  // ESTATÍSTICAS DE PRODUÇÃO VS PENDENTE (DERRUBADA E SORTER)
   const bySep = {};
   filteredC.forEach(r => {
-    const k = r.tipoSep;
+    const k = r.tipoSep || 'Não informado';
     bySep[k] = bySep[k] || {qtd:0, valor:0};
     bySep[k].qtd += r.qtdPedida;
     bySep[k].valor += r.valorTotal;
@@ -622,10 +624,9 @@ function secCarteira(){
   const sorPctProd = sorTotQtd ? (prodSor.qtd / sorTotQtd) * 100 : 0;
   const sorPctPend = sorTotQtd ? (pendSor.qtd / sorTotQtd) * 100 : 0;
 
-  // ESTATÍSTICAS POR DEPARTAMENTO (DONUT)
   const byDept = {};
   filteredC.forEach(r => {
-    const k = r.dept;
+    const k = r.dept || 'Outros';
     byDept[k] = byDept[k] || {qtd:0, valor:0};
     byDept[k].qtd += r.qtdPedida;
     byDept[k].valor += r.valorTotal;
@@ -638,10 +639,9 @@ function secCarteira(){
   }));
   const centerDept = basis==='custo' ? brlShort(totValor).replace('R$ ','') : fmtN.format(totPedida);
 
-  // ESTATÍSTICAS POR DATA DE GERAÇÃO RESERVA
   const byRes = {};
   filteredC.forEach(r => {
-    const k = r.gerReserva;
+    const k = r.gerReserva || 'Sem data';
     byRes[k] = byRes[k] || {qtd:0, valor:0, qtdSep:0, pendentes:0, separados:0};
     byRes[k].qtd += r.qtdPedida;
     byRes[k].valor += r.valorTotal;
@@ -659,7 +659,6 @@ function secCarteira(){
     resRows = resRows.filter(([, o]) => o.pendentes === 0);
   }
 
-  // DESTINATÁRIOS (LOJAS)
   const byDest = {};
   filteredC.forEach(r => {
     const k = r.dest || "Sem Destino";
@@ -673,17 +672,16 @@ function secCarteira(){
     destRows = destRows.filter(([k]) => k.toLowerCase().includes(destSearch.toLowerCase()));
   }
 
-  // PRODUTOS PENDENTES COM FILTRO DE BUSCA E ORDENAÇÃO
   let prodsPendentes = [];
   filteredC.forEach(r => {
     const pendQtd = r.qtdPedida - r.qtdSeparada;
     if (pendQtd > 0) {
       const pendValor = r.qtdPedida ? (r.valorTotal * (pendQtd / r.qtdPedida)) : 0;
       prodsPendentes.push({
-        prod: r.prod,
-        lote: r.lote,
-        tipoSep: r.tipoSep,
-        dest: r.dest,
+        prod: r.prod || 'Sem Descrição',
+        lote: r.lote || '-',
+        tipoSep: r.tipoSep || '-',
+        dest: r.dest || '-',
         qtdPend: pendQtd,
         valorPend: pendValor
       });
@@ -701,7 +699,7 @@ function secCarteira(){
     prodsPendentes.sort((a,b) => b.qtdPend - a.qtdPend);
   }
 
-  const topProdsPendentes = prodsPendentes.slice(0, 20);
+  const topProdsPendentes = prodsPendentes.slice(0, 25);
 
   $('#s-carteira').innerHTML = `
   <h2>Carteira de Pedido</h2>
@@ -723,7 +721,6 @@ function secCarteira(){
     ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso)}
   </div>
 
-  <!-- SEÇÃO RESTAURADA: PROGRESSO DE PRODUÇÃO E GRÁFICO POR DEPARTAMENTO -->
   <div class="grid two" style="margin-top:16px">
     <div class="card">
       <h3>Derrubada e Sorter · Produção vs Pendente</h3>
@@ -749,7 +746,7 @@ function secCarteira(){
           </div>
         </div>
       </div>
-      <div style="margin-top:18px; display:flex; gap:16px; font-size:13px; color:var(--mute); justify-content:center;">
+      <div style="margin-top:18px; display:flex; gap:16px; font-size:13px; color:var(--mute); justify-content:center; flex-wrap:wrap;">
         <span><i class="dot" style="background:var(--ok)"></i>Prod. Derrubada</span>
         <span><i class="dot" style="background:var(--warn)"></i>Pend. Derrubada</span>
         <span><i class="dot" style="background:var(--blue)"></i>Prod. Sorter</span>
@@ -763,7 +760,6 @@ function secCarteira(){
     </div>
   </div>
 
-  <!-- MAIORES PRODUTOS PENDENTES (COM CAMPO DE BUSCA E ORDENAÇÃO) -->
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
       <h3>🔥 Produtos Pendentes de Separação (${prodsPendentes.length} encontrados)</h3>
@@ -803,7 +799,6 @@ function secCarteira(){
     </div>
   </div>
 
-  <!-- RESTAURADO: TABELA POR GERAÇÃO DE RESERVA -->
   <div class="card" style="margin-top:16px">
     <h3>Status por Data de Geração da Reserva</h3>
     <div class="tw">
@@ -836,7 +831,6 @@ function secCarteira(){
     </div>
   </div>
 
-  <!-- SANFONA DE DESTINOS / LOJAS -->
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
       <h3>SEPARAÇÃO POR DESTINATÁRIO (DESTINO)</h3>
@@ -875,11 +869,13 @@ function secCarteira(){
   </div>
   `;
 
-  // EVENT LISTENERS DA SEÇÃO CARTEIRA
-  $('#sepFilterSelect').addEventListener('change', (e) => {
-    sepFilter = e.target.value;
-    secCarteira();
-  });
+  const selectSep = $('#sepFilterSelect');
+  if (selectSep) {
+    selectSep.addEventListener('change', (e) => {
+      sepFilter = e.target.value;
+      secCarteira();
+    });
+  }
 
   const pSearch = $('#inputProdSearch');
   if (pSearch) {
@@ -899,10 +895,13 @@ function secCarteira(){
     });
   }
 
-  $('#btnToggleDest').addEventListener('click', () => {
-    destExpanded = !destExpanded;
-    secCarteira();
-  });
+  const btnDest = $('#btnToggleDest');
+  if (btnDest) {
+    btnDest.addEventListener('click', () => {
+      destExpanded = !destExpanded;
+      secCarteira();
+    });
+  }
 
   const dSearch = $('#inputDestSearch');
   if (dSearch) {
@@ -927,6 +926,7 @@ let activeTab = 'carteira';
 
 function renderNav(){
   const nav = $('#tabs');
+  if (!nav) return;
   nav.innerHTML = SECTIONS.map(s => `<button data-tab="${s.id}" role="tab" aria-selected="${s.id===activeTab}">${s.title}</button>`).join('');
   
   nav.querySelectorAll('button').forEach(btn => {
@@ -951,11 +951,18 @@ function render(){
 
   SECTIONS.forEach(s => {
     const el = $('#s-' + s.id);
-    if (s.id === activeTab) {
-      el.classList.add('on');
-      s.render();
-    } else {
-      el.classList.remove('on');
+    if (el) {
+      if (s.id === activeTab) {
+        el.classList.add('on');
+        try {
+          s.render();
+        } catch(err) {
+          console.error('Erro ao renderizar seção ' + s.id, err);
+          el.innerHTML = '<div class="card"><h3>Erro de Exibição</h3><p>Ocorreu um erro ao carregar esta aba. Verifique a estrutura dos dados.</p></div>';
+        }
+      } else {
+        el.classList.remove('on');
+      }
     }
   });
 }
@@ -969,10 +976,13 @@ document.querySelectorAll('#basis button').forEach(btn => {
   });
 });
 
-$('#tv').addEventListener('click', () => {
-  const isTv = document.body.classList.toggle('tvmode');
-  $('#tv').setAttribute('aria-pressed', isTv);
-});
+const btnTv = $('#tv');
+if (btnTv) {
+  btnTv.addEventListener('click', () => {
+    const isTv = document.body.classList.toggle('tvmode');
+    btnTv.setAttribute('aria-pressed', isTv);
+  });
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   renderNav();
