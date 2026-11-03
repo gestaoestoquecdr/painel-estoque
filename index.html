@@ -6,7 +6,7 @@
 <title>Painel de Estoque CD - Roldão Atacadista</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;1,700;1,800&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   color-scheme:dark;
@@ -14,12 +14,13 @@
   --text:#eaf0ff; --mute:#8da1cc; --accent:#ffc400;
   --blue:#4285f4; --navy:#3a5db0; --cream:#fce8b2;
   --ok:#35d49a; --warn:#ffb020; --crit:#ff5d62; --none:#5b6b8f;
-  --f-body:'Barlow',system-ui,sans-serif; --f-num:'Barlow Semi Condensed','Barlow',system-ui,sans-serif;
+  --f-body:'Montserrat', system-ui, sans-serif; 
+  --f-num:'Barlow Semi Condensed', 'Montserrat', system-ui, sans-serif;
   --radius:10px;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:16px;line-height:1.4;
+body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:15px;line-height:1.4;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 28px}
 button, input, select{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -30,26 +31,25 @@ button{cursor:pointer}
 header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
 .brand-container { display: flex; align-items: center; gap: 16px; }
 
-/* LOGO ROLDÃO COM EFEITO MODERN */
+/* LOGO ROLDÃO OFICIAL VETORIZADO */
 .roldao-logo-wrap {
   display: flex;
   align-items: center;
   position: relative;
   overflow: hidden;
-  border-radius: 6px;
-  padding: 4px 8px;
-  background: rgba(255, 196, 0, 0.05);
-  border: 1px solid rgba(255, 196, 0, 0.15);
-  animation: logoEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  border-radius: 8px;
+  padding: 6px 14px;
+  background: #002248;
+  border: 1px solid rgba(255, 196, 0, 0.25);
+  animation: logoEntrance 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 .roldao-logo-wrap:hover {
   transform: translateY(-2px) scale(1.02);
   border-color: var(--accent);
-  box-shadow: 0 0 16px rgba(255, 196, 0, 0.3);
+  box-shadow: 0 0 16px rgba(255, 196, 0, 0.35);
 }
 
-/* Efeito Glow / Varredura na Logo */
 .roldao-logo-wrap::after {
   content: '';
   position: absolute;
@@ -57,40 +57,39 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
   left: -150%;
   width: 100%;
   height: 200%;
-  background: linear-gradient(60deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  background: linear-gradient(60deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   transform: rotate(25deg);
-  animation: logoShimmer 3.5s infinite 1.2s;
+  animation: logoShimmer 4s infinite 1s;
 }
 
 .roldao-logo-svg {
   height: 38px;
   width: auto;
   display: block;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
 }
 
 @keyframes logoEntrance {
-  0% { opacity: 0; transform: scale(0.7) translateY(-10px); filter: blur(4px); }
+  0% { opacity: 0; transform: scale(0.8) translateY(-8px); filter: blur(4px); }
   100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
 }
 
 @keyframes logoShimmer {
   0% { left: -150%; }
-  30%, 100% { left: 150%; }
+  25%, 100% { left: 150%; }
 }
 
 .brand{display:flex;flex-direction:column;line-height:1.1}
-.brand b{font-family:var(--f-num);font-size:22px;letter-spacing:.02em;color:#fff}
-.brand small{color:var(--mute);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.brand b{font-family:var(--f-body);font-size:20px;font-weight:700;letter-spacing:-.01em;color:#fff}
+.brand small{color:var(--mute);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
 nav{display:flex;gap:6px;flex-wrap:wrap}
-nav button{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 16px;font-weight:700;font-size:15px;transition:all .2s ease}
+nav button{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 16px;font-weight:700;font-size:14px;transition:all .2s ease}
 nav button:hover{border-color:var(--accent);transform:translateY(-1px)}
 nav button[aria-selected="true"]{background:var(--accent);color:#1a1400;border-color:var(--accent);box-shadow:0 0 16px rgba(255,196,0,0.35)}
 .tools{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.seg button{background:var(--panel);border:0;padding:8px 14px;font-size:14px;font-weight:600;color:var(--mute);transition:all .2s ease}
+.seg button{background:var(--panel);border:0;padding:8px 14px;font-size:13px;font-weight:600;color:var(--mute);transition:all .2s ease}
 .seg button[aria-pressed="true"]{background:var(--panel2);color:var(--accent)}
-.tv{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:14px;font-weight:600;transition:all .2s ease}
+.tv{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;transition:all .2s ease}
 .tv[aria-pressed="true"]{background:var(--accent);color:#1a1400}
 #src{font-size:13px;color:var(--mute);width:100%;display:flex;gap:8px;align-items:center}
 #src i{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block}
@@ -99,13 +98,13 @@ nav button[aria-selected="true"]{background:var(--accent);color:#1a1400;border-c
 
 section{display:none;padding-top:20px}
 section.on{display:block}
-h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
-.sub{color:var(--mute);margin:0 0 18px;font-size:15px}
+h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 18px;font-size:14px}
 .grid{display:grid;gap:16px}
 .kpis{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:stretch}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;min-width:0;box-shadow:0 8px 24px rgba(0,0,0,0.3);display:flex;flex-direction:column;justify-content:flex-start}
-.card h3{margin:0 0 14px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:700}
+.card h3{margin:0 0 14px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:700}
 .card-header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
 .card-header-action h3 { margin: 0; }
 .kpi .v{font-family:var(--f-num);font-size:38px;font-weight:700;line-height:1.05}
@@ -146,13 +145,13 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 .donut{width:210px;height:210px;flex:none}
 .donut text{fill:var(--text);font-family:var(--f-num)}
 .legend{display:flex;flex-direction:column;gap:12px;min-width:200px;flex:1}
-.legend div{display:flex;align-items:center;gap:10px;font-size:15px}
+.legend div{display:flex;align-items:center;gap:10px;font-size:14px}
 .legend i{width:14px;height:14px;border-radius:3px;flex:none}
 .legend span:last-child{margin-left:auto;font-family:var(--f-num);font-weight:700;white-space:nowrap}
 
 .tw{overflow-x:auto;width:100%}
-table{border-collapse:collapse;width:100%;font-size:15px}
-th{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
 td{padding:11px 12px;border-bottom:1px solid #12244b;white-space:nowrap}
 tr:hover td{background:rgba(255,255,255,0.02)}
 th.r,td.r{text-align:right;font-family:var(--f-num)}
@@ -182,7 +181,7 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .occ { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; align-items: stretch; }
 .mini { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .mini .b { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 10px; text-align: center; }
-.mini .b small { display: block; color: var(--mute); font-size: 12px; text-transform: uppercase; margin-bottom: 4px; font-weight:600; }
+.mini .b small { display: block; color: var(--mute); font-size: 11px; text-transform: uppercase; margin-bottom: 4px; font-weight:600; }
 .mini .b strong { font-family: var(--f-num); font-size: 26px; line-height: 1.1; }
 .mini.g1 .b { border-left: 3px solid var(--blue); border-right: 3px solid var(--blue); }
 .mini.g2 .b { border-left: 3px solid var(--navy); border-right: 3px solid var(--navy); }
@@ -192,7 +191,7 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .pcts { display: flex; flex-direction: column; gap: 12px; justify-content: center; min-width: 0; }
 .pcts .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .pcts .b { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 14px; text-align: center; min-width: 0; }
-.pcts .b small { display: block; color: var(--mute); font-size: 12px; margin-bottom: 4px; font-weight:600; }
+.pcts .b small { display: block; color: var(--mute); font-size: 11px; margin-bottom: 4px; font-weight:600; }
 .pcts .b strong { font-family: var(--f-num); font-size: 24px; }
 .pcts .big strong { font-size: 42px; color: var(--accent); }
 
@@ -203,7 +202,7 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .rua .lv { display: flex; align-items: center; justify-content: center; font-family: var(--f-num); font-size: 12px; font-weight: 600; overflow: hidden; min-height: 0; }
 .rua .oc { background: var(--cream); color: #2b2205; }
 .rua .name { text-align: center; font-family: var(--f-num); font-size: 14px; font-weight: 600; margin-top: 8px; color: var(--mute); }
-.lg { display: flex; gap: 18px; font-size: 14px; color: var(--mute); margin-bottom: 10px; justify-content: center; }
+.lg { display: flex; gap: 18px; font-size: 13px; color: var(--mute); margin-bottom: 10px; justify-content: center; }
 .lg i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
 .foot { color: var(--mute); font-size: 13px; margin-top: 18px; }
 
@@ -221,24 +220,30 @@ body.tvmode .kpi .v { font-size: 52px; }
 <div id="bar"></div>
 <header>
   <div class="brand-container">
-    <!-- LOGO OFICIAL ROLDÃO ATACADISTA COM EFEITO MODERN -->
+    <!-- LOGO OFICIAL ROLDÃO ATACADISTA (EXATAMENTE COMO NA FOTO) -->
     <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
-      <svg class="roldao-logo-svg" viewBox="0 0 240 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g>
-          <!-- ROLDÃO (TEXTO PRINCIPAL AMARELO REFORÇADO) -->
-          <path d="M12.5 12h18.4c5.2 0 8.8 1.4 10.9 3.8 1.9 2.1 2.7 4.9 2.7 8.1 0 4.8-2.1 8.2-5.8 10.1l7.2 13.5h-8.8l-6.3-12.2h-9.8v12.2h-8.5V12zm8.5 15.6h9.1c3.2 0 5.1-1.6 5.1-4.1 0-2.4-1.8-3.9-4.9-3.9h-9.3v8.0z" fill="#FFC400"/>
-          <path d="M47.2 32.5c0-8.8 6.4-15.6 15.5-15.6 9.2 0 15.6 6.8 15.6 15.6 0 8.8-6.4 15.6-15.6 15.6-9.1 0-15.5-6.8-15.5-15.6zm22.4 0c0-4.8-3.1-8.5-6.9-8.5-3.8 0-6.9 3.7-6.9 8.5 0 4.8 3.1 8.5 6.9 8.5 3.8 0 6.9-3.7 6.9-8.5z" fill="#FFC400"/>
-          <path d="M82.1 12h8.5v28.4h15.2v7.1H82.1V12z" fill="#FFC400"/>
-          <path d="M109.1 12h14.5c9.2 0 15.2 6.1 15.2 17.7 0 11.6-6 17.8-15.2 17.8h-14.5V12zm8.5 28.4h5.8c4.9 0 7.8-3.6 7.8-10.7 0-7.1-2.9-10.6-7.8-10.6h-5.8v21.3z" fill="#FFC400"/>
-          <path d="M152.1 16.9l-6.3 30.6h-8.1l11.4-35.5h9.6l11.4 35.5h-8.6l-6.3-30.6zm-1.8 17.2h9.9v6.5h-9.9v-6.5z" fill="#FFC400"/>
-          <path d="M172.5 32.5c0-8.8 6.4-15.6 15.5-15.6 9.2 0 15.6 6.8 15.6 15.6 0 8.8-6.4 15.6-15.6 15.6-9.1 0-15.5-6.8-15.5-15.6zm22.4 0c0-4.8-3.1-8.5-6.9-8.5-3.8 0-6.9 3.7-6.9 8.5 0 4.8 3.1 8.5 6.9 8.5 3.8 0 6.9-3.7 6.9-8.5z" fill="#FFC400"/>
+      <svg class="roldao-logo-svg" viewBox="0 0 210 65" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- ROLDÃO -->
+        <g fill="#FFC400">
+          <!-- R -->
+          <path d="M 8,14 C 8,14 26,13.5 28,14 C 36,14.5 40,19 39,26 C 38,32.5 32,36 24,36 L 18,36 L 27,53 L 15,53 L 7,37.5 L 7,53 L 0,53 L 0,14 Z M 8,21 L 8,30 L 19,30 C 23.5,30 26.5,28.5 27,25.5 C 27.5,22.5 25,21 20,21 Z" />
+          <!-- o -->
+          <path d="M 44,38 C 44,28 50.5,23.5 59,23.5 C 67.5,23.5 73.5,28 73.5,38 C 73.5,48 67,53.5 59,53.5 C 50.5,53.5 44,48 44,38 Z M 52.5,38.5 C 52.5,44 55,47.5 58.8,47.5 C 62.5,47.5 65,44 65,38.5 C 65,33 62.5,29.5 58.8,29.5 C 55,29.5 52.5,33 52.5,38.5 Z" />
+          <!-- l -->
+          <path d="M 76,11 L 84,11 L 84,53 L 76,53 Z" />
+          <!-- d -->
+          <path d="M 112,11 L 120,11 L 120,53 L 112,53 L 112,47 C 109,51.5 104,53.5 97.5,53.5 C 89,53.5 83,47.5 83,38.5 C 83,29 89.5,23.5 98,23.5 C 104,23.5 109,26 112,30 Z M 91.5,38.5 C 91.5,44 94,47.5 98,47.5 C 102,47.5 104.5,44 104.5,38.5 C 104.5,33 102,29.5 98,29.5 C 94,29.5 91.5,33 91.5,38.5 Z" />
+          <!-- ã -->
+          <path d="M 124,38 C 124,28 131,23.5 140,23.5 C 147,23.5 152,26.5 154,31.5 L 146.5,33.5 C 145.5,30.5 143,29.5 140,29.5 C 136,29.5 132.5,33 132.5,38.5 C 132.5,44 135.5,47.5 140,47.5 C 144,47.5 146.5,45 147.5,41.5 L 139,41.5 L 139,36 L 155.5,36 L 155.5,53 L 148,53 L 148,48 C 146,51.5 142,53.5 137,53.5 C 129,53.5 124,48 124,38 Z" />
+          <!-- o -->
+          <path d="M 158,38 C 158,28 164.5,23.5 173,23.5 C 181.5,23.5 187.5,28 187.5,38 C 187.5,48 181,53.5 173,53.5 C 164.5,53.5 158,48 158,38 Z M 166.5,38.5 C 166.5,44 169,47.5 172.8,47.5 C 176.5,47.5 179,44 179,38.5 C 179,33 176.5,29.5 172.8,29.5 C 169,29.5 166.5,33 166.5,38.5 Z" />
           
-          <!-- TIL DO Â -->
-          <path d="M153.5 9.5c1.8-1.5 4.2-1.2 5.8 0.2 1.2 1.1 2.8 1.1 4 0.1l1.8-1.5" stroke="#FFC400" stroke-width="3" stroke-linecap="round"/>
-
-          <!-- SUBTÍTULO ATACADISTA (AZUL CYAN MODERNO) -->
-          <text x="115" y="56" font-family="'Barlow Semi Condensed', sans-serif" font-weight="700" font-size="10" fill="#4285F4" letter-spacing="4" text-anchor="middle">ATACADISTA</text>
+          <!-- EXTENSÃO CURVA DA MARCA (O TRAÇO SOBRE O Ã/O) -->
+          <path d="M 112,19 C 112,19 146,18.5 152,18.5 C 160,18.5 168,14 168,14 C 168,14 156,22.5 148,22.5 C 138,22.5 112,22.5 112,22.5 Z" />
         </g>
+        
+        <!-- ATACADISTA (TEXTO BRANCO FIEL À LOGO DA FOTO) -->
+        <text x="105" y="62" font-family="'Montserrat', sans-serif" font-weight="700" font-size="7.5" fill="#FFFFFF" letter-spacing="3.8" text-anchor="middle">ATACADISTA</text>
       </svg>
     </div>
 
