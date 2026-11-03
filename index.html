@@ -58,7 +58,7 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
 
 .brand{display:flex;flex-direction:column;line-height:1.1}
 .brand b{font-family:var(--f-body);font-size:20px;font-weight:700;letter-spacing:-.01em;color:#fff}
-.brand small{color:var(--mute);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.brand small{color:var(--mute);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
 nav{display:flex;gap:6px;flex-wrap:wrap}
 nav button{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 16px;font-weight:700;font-size:14px;transition:all .2s ease}
 nav button:hover{border-color:var(--accent);transform:translateY(-1px)}
@@ -91,7 +91,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-.filter-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; background: var(--panel2); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--line); }
+.filter-bar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; background: var(--panel2); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--line); }
 .filter-bar label { font-size: 14px; font-weight: 600; color: var(--mute); display: flex; align-items: center; gap: 8px; }
 .filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 7px 12px; border-radius: 6px; font-size: 14px; outline: none; transition: border-color .2s ease; }
 .filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
@@ -250,6 +250,7 @@ let D = null;
 let basis = 'custo';
 let resFilter = 'todos';
 let sepFilter = 'todos';
+let targetDestFilter = 'todos'; // Filtro de Destino/Loja selecionado
 let statusFilter = 'pendente'; 
 let destExpanded = false;
 let destSearch = '';
@@ -360,7 +361,7 @@ async function fromJsonFile(){
       codProd: getProp(o, ["Código Interno", "Codigo Interno", "Código Produto", "Codigo Produto", "Cód. Prod.", "Cod. Prod", "Código", "Codigo", "SKU"]) || "-",
       gtin: getProp(o, ["GTIN", "EAN", "Cod. Barras", "Código de Barras", "Codigo de Barras"]) || "-",
       prod: getProp(o, ["Produto", "Desc. Produto", "Descrição", "Descricao"]) || "Não informado",
-      dest: getProp(o, ["Destinatário", "Destinatario", "Loja"]),
+      dest: getProp(o, ["Destinatário", "Destinatario", "Loja"]) || "Sem Destino",
       dept: getProp(o, ["Departamento CD", "Departamento"]) || "Outros",
       tipoSep: getProp(o, ["Tipo de separação", "Tipo de separacao", "Tipo Separação"]) || "Não informado",
       gerReserva: formattedDt || "Sem data",
@@ -856,10 +857,14 @@ function secCarteira(){
   }
 
   const tiposSepDisponiveis = Array.from(new Set(C.map(r => r.tipoSep))).filter(Boolean);
+  const destinosDisponiveis = Array.from(new Set(C.map(r => r.dest))).filter(Boolean).sort((a,b) => String(a).localeCompare(String(b), undefined, {numeric: true}));
 
   let filteredC = C;
   if (sepFilter !== 'todos') {
-    filteredC = C.filter(r => r.tipoSep === sepFilter);
+    filteredC = filteredC.filter(r => r.tipoSep === sepFilter);
+  }
+  if (targetDestFilter !== 'todos') {
+    filteredC = filteredC.filter(r => String(r.dest) === String(targetDestFilter));
   }
 
   const totPedida = filteredC.reduce((s,r) => s + r.qtdPedida, 0);
@@ -982,7 +987,6 @@ function secCarteira(){
         gtin: r.gtin || '-',
         prod: r.prod || 'Sem Descrição',
         tiposSet: new Set(),
-        destsSet: new Set(),
         qtdPedida: 0,
         qtdSeparada: 0,
         qtdPend: 0,
@@ -998,14 +1002,12 @@ function secCarteira(){
     prodAggMap[key].valorPend += pendVal;
 
     if (r.tipoSep) prodAggMap[key].tiposSet.add(r.tipoSep);
-    if (r.dest) prodAggMap[key].destsSet.add(r.dest);
     if (r.gtin && r.gtin !== '-') prodAggMap[key].gtin = r.gtin;
   });
 
   let prodsList = Object.values(prodAggMap).map(p => ({
     ...p,
-    tipoSep: Array.from(p.tiposSet).join(', ') || '-',
-    dest: Array.from(p.destsSet).join(', ') || '-'
+    tipoSep: Array.from(p.tiposSet).join(', ') || '-'
   }));
 
   if (prodSearch) {
@@ -1013,8 +1015,7 @@ function secCarteira(){
     prodsList = prodsList.filter(p => 
       p.prod.toLowerCase().includes(q) || 
       p.codProd.toLowerCase().includes(q) || 
-      p.gtin.toLowerCase().includes(q) || 
-      String(p.dest).toLowerCase().includes(q)
+      p.gtin.toLowerCase().includes(q)
     );
   }
 
@@ -1039,6 +1040,13 @@ function secCarteira(){
       <select id="sepFilterSelect">
         <option value="todos" ${sepFilter==='todos'?'selected':''}>-- Todos os Tipos (${C.length} itens) --</option>
         ${tiposSepDisponiveis.map(t => `<option value="${esc(t)}" ${sepFilter===t?'selected':''}>${esc(t)}</option>`).join('')}
+      </select>
+    </label>
+
+    <label>🏢 Filtrar Destino / Loja:
+      <select id="targetDestFilterSelect" style="font-weight:700;color:var(--accent)">
+        <option value="todos" ${targetDestFilter==='todos'?'selected':''}>-- Todos os Destinos --</option>
+        ${destinosDisponiveis.map(d => `<option value="${esc(d)}" ${targetDestFilter===String(d)?'selected':''}>Destino: ${esc(d)}</option>`).join('')}
       </select>
     </label>
   </div>
@@ -1135,7 +1143,6 @@ function secCarteira(){
             <th>GTIN (EAN)</th>
             <th>Produto</th>
             <th>Tipo Separação</th>
-            <th>Destino(s)</th>
             <th class="r">Qtd Pedida Total</th>
             <th class="r">Qtd Separada</th>
             <th class="r">Qtd Pendente Total</th>
@@ -1149,13 +1156,12 @@ function secCarteira(){
               <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
               <td><b>${esc(p.prod)}</b></td>
               <td><span class="dot" style="background:var(--accent)"></span>${esc(p.tipoSep)}</td>
-              <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis" title="${esc(p.dest)}">${esc(p.dest)}</td>
               <td class="r" style="font-weight:700">${fmtN.format(p.qtdPedida)}</td>
               <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(p.qtdSeparada)}</td>
               <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'};font-weight:700;font-size:15px">${fmtN.format(p.qtdPend)}</td>
               <td class="r" style="font-weight:700;color:var(--text)">${brl(p.valorPend)}</td>
             </tr>
-          `).join('') : '<tr><td colspan="9">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
+          `).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
         </tbody>
       </table>
     </div>
@@ -1195,7 +1201,7 @@ function secCarteira(){
 
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
-      <h3>SEPARAÇÃO POR DESTINATÁRIO (DESTINO)</h3>
+      <h3>RESUMO DE SEPARAÇÃO POR DESTINATÁRIO (DESTINO)</h3>
       <button class="toggle-btn" id="btnToggleDest">
         ${destExpanded ? '▲ Ocultar Lojas' : '▼ Exibir Lojas / Destinos (' + destRows.length + ')'}
       </button>
@@ -1235,6 +1241,14 @@ function secCarteira(){
   if (selectSep) {
     selectSep.addEventListener('change', (e) => {
       sepFilter = e.target.value;
+      secCarteira();
+    });
+  }
+
+  const selectTargetDest = $('#targetDestFilterSelect');
+  if (selectTargetDest) {
+    selectTargetDest.addEventListener('change', (e) => {
+      targetDestFilter = e.target.value;
       secCarteira();
     });
   }
