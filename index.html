@@ -51,9 +51,8 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 .sub{color:var(--mute);margin:0 0 18px;font-size:15px}
 .grid{display:grid;gap:16px}
 .kpis{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;min-width:0;box-shadow:0 8px 24px rgba(0,0,0,0.3);transition:transform .2s ease, border-color .2s ease}
-.card:hover{border-color:rgba(255,196,0,0.3)}
+.two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:stretch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;min-width:0;box-shadow:0 8px 24px rgba(0,0,0,0.3);display:flex;flex-direction:column;justify-content:flex-start}
 .card h3{margin:0 0 14px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:700}
 .card-header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
 .card-header-action h3 { margin: 0; }
@@ -62,7 +61,6 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-/* FILTROS E BUSCA */
 .filter-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; background: var(--panel2); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--line); }
 .filter-bar label { font-size: 14px; font-weight: 600; color: var(--mute); display: flex; align-items: center; gap: 8px; }
 .filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 7px 12px; border-radius: 6px; font-size: 14px; outline: none; transition: border-color .2s ease; }
@@ -92,15 +90,15 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 }
 .sem-fisico-badge b { color: var(--crit); font-family: var(--f-num); font-size: 16px; }
 
-.donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center}
-.donut{width:190px;height:190px;flex:none}
+.donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;margin:auto 0}
+.donut{width:180px;height:180px;flex:none}
 .donut text{fill:var(--text);font-family:var(--f-num)}
-.legend{display:flex;flex-direction:column;gap:10px;min-width:210px;flex:1}
+.legend{display:flex;flex-direction:column;gap:10px;min-width:200px;flex:1}
 .legend div{display:flex;align-items:center;gap:10px;font-size:14px}
 .legend i{width:12px;height:12px;border-radius:3px;flex:none}
 .legend span:last-child{margin-left:auto;font-family:var(--f-num);font-weight:600;white-space:nowrap}
 
-.tw{overflow-x:auto}
+.tw{overflow-x:auto;width:100%}
 table{border-collapse:collapse;width:100%;font-size:15px}
 th{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
 td{padding:11px 12px;border-bottom:1px solid #12244b;white-space:nowrap}
@@ -215,6 +213,8 @@ let destExpanded = false;
 let destSearch = '';
 let prodSearch = '';
 let prodSortOrder = 'valor';
+let estoqueProdSearch = '';
+let estoqueProdSortOrder = 'valor';
 
 const val = r => basis==='custo' ? r.custo : r.qtd;
 const fmtV = v => basis==='custo' ? brlShort(v) : fmtN.format(v);
@@ -275,9 +275,10 @@ async function fromJsonFile(){
     aging: normF(getProp(o, ["Faixa Anging ", "Faixa Anging", "Faixa Aging"])),
     qtd: +(getProp(o, ["Qtd. Endereçada", "Qtd Enderecada"]) || 0),
     custo: +(getProp(o, ["Custo Bruto Total"]) || 0),
+    codProd: getProp(o, ["Código Produto", "Codigo Produto", "Cód. Prod.", "Cod. Prod", "Código", "Codigo", "SKU"]) || "-",
     prod: getProp(o, ["Produto"]).slice(0,60),
     end: getProp(o, ["Endereço Logístico", "Endereco Logistico", "Endereço", "Endereco"])
-  }));
+  })).filter(r => r.est !== "" && r.est.toLowerCase() !== "null");
 
   const addr = rawAddr.map(o => {
     const statusVal = getProp(o, ["Status"]);
@@ -376,13 +377,14 @@ function secGeral(){
   let semFisicoVal = 0;
 
   R.forEach(r => {
+    if(!r.est || r.est.toLowerCase() === 'null') return;
     by[r.est] = by[r.est] || {custo:0, qtd:0, n:0};
     by[r.est].custo += r.custo;
     by[r.est].qtd += r.qtd;
     by[r.est].n++;
   });
   
-  const ests = Object.entries(by).sort((a,b) => (basis==='custo' ? b[1].custo - a[1].custo : b[1].qtd - a[1].qtd));
+  const ests = Object.entries(by).filter(([n,o]) => n && n.toLowerCase() !== 'null' && (o.custo > 0 || o.qtd > 0)).sort((a,b) => (basis==='custo' ? b[1].custo - a[1].custo : b[1].qtd - a[1].qtd));
   const totC = R.reduce((s,r)=>s+r.custo,0), totQ = R.reduce((s,r)=>s+r.qtd,0);
   const totV = basis==='custo' ? totC : totQ;
   
@@ -419,6 +421,31 @@ function secGeral(){
   const cardTitle = basis==='custo' ? 'VALOR POR LOCAL DE ESTOQUE (R$)' : 'QUANTIDADE POR LOCAL DE ESTOQUE';
   const semFisicoPct = totV ? (semFisicoVal / totV) * 100 : 0;
 
+  // AGRUPAMENTO DE PRODUTOS EM ESTOQUE
+  const prodMap = {};
+  R.forEach(r => {
+    const k = r.codProd && r.codProd !== '-' ? r.codProd : r.prod;
+    if (!prodMap[k]) {
+      prodMap[k] = { codProd: r.codProd, prod: r.prod, qtd: 0, custo: 0, est: r.est, end: r.end };
+    }
+    prodMap[k].qtd += r.qtd;
+    prodMap[k].custo += r.custo;
+  });
+
+  let listEstoqueProds = Object.values(prodMap);
+  if (estoqueProdSearch) {
+    const q = estoqueProdSearch.toLowerCase();
+    listEstoqueProds = listEstoqueProds.filter(p => p.prod.toLowerCase().includes(q) || p.codProd.toLowerCase().includes(q) || p.est.toLowerCase().includes(q));
+  }
+
+  if (estoqueProdSortOrder === 'valor') {
+    listEstoqueProds.sort((a,b) => b.custo - a.custo);
+  } else {
+    listEstoqueProds.sort((a,b) => b.qtd - a.qtd);
+  }
+
+  const topEstoqueProds = listEstoqueProds.slice(0, 25);
+
   $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque.</p>
   <div class="grid kpis">
     ${kpi('Custo bruto total',brlShort(totC),brl(totC),'hl')}
@@ -449,7 +476,62 @@ function secGeral(){
       const color = COLOR_MAP[key] || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
       return `<tr><td><span class="dot" style="background:${color}"></span>${esc(nice(n))}</td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r">${brl(o.custo)}</td><td><span class="num">${fmtP(v/totV*100)}</span><span class="bar"><b style="width:${v/totV*100}%;background:${color}"></b></span></td></tr>`;
     }).join('')}
-  </table></div></div>`;
+  </table></div></div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-header-action">
+      <h3>📦 TOP PRODUTOS EM ESTOQUE NO CD (${listEstoqueProds.length} encontrados)</h3>
+      <div class="prod-controls">
+        <input type="text" id="inputEstoqueProdSearch" placeholder="🔍 Buscar código / produto..." value="${esc(estoqueProdSearch)}" style="width:240px" />
+        <select id="selectEstoqueProdSort">
+          <option value="valor" ${estoqueProdSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
+          <option value="qtd" ${estoqueProdSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Endereçada</option>
+        </select>
+      </div>
+    </div>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>Cód. Produto</th>
+            <th>Produto</th>
+            <th>Local Estoque</th>
+            <th class="r">Qtd. Endereçada</th>
+            <th class="r">Custo Bruto Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${topEstoqueProds.length ? topEstoqueProds.map(p => `
+            <tr>
+              <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.codProd)}</span></td>
+              <td><b>${esc(p.prod)}</b></td>
+              <td><span class="dot" style="background:var(--accent)"></span>${esc(nice(p.est))}</td>
+              <td class="r" style="font-weight:700;color:var(--ok)">${fmtN.format(p.qtd)}</td>
+              <td class="r" style="font-weight:700;color:var(--text)">${brl(p.custo)}</td>
+            </tr>
+          `).join('') : '<tr><td colspan="5">Nenhum produto encontrado.</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+
+  const epSearch = $('#inputEstoqueProdSearch');
+  if (epSearch) {
+    epSearch.addEventListener('input', (e) => {
+      estoqueProdSearch = e.target.value;
+      secGeral();
+      const el = $('#inputEstoqueProdSearch');
+      if (el) { el.focus(); el.setSelectionRange(estoqueProdSearch.length, estoqueProdSearch.length); }
+    });
+  }
+
+  const epSort = $('#selectEstoqueProdSort');
+  if (epSort) {
+    epSort.addEventListener('change', (e) => {
+      estoqueProdSortOrder = e.target.value;
+      secGeral();
+    });
+  }
 }
 
 function secShelf(){
