@@ -90,7 +90,6 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 }
 .sem-fisico-badge b { color: var(--crit); font-family: var(--f-num); font-size: 16px; }
 
-/* AJUSTE NO GRÁFICO PARA PREENCHER MELHOR A ALTURA */
 .donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;margin:auto 0;padding:12px 0;width:100%}
 .donut{width:210px;height:210px;flex:none}
 .donut text{fill:var(--text);font-family:var(--f-num)}
@@ -156,7 +155,6 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .lg i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
 .foot { color: var(--mute); font-size: 13px; margin-top: 18px; }
 
-/* ESTILOS ESPECÍFICOS DO MODO TV */
 body.tvmode header nav, body.tvmode .seg, body.tvmode #src { display: none !important; }
 body.tvmode header { border-bottom: 0; padding: 10px 0; }
 body.tvmode .card { padding: 24px; }
@@ -549,22 +547,62 @@ function secGeral(){
 }
 
 function secShelf(){
-  faixaSection('#s-shelf','Validade (Shelf Life)','Análise do prazo de validade do estoque revenda.','shelf',['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'],SHELF_CLASS,['0 a 5 dias','06 a 15 dias','16 a 30 dias'],'Top 10 itens com validade mais crítica');
+  faixaSection(
+    '#s-shelf',
+    'Validade (Shelf Life)',
+    'Análise do prazo de validade do estoque revenda (Apenas status Disponível, Reservado e Pendente de Saída).',
+    'shelf',
+    ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'],
+    SHELF_CLASS,
+    ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias'], // Crítico e Atenção
+    'PRODUTOS EM CRÍTICO E ATENÇÃO (ORDENADOS DO MAIS CRÍTICO AO MENOS CRÍTICO)',
+    true
+  );
 }
 
 function secAging(){
-  faixaSection('#s-aging','Tempo de permanência (Aging)','Tempo em que o palete está no endereço.','aging',['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'],AGING_CLASS,['Acima de 60 dias'],'Top 10 itens parados há mais de 60 dias');
+  faixaSection(
+    '#s-aging',
+    'Tempo de permanência (Aging)',
+    'Tempo em que o palete está no endereço.',
+    'aging',
+    ['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'],
+    AGING_CLASS,
+    ['Acima de 60 dias','30 a 60 dias'], // Crítico e Atenção
+    'PRODUTOS EM CRÍTICO E ATENÇÃO (ORDENADOS DO MAIS CRÍTICO AO MENOS CRÍTICO)',
+    false
+  );
 }
 
-function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle){
-  const rev = D.rows.filter(r=>r.est.trim()===CONFIG.ESTOQUE_FISICO);
+function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisicoOnly = false){
+  const allowedStatus = ['disponivel', 'disponível', 'reservado', 'pendente de saída', 'pendente de saida', 'pendente saída', 'pendente saida'];
+  
+  const rev = D.rows.filter(r => {
+    if (r.est.trim() !== CONFIG.ESTOQUE_FISICO) return false;
+    if (filterFisicoOnly) {
+      const st = r.status.toLowerCase().trim();
+      return allowedStatus.includes(st);
+    }
+    return true;
+  });
+
   const g = {}; order.forEach(f=>g[f]={custo:0,qtd:0,n:0});
   rev.forEach(r=>{const f=r[field]; (g[f]=g[f]||{custo:0,qtd:0,n:0}); g[f].custo+=r.custo; g[f].qtd+=r.qtd; g[f].n++;});
   const cls = {ok:0,warn:0,crit:0,none:0}; rev.forEach(r=>cls[cmap[r[field]]||'none']+=val(r));
   const tot = Object.values(cls).reduce((a,b)=>a+b,0)||1, comVal = tot-cls.none||1;
   const items = ['ok','warn','crit','none'].filter(k=>cls[k]>0).map(k=>({n:CLS[k].n,v:cls[k],c:CLS[k].c}));
   const pctOk = cls.ok/comVal*100, totB = Object.values(g).reduce((s,o)=>s+(basis==='custo'?o.custo:o.qtd),0)||1;
-  const top = rev.filter(r=>topCls.includes(r[field])).sort((a,b)=>b.custo-a.custo).slice(0,10);
+  
+  // ORDENAÇÃO: Filtrar os itens das faixas informadas em topCls e ordenar na ordem do array topCls (do mais crítico para o menos crítico) e por valor dentro da faixa
+  const top = rev.filter(r => topCls.includes(r[field])).sort((a, b) => {
+    const idxA = topCls.indexOf(a[field]);
+    const idxB = topCls.indexOf(b[field]);
+    if (idxA !== idxB) {
+      return idxA - idxB; // Respeita rigorosamente a hierarquia das faixas críticas primeiro
+    }
+    return b.custo - a.custo; // Dentro da mesma faixa, ordena do maior valor para o menor
+  });
+
   const critV = cls.crit, critN = rev.filter(r=>cmap[r[field]]==='crit').length;
   $(id).innerHTML = `<h2>${title}</h2><p class="sub">${sub}</p>
   <div class="grid kpis">
@@ -580,10 +618,41 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle){
       ${order.map(f=>{const o=g[f],c=CLS[cmap[f]||'none'].c,v=basis==='custo'?o.custo:o.qtd;return `<tr><td><span class="dot" style="background:${c}"></span>${esc(f)}</td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r">${brl(o.custo)}</td><td><span class="num">${fmtP(v/totB*100)}</span><span class="bar"><b style="width:${v/totB*100}%;background:${c}"></b></span></td></tr>`}).join('')}
     </table></div></div>
   </div>
-  <div class="card" style="margin-top:16px"><h3>${topTitle}</h3><div class="tw"><table>
-    <tr><th>Produto</th><th>Endereço</th><th>Status</th><th>Faixa</th><th class="r">Qtd.</th><th class="r">Custo bruto</th></tr>
-    ${top.length?top.map(r=>`<tr><td>${esc(r.prod)}</td><td>${esc(r.end)}</td><td>${esc(r.status)}</td><td>${esc(r[field])}</td><td class="r">${fmtN.format(r.qtd)}</td><td class="r">${brl(r.custo)}</td></tr>`).join(''):'<tr><td colspan="6">Nenhum item nesta faixa.</td></tr>'}
-  </table></div></div>`;
+  <div class="card" style="margin-top:16px">
+    <h3>${topTitle} (${top.length} linhas encontradas)</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>Cód. Interno</th>
+            <th>GTIN (EAN)</th>
+            <th>Produto</th>
+            <th>Endereço</th>
+            <th>Status</th>
+            <th>Faixa</th>
+            <th class="r">Qtd.</th>
+            <th class="r">Custo bruto</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${top.length ? top.map(r => {
+            const classKey = cmap[r[field]] || 'none';
+            const badgeColor = CLS[classKey].c;
+            return `<tr>
+              <td><span class="num" style="color:var(--accent);font-weight:700">${esc(r.codProd)}</span></td>
+              <td><span class="num" style="color:var(--mute);font-weight:600">${esc(r.gtin)}</span></td>
+              <td><b>${esc(r.prod)}</b></td>
+              <td>${esc(r.end)}</td>
+              <td>${esc(r.status)}</td>
+              <td><span class="dot" style="background:${badgeColor}"></span><b>${esc(r[field])}</b></td>
+              <td class="r" style="font-weight:700">${fmtN.format(r.qtd)}</td>
+              <td class="r" style="font-weight:700">${brl(r.custo)}</td>
+            </tr>`;
+          }).join('') : '<tr><td colspan="8">Nenhum item nesta faixa.</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
 }
 
 function occData(){
@@ -1130,7 +1199,6 @@ document.querySelectorAll('#basis button').forEach(btn => {
   });
 });
 
-/* MODO TV COM FULLSCREEN E ROTAÇÃO AUTOMÁTICA DE ABAS */
 function toggleTvMode() {
   const isTv = document.body.classList.toggle('tvmode');
   const btnTv = $('#tv');
