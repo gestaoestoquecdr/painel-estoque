@@ -250,7 +250,7 @@ let D = null;
 let basis = 'custo';
 let resFilter = 'todos';
 let sepFilter = 'todos';
-let statusFilter = 'pendente'; // 'todos', 'pendente', 'separado'
+let statusFilter = 'pendente'; 
 let destExpanded = false;
 let destSearch = '';
 let prodSearch = '';
@@ -972,7 +972,6 @@ function secCarteira(){
     const pendQtd = r.qtdPedida - r.qtdSeparada;
     const isSeparado = r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada);
     
-    // Filtro pelo seletor de status
     if (statusFilter === 'pendente' && pendQtd <= 0) return;
     if (statusFilter === 'separado' && !isSeparado) return;
 
