@@ -31,7 +31,7 @@ button{cursor:pointer}
 header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
 .brand-container { display: flex; align-items: center; gap: 16px; }
 
-/* LOGÓTIPO OFICIAL ROLDÃO EM CSS/HTML PURO (100% À PROVA DE FALHAS) */
+/* LOGÓTIPO ROLDÃO EM HTML/CSS PURO */
 .roldao-logo-wrap {
   display: flex;
   align-items: center;
@@ -49,18 +49,6 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
   transform: translateY(-2px) scale(1.02);
   border-color: var(--accent);
   box-shadow: 0 0 16px rgba(255, 196, 0, 0.35);
-}
-
-.roldao-logo-wrap::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -150%;
-  width: 100%;
-  height: 200%;
-  background: linear-gradient(60deg, transparent, rgba(255, 255, 255, 0.35), transparent);
-  transform: rotate(25deg);
-  animation: logoShimmer 4s infinite 1s;
 }
 
 .roldao-text-box {
@@ -82,7 +70,6 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
   padding-right: 2px;
 }
 
-/* O traço curvo característico da marca sobre o "dão" */
 .roldao-main-text::before {
   content: '';
   position: absolute;
@@ -111,11 +98,6 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
   100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
 }
 
-@keyframes logoShimmer {
-  0% { left: -150%; }
-  25%, 100% { left: 150%; }
-}
-
 .brand{display:flex;flex-direction:column;line-height:1.1}
 .brand b{font-family:var(--f-body);font-size:20px;font-weight:700;letter-spacing:-.01em;color:#fff}
 .brand small{color:var(--mute);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
@@ -132,6 +114,7 @@ nav button[aria-selected="true"]{background:var(--accent);color:#1a1400;border-c
 #src{font-size:13px;color:var(--mute);width:100%;display:flex;gap:8px;align-items:center}
 #src i{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block}
 #src.live i{background:var(--ok)}
+#src.error i{background:var(--crit)}
 #bar{height:3px;background:var(--accent);width:0;position:fixed;left:0;top:0;z-index:99}
 
 section{display:none;padding-top:20px}
@@ -258,7 +241,6 @@ body.tvmode .kpi .v { font-size: 52px; }
 <div id="bar"></div>
 <header>
   <div class="brand-container">
-    <!-- LOGÓTIPO ROLDÃO ATACADISTA (100% HTML/CSS PURO) -->
     <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
       <div class="roldao-text-box">
         <span class="roldao-main-text">Roldão</span>
@@ -280,7 +262,7 @@ body.tvmode .kpi .v { font-size: 52px; }
     </div>
     <button class="tv" id="tv" aria-pressed="false">📺 Modo TV</button>
   </div>
-  <div id="src"><i></i><span id="srctxt">Carregando…</span></div>
+  <div id="src"><i></i><span id="srctxt">A carregar dados…</span></div>
 </header>
 
 <section id="s-geral"></section>
@@ -293,7 +275,7 @@ body.tvmode .kpi .v { font-size: 52px; }
 const CONFIG = {
   DATA_URL: "./dados.json",
   ESTOQUE_FISICO: "ESTOQUE REVENDA",
-  ATUALIZAR_MIN: 5,
+  ATUALIZAR_MIN: 1, // Atualiza a cada 1 minuto
   TV_SEGUNDOS: 20
 };
 
@@ -360,11 +342,21 @@ function extractList(source) {
   return [];
 }
 
+/* CARREGAMENTO DE DADOS COM DESATIVAÇÃO DE CACHE E TRATAMENTO DE ERROS */
 async function fromJsonFile(){
-  const res = await fetch(CONFIG.DATA_URL + '?t=' + Date.now(), { cache: 'no-store' });
-  if (!res.ok) throw new Error('Não foi possível carregar dados.json (HTTP ' + res.status + ').');
+  const url = CONFIG.DATA_URL + '?_nocache=' + Date.now();
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    }
+  });
+
+  if (!res.ok) throw new Error(`Falha HTTP ${res.status}`);
   const data = await res.json();
-  
+
   const jsonKeys = Object.keys(data);
   let rawAddr = extractList(data.ocupacao);
   if (rawAddr.length === 0) {
@@ -375,10 +367,10 @@ async function fromJsonFile(){
       }
     }
   }
-  
+
   const rawRows = extractList(data.dados1926);
   const rawCart = extractList(data.carteira || data.dados1666 || data["1666 - Carteira de Pedido"]);
-  
+
   const rows = rawRows.map(o => ({
     est: getProp(o, ["Local de Estoque"]).trim(),
     status: normF(getProp(o, ["Status"])),
@@ -398,7 +390,7 @@ async function fromJsonFile(){
     const areaVal = getProp(o, ["Area", "AREA"]);
     const ruaVal = getProp(o, ["Rua", "RUA"]);
     const endStr = getProp(o, ["Endereço", "Endereco", "Endereço Logístico", "Endereco Logistico"]);
-    
+
     return {
       end: endStr,
       area: areaVal,
@@ -431,32 +423,31 @@ async function fromJsonFile(){
     };
   });
 
-  let timeStr = 'JSON';
-  if (data.ultimaAtualizacao) {
-    const dt = new Date(data.ultimaAtualizacao);
-    timeStr = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  }
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
   return { rows, addr, cart, live: true, when: 'Atualizado às ' + timeStr };
 }
 
-function aviso(msg){
-  const srcTxt = $('#srctxt');
-  if (srcTxt) srcTxt.textContent = msg;
-  document.querySelectorAll('section').forEach(s=>{ s.innerHTML = '<div class="card"><h3>Aviso</h3><p>'+esc(msg)+'</p></div>'; });
-}
-
 async function load(){
+  const bar = $('#bar');
+  if (bar) bar.style.width = '30%';
+
   try {
     const d = await fromJsonFile();
     D = d;
     $('#src').className = 'live';
     $('#srctxt').textContent = d.when;
+    if (bar) bar.style.width = '100%';
+    setTimeout(() => { if (bar) bar.style.width = '0'; }, 400);
+
     renderNav();
     render();
   } catch(err) {
-    console.error('Erro ao carregar dados:', err);
-    aviso('Erro ao carregar dados: ' + err.message);
+    console.error('Erro ao atualizar dados:', err);
+    $('#src').className = 'error';
+    $('#srctxt').textContent = 'Erro ao atualizar (' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ')';
+    if (bar) bar.style.width = '0';
   }
 }
 
@@ -496,15 +487,15 @@ function secGeral(){
     by[r.est].qtd += r.qtd;
     by[r.est].n++;
   });
-  
+
   const ests = Object.entries(by).filter(([n,o]) => n && n.toLowerCase() !== 'null' && (o.custo > 0 || o.qtd > 0)).sort((a,b) => (basis==='custo' ? b[1].custo - a[1].custo : b[1].qtd - a[1].qtd));
   const totC = R.reduce((s,r)=>s+r.custo,0), totQ = R.reduce((s,r)=>s+r.qtd,0);
   const totV = basis==='custo' ? totC : totQ;
-  
+
   const items = ests.map(([n,o],i) => {
     const key = n.toLowerCase().trim();
     const valItem = basis==='custo' ? o.custo : o.qtd;
-    
+
     if (key.includes('virtual') || key.includes('pre alerta') || key.includes('pré alerta')) {
       semFisicoVal += valItem;
     }
@@ -515,7 +506,7 @@ function secGeral(){
       c: COLOR_MAP[key] || DEFAULT_COLORS[i % DEFAULT_COLORS.length]
     };
   });
-  
+
   const rev = R.filter(r=>r.est.trim()===CONFIG.ESTOQUE_FISICO);
   const st = {}; 
   rev.forEach(r => {
@@ -524,11 +515,11 @@ function secGeral(){
     st[r.status].qtd += r.qtd;
     st[r.status].n++;
   });
-  
+
   const stRows = Object.entries(st).sort((a,b) => b[1].custo - a[1].custo);
   const rc = rev.reduce((s,r)=>s+r.custo,0), rq = rev.reduce((s,r)=>s+r.qtd,0);
   const occ = occData();
-  
+
   const centerLabel = basis==='custo' ? brlShort(totC).replace('R$ ','') : fmtN.format(totQ);
   const subLabel = basis==='custo' ? 'custo bruto' : 'qtd. endereçada';
   const cardTitle = basis==='custo' ? 'VALOR POR LOCAL DE ESTOQUE (R$)' : 'QUANTIDADE POR LOCAL DE ESTOQUE';
@@ -689,7 +680,7 @@ function secAging(){
 
 function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisicoOnly = false, tabType = 'shelf'){
   const allowedStatus = ['disponivel', 'disponível', 'reservado', 'pendente de saída', 'pendente de saida', 'pendente saída', 'pendente saida'];
-  
+
   const rev = D.rows.filter(r => {
     if (r.est.trim() !== CONFIG.ESTOQUE_FISICO) return false;
     if (filterFisicoOnly) {
@@ -705,7 +696,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   const tot = Object.values(cls).reduce((a,b)=>a+b,0)||1, comVal = tot-cls.none||1;
   const items = ['ok','warn','crit','none'].filter(k=>cls[k]>0).map(k=>({n:CLS[k].n,v:cls[k],c:CLS[k].c}));
   const pctOk = cls.ok/comVal*100, totB = Object.values(g).reduce((s,o)=>s+(basis==='custo'?o.custo:o.qtd),0)||1;
-  
+
   let top = rev.filter(r => topCls.includes(r[field]));
 
   const currentSearch = tabType === 'shelf' ? shelfSearch : agingSearch;
@@ -829,22 +820,22 @@ function occData(){
   const g1 = {total:0, ocup:0, ruas:{}};
   const g2 = {total:0, ocup:0, ruas:{}};
   const bl = {total:0, ocup:0};
-  
+
   if (D && D.addr) {
     D.addr.forEach(a=>{
       const area = String(a.area);
       const end = String(a.end);
-      
+
       const isG1 = area === '1' || end.includes("205.1041.1.");
       const isG2 = area === '7' || end.includes("205.1041.7.");
       const isBlocado = area === '5' || end.includes("205.1066.");
-      
+
       let rua = a.rua;
       if (!rua) {
         const p = end.split('.');
         rua = p.length >= 4 ? +p[3] : 0;
       }
-      
+
       if (isG1) {
         g1.total++;
         if (a.occ) g1.ocup++;
@@ -884,7 +875,7 @@ function secOcup(){
   const O = occData(), v = o=>o.total-o.ocup;
   const box = (cls,t,o)=>`<div class="mini ${cls}"><div class="b"><small>${t}</small><strong>${fmtN.format(o.total)}</strong></div><div class="b"><small>Ocupados</small><strong>${fmtN.format(o.ocup)}</strong></div><div class="b"><small>Vazios</small><strong>${fmtN.format(v(o))}</strong></div></div>`;
   const all = {total:O.total,ocup:O.ocup};
-  
+
   const donutItems = [
     { n: 'Livre', v: O.total - O.ocup, c: '#4285f4' },
     { n: 'Ocupado', v: O.accent || '#ffc400' }
@@ -966,7 +957,7 @@ function secCarteira(){
   const prodSor = bySep["Produção Sorter"] || {pedida:0, separada:0};
   const pendDer = bySep["Pendente Derrubada"] || {pedida:0, separada:0};
   const pendSor = bySep["Pendente Sorter"] || {pedida:0, separada:0};
-  
+
   const crossDock = bySep["Cross Docking"] || bySep["CROSS DOCKING"] || {pedida:0, separada:0};
   const fullSep = bySep["Full"] || bySep["FULL"] || {pedida:0, separada:0};
 
@@ -1074,7 +1065,7 @@ function secCarteira(){
   $('#s-carteira').innerHTML = `
   <h2>Carteira de Pedido</h2>
   <p class="sub">Acompanhamento e status das reservas e solicitações do CD.</p>
-  
+
   <div class="filter-bar">
     <label>⚡ Filtrar Tipo de Separação:
       <select id="sepFilterSelect">
@@ -1321,7 +1312,7 @@ function renderNav(){
   const nav = $('#tabs');
   if (!nav) return;
   nav.innerHTML = SECTIONS.map(s => `<button data-tab="${s.id}" role="tab" aria-selected="${s.id===activeTab}">${s.title}</button>`).join('');
-  
+
   nav.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
       activeTab = btn.getAttribute('data-tab');
@@ -1337,7 +1328,7 @@ function render(){
   if (hash && SECTIONS.some(s=>s.id===hash)) {
     activeTab = hash;
   }
-  
+
   document.querySelectorAll('nav#tabs button').forEach(b => {
     b.setAttribute('aria-selected', b.getAttribute('data-tab') === activeTab);
   });
@@ -1425,6 +1416,8 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('hashchange', render);
+
+// Atualização recorrente a cada 1 minuto (garante sincronização constante)
 setInterval(load, CONFIG.ATUALIZAR_MIN * 60 * 1000);
 </script>
 </body>
