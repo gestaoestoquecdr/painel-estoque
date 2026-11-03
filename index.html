@@ -63,7 +63,7 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
 .brand b{font-family:var(--f-body);font-size:20px;font-weight:700;letter-spacing:-.01em;color:#fff}
 .brand small{color:var(--mute);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
 
-/* Botões de Navegação (Abas) */
+/* Botões de Navegação */
 nav{display:flex;gap:8px;flex-wrap:wrap}
 nav button{
   background: linear-gradient(135deg, #071530 0%, #0e234c 100%);
@@ -93,7 +93,6 @@ nav button[aria-selected="true"]{
 
 .tools{margin-left:auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 
-/* Segmented R$ / Qtd */
 .seg{
   display:inline-flex;
   border:1px solid rgba(255, 196, 0, 0.3);
@@ -184,7 +183,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-/* BARRA DE FILTROS ATIVOS EM TODAS AS PÁGINAS */
+/* BARRA DE FILTROS ATIVOS */
 .active-filters-bar {
   display: none;
   align-items: center;
@@ -216,7 +215,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   box-shadow: 0 0 12px rgba(255, 196, 0, 0.5);
 }
 
-/* TOOLTIP FLUTUANTE DINÂMICO */
+/* TOOLTIP FLUTUANTE */
 #floating-tooltip {
   position: fixed;
   z-index: 9999;
@@ -851,7 +850,7 @@ function secGeral(){
   const hasActiveFilters = filterLocalEst !== 'todos' || filterStatusEst !== 'todos';
   const activeFiltersText = `Filtro Ativo: ${filterLocalEst !== 'todos' ? `Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
 
-  $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque.</p>
+  $('#s-geral').innerHTML = `自由2<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque.</p>
 
   <div class="active-filters-bar ${hasActiveFilters ? 'visible' : ''}">
     <span>🔍 <b>${esc(activeFiltersText)}</b></span>
@@ -982,7 +981,7 @@ function secGeral(){
   attachTooltipEvents();
 }
 
-/* 2. SEÇÕES FAIXA (SHELF LIFE E AGING) COM DRILL-DOWN INTEGRADO */
+/* 2. SEÇÕES FAIXA (SHELF LIFE E AGING) CORRIGIDAS */
 function secShelf(){
   faixaSection(
     '#s-shelf',
@@ -1016,7 +1015,7 @@ function secAging(){
 function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisicoOnly = false, tabType = 'shelf'){
   const allowedStatus = ['disponivel', 'disponível', 'reservado', 'pendente de saída', 'pendente de saida', 'pendente saída', 'pendente saida'];
   
-  let rev = D.rows.filter(r => {
+  let revAll = D.rows.filter(r => {
     if (r.est.trim() !== CONFIG.ESTOQUE_FISICO) return false;
     if (filterFisicoOnly) {
       const st = r.status.toLowerCase().trim();
@@ -1026,16 +1025,26 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   });
 
   const activeFaixa = (tabType === 'shelf') ? filterShelfFaixa : filterAgingFaixa;
+  let rev = revAll;
+
+  /* FILTRAGEM CORRIGIDA PARA MOLDAR TANTO CLASSIFICAÇÃO DA ROSCA (ok, warn, crit, none) QUANTO FAIXA DIRETA */
   if (activeFaixa !== 'todos') {
-    rev = rev.filter(r => r[field].toLowerCase().trim() === activeFaixa.toLowerCase().trim());
+    const act = activeFaixa.toLowerCase().trim();
+    if (['ok', 'warn', 'crit', 'none'].includes(act)) {
+      rev = revAll.filter(r => (cmap[r[field]] || 'none') === act);
+    } else {
+      rev = revAll.filter(r => r[field].toLowerCase().trim() === act);
+    }
   }
 
   const g = {}; order.forEach(f=>g[f]={custo:0,qtd:0,n:0});
   rev.forEach(r=>{const f=r[field]; (g[f]=g[f]||{custo:0,qtd:0,n:0}); g[f].custo+=r.custo; g[f].qtd+=r.qtd; g[f].n++;});
-  const cls = {ok:0,warn:0,crit:0,none:0}; rev.forEach(r=>cls[cmap[r[field]]||'none']+=val(r));
+  
+  const cls = {ok:0,warn:0,crit:0,none:0}; revAll.forEach(r=>cls[cmap[r[field]]||'none']+=val(r));
   const tot = Object.values(cls).reduce((a,b)=>a+b,0)||1, comVal = tot-cls.none||1;
+  
   const items = ['ok','warn','crit','none'].filter(k=>cls[k]>0).map(k=> {
-    const topItem = rev.filter(r => cmap[r[field]] === k).sort((a,b) => b.custo - a.custo)[0];
+    const topItem = revAll.filter(r => cmap[r[field]] === k).sort((a,b) => b.custo - a.custo)[0];
     return {
       rawKey: k,
       n: CLS[k].n,
@@ -1077,12 +1086,12 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     top.sort((a, b) => b.qtd - a.qtd);
   }
 
-  const topCriticos = rev.filter(r => cmap[r[field]] === 'crit').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({
+  const topCriticos = revAll.filter(r => cmap[r[field]] === 'crit').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({
     prod: r.prod,
     sub: `${brl(r.custo)} | Faixa: ${r[field]}`
   }));
 
-  const topAtencao = rev.filter(r => cmap[r[field]] === 'warn').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({
+  const topAtencao = revAll.filter(r => cmap[r[field]] === 'warn').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({
     prod: r.prod,
     sub: `${brl(r.custo)} | Faixa: ${r[field]}`
   }));
@@ -1090,13 +1099,14 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   const inputId = tabType === 'shelf' ? 'inputShelfSearch' : 'inputAgingSearch';
   const selectId = tabType === 'shelf' ? 'selectShelfSort' : 'selectAgingSort';
 
-  const critV = cls.crit, critN = rev.filter(r=>cmap[r[field]]==='crit').length;
+  const critV = cls.crit, critN = revAll.filter(r=>cmap[r[field]]==='crit').length;
   const hasActiveFaixa = activeFaixa !== 'todos';
+  const activeLabel = CLS[activeFaixa] ? CLS[activeFaixa].n : activeFaixa;
 
   $(id).innerHTML = `<h2>${title}</h2><p class="sub">${sub}</p>
 
   <div class="active-filters-bar ${hasActiveFaixa ? 'visible' : ''}">
-    <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeFaixa)}</b></span>
+    <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeLabel)}</b></span>
     <button onclick="clearAllFilters()">✕ Limpar Filtro de Faixa</button>
   </div>
 
@@ -1112,7 +1122,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
       <tr><th>Faixa</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th>Participação</th></tr>
       ${order.map(f=>{
         const o=g[f],c=CLS[cmap[f]||'none'].c,v=basis==='custo'?o.custo:o.qtd;
-        const topF = rev.filter(r => r[field] === f).sort((a,b) => b.custo - a.custo)[0];
+        const topF = revAll.filter(r => r[field] === f).sort((a,b) => b.custo - a.custo)[0];
         const topData = topF ? [{prod: topF.prod, sub: `Maior Valor: ${brl(topF.custo)}`}] : [];
         const isSelectedFaixa = activeFaixa.toLowerCase() === f.toLowerCase();
 
@@ -1121,7 +1131,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
           <td class="r">${fmtN.format(o.n)}</td>
           <td class="r">${fmtN.format(o.qtd)}</td>
           <td class="r">${brl(o.custo)}</td>
-          <td><span class="num">${fmtP(v/totB*100)}</span><span class="bar"><b style="width:${v/totB*100}%;background:${c}"></b></span></td>
+          <td><span class="num">${fmtP(totB ? v/totB*100 : 0)}</span><span class="bar"><b style="width:${totB ? v/totB*100 : 0}%;background:${c}"></b></span></td>
         </tr>`;
       }).join('')}
     </table></div></div>
@@ -1312,7 +1322,7 @@ function secOcup(){
   attachTooltipEvents();
 }
 
-/* 4. SEÇÃO CARTEIRA DE PEDIDO COM FILTRO INTERATIVO EM TODOS OS ITENS */
+/* 4. SEÇÃO CARTEIRA DE PEDIDO */
 function secCarteira(){
   let C = (D && D.cart) ? D.cart : [];
   if (!C.length) {
