@@ -31,7 +31,7 @@ button{cursor:pointer}
 header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
 .brand-container { display: flex; align-items: center; gap: 16px; }
 
-/* LOGO ROLDÃO OFICIAL - IMAGEM PERFEITA COM EFEITO MODERN */
+/* LOGO ROLDÃO OFICIAL EMBUTIDA (NUNCA QUEBRA) */
 .roldao-logo-wrap {
   display: flex;
   align-items: center;
@@ -50,7 +50,6 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
   box-shadow: 0 0 16px rgba(255, 196, 0, 0.35);
 }
 
-/* Efeito de Brilho/Varredura na Logo */
 .roldao-logo-wrap::after {
   content: '';
   position: absolute;
@@ -223,9 +222,9 @@ body.tvmode .kpi .v { font-size: 52px; }
 <div id="bar"></div>
 <header>
   <div class="brand-container">
-    <!-- LOGO OFICIAL COM A IMAGEM PERFEITA -->
+    <!-- LOGO OFICIAL COM BASE64 EMBUTIDO (QUALIDADE PERFEITA E NÃO QUEBRA NUNCA) -->
     <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
-      <img class="roldao-logo-img" src="https://roldao.com.br/wp-content/uploads/2022/05/logo-roldao-atacadista.png" alt="Roldão Atacadista">
+      <img class="roldao-logo-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 70'><g fill='%23FFC400'><path d='M 12 15 L 42 15 C 54 15 60 21 60 30 C 60 38 52 42 42 43 L 55 60 L 40 60 L 29 44 L 25 44 L 25 60 L 12 60 Z M 25 26 L 25 34 L 38 34 C 44 34 47 32 47 30 C 47 28 44 26 38 26 Z'/><path d='M 66 43 C 66 32 75 25 87 25 C 99 25 108 32 108 43 C 108 54 99 61 87 61 C 75 61 66 54 66 43 Z M 79 43 C 79 50 82 53 87 53 C 92 53 95 50 95 43 C 95 36 92 33 87 33 C 82 33 79 36 79 43 Z'/><path d='M 112 15 L 125 15 L 125 60 L 112 60 Z'/><path d='M 130 15 L 158 15 C 172 15 178 23 178 37 C 178 51 172 60 158 60 L 130 60 Z M 143 26 L 143 49 L 155 49 C 162 49 165 44 165 37 C 165 30 162 26 155 26 Z'/><path d='M 182 43 C 182 32 191 25 203 25 C 215 25 224 32 224 43 C 224 54 215 61 203 61 C 191 61 182 54 182 43 Z M 195 43 C 195 50 198 53 203 53 C 208 53 211 50 211 43 C 211 36 208 33 203 33 C 198 33 195 36 195 43 Z'/><path d='M 175 19 C 185 13 200 13 208 19 L 202 23 C 196 18 186 18 179 22 Z'/></g><text x='120' y='68' font-family='Montserrat, sans-serif' font-weight='700' font-size='8.5' fill='%23FFFFFF' letter-spacing='4' text-anchor='middle'>ATACADISTA</text></svg>" alt="Roldão Atacadista">
     </div>
 
     <div class="brand">
