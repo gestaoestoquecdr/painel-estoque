@@ -32,7 +32,6 @@ button{cursor:pointer}
 header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
 .brand-container { display: flex; align-items: center; gap: 16px; }
 
-/* LOGO ENVIADO NO GITHUB */
 .roldao-logo-wrap {
   display: flex;
   align-items: center;
@@ -201,7 +200,6 @@ body.tvmode .kpi .v { font-size: 52px; }
 <header>
   <div class="brand-container">
     <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
-      <!-- Aponta diretamente para a imagem enviada no repositório -->
       <img class="roldao-logo-img" src="./logo%20Roldao%20Painel.png" alt="Roldão Atacadista">
     </div>
 
@@ -232,7 +230,7 @@ body.tvmode .kpi .v { font-size: 52px; }
 const CONFIG = {
   DATA_URL: "./dados.json",
   ESTOQUE_FISICO: "ESTOQUE REVENDA",
-  ATUALIZAR_MIN: 1, // Atualiza a cada 1 minuto
+  ATUALIZAR_MIN: 1,
   TV_SEGUNDOS: 20
 };
 
@@ -252,10 +250,11 @@ let D = null;
 let basis = 'custo';
 let resFilter = 'todos';
 let sepFilter = 'todos';
+let statusFilter = 'pendente'; // 'todos', 'pendente', 'separado'
 let destExpanded = false;
 let destSearch = '';
 let prodSearch = '';
-let prodSortOrder = 'valor';
+let prodSortOrder = 'qtd';
 let estoqueProdSearch = '';
 let estoqueProdSortOrder = 'valor';
 
@@ -299,14 +298,9 @@ function extractList(source) {
   return [];
 }
 
-/* CARREGAMENTO SEM CACHE PARA FORÇAR ATUALIZAÇÃO */
 async function fromJsonFile(){
   const url = CONFIG.DATA_URL + '?nocache=' + Date.now();
-  const res = await fetch(url, {
-    method: 'GET',
-    cache: 'no-store'
-  });
-  
+  const res = await fetch(url, { method: 'GET', cache: 'no-store' });
   if (!res.ok) throw new Error('Status HTTP ' + res.status);
   const data = await res.json();
   
@@ -972,26 +966,52 @@ function secCarteira(){
     destRows = destRows.filter(([k]) => k.toLowerCase().includes(destSearch.toLowerCase()));
   }
 
-  let prodsPendentes = [];
+  // --- AGRUPAMENTO DE PRODUTOS SOMANDO AS QUANTIDADES ---
+  const prodAggMap = {};
   filteredC.forEach(r => {
     const pendQtd = r.qtdPedida - r.qtdSeparada;
-    if (pendQtd > 0) {
-      const pendValor = r.qtdPedida ? (r.valorTotal * (pendQtd / r.qtdPedida)) : 0;
-      prodsPendentes.push({
+    const isSeparado = r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada);
+    
+    // Filtro pelo seletor de status
+    if (statusFilter === 'pendente' && pendQtd <= 0) return;
+    if (statusFilter === 'separado' && !isSeparado) return;
+
+    const key = (r.codProd && r.codProd !== '-') ? r.codProd : r.prod;
+    if (!prodAggMap[key]) {
+      prodAggMap[key] = {
         codProd: r.codProd || '-',
         gtin: r.gtin || '-',
         prod: r.prod || 'Sem Descrição',
-        tipoSep: r.tipoSep || '-',
-        dest: r.dest || '-',
-        qtdPend: pendQtd,
-        valorPend: pendValor
-      });
+        tiposSet: new Set(),
+        destsSet: new Set(),
+        qtdPedida: 0,
+        qtdSeparada: 0,
+        qtdPend: 0,
+        valorPend: 0
+      };
     }
+
+    prodAggMap[key].qtdPedida += r.qtdPedida;
+    prodAggMap[key].qtdSeparada += r.qtdSeparada;
+    prodAggMap[key].qtdPend += Math.max(0, pendQtd);
+    
+    const pendVal = r.qtdPedida ? (r.valorTotal * (Math.max(0, pendQtd) / r.qtdPedida)) : 0;
+    prodAggMap[key].valorPend += pendVal;
+
+    if (r.tipoSep) prodAggMap[key].tiposSet.add(r.tipoSep);
+    if (r.dest) prodAggMap[key].destsSet.add(r.dest);
+    if (r.gtin && r.gtin !== '-') prodAggMap[key].gtin = r.gtin;
   });
+
+  let prodsList = Object.values(prodAggMap).map(p => ({
+    ...p,
+    tipoSep: Array.from(p.tiposSet).join(', ') || '-',
+    dest: Array.from(p.destsSet).join(', ') || '-'
+  }));
 
   if (prodSearch) {
     const q = prodSearch.toLowerCase();
-    prodsPendentes = prodsPendentes.filter(p => 
+    prodsList = prodsList.filter(p => 
       p.prod.toLowerCase().includes(q) || 
       p.codProd.toLowerCase().includes(q) || 
       p.gtin.toLowerCase().includes(q) || 
@@ -1000,19 +1020,23 @@ function secCarteira(){
   }
 
   if (prodSortOrder === 'valor') {
-    prodsPendentes.sort((a,b) => b.valorPend - a.valorPend);
-  } else {
-    prodsPendentes.sort((a,b) => b.qtdPend - a.qtdPend);
+    prodsList.sort((a,b) => b.valorPend - a.valorPend);
+  } else if (prodSortOrder === 'qtd') {
+    prodsList.sort((a,b) => b.qtdPend - a.qtdPend);
+  } else if (prodSortOrder === 'pedida') {
+    prodsList.sort((a,b) => b.qtdPedida - a.qtdPedida);
   }
 
-  const topProdsPendentes = prodsPendentes.slice(0, 25);
+  const statusTitleText = statusFilter === 'pendente' 
+    ? 'PRODUTOS PENDENTES DE SEPARAÇÃO' 
+    : (statusFilter === 'separado' ? 'PRODUTOS SEPARADOS' : 'TODOS OS PRODUTOS DA CARTEIRA');
 
   $('#s-carteira').innerHTML = `
   <h2>Carteira de Pedido</h2>
   <p class="sub">Acompanhamento e status das reservas e solicitações do CD.</p>
   
   <div class="filter-bar">
-    <label>⚡ Filtrar Tipo de Separação:
+    <label>⚡ Tipo de Separação:
       <select id="sepFilterSelect">
         <option value="todos" ${sepFilter==='todos'?'selected':''}>-- Todos os Tipos (${C.length} itens) --</option>
         ${tiposSepDisponiveis.map(t => `<option value="${esc(t)}" ${sepFilter===t?'selected':''}>${esc(t)}</option>`).join('')}
@@ -1089,12 +1113,18 @@ function secCarteira(){
 
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
-      <h3>🔥 Produtos Pendentes de Separação (${prodsPendentes.length} encontrados)</h3>
+      <h3>📦 ${statusTitleText} (${prodsList.length} PRODUTOS ÚNICOS SOMADOS)</h3>
       <div class="prod-controls">
-        <input type="text" id="inputProdSearch" placeholder="🔍 Buscar código / GTIN / produto..." value="${esc(prodSearch)}" style="width:280px" />
+        <select id="selectStatusFilter" style="font-weight:700;color:var(--accent)">
+          <option value="pendente" ${statusFilter==='pendente'?'selected':''}>Status: Apenas Pendentes</option>
+          <option value="separado" ${statusFilter==='separado'?'selected':''}>Status: Apenas Separados</option>
+          <option value="todos" ${statusFilter==='todos'?'selected':''}>Status: Todos os Status</option>
+        </select>
+        <input type="text" id="inputProdSearch" placeholder="🔍 Buscar código / GTIN / produto..." value="${esc(prodSearch)}" style="width:240px" />
         <select id="selectProdSort">
-          <option value="valor" ${prodSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
           <option value="qtd" ${prodSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Pendente</option>
+          <option value="pedida" ${prodSortOrder==='pedida'?'selected':''}>Ordenar por Maior Qtd Pedida Total</option>
+          <option value="valor" ${prodSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
         </select>
       </div>
     </div>
@@ -1106,23 +1136,27 @@ function secCarteira(){
             <th>GTIN (EAN)</th>
             <th>Produto</th>
             <th>Tipo Separação</th>
-            <th>Destino</th>
-            <th class="r">Qtd Pendente</th>
-            <th class="r">Valor Estimado</th>
+            <th>Destino(s)</th>
+            <th class="r">Qtd Pedida Total</th>
+            <th class="r">Qtd Separada</th>
+            <th class="r">Qtd Pendente Total</th>
+            <th class="r">Valor Pendente Estimado</th>
           </tr>
         </thead>
         <tbody>
-          ${topProdsPendentes.length ? topProdsPendentes.map(p => `
+          ${prodsList.length ? prodsList.map(p => `
             <tr>
               <td><span class="num" style="color:var(--accent);font-weight:700">${esc(p.codProd)}</span></td>
               <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
               <td><b>${esc(p.prod)}</b></td>
               <td><span class="dot" style="background:var(--accent)"></span>${esc(p.tipoSep)}</td>
-              <td>${esc(p.dest)}</td>
-              <td class="r" style="color:var(--warn);font-weight:700">${fmtN.format(p.qtdPend)}</td>
+              <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis" title="${esc(p.dest)}">${esc(p.dest)}</td>
+              <td class="r" style="font-weight:700">${fmtN.format(p.qtdPedida)}</td>
+              <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(p.qtdSeparada)}</td>
+              <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'};font-weight:700;font-size:15px">${fmtN.format(p.qtdPend)}</td>
               <td class="r" style="font-weight:700;color:var(--text)">${brl(p.valorPend)}</td>
             </tr>
-          `).join('') : '<tr><td colspan="7">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
+          `).join('') : '<tr><td colspan="9">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
         </tbody>
       </table>
     </div>
@@ -1202,6 +1236,14 @@ function secCarteira(){
   if (selectSep) {
     selectSep.addEventListener('change', (e) => {
       sepFilter = e.target.value;
+      secCarteira();
+    });
+  }
+
+  const selectStatus = $('#selectStatusFilter');
+  if (selectStatus) {
+    selectStatus.addEventListener('change', (e) => {
+      statusFilter = e.target.value;
       secCarteira();
     });
   }
@@ -1361,8 +1403,6 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('hashchange', render);
-
-// Executa a busca atualizada a cada 1 minuto sem ficar preso em cache
 setInterval(load, CONFIG.ATUALIZAR_MIN * 60 * 1000);
 </script>
 </body>
