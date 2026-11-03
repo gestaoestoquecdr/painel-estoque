@@ -10,12 +10,12 @@
 <style>
 :root{
   color-scheme:dark;
-  --bg:#071022; --panel:#0c1a38; --panel2:#10224a; --line:#1b2f5e;
+  --bg:#050c1a; --panel:#0a1733; --panel2:#0f2046; --line:#1a3163;
   --text:#eaf0ff; --mute:#8da1cc; --accent:#ffc400;
   --blue:#4285f4; --navy:#3a5db0; --cream:#fce8b2;
   --ok:#35d49a; --warn:#ffb020; --crit:#ff5d62; --none:#5b6b8f;
   --f-body:'Barlow',system-ui,sans-serif; --f-num:'Barlow Semi Condensed','Barlow',system-ui,sans-serif;
-  --radius:8px;
+  --radius:10px;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -26,24 +26,24 @@ button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 
-header{position:sticky;top:0;z-index:5;background:rgba(7, 16, 34, 0.92);backdrop-filter:blur(10px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:14px 0;border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.90);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:14px 0;border-bottom:1px solid var(--line)}
 .brand{display:flex;flex-direction:column;line-height:1.1}
 .brand b{font-family:var(--f-num);font-size:24px;letter-spacing:.02em;color:#fff}
 .brand small{color:var(--mute);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
 nav{display:flex;gap:6px;flex-wrap:wrap}
-nav button{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 16px;font-weight:700;font-size:15px;transition:all .2s ease}
-nav button:hover{border-color:var(--accent)}
-nav button[aria-selected="true"]{background:var(--accent);color:#1a1400;border-color:var(--accent);box-shadow:0 0 12px rgba(255,196,0,0.3)}
+nav button{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 16px;font-weight:700;font-size:15px;transition:all .2s ease}
+nav button:hover{border-color:var(--accent);transform:translateY(-1px)}
+nav button[aria-selected="true"]{background:var(--accent);color:#1a1400;border-color:var(--accent);box-shadow:0 0 16px rgba(255,196,0,0.35)}
 .tools{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .seg button{background:var(--panel);border:0;padding:8px 14px;font-size:14px;font-weight:600;color:var(--mute);transition:all .2s ease}
 .seg button[aria-pressed="true"]{background:var(--panel2);color:var(--accent)}
-.tv{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 14px;font-size:14px;font-weight:600;transition:all .2s ease}
+.tv{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:14px;font-weight:600;transition:all .2s ease}
 .tv[aria-pressed="true"]{background:var(--accent);color:#1a1400}
 #src{font-size:13px;color:var(--mute);width:100%;display:flex;gap:8px;align-items:center}
 #src i{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block}
 #src.live i{background:var(--ok)}
-#bar{height:3px;background:var(--accent);width:0;position:fixed;left:0;top:0;z-index:9}
+#bar{height:3px;background:var(--accent);width:0;position:fixed;left:0;top:0;z-index:99}
 
 section{display:none;padding-top:20px}
 section.on{display:block}
@@ -52,7 +52,8 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 .grid{display:grid;gap:16px}
 .kpis{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-width:0;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;min-width:0;box-shadow:0 8px 24px rgba(0,0,0,0.3);transition:transform .2s ease, border-color .2s ease}
+.card:hover{border-color:rgba(255,196,0,0.3)}
 .card h3{margin:0 0 14px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:700}
 .card-header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
 .card-header-action h3 { margin: 0; }
@@ -61,15 +62,16 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
+/* FILTROS E BUSCA */
 .filter-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; background: var(--panel2); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--line); }
 .filter-bar label { font-size: 14px; font-weight: 600; color: var(--mute); display: flex; align-items: center; gap: 8px; }
-.filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 7px 12px; border-radius: 6px; font-size: 14px; outline: none; }
+.filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 7px 12px; border-radius: 6px; font-size: 14px; outline: none; transition: border-color .2s ease; }
 .filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
 
 .prod-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
 
 .toggle-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--panel2); border: 1px solid var(--line); color: var(--accent); padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 14px; transition: all .2s ease; }
-.toggle-btn:hover { background: var(--line); }
+.toggle-btn:hover { background: var(--line); transform: translateY(-1px); }
 
 .collapsible-content { display: none; margin-top: 14px; animation: fadeIn .25s ease-in-out; }
 .collapsible-content.open { display: block; }
@@ -101,7 +103,8 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 .tw{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:15px}
 th{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
-td{padding:10px 12px;border-bottom:1px solid #12244b;white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid #12244b;white-space:nowrap}
+tr:hover td{background:rgba(255,255,255,0.02)}
 th.r,td.r{text-align:right;font-family:var(--f-num)}
 tr.tot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
 td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
@@ -117,8 +120,8 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .info-note {
   background: rgba(66, 133, 244, 0.1);
   border: 1px solid rgba(66, 133, 244, 0.3);
-  border-radius: 6px;
-  padding: 10px 14px;
+  border-radius: 8px;
+  padding: 12px 16px;
   margin-top: 16px;
   font-size: 13px;
   color: #b0cdff;
@@ -615,7 +618,6 @@ function secCarteira(){
   const atrasoSub = isCritico ? `🚨 CRÍTICO (${qtdDatasPendentes} datas pendentes)` : `Dentro da Meta (${qtdDatasPendentes} datas pendentes)`;
   const kpiClassAtraso = isCritico ? 'hl' : '';
 
-  // ESTATÍSTICAS POR TIPO DE SEPARAÇÃO (INCLUINDO CROSS DOCKING E FULL)
   const bySep = {};
   filteredC.forEach(r => {
     const k = r.tipoSep || 'Não informado';
@@ -630,7 +632,6 @@ function secCarteira(){
   const pendDer = bySep["Pendente Derrubada"] || {pedida:0, separada:0};
   const pendSor = bySep["Pendente Sorter"] || {pedida:0, separada:0};
   
-  // CROSS DOCKING E FULL
   const crossDock = bySep["Cross Docking"] || bySep["CROSS DOCKING"] || {pedida:0, separada:0};
   const fullSep = bySep["Full"] || bySep["FULL"] || {pedida:0, separada:0};
 
@@ -798,7 +799,6 @@ function secCarteira(){
         </div>
       </div>
 
-      <!-- DESTAQUE INFORMATIVO -->
       <div class="info-note">
         💡 <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> não possuem etapa intermediária de rastreamento de produção (Derrubada/Sorter). Eles permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
       </div>
