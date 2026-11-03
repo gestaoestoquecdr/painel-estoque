@@ -233,6 +233,54 @@ const CONFIG = {
   TV_SEGUNDOS: 20
 };
 
+// --- DICIONÁRIO AUXILIAR DE LOJAS ---
+const MAPA_LOJAS = {
+  "2": "BP02 - ROLDAO FREGUESIA",
+  "3": "BP03 - ROLDAO MOOCA",
+  "4": "BP04 - ROLDAO BUTANTA - MATRIZ",
+  "5": "BP05 - ROLDAO OSASCO",
+  "6": "BP06 - ROLDAO CAMPO LIMPO",
+  "7": "BP07 - ROLDAO SANTO ANDRE",
+  "8": "BP08 - ROLDAO JUNDIAI",
+  "9": "BP09 - ROLDAO GUARULHOS",
+  "10": "BP10 - ROLDAO IPIRANGA",
+  "11": "BP11 - ROLDAO MARECHAL",
+  "13": "BP13 - ROLDAO PRAIA GRANDE",
+  "15": "BP15 - ROLDAO GUARUJA",
+  "16": "BP16 - ROLDAO TIRADENTES",
+  "17": "BP17 - ROLDAO FRANCO DA ROCHA",
+  "18": "BP18 - ROLDAO SOROCABA",
+  "19": "BP19 - ROLDAO ATIBAIA",
+  "20": "BP20 - ROLDAO NACOES UNIDAS",
+  "22": "BP22 - ROLDAO CUPECE",
+  "24": "BP24 - ROLDAO JANDIRA",
+  "26": "BP26 - ROLDAO TAIPAS",
+  "27": "BP27 - ROLDAO SAO JOSE",
+  "28": "BP28 - ROLDAO BRASILANDIA",
+  "29": "BP29 - ROLDAO SANTOS II",
+  "30": "BP30 - ROLDAO CID. DUTRA",
+  "35": "BP35 - ROLDAO CAMPINAS",
+  "36": "BP36 - ROLDAO BAURU",
+  "37": "BP37 - ROLDAO LIMEIRA",
+  "39": "BP39 - ROLDAO ITU",
+  "41": "BP41 - ROLDAO MAUA",
+  "42": "BP42 - ROLDAO VALINHOS",
+  "43": "BP43 - ROLDAO PIRACICABA",
+  "44": "BP44 - ROLDAO ITANHAEM",
+  "46": "BP46 - ROLDAO SALTO",
+  "47": "BP47 - ROLDAO CARAPICUIBA",
+  "48": "BP48 - ROLDAO PAULINIA",
+  "50": "BP50 - ROLDAO SANTA BARBARA",
+  "51": "BP51 - ROLDAO MOGI DAS CRUZES",
+  "52": "BP52 - ROLDAO SERRA NEGRA",
+  "53": "BP53 - ROLDAO AMERICANA"
+};
+
+function getNomeLoja(cod) {
+  const k = String(cod || '').trim();
+  return MAPA_LOJAS[k] || (k ? `Loja ${k}` : 'Sem Destino');
+}
+
 const $ = s => document.querySelector(s);
 const fmtN = new Intl.NumberFormat('pt-BR',{maximumFractionDigits:0});
 const fmtP = (v,d=1)=> (isFinite(v)?v:0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d})+'%';
@@ -356,11 +404,13 @@ async function fromJsonFile(){
       const parts = dtRes.split('-');
       if (parts.length === 3) formattedDt = parts[2] + '.' + parts[1];
     }
+    const rawDest = getProp(o, ["Destinatário", "Destinatario", "Loja"]);
     return {
       codProd: getProp(o, ["Código Interno", "Codigo Interno", "Código Produto", "Codigo Produto", "Cód. Prod.", "Cod. Prod", "Código", "Codigo", "SKU"]) || "-",
       gtin: getProp(o, ["GTIN", "EAN", "Cod. Barras", "Código de Barras", "Codigo de Barras"]) || "-",
       prod: getProp(o, ["Produto", "Desc. Produto", "Descrição", "Descricao"]) || "Não informado",
-      dest: getProp(o, ["Destinatário", "Destinatario", "Loja"]) || "Sem Destino",
+      rawDest: rawDest,
+      dest: getNomeLoja(rawDest),
       dept: getProp(o, ["Departamento CD", "Departamento"]) || "Outros",
       tipoSep: getProp(o, ["Tipo de separação", "Tipo de separacao", "Tipo Separação"]) || "Não informado",
       gerReserva: formattedDt || "Sem data",
@@ -1044,7 +1094,7 @@ function secCarteira(){
     <label>🏢 Filtrar Destino / Loja:
       <select id="targetDestFilterSelect" style="font-weight:700;color:var(--accent)">
         <option value="todos" ${targetDestFilter==='todos'?'selected':''}>-- Todos os Destinos --</option>
-        ${destinosDisponiveis.map(d => `<option value="${esc(d)}" ${targetDestFilter===String(d)?'selected':''}>Destino: ${esc(d)}</option>`).join('')}
+        ${destinosDisponiveis.map(d => `<option value="${esc(d)}" ${targetDestFilter===String(d)?'selected':''}>${esc(d)}</option>`).join('')}
       </select>
     </label>
   </div>
