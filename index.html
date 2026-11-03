@@ -188,6 +188,37 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
+/* BARRA DE FILTROS ATIVOS */
+.active-filters-bar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 196, 0, 0.1);
+  border: 1px solid var(--accent);
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  box-shadow: 0 0 15px rgba(255, 196, 0, 0.15);
+}
+.active-filters-bar.visible { display: flex; }
+.active-filters-bar button {
+  background: var(--accent);
+  color: #1a1400;
+  border: 0;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+.active-filters-bar button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(255, 196, 0, 0.5);
+}
+
 /* SISTEMA DE TOOLTIP FLUTUANTE (DINÂMICO) */
 #floating-tooltip {
   position: fixed;
@@ -291,10 +322,11 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .donut{width:210px;height:210px;flex:none; cursor: pointer;}
 .donut circle { transition: stroke-width 0.2s ease, opacity 0.2s ease; }
 .donut circle:hover { stroke-width: 32; opacity: 0.9; }
+.donut circle.active-slice { stroke-width: 34; filter: drop-shadow(0 0 8px var(--accent)); }
 .donut text{fill:var(--text);font-family:var(--f-num)}
 .legend{display:flex;flex-direction:column;gap:12px;min-width:200px;flex:1}
-.legend div{display:flex;align-items:center;gap:10px;font-size:14px; cursor: pointer; padding: 4px; border-radius: 6px; transition: background 0.2s;}
-.legend div:hover { background: rgba(255,255,255,0.05); }
+.legend div{display:flex;align-items:center;gap:10px;font-size:14px; cursor: pointer; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;}
+.legend div:hover, .legend div.active-item { background: rgba(255, 196, 0, 0.15); border: 1px solid rgba(255, 196, 0, 0.3); }
 .legend i{width:14px;height:14px;border-radius:3px;flex:none}
 .legend span:last-child{margin-left:auto;font-family:var(--f-num);font-weight:700;white-space:nowrap}
 
@@ -302,7 +334,8 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 table{border-collapse:collapse;width:100%;font-size:14px}
 th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
 td{padding:11px 12px;border-bottom:1px solid #12244b;white-space:nowrap}
-tr:hover td{background:rgba(255,255,255,0.04)}
+tr.clickable-row { cursor: pointer; transition: background 0.2s ease; }
+tr.clickable-row:hover, tr.clickable-row.active-row { background: rgba(255, 196, 0, 0.12) !important; }
 th.r,td.r{text-align:right;font-family:var(--f-num)}
 tr.tot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
 td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
@@ -470,6 +503,11 @@ const nice = s => String(s).replace(/^ESTOQUE\s+/i,'').toLowerCase().replace(/(^
 
 let D = null;
 let basis = 'custo';
+
+/* ESTADO DOS FILTROS INTERATIVOS DE SELEÇÃO */
+let filterLocalEst = 'todos'; 
+let filterStatusEst = 'todos';
+
 let resFilter = 'todos';
 let sepFilter = 'todos';
 let targetDestFilter = 'todos';
@@ -645,7 +683,6 @@ function attachTooltipEvents() {
       const x = e.clientX + 15;
       const y = e.clientY + 15;
       
-      // Ajuste para não sair da tela
       const ttWidth = tt.offsetWidth;
       const ttHeight = tt.offsetHeight;
       const winWidth = window.innerWidth;
@@ -671,8 +708,10 @@ function donut(items,center,sub){
     const L=C*i.v/tot; 
     const topProd = i.topProd ? [{prod: i.topProd, sub: `${brlShort(i.v)} (${fmtP(i.v/tot*100)})`}] : [];
     const tooltipData = JSON.stringify(topProd).replace(/"/g, '&quot;');
+    const isSelected = filterLocalEst !== 'todos' && filterLocalEst.toLowerCase() === i.rawKey.toLowerCase();
+    
     if(L>0) {
-      segs+=`<circle r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="26" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"></circle>`; 
+      segs+=`<circle class="${isSelected ? 'active-slice' : ''}" r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="26" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)" data-filter-local="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"></circle>`; 
     }
     off+=L; 
   });
@@ -686,7 +725,8 @@ function legend(items){
   return `<div class="legend">${items.map(i=> {
     const topProd = i.topProd ? [{prod: i.topProd, sub: `${brlShort(i.v)} (${fmtP(i.v/tot*100)})`}] : [];
     const tooltipData = JSON.stringify(topProd).replace(/"/g, '&quot;');
-    return `<div data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"><i style="background:${i.c}"></i><span>${esc(i.n)}</span><span>${fmtV(i.v)} · ${fmtP(i.v/tot*100)}</span></div>`;
+    const isSelected = filterLocalEst !== 'todos' && filterLocalEst.toLowerCase() === i.rawKey.toLowerCase();
+    return `<div class="${isSelected ? 'active-item' : ''}" data-filter-local="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"><i style="background:${i.c}"></i><span>${esc(i.n)}</span><span>${fmtV(i.v)} · ${fmtP(i.v/tot*100)}</span></div>`;
   }).join('')}</div>`;
 }
 
@@ -704,11 +744,28 @@ const COLOR_MAP = {
 };
 const DEFAULT_COLORS = ['#ffc400','#ff5d62','#ff8b8f','#c084fc','#35d49a','#3a5db0','#4285f4'];
 
+function clearFilters() {
+  filterLocalEst = 'todos';
+  filterStatusEst = 'todos';
+  secGeral();
+}
+
 function secGeral(){
-  const R = D.rows, by = {};
+  const R_all = D.rows;
+  
+  /* FILTRAGEM DINÂMICA CRUZADA */
+  let R = R_all;
+  if (filterLocalEst !== 'todos') {
+    R = R.filter(r => r.est.toLowerCase().trim() === filterLocalEst.toLowerCase().trim());
+  }
+  if (filterStatusEst !== 'todos') {
+    R = R.filter(r => r.status.toLowerCase().trim() === filterStatusEst.toLowerCase().trim());
+  }
+
+  const by = {};
   let semFisicoVal = 0;
 
-  R.forEach(r => {
+  R_all.forEach(r => {
     if(!r.est || r.est.toLowerCase() === 'null') return;
     by[r.est] = by[r.est] || {custo:0, qtd:0, n:0};
     by[r.est].custo += r.custo;
@@ -728,9 +785,10 @@ function secGeral(){
       semFisicoVal += valItem;
     }
 
-    const topItem = R.filter(r => r.est === n).sort((a,b) => b.custo - a.custo)[0];
+    const topItem = R_all.filter(r => r.est === n).sort((a,b) => b.custo - a.custo)[0];
 
     return {
+      rawKey: n,
       n: nice(n),
       v: valItem,
       c: COLOR_MAP[key] || DEFAULT_COLORS[i % DEFAULT_COLORS.length],
@@ -738,7 +796,7 @@ function secGeral(){
     };
   });
   
-  const rev = R.filter(r=>r.est.trim()===CONFIG.ESTOQUE_FISICO);
+  const rev = R.filter(r=>r.est.trim()===CONFIG.ESTOQUE_FISICO || filterLocalEst !== 'todos');
   const st = {}; 
   rev.forEach(r => {
     st[r.status] = st[r.status] || {custo:0, qtd:0, n:0};
@@ -794,11 +852,20 @@ function secGeral(){
     sub: `${brl(p.custo)} | Qtd: ${fmtN.format(p.qtd)}`
   }));
 
+  const hasActiveFilters = filterLocalEst !== 'todos' || filterStatusEst !== 'todos';
+  const activeFiltersText = `Filtro Ativo: ${filterLocalEst !== 'todos' ? `Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
+
   $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque.</p>
+
+  <div class="active-filters-bar ${hasActiveFilters ? 'visible' : ''}">
+    <span>🔍 <b>${esc(activeFiltersText)}</b></span>
+    <button onclick="clearFilters()">✕ Limpar Filtros</button>
+  </div>
+
   <div class="grid kpis">
     ${kpi('Custo bruto total',brlShort(totC),brl(totC),'hl', 'Maior Valor em Estoque', top3Estoque)}
     ${kpi('Qtd. endereçada total',fmtN.format(totQ),fmtN.format(R.length)+' linhas de palete')}
-    ${kpi('Estoque revenda',brlShort(rc),fmtN.format(rq)+' endereçados · '+fmtP(rc/totC*100)+' do valor')}
+    ${kpi('Estoque revenda',brlShort(rc),fmtN.format(rq)+' endereçados · '+fmtP(totC ? rc/totC*100 : 0)+' do valor')}
     ${kpi('Ocupação do CD',fmtP(occ.pct,2),fmtN.format(occ.ocup)+' de '+fmtN.format(occ.total)+' endereços')}
   </div>
   <div class="grid two" style="margin-top:16px">
@@ -811,24 +878,39 @@ function secGeral(){
       </div>
       <div class="donutwrap">${donut(items, centerLabel, subLabel)}${legend(items)}</div>
     </div>
-    <div class="card"><h3>Status do estoque revenda</h3><div class="tw"><table>
-      <tr><th>Status</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th class="r">% do valor</th></tr>
-      ${stRows.map(([n,o])=>`<tr><td>${esc(n)}</td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r">${brl(o.custo)}</td><td class="r">${fmtP(o.custo/rc*100)}</td></tr>`).join('')}
-      <tr class="tot"><td>Total</td><td class="r">${fmtN.format(rev.length)}</td><td class="r">${fmtN.format(rq)}</td><td class="r">${brl(rc)}</td><td class="r">100,0%</td></tr></table></div></div>
+    <div class="card">
+      <h3>Status do estoque (Clique para filtrar)</h3>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr><th>Status</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th class="r">% do valor</th></tr>
+          </thead>
+          <tbody>
+            ${stRows.map(([n,o])=> {
+              const top3St = R.filter(r => r.status === n).sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({
+                prod: r.prod,
+                sub: `${brl(r.custo)} | Endereço: ${r.end}`
+              }));
+              const isSelectedSt = filterStatusEst.toLowerCase() === n.toLowerCase();
+
+              return `<tr class="clickable-row ${isSelectedSt ? 'active-row' : ''}" data-filter-status="${esc(n)}" data-tooltip-title="Top 3 em ${esc(n)}" data-tooltip-color="var(--accent)" data-tooltip-items="${JSON.stringify(top3St).replace(/"/g, '&quot;')}">
+                <td><b>${esc(n)}</b></td>
+                <td class="r">${fmtN.format(o.n)}</td>
+                <td class="r">${fmtN.format(o.qtd)}</td>
+                <td class="r">${brl(o.custo)}</td>
+                <td class="r">${fmtP(rc ? o.custo/rc*100 : 0)}</td>
+              </tr>`;
+            }).join('')}
+            <tr class="tot"><td>Total Exibido</td><td class="r">${fmtN.format(rev.length)}</td><td class="r">${fmtN.format(rq)}</td><td class="r">${brl(rc)}</td><td class="r">100,0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
-  <div class="card" style="margin-top:16px"><h3>Valor e quantidade por local de estoque</h3><div class="tw"><table>
-    <tr><th>Local</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th>Participação</th></tr>
-    ${ests.map(([n,o],i) => {
-      const v = basis==='custo' ? o.custo : o.qtd;
-      const key = n.toLowerCase().trim();
-      const color = COLOR_MAP[key] || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
-      return `<tr><td><span class="dot" style="background:${color}"></span>${esc(nice(n))}</td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r">${brl(o.custo)}</td><td><span class="num">${fmtP(v/totV*100)}</span><span class="bar"><b style="width:${v/totV*100}%;background:${color}"></b></span></td></tr>`;
-    }).join('')}
-  </table></div></div>
 
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
-      <h3>📦 TOP PRODUTOS EM ESTOQUE NO CD (${listEstoqueProds.length} encontrados)</h3>
+      <h3>📦 PRODUTOS FILTRADOS NO ESTOQUE (${listEstoqueProds.length} encontrados)</h3>
       <div class="prod-controls">
         <input type="text" id="inputEstoqueProdSearch" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:300px" />
         <select id="selectEstoqueProdSort">
@@ -845,6 +927,7 @@ function secGeral(){
             <th>GTIN (EAN)</th>
             <th>Produto</th>
             <th>Local Estoque</th>
+            <th>Status</th>
             <th class="r">Qtd. Endereçada</th>
             <th class="r">Custo Bruto Total</th>
           </tr>
@@ -856,14 +939,40 @@ function secGeral(){
               <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
               <td><b>${esc(p.prod)}</b></td>
               <td><span class="dot" style="background:var(--accent)"></span>${esc(nice(p.est))}</td>
+              <td>${esc(p.end)}</td>
               <td class="r" style="font-weight:700;color:var(--ok)">${fmtN.format(p.qtd)}</td>
               <td class="r" style="font-weight:700;color:var(--text)">${brl(p.custo)}</td>
             </tr>
-          `).join('') : '<tr><td colspan="6">Nenhum produto encontrado.</td></tr>'}
+          `).join('') : '<tr><td colspan="7">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
         </tbody>
       </table>
     </div>
   </div>`;
+
+  /* EVENTOS DE CLIQUE PARA FILTRAGEM DINÂMICA */
+  document.querySelectorAll('[data-filter-local]').forEach(el => {
+    el.addEventListener('click', () => {
+      const targetLocal = el.getAttribute('data-filter-local');
+      if (filterLocalEst === targetLocal) {
+        filterLocalEst = 'todos'; 
+      } else {
+        filterLocalEst = targetLocal;
+      }
+      secGeral();
+    });
+  });
+
+  document.querySelectorAll('[data-filter-status]').forEach(el => {
+    el.addEventListener('click', () => {
+      const targetStatus = el.getAttribute('data-filter-status');
+      if (filterStatusEst === targetStatus) {
+        filterStatusEst = 'todos'; 
+      } else {
+        filterStatusEst = targetStatus;
+      }
+      secGeral();
+    });
+  });
 
   const epSearch = $('#inputEstoqueProdSearch');
   if (epSearch) {
@@ -1275,6 +1384,7 @@ function secCarteira(){
   const deptItems = deptRows.map(([n,o],i) => {
     const topD = filteredC.filter(r => r.dept === n).sort((a,b) => b.valorTotal - a.valorTotal)[0];
     return {
+      rawKey: n,
       n: n,
       v: basis==='custo' ? o.valor : o.qtd,
       c: DEFAULT_COLORS[i % DEFAULT_COLORS.length],
