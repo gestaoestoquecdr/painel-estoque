@@ -61,11 +61,13 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-/* FILTER & COLLAPSIBLE CONTROLS */
+/* CONTROLES E FILTROS */
 .filter-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; background: var(--panel2); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--line); }
 .filter-bar label { font-size: 14px; font-weight: 600; color: var(--mute); display: flex; align-items: center; gap: 8px; }
 .filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 7px 12px; border-radius: 6px; font-size: 14px; outline: none; }
 .filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
+
+.prod-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
 
 .toggle-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--panel2); border: 1px solid var(--line); color: var(--accent); padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 14px; transition: all .2s ease; }
 .toggle-btn:hover { background: var(--line); }
@@ -106,6 +108,13 @@ tr.tot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
 td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
 .bar{display:block;height:8px;background:#162a58;border-radius:4px;min-width:70px;margin-top:6px}
 .bar b{display:block;height:100%;border-radius:4px}
+
+/* ESTILOS DE PROGRESSO DE SEPARAÇÃO (PRODUÇÃO vs PENDENTE) */
+.sep-progress { display: flex; flex-direction: column; gap: 14px; margin-top: 6px; }
+.sep-item { display: flex; flex-direction: column; gap: 6px; }
+.sep-header { display: flex; justify-content: space-between; font-size: 14px; font-weight:600; }
+.sep-bar-bg { height: 12px; background: var(--panel2); border-radius: 6px; overflow: hidden; display: flex; }
+.sep-bar-fill { height: 100%; transition: width 0.3s ease; }
 
 .occ { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; align-items: stretch; }
 .mini { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
@@ -182,7 +191,7 @@ function brlShort(v){
   if(Math.abs(v)>=1e3) return 'R$ '+(v/1e3).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+' mil';
   return brl(v);
 }
-const esc = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);
 const nice = s => String(s).replace(/^ESTOQUE\s+/i,'').toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase());
 
 let D = null;
@@ -191,6 +200,8 @@ let resFilter = 'todos';
 let sepFilter = 'todos';
 let destExpanded = false;
 let destSearch = '';
+let prodSearch = '';
+let prodSortOrder = 'valor'; // 'valor' ou 'qtd'
 
 const val = r => basis==='custo' ? r.custo : r.qtd;
 const fmtV = v => basis==='custo' ? brlShort(v) : fmtN.format(v);
@@ -589,6 +600,66 @@ function secCarteira(){
   const atrasoSub = isCritico ? `🚨 CRÍTICO (${qtdDatasPendentes} datas pendentes)` : `Dentro da Meta (${qtdDatasPendentes} datas pendentes)`;
   const kpiClassAtraso = isCritico ? 'hl' : '';
 
+  // ESTATÍSTICAS DE PRODUÇÃO VS PENDENTE (DERRUBADA E SORTER)
+  const bySep = {};
+  filteredC.forEach(r => {
+    const k = r.tipoSep;
+    bySep[k] = bySep[k] || {qtd:0, valor:0};
+    bySep[k].qtd += r.qtdPedida;
+    bySep[k].valor += r.valorTotal;
+  });
+
+  const prodDer = bySep["Produção Derrubada"] || {qtd:0, valor:0};
+  const prodSor = bySep["Produção Sorter"] || {qtd:0, valor:0};
+  const pendDer = bySep["Pendente Derrubada"] || {qtd:0, valor:0};
+  const pendSor = bySep["Pendente Sorter"] || {qtd:0, valor:0};
+
+  const derTotQtd = prodDer.qtd + pendDer.qtd;
+  const derPctProd = derTotQtd ? (prodDer.qtd / derTotQtd) * 100 : 0;
+  const derPctPend = derTotQtd ? (pendDer.qtd / derTotQtd) * 100 : 0;
+
+  const sorTotQtd = prodSor.qtd + pendSor.qtd;
+  const sorPctProd = sorTotQtd ? (prodSor.qtd / sorTotQtd) * 100 : 0;
+  const sorPctPend = sorTotQtd ? (pendSor.qtd / sorTotQtd) * 100 : 0;
+
+  // ESTATÍSTICAS POR DEPARTAMENTO (DONUT)
+  const byDept = {};
+  filteredC.forEach(r => {
+    const k = r.dept;
+    byDept[k] = byDept[k] || {qtd:0, valor:0};
+    byDept[k].qtd += r.qtdPedida;
+    byDept[k].valor += r.valorTotal;
+  });
+  const deptRows = Object.entries(byDept).sort((a,b) => (basis==='custo' ? b[1].valor - a[1].valor : b[1].qtd - a[1].qtd));
+  const deptItems = deptRows.map(([n,o],i) => ({
+    n: n,
+    v: basis==='custo' ? o.valor : o.qtd,
+    c: DEFAULT_COLORS[i % DEFAULT_COLORS.length]
+  }));
+  const centerDept = basis==='custo' ? brlShort(totValor).replace('R$ ','') : fmtN.format(totPedida);
+
+  // ESTATÍSTICAS POR DATA DE GERAÇÃO RESERVA
+  const byRes = {};
+  filteredC.forEach(r => {
+    const k = r.gerReserva;
+    byRes[k] = byRes[k] || {qtd:0, valor:0, qtdSep:0, pendentes:0, separados:0};
+    byRes[k].qtd += r.qtdPedida;
+    byRes[k].valor += r.valorTotal;
+    byRes[k].qtdSep += r.qtdSeparada;
+    if (r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada)) {
+      byRes[k].separados++;
+    } else {
+      byRes[k].pendentes++;
+    }
+  });
+  let resRows = Object.entries(byRes).sort((a,b) => a[0].localeCompare(b[0]));
+  if (resFilter === 'pendente') {
+    resRows = resRows.filter(([, o]) => o.pendentes > 0);
+  } else if (resFilter === 'separado') {
+    resRows = resRows.filter(([, o]) => o.pendentes === 0);
+  }
+
+  // DESTINATÁRIOS (LOJAS)
   const byDest = {};
   filteredC.forEach(r => {
     const k = r.dest || "Sem Destino";
@@ -597,13 +668,13 @@ function secCarteira(){
     byDest[k].separada += r.qtdSeparada;
     byDest[k].valor += r.valorTotal;
   });
-
   let destRows = Object.entries(byDest).sort((a,b) => b[1].pedida - a[1].pedida);
   if (destSearch) {
     destRows = destRows.filter(([k]) => k.toLowerCase().includes(destSearch.toLowerCase()));
   }
 
-  const prodsPendentes = [];
+  // PRODUTOS PENDENTES COM FILTRO DE BUSCA E ORDENAÇÃO
+  let prodsPendentes = [];
   filteredC.forEach(r => {
     const pendQtd = r.qtdPedida - r.qtdSeparada;
     if (pendQtd > 0) {
@@ -619,8 +690,18 @@ function secCarteira(){
     }
   });
 
-  prodsPendentes.sort((a,b) => (basis==='custo' ? b.valorPend - a.valorPend : b.qtdPend - a.qtdPend));
-  const topProdsPendentes = prodsPendentes.slice(0, 15);
+  if (prodSearch) {
+    const q = prodSearch.toLowerCase();
+    prodsPendentes = prodsPendentes.filter(p => p.prod.toLowerCase().includes(q) || p.lote.toLowerCase().includes(q) || String(p.dest).toLowerCase().includes(q));
+  }
+
+  if (prodSortOrder === 'valor') {
+    prodsPendentes.sort((a,b) => b.valorPend - a.valorPend);
+  } else {
+    prodsPendentes.sort((a,b) => b.qtdPend - a.qtdPend);
+  }
+
+  const topProdsPendentes = prodsPendentes.slice(0, 20);
 
   $('#s-carteira').innerHTML = `
   <h2>Carteira de Pedido</h2>
@@ -642,8 +723,58 @@ function secCarteira(){
     ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso)}
   </div>
 
+  <!-- SEÇÃO RESTAURADA: PROGRESSO DE PRODUÇÃO E GRÁFICO POR DEPARTAMENTO -->
+  <div class="grid two" style="margin-top:16px">
+    <div class="card">
+      <h3>Derrubada e Sorter · Produção vs Pendente</h3>
+      <div class="sep-progress">
+        <div class="sep-item">
+          <div class="sep-header">
+            <span>Derrubada (Total: ${fmtN.format(derTotQtd)})</span>
+            <span>Prod: ${fmtP(derPctProd)} | Pend: ${fmtP(derPctPend)}</span>
+          </div>
+          <div class="sep-bar-bg">
+            <div class="sep-bar-fill" style="width:${derPctProd}%;background:var(--ok);" title="Produção Derrubada: ${fmtN.format(prodDer.qtd)}"></div>
+            <div class="sep-bar-fill" style="width:${derPctPend}%;background:var(--warn);" title="Pendente Derrubada: ${fmtN.format(pendDer.qtd)}"></div>
+          </div>
+        </div>
+        <div class="sep-item" style="margin-top: 12px;">
+          <div class="sep-header">
+            <span>Sorter (Total: ${fmtN.format(sorTotQtd)})</span>
+            <span>Prod: ${fmtP(sorPctProd)} | Pend: ${fmtP(sorPctPend)}</span>
+          </div>
+          <div class="sep-bar-bg">
+            <div class="sep-bar-fill" style="width:${sorPctProd}%;background:var(--blue);" title="Produção Sorter: ${fmtN.format(prodSor.qtd)}"></div>
+            <div class="sep-bar-fill" style="width:${sorPctPend}%;background:var(--crit);" title="Pendente Sorter: ${fmtN.format(pendSor.qtd)}"></div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:18px; display:flex; gap:16px; font-size:13px; color:var(--mute); justify-content:center;">
+        <span><i class="dot" style="background:var(--ok)"></i>Prod. Derrubada</span>
+        <span><i class="dot" style="background:var(--warn)"></i>Pend. Derrubada</span>
+        <span><i class="dot" style="background:var(--blue)"></i>Prod. Sorter</span>
+        <span><i class="dot" style="background:var(--crit)"></i>Pend. Sorter</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Participação por Departamento CD</h3>
+      <div class="donutwrap">${donut(deptItems, centerDept, basis==='custo'?'valor total':'qtd pedida')}${legend(deptItems)}</div>
+    </div>
+  </div>
+
+  <!-- MAIORES PRODUTOS PENDENTES (COM CAMPO DE BUSCA E ORDENAÇÃO) -->
   <div class="card" style="margin-top:16px">
-    <h3>🔥 Top Produtos Pendentes de Separação (${prodsPendentes.length} itens no total)</h3>
+    <div class="card-header-action">
+      <h3>🔥 Produtos Pendentes de Separação (${prodsPendentes.length} encontrados)</h3>
+      <div class="prod-controls">
+        <input type="text" id="inputProdSearch" placeholder="🔍 Buscar produto / lote..." value="${esc(prodSearch)}" style="width:240px" />
+        <select id="selectProdSort">
+          <option value="valor" ${prodSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
+          <option value="qtd" ${prodSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Pendente</option>
+        </select>
+      </div>
+    </div>
     <div class="tw">
       <table>
         <thead>
@@ -664,14 +795,48 @@ function secCarteira(){
               <td><span class="dot" style="background:var(--accent)"></span>${esc(p.tipoSep)}</td>
               <td>${esc(p.dest)}</td>
               <td class="r" style="color:var(--warn);font-weight:700">${fmtN.format(p.qtdPend)}</td>
-              <td class="r">${brl(p.valorPend)}</td>
+              <td class="r" style="font-weight:700;color:var(--text)">${brl(p.valorPend)}</td>
             </tr>
-          `).join('') : '<tr><td colspan="6">Nenhum produto pendente para o filtro selecionado.</td></tr>'}
+          `).join('') : '<tr><td colspan="6">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
         </tbody>
       </table>
     </div>
   </div>
 
+  <!-- RESTAURADO: TABELA POR GERAÇÃO DE RESERVA -->
+  <div class="card" style="margin-top:16px">
+    <h3>Status por Data de Geração da Reserva</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>Data Reserva</th>
+            <th class="r">Qtd Pedida</th>
+            <th class="r">Qtd Separada</th>
+            <th class="r">Valor Total</th>
+            <th class="r">Status Pendentes</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${resRows.map(([dt, o]) => `
+            <tr>
+              <td><b>${esc(dt)}</b></td>
+              <td class="r">${fmtN.format(o.qtd)}</td>
+              <td class="r">${fmtN.format(o.qtdSep)}</td>
+              <td class="r">${brlShort(o.valor)}</td>
+              <td class="r">
+                ${o.pendentes > 0 
+                  ? `<span style="color:var(--crit);font-weight:700">🚨 ${o.pendentes} pendentes</span>` 
+                  : `<span style="color:var(--ok);font-weight:700">✔ Concluído</span>`}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SANFONA DE DESTINOS / LOJAS -->
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
       <h3>SEPARAÇÃO POR DESTINATÁRIO (DESTINO)</h3>
@@ -710,19 +875,38 @@ function secCarteira(){
   </div>
   `;
 
+  // EVENT LISTENERS DA SEÇÃO CARTEIRA
   $('#sepFilterSelect').addEventListener('change', (e) => {
     sepFilter = e.target.value;
     secCarteira();
   });
+
+  const pSearch = $('#inputProdSearch');
+  if (pSearch) {
+    pSearch.addEventListener('input', (e) => {
+      prodSearch = e.target.value;
+      secCarteira();
+      const el = $('#inputProdSearch');
+      if (el) { el.focus(); el.setSelectionRange(prodSearch.length, prodSearch.length); }
+    });
+  }
+
+  const pSort = $('#selectProdSort');
+  if (pSort) {
+    pSort.addEventListener('change', (e) => {
+      prodSortOrder = e.target.value;
+      secCarteira();
+    });
+  }
 
   $('#btnToggleDest').addEventListener('click', () => {
     destExpanded = !destExpanded;
     secCarteira();
   });
 
-  const searchInp = $('#inputDestSearch');
-  if (searchInp) {
-    searchInp.addEventListener('input', (e) => {
+  const dSearch = $('#inputDestSearch');
+  if (dSearch) {
+    dSearch.addEventListener('input', (e) => {
       destSearch = e.target.value;
       secCarteira();
       const el = $('#inputDestSearch');
