@@ -31,7 +31,7 @@ button{cursor:pointer}
 header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
 .brand-container { display: flex; align-items: center; gap: 16px; }
 
-/* Novo Efeito Premium no Logo */
+/* Efeito Premium no Logo */
 .roldao-logo-wrap {
   display: flex;
   align-items: center;
@@ -62,16 +62,91 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
 .brand{display:flex;flex-direction:column;line-height:1.1}
 .brand b{font-family:var(--f-body);font-size:20px;font-weight:700;letter-spacing:-.01em;color:#fff}
 .brand small{color:var(--mute);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
-nav{display:flex;gap:6px;flex-wrap:wrap}
-nav button{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 16px;font-weight:700;font-size:14px;transition:all .2s ease}
-nav button:hover{border-color:var(--accent);transform:translateY(-1px)}
-nav button[aria-selected="true"]{background:var(--accent);color:#1a1400;border-color:var(--accent);box-shadow:0 0 16px rgba(255,196,0,0.35)}
-.tools{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.seg button{background:var(--panel);border:0;padding:8px 14px;font-size:13px;font-weight:600;color:var(--mute);transition:all .2s ease}
-.seg button[aria-pressed="true"]{background:var(--panel2);color:var(--accent)}
-.tv{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;transition:all .2s ease}
-.tv[aria-pressed="true"]{background:var(--accent);color:#1a1400}
+
+/* Estilização Neon dos Botões de Navegação (Abas) */
+nav{display:flex;gap:8px;flex-wrap:wrap}
+nav button{
+  background: linear-gradient(135deg, #071530 0%, #0e234c 100%);
+  border: 1px solid rgba(255, 196, 0, 0.25);
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+nav button:hover{
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 0 16px rgba(255, 196, 0, 0.35);
+  color: #fff;
+}
+nav button[aria-selected="true"]{
+  background: linear-gradient(135deg, #ffc400 0%, #e6a800 100%);
+  color: #120e00;
+  border-color: #ffe066;
+  font-weight: 800;
+  box-shadow: 0 0 22px rgba(255, 196, 0, 0.55), inset 0 0 10px rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.tools{margin-left:auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
+/* Estilização Segmentada (R$ / Qtd) */
+.seg{
+  display:inline-flex;
+  border:1px solid rgba(255, 196, 0, 0.3);
+  border-radius:10px;
+  overflow:hidden;
+  background:#040d21;
+  padding: 2px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.seg button{
+  background:transparent;
+  border:0;
+  padding:7px 15px;
+  font-size:13px;
+  font-weight:700;
+  color:var(--mute);
+  border-radius: 8px;
+  transition:all .3s ease;
+}
+.seg button:hover {
+  color: #fff;
+}
+.seg button[aria-pressed="true"]{
+  background: linear-gradient(135deg, #102958 0%, #1a3c7e 100%);
+  color: var(--accent);
+  border: 1px solid rgba(255, 196, 0, 0.5);
+  box-shadow: 0 0 12px rgba(255, 196, 0, 0.3);
+}
+
+/* Botão Modo TV */
+.tv{
+  background: linear-gradient(135deg, #071530 0%, #0e234c 100%);
+  border: 1px solid rgba(255, 196, 0, 0.3);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  transition: all 0.3s ease;
+}
+.tv:hover{
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 0 16px rgba(255, 196, 0, 0.35);
+}
+.tv[aria-pressed="true"]{
+  background: linear-gradient(135deg, #ffc400 0%, #e6a800 100%);
+  color: #120e00;
+  border-color: #ffe066;
+  box-shadow: 0 0 20px rgba(255, 196, 0, 0.6);
+}
+
 #src{font-size:13px;color:var(--mute);width:100%;display:flex;gap:8px;align-items:center}
 #src i{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block}
 #src.live i{background:var(--ok)}
@@ -85,7 +160,25 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .grid{display:grid;gap:16px}
 .kpis{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:stretch}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;min-width:0;box-shadow:0 8px 24px rgba(0,0,0,0.3);display:flex;flex-direction:column;justify-content:flex-start}
+
+/* Cards com Efeito de Destaque Suave */
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:20px;
+  min-width:0;
+  box-shadow:0 8px 24px rgba(0,0,0,0.3);
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+  border-color: rgba(66, 133, 244, 0.3);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+
 .card h3{margin:0 0 14px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:700}
 .card-header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
 .card-header-action h3 { margin: 0; }
@@ -101,8 +194,27 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 
 .prod-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
 
-.toggle-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--panel2); border: 1px solid var(--line); color: var(--accent); padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 14px; transition: all .2s ease; }
-.toggle-btn:hover { background: var(--line); transform: translateY(-1px); }
+/* Botão Toggle Sanfona com Neon */
+.toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #0b1f44 0%, #122d63 100%);
+  border: 1px solid rgba(255, 196, 0, 0.35);
+  color: var(--accent);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: all .3s ease;
+}
+.toggle-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(255, 196, 0, 0.35);
+  color: #fff;
+}
 
 .collapsible-content { display: none; margin-top: 14px; animation: fadeIn .25s ease-in-out; }
 .collapsible-content.open { display: block; }
@@ -304,7 +416,7 @@ let sepFilter = 'todos';
 let targetDestFilter = 'todos';
 let statusFilter = 'pendente'; 
 let destExpanded = false;
-let prodExpanded = false; // Estado do sanfona de produtos
+let prodExpanded = false; 
 let destSearch = '';
 let prodSearch = '';
 let prodSortOrder = 'qtd';
