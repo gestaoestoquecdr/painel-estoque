@@ -114,6 +114,18 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .sep-bar-bg { height: 12px; background: var(--panel2); border-radius: 6px; overflow: hidden; display: flex; }
 .sep-bar-fill { height: 100%; transition: width 0.3s ease; }
 
+.info-note {
+  background: rgba(66, 133, 244, 0.1);
+  border: 1px solid rgba(66, 133, 244, 0.3);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #b0cdff;
+  line-height: 1.4;
+}
+.info-note b { color: var(--accent); }
+
 .occ { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; align-items: stretch; }
 .mini { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .mini .b { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 10px; text-align: center; }
@@ -290,6 +302,7 @@ async function fromJsonFile(){
       if (parts.length === 3) formattedDt = parts[2] + '.' + parts[1];
     }
     return {
+      codProd: getProp(o, ["Código Produto", "Codigo Produto", "Cód. Prod.", "Cod. Prod", "Código", "Codigo", "SKU"]) || "-",
       prod: getProp(o, ["Produto", "Desc. Produto", "Descrição", "Descricao"]) || "Não informado",
       dest: getProp(o, ["Destinatário", "Destinatario", "Loja"]),
       dept: getProp(o, ["Departamento CD", "Departamento"]) || "Outros",
@@ -297,8 +310,7 @@ async function fromJsonFile(){
       gerReserva: formattedDt || "Sem data",
       qtdPedida: +(getProp(o, ["Qtd Pedida", "Qtd. Pedida"]) || 0),
       qtdSeparada: +(getProp(o, ["Qtd Separada", "Qtd. Separada"]) || 0),
-      valorTotal: +(getProp(o, ["Valor Total", "Valor"]) || 0),
-      lote: getProp(o, ["Nº do lote", "Lote"]) || "-"
+      valorTotal: +(getProp(o, ["Valor Total", "Valor"]) || 0)
     };
   });
 
@@ -603,26 +615,42 @@ function secCarteira(){
   const atrasoSub = isCritico ? `🚨 CRÍTICO (${qtdDatasPendentes} datas pendentes)` : `Dentro da Meta (${qtdDatasPendentes} datas pendentes)`;
   const kpiClassAtraso = isCritico ? 'hl' : '';
 
+  // ESTATÍSTICAS POR TIPO DE SEPARAÇÃO (INCLUINDO CROSS DOCKING E FULL)
   const bySep = {};
   filteredC.forEach(r => {
     const k = r.tipoSep || 'Não informado';
-    bySep[k] = bySep[k] || {qtd:0, valor:0};
-    bySep[k].qtd += r.qtdPedida;
+    bySep[k] = bySep[k] || {pedida:0, separada:0, valor:0};
+    bySep[k].pedida += r.qtdPedida;
+    bySep[k].separada += r.qtdSeparada;
     bySep[k].valor += r.valorTotal;
   });
 
-  const prodDer = bySep["Produção Derrubada"] || {qtd:0, valor:0};
-  const prodSor = bySep["Produção Sorter"] || {qtd:0, valor:0};
-  const pendDer = bySep["Pendente Derrubada"] || {qtd:0, valor:0};
-  const pendSor = bySep["Pendente Sorter"] || {qtd:0, valor:0};
+  const prodDer = bySep["Produção Derrubada"] || {pedida:0, separada:0};
+  const prodSor = bySep["Produção Sorter"] || {pedida:0, separada:0};
+  const pendDer = bySep["Pendente Derrubada"] || {pedida:0, separada:0};
+  const pendSor = bySep["Pendente Sorter"] || {pedida:0, separada:0};
+  
+  // CROSS DOCKING E FULL
+  const crossDock = bySep["Cross Docking"] || bySep["CROSS DOCKING"] || {pedida:0, separada:0};
+  const fullSep = bySep["Full"] || bySep["FULL"] || {pedida:0, separada:0};
 
-  const derTotQtd = prodDer.qtd + pendDer.qtd;
-  const derPctProd = derTotQtd ? (prodDer.qtd / derTotQtd) * 100 : 0;
-  const derPctPend = derTotQtd ? (pendDer.qtd / derTotQtd) * 100 : 0;
+  const derTotQtd = prodDer.pedida + pendDer.pedida;
+  const derPctProd = derTotQtd ? (prodDer.pedida / derTotQtd) * 100 : 0;
+  const derPctPend = derTotQtd ? (pendDer.pedida / derTotQtd) * 100 : 0;
 
-  const sorTotQtd = prodSor.qtd + pendSor.qtd;
-  const sorPctProd = sorTotQtd ? (prodSor.qtd / sorTotQtd) * 100 : 0;
-  const sorPctPend = sorTotQtd ? (pendSor.qtd / sorTotQtd) * 100 : 0;
+  const sorTotQtd = prodSor.pedida + pendSor.pedida;
+  const sorPctProd = sorTotQtd ? (prodSor.pedida / sorTotQtd) * 100 : 0;
+  const sorPctPend = sorTotQtd ? (pendSor.pedida / sorTotQtd) * 100 : 0;
+
+  const cdTotQtd = crossDock.pedida;
+  const cdPendQtd = Math.max(0, crossDock.pedida - crossDock.separada);
+  const cdPctPend = cdTotQtd ? (cdPendQtd / cdTotQtd) * 100 : 0;
+  const cdPctSep = cdTotQtd ? (crossDock.separada / cdTotQtd) * 100 : 0;
+
+  const fullTotQtd = fullSep.pedida;
+  const fullPendQtd = Math.max(0, fullSep.pedida - fullSep.separada);
+  const fullPctPend = fullTotQtd ? (fullPendQtd / fullTotQtd) * 100 : 0;
+  const fullPctSep = fullTotQtd ? (fullSep.separada / fullTotQtd) * 100 : 0;
 
   const byDept = {};
   filteredC.forEach(r => {
@@ -678,8 +706,8 @@ function secCarteira(){
     if (pendQtd > 0) {
       const pendValor = r.qtdPedida ? (r.valorTotal * (pendQtd / r.qtdPedida)) : 0;
       prodsPendentes.push({
+        codProd: r.codProd || '-',
         prod: r.prod || 'Sem Descrição',
-        lote: r.lote || '-',
         tipoSep: r.tipoSep || '-',
         dest: r.dest || '-',
         qtdPend: pendQtd,
@@ -690,7 +718,7 @@ function secCarteira(){
 
   if (prodSearch) {
     const q = prodSearch.toLowerCase();
-    prodsPendentes = prodsPendentes.filter(p => p.prod.toLowerCase().includes(q) || p.lote.toLowerCase().includes(q) || String(p.dest).toLowerCase().includes(q));
+    prodsPendentes = prodsPendentes.filter(p => p.prod.toLowerCase().includes(q) || p.codProd.toLowerCase().includes(q) || String(p.dest).toLowerCase().includes(q));
   }
 
   if (prodSortOrder === 'valor') {
@@ -723,7 +751,7 @@ function secCarteira(){
 
   <div class="grid two" style="margin-top:16px">
     <div class="card">
-      <h3>Derrubada e Sorter · Produção vs Pendente</h3>
+      <h3>Progresso e Status da Separação</h3>
       <div class="sep-progress">
         <div class="sep-item">
           <div class="sep-header">
@@ -731,26 +759,48 @@ function secCarteira(){
             <span>Prod: ${fmtP(derPctProd)} | Pend: ${fmtP(derPctPend)}</span>
           </div>
           <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${derPctProd}%;background:var(--ok);" title="Produção Derrubada: ${fmtN.format(prodDer.qtd)}"></div>
-            <div class="sep-bar-fill" style="width:${derPctPend}%;background:var(--warn);" title="Pendente Derrubada: ${fmtN.format(pendDer.qtd)}"></div>
+            <div class="sep-bar-fill" style="width:${derPctProd}%;background:var(--ok);" title="Produção: ${fmtN.format(prodDer.pedida)}"></div>
+            <div class="sep-bar-fill" style="width:${derPctPend}%;background:var(--warn);" title="Pendente: ${fmtN.format(pendDer.pedida)}"></div>
           </div>
         </div>
-        <div class="sep-item" style="margin-top: 12px;">
+
+        <div class="sep-item" style="margin-top: 8px;">
           <div class="sep-header">
             <span>Sorter (Total: ${fmtN.format(sorTotQtd)})</span>
             <span>Prod: ${fmtP(sorPctProd)} | Pend: ${fmtP(sorPctPend)}</span>
           </div>
           <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${sorPctProd}%;background:var(--blue);" title="Produção Sorter: ${fmtN.format(prodSor.qtd)}"></div>
-            <div class="sep-bar-fill" style="width:${sorPctPend}%;background:var(--crit);" title="Pendente Sorter: ${fmtN.format(pendSor.qtd)}"></div>
+            <div class="sep-bar-fill" style="width:${sorPctProd}%;background:var(--blue);" title="Produção: ${fmtN.format(prodSor.pedida)}"></div>
+            <div class="sep-bar-fill" style="width:${sorPctPend}%;background:var(--crit);" title="Pendente: ${fmtN.format(pendSor.pedida)}"></div>
+          </div>
+        </div>
+
+        <div class="sep-item" style="margin-top: 8px;">
+          <div class="sep-header">
+            <span>Cross Docking (Total: ${fmtN.format(cdTotQtd)})</span>
+            <span>Sep: ${fmtP(cdPctSep)} | Pend: ${fmtP(cdPctPend)}</span>
+          </div>
+          <div class="sep-bar-bg">
+            <div class="sep-bar-fill" style="width:${cdPctSep}%;background:var(--ok);" title="Separado: ${fmtN.format(crossDock.separada)}"></div>
+            <div class="sep-bar-fill" style="width:${cdPctPend}%;background:var(--accent);" title="Pendente: ${fmtN.format(cdPendQtd)}"></div>
+          </div>
+        </div>
+
+        <div class="sep-item" style="margin-top: 8px;">
+          <div class="sep-header">
+            <span>Full (Total: ${fmtN.format(fullTotQtd)})</span>
+            <span>Sep: ${fmtP(fullPctSep)} | Pend: ${fmtP(fullPctPend)}</span>
+          </div>
+          <div class="sep-bar-bg">
+            <div class="sep-bar-fill" style="width:${fullPctSep}%;background:var(--ok);" title="Separado: ${fmtN.format(fullSep.separada)}"></div>
+            <div class="sep-bar-fill" style="width:${fullPctPend}%;background:#c084fc;" title="Pendente: ${fmtN.format(fullPendQtd)}"></div>
           </div>
         </div>
       </div>
-      <div style="margin-top:18px; display:flex; gap:16px; font-size:13px; color:var(--mute); justify-content:center; flex-wrap:wrap;">
-        <span><i class="dot" style="background:var(--ok)"></i>Prod. Derrubada</span>
-        <span><i class="dot" style="background:var(--warn)"></i>Pend. Derrubada</span>
-        <span><i class="dot" style="background:var(--blue)"></i>Prod. Sorter</span>
-        <span><i class="dot" style="background:var(--crit)"></i>Pend. Sorter</span>
+
+      <!-- DESTAQUE INFORMATIVO -->
+      <div class="info-note">
+        💡 <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> não possuem etapa intermediária de rastreamento de produção (Derrubada/Sorter). Eles permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
       </div>
     </div>
 
@@ -764,7 +814,7 @@ function secCarteira(){
     <div class="card-header-action">
       <h3>🔥 Produtos Pendentes de Separação (${prodsPendentes.length} encontrados)</h3>
       <div class="prod-controls">
-        <input type="text" id="inputProdSearch" placeholder="🔍 Buscar produto / lote..." value="${esc(prodSearch)}" style="width:240px" />
+        <input type="text" id="inputProdSearch" placeholder="🔍 Buscar código / produto..." value="${esc(prodSearch)}" style="width:240px" />
         <select id="selectProdSort">
           <option value="valor" ${prodSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
           <option value="qtd" ${prodSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Pendente</option>
@@ -775,8 +825,8 @@ function secCarteira(){
       <table>
         <thead>
           <tr>
+            <th>Cód. Produto</th>
             <th>Produto</th>
-            <th>Lote</th>
             <th>Tipo Separação</th>
             <th>Destino</th>
             <th class="r">Qtd Pendente</th>
@@ -786,8 +836,8 @@ function secCarteira(){
         <tbody>
           ${topProdsPendentes.length ? topProdsPendentes.map(p => `
             <tr>
+              <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.codProd)}</span></td>
               <td><b>${esc(p.prod)}</b></td>
-              <td>${esc(p.lote)}</td>
               <td><span class="dot" style="background:var(--accent)"></span>${esc(p.tipoSep)}</td>
               <td>${esc(p.dest)}</td>
               <td class="r" style="color:var(--warn);font-weight:700">${fmtN.format(p.qtdPend)}</td>
