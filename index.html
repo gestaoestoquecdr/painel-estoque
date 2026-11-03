@@ -15,27 +15,30 @@
   --blue:#4285f4; --navy:#3a5db0; --cream:#fce8b2;
   --ok:#35d49a; --warn:#ffb020; --crit:#ff5d62; --none:#5b6b8f;
   --f-body:'Barlow',system-ui,sans-serif; --f-num:'Barlow Semi Condensed','Barlow',system-ui,sans-serif;
+  --radius:8px;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:17px;line-height:1.4;
+body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:16px;line-height:1.4;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 28px}
-button{font:inherit;color:inherit;cursor:pointer}
+button, input, select{font:inherit;color:inherit}
+button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 
-header{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:14px 0;border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:5;background:rgba(7, 16, 34, 0.92);backdrop-filter:blur(10px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:14px 0;border-bottom:1px solid var(--line)}
 .brand{display:flex;flex-direction:column;line-height:1.1}
-.brand b{font-family:var(--f-num);font-size:24px;letter-spacing:.02em}
-.brand small{color:var(--mute);font-size:13px;letter-spacing:.14em;text-transform:uppercase}
+.brand b{font-family:var(--f-num);font-size:24px;letter-spacing:.02em;color:#fff}
+.brand small{color:var(--mute);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
 nav{display:flex;gap:6px;flex-wrap:wrap}
-nav button{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:10px 18px;font-weight:700;font-size:16px}
-nav button[aria-selected="true"]{background:var(--accent);color:#1a1400;border-color:var(--accent)}
-.tools{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
-.seg button{background:var(--panel);border:0;padding:8px 14px;font-size:14px;font-weight:600;color:var(--mute)}
+nav button{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 16px;font-weight:700;font-size:15px;transition:all .2s ease}
+nav button:hover{border-color:var(--accent)}
+nav button[aria-selected="true"]{background:var(--accent);color:#1a1400;border-color:var(--accent);box-shadow:0 0 12px rgba(255,196,0,0.3)}
+.tools{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{background:var(--panel);border:0;padding:8px 14px;font-size:14px;font-weight:600;color:var(--mute);transition:all .2s ease}
 .seg button[aria-pressed="true"]{background:var(--panel2);color:var(--accent)}
-.tv{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px 14px;font-size:14px;font-weight:600}
+.tv{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 14px;font-size:14px;font-weight:600;transition:all .2s ease}
 .tv[aria-pressed="true"]{background:var(--accent);color:#1a1400}
 #src{font-size:13px;color:var(--mute);width:100%;display:flex;gap:8px;align-items:center}
 #src i{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block}
@@ -49,16 +52,29 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
 .grid{display:grid;gap:16px}
 .kpis{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px;min-width:0}
-.card h3{margin:0 0 14px;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:700}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-width:0;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
+.card h3{margin:0 0 14px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:700}
 .card-header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
 .card-header-action h3 { margin: 0; }
-.kpi .v{font-family:var(--f-num);font-size:40px;font-weight:700;line-height:1.05}
-.kpi .s{color:var(--mute);font-size:14px;margin-top:6px}
+.kpi .v{font-family:var(--f-num);font-size:38px;font-weight:700;line-height:1.05}
+.kpi .s{color:var(--mute);font-size:13px;margin-top:6px}
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-/* BANNER DE ALERTA SEM FÍSICO */
+/* FILTER & COLLAPSIBLE CONTROLS */
+.filter-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; background: var(--panel2); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--line); }
+.filter-bar label { font-size: 14px; font-weight: 600; color: var(--mute); display: flex; align-items: center; gap: 8px; }
+.filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 7px 12px; border-radius: 6px; font-size: 14px; outline: none; }
+.filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
+
+.toggle-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--panel2); border: 1px solid var(--line); color: var(--accent); padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 14px; transition: all .2s ease; }
+.toggle-btn:hover { background: var(--line); }
+
+.collapsible-content { display: none; margin-top: 14px; animation: fadeIn .25s ease-in-out; }
+.collapsible-content.open { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
 .sem-fisico-badge {
   background: rgba(255, 93, 98, 0.15);
   border: 1px solid var(--crit);
@@ -71,57 +87,42 @@ h2{font-family:var(--f-num);font-size:28px;margin:0 0 6px;letter-spacing:.01em}
   color: #ff8b8f;
   font-weight: 600;
 }
-.sem-fisico-badge b {
-  color: var(--crit);
-  font-family: var(--f-num);
-  font-size: 16px;
-}
+.sem-fisico-badge b { color: var(--crit); font-family: var(--f-num); font-size: 16px; }
 
 .donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center}
-.donut{width:200px;height:200px;flex:none}
+.donut{width:190px;height:190px;flex:none}
 .donut text{fill:var(--text);font-family:var(--f-num)}
 .legend{display:flex;flex-direction:column;gap:10px;min-width:210px;flex:1}
-.legend div{display:flex;align-items:center;gap:10px;font-size:15px}
-.legend i{width:12px;height:12px;border-radius:2px;flex:none}
+.legend div{display:flex;align-items:center;gap:10px;font-size:14px}
+.legend i{width:12px;height:12px;border-radius:3px;flex:none}
 .legend span:last-child{margin-left:auto;font-family:var(--f-num);font-weight:600;white-space:nowrap}
 
 .tw{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:16px}
-th{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
-td{padding:11px 12px;border-bottom:1px solid #12244b;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid #12244b;white-space:nowrap}
 th.r,td.r{text-align:right;font-family:var(--f-num)}
 tr.tot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
 td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
 .bar{display:block;height:8px;background:#162a58;border-radius:4px;min-width:70px;margin-top:6px}
 .bar b{display:block;height:100%;border-radius:4px}
 
-.occ {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 16px;
-  align-items: stretch;
-}
+.occ { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; align-items: stretch; }
 .mini { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .mini .b { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 10px; text-align: center; }
-.mini .b small { display: block; color: var(--mute); font-size: 13px; text-transform: uppercase; margin-bottom: 4px; font-weight:600; }
-.mini .b strong { font-family: var(--f-num); font-size: 28px; line-height: 1.1; }
+.mini .b small { display: block; color: var(--mute); font-size: 12px; text-transform: uppercase; margin-bottom: 4px; font-weight:600; }
+.mini .b strong { font-family: var(--f-num); font-size: 26px; line-height: 1.1; }
 .mini.g1 .b { border-left: 3px solid var(--blue); border-right: 3px solid var(--blue); }
 .mini.g2 .b { border-left: 3px solid var(--navy); border-right: 3px solid var(--navy); }
 
-.donutcard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 16px;
-}
+.donutcard { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 16px; }
 
 .pcts { display: flex; flex-direction: column; gap: 12px; justify-content: center; min-width: 0; }
 .pcts .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .pcts .b { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 14px; text-align: center; min-width: 0; }
-.pcts .b small { display: block; color: var(--mute); font-size: 13px; margin-bottom: 4px; font-weight:600; }
-.pcts .b strong { font-family: var(--f-num); font-size: 26px; }
-.pcts .big strong { font-size: 46px; color: var(--accent); }
+.pcts .b small { display: block; color: var(--mute); font-size: 12px; margin-bottom: 4px; font-weight:600; }
+.pcts .b strong { font-family: var(--f-num); font-size: 24px; }
+.pcts .big strong { font-size: 42px; color: var(--accent); }
 
 .rua-container { overflow-x: auto; width: 100%; }
 .rua { display: flex; gap: 12px; align-items: flex-end; height: 230px; padding-top: 10px; min-width: 600px; }
@@ -129,16 +130,10 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .rua .stk { flex: 1; display: flex; flex-direction: column; border-radius: 4px; overflow: hidden; min-height: 0; }
 .rua .lv { display: flex; align-items: center; justify-content: center; font-family: var(--f-num); font-size: 12px; font-weight: 600; overflow: hidden; min-height: 0; }
 .rua .oc { background: var(--cream); color: #2b2205; }
-.rua .name { text-align: center; font-family: var(--f-num); font-size: 15px; font-weight: 600; margin-top: 8px; color: var(--mute); }
+.rua .name { text-align: center; font-family: var(--f-num); font-size: 14px; font-weight: 600; margin-top: 8px; color: var(--mute); }
 .lg { display: flex; gap: 18px; font-size: 14px; color: var(--mute); margin-bottom: 10px; justify-content: center; }
-.lg i { display: inline-block; width: 14px; height: 14px; border-radius: 2px; margin-right: 6px; vertical-align: -2px; }
+.lg i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
 .foot { color: var(--mute); font-size: 13px; margin-top: 18px; }
-
-.sep-progress { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
-.sep-item { display: flex; flex-direction: column; gap: 6px; }
-.sep-header { display: flex; justify-content: space-between; font-size: 15px; font-weight:500; }
-.sep-bar-bg { height: 12px; background: var(--panel2); border-radius: 6px; overflow: hidden; display: flex; }
-.sep-bar-fill { height: 100%; }
 
 body.tvmode header nav,body.tvmode .seg{display:none}
 body.tvmode .card{padding:24px}
@@ -187,12 +182,16 @@ function brlShort(v){
   if(Math.abs(v)>=1e3) return 'R$ '+(v/1e3).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+' mil';
   return brl(v);
 }
-const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);
 const nice = s => String(s).replace(/^ESTOQUE\s+/i,'').toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase());
 
 let D = null;
 let basis = 'custo';
 let resFilter = 'todos';
+let sepFilter = 'todos';
+let destExpanded = false;
+let destSearch = '';
+
 const val = r => basis==='custo' ? r.custo : r.qtd;
 const fmtV = v => basis==='custo' ? brlShort(v) : fmtN.format(v);
 
@@ -252,7 +251,7 @@ async function fromJsonFile(){
     aging: normF(getProp(o, ["Faixa Anging ", "Faixa Anging", "Faixa Aging"])),
     qtd: +(getProp(o, ["Qtd. Endereçada", "Qtd Enderecada"]) || 0),
     custo: +(getProp(o, ["Custo Bruto Total"]) || 0),
-    prod: getProp(o, ["Produto"]).slice(0,50),
+    prod: getProp(o, ["Produto"]).slice(0,60),
     end: getProp(o, ["Endereço Logístico", "Endereco Logistico", "Endereço", "Endereco"])
   }));
 
@@ -282,6 +281,7 @@ async function fromJsonFile(){
       if (parts.length === 3) formattedDt = parts[2] + '.' + parts[1];
     }
     return {
+      prod: getProp(o, ["Produto", "Desc. Produto", "Descrição", "Descricao"]) || "Não informado",
       dest: getProp(o, ["Destinatário", "Destinatario", "Loja"]),
       dept: getProp(o, ["Departamento CD", "Departamento"]) || "Outros",
       tipoSep: getProp(o, ["Tipo de separação", "Tipo de separacao", "Tipo Separação"]) || "Não informado",
@@ -289,7 +289,7 @@ async function fromJsonFile(){
       qtdPedida: +(getProp(o, ["Qtd Pedida", "Qtd. Pedida"]) || 0),
       qtdSeparada: +(getProp(o, ["Qtd Separada", "Qtd. Separada"]) || 0),
       valorTotal: +(getProp(o, ["Valor Total", "Valor"]) || 0),
-      lote: getProp(o, ["Nº do lote", "Lote"])
+      lote: getProp(o, ["Nº do lote", "Lote"]) || "-"
     };
   });
 
@@ -313,6 +313,7 @@ async function load(){
     D = d;
     $('#src').className = 'live';
     $('#srctxt').textContent = d.when;
+    renderNav();
     render();
   } catch(err) {
     console.error('Erro ao carregar dados:', err);
@@ -334,19 +335,18 @@ function legend(items){
 
 const kpi = (l,v,s,cls='') => `<div class="card kpi ${cls}"><h3>${l}</h3><div class="v">${v}</div><div class="s">${s||''}</div></div>`;
 
-// PALETA DE CORES COM DESTAQUE EM VERMELHO PARA SEM FÍSICO (VIRTUAL E PRE ALERTA)
 const COLOR_MAP = {
-  'revenda': '#ffc400',       // Amarelo
-  'virtual': '#ff5d62',       // Vermelho Crítico
-  'pre alerta': '#ff8b8f',    // Coral / Vermelho claro
+  'revenda': '#ffc400',
+  'virtual': '#ff5d62',
+  'pre alerta': '#ff8b8f',
   'pré alerta': '#ff8b8f',
-  'suprimentos': '#c084fc'    // Roxo
+  'suprimentos': '#c084fc'
 };
-const DEFAULT_COLORS = ['#ffc400','#ff5d62','#ff8b8f','#c084fc','#35d49a','#3a5db0'];
+const DEFAULT_COLORS = ['#ffc400','#ff5d62','#ff8b8f','#c084fc','#35d49a','#3a5db0','#4285f4'];
 
 function secGeral(){
   const R = D.rows, by = {};
-  let semFisicoVal = 0; // Somatório de Pre Alerta + Virtual
+  let semFisicoVal = 0;
 
   R.forEach(r => {
     by[r.est] = by[r.est] || {custo:0, qtd:0, n:0};
@@ -363,7 +363,6 @@ function secGeral(){
     const key = n.toLowerCase().trim();
     const valItem = basis==='custo' ? o.custo : o.qtd;
     
-    // Calcula o acumulado dos estoques não-físicos
     if (key.includes('virtual') || key.includes('pre alerta') || key.includes('pré alerta')) {
       semFisicoVal += valItem;
     }
@@ -424,6 +423,14 @@ function secGeral(){
       return `<tr><td><span class="dot" style="background:${color}"></span>${esc(nice(n))}</td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r">${brl(o.custo)}</td><td><span class="num">${fmtP(v/totV*100)}</span><span class="bar"><b style="width:${v/totV*100}%;background:${color}"></b></span></td></tr>`;
     }).join('')}
   </table></div></div>`;
+}
+
+function secShelf(){
+  faixaSection('#s-shelf','Validade (Shelf Life)','Análise do prazo de validade do estoque revenda.','shelf',['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'],SHELF_CLASS,['0 a 5 dias','06 a 15 dias','16 a 30 dias'],'Top 10 itens com validade mais crítica');
+}
+
+function secAging(){
+  faixaSection('#s-aging','Tempo de permanência (Aging)','Tempo em que o palete está no endereço.','aging',['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'],AGING_CLASS,['Acima de 60 dias'],'Top 10 itens parados há mais de 60 dias');
 }
 
 function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle){
@@ -548,19 +555,28 @@ function secOcup(){
 }
 
 function secCarteira(){
-  const C = D.cart || [];
+  let C = D.cart || [];
   if (!C.length) {
     $('#s-carteira').innerHTML = `<h2>Carteira de Pedido</h2><p class="sub">Nenhum dado encontrado na chave 'carteira' do JSON.</p>`;
     return;
   }
 
-  const totPedida = C.reduce((s,r) => s + r.qtdPedida, 0);
-  const totSeparada = C.reduce((s,r) => s + r.qtdSeparada, 0);
-  const totValor = C.reduce((s,r) => s + r.valorTotal, 0);
+  // Lista de tipos de separação disponíveis
+  const tiposSepDisponiveis = Array.from(new Set(C.map(r => r.tipoSep))).filter(Boolean);
+
+  // Aplicação de filtro por Tipo de Separação se selecionado
+  let filteredC = C;
+  if (sepFilter !== 'todos') {
+    filteredC = C.filter(r => r.tipoSep === sepFilter);
+  }
+
+  const totPedida = filteredC.reduce((s,r) => s + r.qtdPedida, 0);
+  const totSeparada = filteredC.reduce((s,r) => s + r.qtdSeparada, 0);
+  const totValor = filteredC.reduce((s,r) => s + r.valorTotal, 0);
   const pctAtendimento = totPedida ? (totSeparada / totPedida) * 100 : 0;
 
   const datasPendentesSet = new Set();
-  C.forEach(r => {
+  filteredC.forEach(r => {
     if (r.tipoSep !== 'Separado') {
       if (r.gerReserva && r.gerReserva !== 'Sem data') {
         datasPendentesSet.add(r.gerReserva);
@@ -574,329 +590,221 @@ function secCarteira(){
   const atrasoStr = `D-${diasAtraso}`;
   const atrasoSub = isCritico ? `🚨 CRÍTICO (${qtdDatasPendentes} datas pendentes)` : `Dentro da Meta (${qtdDatasPendentes} datas pendentes)`;
   const kpiClassAtraso = isCritico ? 'hl' : '';
-  const valStyleAtraso = isCritico ? 'color:var(--crit); font-weight:800;' : 'color:var(--warn);';
 
-  const bySep = {};
-  C.forEach(r => {
-    const k = r.tipoSep;
-    bySep[k] = bySep[k] || {qtd:0, valor:0, lotes: new Set()};
-    bySep[k].qtd += r.qtdPedida;
-    bySep[k].valor += r.valorTotal;
-    if (r.lote) bySep[k].lotes.add(r.lote);
-  });
-  const sepRows = Object.entries(bySep).sort((a,b) => (basis==='custo' ? b[1].valor - a[1].valor : b[1].qtd - a[1].qtd));
-
+  // Destinatários (Lojas)
   const byDest = {};
-  C.forEach(r => {
+  filteredC.forEach(r => {
     const k = r.dest || "Sem Destino";
     byDest[k] = byDest[k] || {pedida:0, separada:0, valor:0};
     byDest[k].pedida += r.qtdPedida;
     byDest[k].separada += r.qtdSeparada;
     byDest[k].valor += r.valorTotal;
   });
-  const destRows = Object.entries(byDest).sort((a,b) => b[1].pedida - a[1].pedida);
 
-  const byRes = {};
-  C.forEach(r => {
-    const k = r.gerReserva;
-    byRes[k] = byRes[k] || {qtd:0, valor:0, qtdSep:0, pendentes:0, separados:0};
-    byRes[k].qtd += r.qtdPedida;
-    byRes[k].valor += r.valorTotal;
-    byRes[k].qtdSep += r.qtdSeparada;
-    
-    if (r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada)) {
-      byRes[k].separados++;
-    } else {
-      byRes[k].pendentes++;
+  let destRows = Object.entries(byDest).sort((a,b) => b[1].pedida - a[1].pedida);
+  if (destSearch) {
+    destRows = destRows.filter(([k]) => k.toLowerCase().includes(destSearch.toLowerCase()));
+  }
+
+  // Produtos Pendentes (Qtd Pedida > Qtd Separada)
+  const prodsPendentes = [];
+  filteredC.forEach(r => {
+    const pendQtd = r.qtdPedida - r.qtdSeparada;
+    if (pendQtd > 0) {
+      const pendValor = r.qtdPedida ? (r.valorTotal * (pendQtd / r.qtdPedida)) : 0;
+      prodsPendentes.push({
+        prod: r.prod,
+        lote: r.lote,
+        tipoSep: r.tipoSep,
+        dest: r.dest,
+        qtdPend: pendQtd,
+        valorPend: pendValor
+      });
     }
   });
 
-  let resRows = Object.entries(byRes).sort((a,b) => a[0].localeCompare(b[0]));
-  if (resFilter === 'pendente') {
-    resRows = resRows.filter(([, o]) => o.pendentes > 0);
-  } else if (resFilter === 'separado') {
-    resRows = resRows.filter(([, o]) => o.pendentes === 0);
-  }
-
-  const byDept = {};
-  C.forEach(r => {
-    const k = r.dept;
-    byDept[k] = byDept[k] || {qtd:0, valor:0};
-    byDept[k].qtd += r.qtdPedida;
-    byDept[k].valor += r.valorTotal;
-  });
-  const deptRows = Object.entries(byDept).sort((a,b) => (basis==='custo' ? b[1].valor - a[1].valor : b[1].qtd - a[1].qtd));
-  const deptItems = deptRows.map(([n,o],i) => ({
-    n: n,
-    v: basis==='custo' ? o.valor : o.qtd,
-    c: DEFAULT_COLORS[i % DEFAULT_COLORS.length]
-  }));
-
-  const prodDer = bySep["Produção Derrubada"] || {qtd:0, valor:0};
-  const prodSor = bySep["Produção Sorter"] || {qtd:0, valor:0};
-  const pendDer = bySep["Pendente Derrubada"] || {qtd:0, valor:0};
-  const pendSor = bySep["Pendente Sorter"] || {qtd:0, valor:0};
-
-  const prodTotVal = basis==='custo' ? (prodDer.valor + prodSor.valor) : (prodDer.qtd + prodSor.qtd);
-  const pendTotVal = basis==='custo' ? (pendDer.valor + pendSor.valor) : (pendDer.qtd + pendSor.qtd);
-
-  const prodDerVal = basis==='custo' ? prodDer.valor : prodDer.qtd;
-  const prodSorVal = basis==='custo' ? prodSor.valor : prodSor.qtd;
-  const pendDerVal = basis==='custo' ? pendDer.valor : pendDer.qtd;
-  const pendSorVal = basis==='custo' ? pendSor.valor : pendSor.qtd;
-
-  const prodDerPct = prodTotVal ? (prodDerVal / prodTotVal) * 100 : 0;
-  const prodSorPct = prodTotVal ? (prodSorVal / prodTotVal) * 100 : 0;
-  const pendDerPct = pendTotVal ? (pendDerVal / pendTotVal) * 100 : 0;
-  const pendSorPct = pendTotVal ? (pendSorVal / pendTotVal) * 100 : 0;
-
-  const centerLabel = basis==='custo' ? brlShort(totValor).replace('R$ ','') : fmtN.format(totPedida);
-  const subLabel = basis==='custo' ? 'valor carteira' : 'qtd. pedida';
+  // Ordena produtos por maior volume pendente
+  prodsPendentes.sort((a,b) => (basis==='custo' ? b.valorPend - a.valorPend : b.qtdPend - a.qtdPend));
+  const topProdsPendentes = prodsPendentes.slice(0, 15);
 
   $('#s-carteira').innerHTML = `
   <h2>Carteira de Pedido</h2>
-  <p class="sub">Visão consolidada da carteira, SLAs de atraso, tipos de separação e destinos.</p>
+  <p class="sub">Acompanhamento e status das reservas e solicitações do CD.</p>
+  
+  <div class="filter-bar">
+    <label>⚡ Filtrar Tipo de Separação:
+      <select id="sepFilterSelect">
+        <option value="todos" ${sepFilter==='todos'?'selected':''}>-- Todos os Tipos (${C.length} itens) --</option>
+        ${tiposSepDisponiveis.map(t => `<option value="${esc(t)}" ${sepFilter===t?'selected':''}>${esc(t)}</option>`).join('')}
+      </select>
+    </label>
+  </div>
 
   <div class="grid kpis">
-    ${kpi('Atraso Separação (SLA)', `<span style="${valStyleAtraso}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso)}
-    ${kpi('Qtd Pedida Total', fmtN.format(totPedida), fmtN.format(C.length) + ' itens na carteira')}
-    ${kpi('Valor Total Carteira', brlShort(totValor), brl(totValor))}
-    ${kpi('Status Separação', fmtP(pctAtendimento), fmtN.format(totPedida - totSeparada) + ' pendentes')}
+    ${kpi('Total Pedido', fmtN.format(totPedida), brlShort(totValor))}
+    ${kpi('Total Separado', fmtN.format(totSeparada), fmtP(pctAtendimento) + ' atendido')}
+    ${kpi('Pendente de Separação', fmtN.format(totPedida - totSeparada), brlShort(filteredC.reduce((s,r) => s + (r.tipoSep !== 'Separado' ? r.valorTotal : 0), 0)))}
+    ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso)}
   </div>
 
-  <div class="grid two" style="margin-top:16px">
-    <div class="card">
-      <h3>Tipo de separação</h3>
-      <div class="tw">
-        <table>
-          <tr><th>Tipo</th><th class="r">Qtd Pedida</th><th class="r">Valor Total</th><th class="r">% Representada</th><th class="r">Nº do lote</th></tr>
-          ${sepRows.map(([tipo, o]) => {
-            const vBase = basis==='custo' ? o.valor : o.qtd;
-            const totB = basis==='custo' ? totValor : totPedida;
-            return `<tr>
-              <td><b>${esc(tipo)}</b></td>
-              <td class="r">${fmtN.format(o.qtd)}</td>
-              <td class="r">${brlShort(o.valor)}</td>
-              <td class="r">${fmtP(totB ? (vBase/totB)*100 : 0)}</td>
-              <td class="r">${fmtN.format(o.lotes.size)}</td>
-            </tr>`;
-          }).join('')}
-        </table>
-      </div>
-    </div>
-
-    <div style="display:flex; flex-direction:column; gap:16px;">
-      <div class="card">
-        <h3>Produção (Derrubada vs. Sorter)</h3>
-        <div style="font-size:26px; font-weight:700; margin-bottom:10px;" class="num">
-          ${basis==='custo' ? brlShort(prodDer.valor + prodSor.valor) : fmtN.format(prodDer.qtd + prodSor.qtd)}
-        </div>
-        <div class="sep-progress">
-          <div class="sep-item">
-            <div class="sep-header">
-              <span>Derrubada (${fmtP(prodDerPct)})</span>
-              <span class="num">${basis==='custo' ? brlShort(prodDer.valor) : fmtN.format(prodDer.qtd)}</span>
-            </div>
-            <div class="sep-bar-bg">
-              <div class="sep-bar-fill" style="width:${prodDerPct}%; background:var(--blue);"></div>
-            </div>
-          </div>
-          <div class="sep-item">
-            <div class="sep-header">
-              <span>Sorter (${fmtP(prodSorPct)})</span>
-              <span class="num">${basis==='custo' ? brlShort(prodSor.valor) : fmtN.format(prodSor.qtd)}</span>
-            </div>
-            <div class="sep-bar-bg">
-              <div class="sep-bar-fill" style="width:${prodSorPct}%; background:var(--accent);"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Pendente (Derrubada vs. Sorter)</h3>
-        <div style="font-size:26px; font-weight:700; margin-bottom:10px;" class="num">
-          ${basis==='custo' ? brlShort(pendDer.valor + pendSor.valor) : fmtN.format(pendDer.qtd + pendSor.qtd)}
-        </div>
-        <div class="sep-progress">
-          <div class="sep-item">
-            <div class="sep-header">
-              <span>Derrubada (${fmtP(pendDerPct)})</span>
-              <span class="num">${basis==='custo' ? brlShort(pendDer.valor) : fmtN.format(pendDer.qtd)}</span>
-            </div>
-            <div class="sep-bar-bg">
-              <div class="sep-bar-fill" style="width:${pendDerPct}%; background:var(--warn);"></div>
-            </div>
-          </div>
-          <div class="sep-item">
-            <div class="sep-header">
-              <span>Sorter (${fmtP(pendSorPct)})</span>
-              <span class="num">${basis==='custo' ? brlShort(pendSor.valor) : fmtN.format(pendSor.qtd)}</span>
-            </div>
-            <div class="sep-bar-bg">
-              <div class="sep-bar-fill" style="width:${pendSorPct}%; background:var(--crit);"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <!-- MAIORES PRODUTOS PENDENTES -->
+  <div class="card" style="margin-top:16px">
+    <h3>🔥 Top Produits Pendentes de Separação (${prodsPendentes.length} itens no total)</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Lote</th>
+            <th>Tipo Separação</th>
+            <th>Destino</th>
+            <th class="r">Qtd Pendente</th>
+            <th class="r">Valor Estimado</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${topProdsPendentes.length ? topProdsPendentes.map(p => `
+            <tr>
+              <td><b>${esc(p.prod)}</b></td>
+              <td>${esc(p.lote)}</td>
+              <td><span class="dot" style="background:var(--accent)"></span>${esc(p.tipoSep)}</td>
+              <td>${esc(p.dest)}</td>
+              <td class="r" style="color:var(--warn);font-weight:700">${fmtN.format(p.qtdPend)}</td>
+              <td class="r">${brl(p.valorPend)}</td>
+            </tr>
+          `).join('') : '<tr><td colspan="6">Nenhum produto pendente para o filtro selecionado.</td></tr>'}
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <div class="grid two" style="margin-top:16px">
-    <div class="card">
-      <h3>Separação por Destinatário (Destino)</h3>
-      <div class="tw">
-        <table>
-          <tr><th>Destinatário</th><th class="r">Qtd Pedida</th><th class="r">Qtd Separada</th><th class="r">Valor Total</th><th class="r">% Atend.</th></tr>
-          ${destRows.map(([dest, o]) => {
-            const pct = o.pedida ? (o.separada / o.pedida) * 100 : 0;
-            return `<tr>
-              <td><b>Loja/Destino ${esc(dest)}</b></td>
-              <td class="r">${fmtN.format(o.pedida)}</td>
-              <td class="r" style="color:var(--ok)">${fmtN.format(o.separada)}</td>
-              <td class="r">${brlShort(o.valor)}</td>
-              <td class="r">${fmtP(pct)}</td>
-            </tr>`;
-          }).join('')}
-        </table>
-      </div>
+  <!-- SEÇÃO RECOLHÍVEL DE DESTINOS -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-header-action">
+      <h3>SEPARAÇÃO POR DESTINATÁRIO (DESTINO)</h3>
+      <button class="toggle-btn" id="btnToggleDest">
+        ${destExpanded ? '▲ Ocultar Lojas' : '▼ Exibir Lojas / Destinos (' + destRows.length + ')'}
+      </button>
     </div>
 
-    <div style="display:flex; flex-direction:column; gap:16px;">
-      <div class="card">
-        <div class="card-header-action">
-          <h3>Geração Reserva</h3>
-          <div class="seg" id="res-filter-group" role="group" aria-label="Filtro Status Data">
-            <button data-f="todos" aria-pressed="${resFilter==='todos'}">Todos</button>
-            <button data-f="pendente" aria-pressed="${resFilter==='pendente'}">Pendente</button>
-            <button data-f="separado" aria-pressed="${resFilter==='separado'}">Separado</button>
-          </div>
-        </div>
-        <div class="tw">
-          <table>
-            <tr><th>Data Reserva</th><th>Status</th><th class="r">Qtd Pedida</th><th class="r">Valor Total</th><th class="r">% Representada</th></tr>
-            ${resRows.length ? resRows.map(([dt, o]) => {
-              const vBase = basis==='custo' ? o.valor : o.qtd;
-              const totB = basis==='custo' ? totValor : totPedida;
-              
-              let statusLabel = '<span style="color:var(--ok)">Separado</span>';
-              if (o.pendentes > 0 && o.separados > 0) {
-                statusLabel = '<span style="color:var(--warn)">Parcial</span>';
-              } else if (o.pendentes > 0) {
-                statusLabel = '<span style="color:var(--crit)">Pendente</span>';
-              }
-
-              return `<tr>
-                <td><b>${esc(dt)}</b></td>
-                <td>${statusLabel}</td>
-                <td class="r">${fmtN.format(o.qtd)}</td>
+    <div class="collapsible-content ${destExpanded ? 'open' : ''}" id="boxDestinos">
+      <div style="margin-bottom: 12px;">
+        <input type="text" id="inputDestSearch" placeholder="🔍 Buscar loja / destino..." value="${esc(destSearch)}" style="width: 100%; max-width: 320px;" />
+      </div>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Destinatário</th>
+              <th class="r">Qtd Pedida</th>
+              <th class="r">Qtd Separada</th>
+              <th class="r">Valor Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${destRows.length ? destRows.map(([k,o]) => `
+              <tr>
+                <td><b>${esc(k)}</b></td>
+                <td class="r">${fmtN.format(o.pedida)}</td>
+                <td class="r" style="color:${o.separada > 0 ? 'var(--ok)' : 'var(--mute)'}">${fmtN.format(o.separada)}</td>
                 <td class="r">${brlShort(o.valor)}</td>
-                <td class="r">${fmtP(totB ? (vBase/totB)*100 : 0)}</td>
-              </tr>`;
-            }).join('') : '<tr><td colspan="5" style="text-align:center; color:var(--mute)">Nenhum registro para este filtro</td></tr>'}
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Participação por Departamento CD</h3>
-        <div class="donutwrap">
-          ${donut(deptItems, centerLabel, subLabel)}
-          ${legend(deptItems)}
-        </div>
+              </tr>
+            `).join('') : '<tr><td colspan="4">Nenhuma loja encontrada.</td></tr>'}
+          </tbody>
+        </table>
       </div>
     </div>
-  </div>`;
+  </div>
+  `;
 
-  const filterGroup = $('#res-filter-group');
-  if (filterGroup) {
-    filterGroup.addEventListener('click', e => {
-      const btn = e.target.closest('button');
-      if (!btn) return;
-      resFilter = btn.dataset.f;
+  // Event Listeners locais
+  $('#sepFilterSelect').addEventListener('change', (e) => {
+    sepFilter = e.target.value;
+    secCarteira();
+  });
+
+  $('#btnToggleDest').addEventListener('click', () => {
+    destExpanded = !destExpanded;
+    secCarteira();
+  });
+
+  const searchInp = $('#inputDestSearch');
+  if (searchInp) {
+    searchInp.addEventListener('input', (e) => {
+      destSearch = e.target.value;
       secCarteira();
+      // reaplica foco no input
+      const el = $('#inputDestSearch');
+      if (el) { el.focus(); el.setSelectionRange(destSearch.length, destSearch.length); }
     });
   }
 }
 
-function render(){
-  if(!D) return;
-  secGeral();
-  faixaSection('#s-shelf','Shelf life · Estoque revenda','Validade dos produtos. Saudável é acima de 60 dias, atenção de 16 a 60 e crítico até 15 dias.','shelf',D_SF(),SHELF_CLASS,['0 a 5 dias','06 a 15 dias'],'Produtos mais críticos (validade até 15 dias)');
-  faixaSection('#s-aging','Aging · Estoque revenda','Tempo parado, pela faixa de aging. Saudável é até 30 dias, atenção de 30 a 60 e crítico acima de 60.','aging',D_AF(),AGING_CLASS,['Acima de 60 dias'],'Itens mais antigos (aging acima de 60 dias)');
-  secOcup();
-  secCarteira();
-}
-const D_SF = ()=>['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'];
-const D_AF = ()=>['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'];
-
-const TABS = [
-  ['s-geral','Visão geral'],
-  ['s-shelf','Shelf life'],
-  ['s-aging','Aging'],
-  ['s-ocup','Ocupação'],
-  ['s-carteira','Carteira de Pedido']
+// ROUTER E NAVEGAÇÃO
+const SECTIONS = [
+  {id:'geral', title:'Visao Geral', render:secGeral},
+  {id:'shelf', title:'Shelf Life', render:secShelf},
+  {id:'aging', title:'Aging', render:secAging},
+  {id:'ocup', title:'Ocupacao', render:secOcup},
+  {id:'carteira', title:'Carteira', render:secCarteira}
 ];
-let cur = 0;
 
-function show(i){
-  cur = i;
-  TABS.forEach(([id],k)=>{ $('#'+id).classList.toggle('on',k===i); });
-  document.querySelectorAll('#tabs button').forEach((b,k)=>b.setAttribute('aria-selected',k===i));
-  try{ history.replaceState(null,'','#'+TABS[i][0].slice(2)); }catch(e){}
+let activeTab = 'carteira';
+
+function renderNav(){
+  const nav = $('#tabs');
+  nav.innerHTML = SECTIONS.map(s => `<button data-tab="${s.id}" role="tab" aria-selected="${s.id===activeTab}">${s.title}</button>`).join('');
+  
+  nav.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeTab = btn.getAttribute('data-tab');
+      window.location.hash = activeTab;
+      render();
+    });
+  });
 }
 
-$('#tabs').innerHTML = TABS.map(([id,n],i)=>`<button role="tab" aria-selected="false" data-i="${i}">${n}</button>`).join('');
-$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button'); if(b) show(+b.dataset.i);});
-$('#basis').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; basis=b.dataset.b; document.querySelectorAll('#basis button').forEach(x=>x.setAttribute('aria-pressed',x===b)); render();});
-
-let tvTimer = null, tvStart = 0;
-
-function tvTick(){
-  const el = (Date.now() - tvStart) / 1000;
-  const pct = Math.min(100, (el / CONFIG.TV_SEGUNDOS) * 100);
-  const bar = $('#bar');
-  if (bar) bar.style.width = pct + '%';
-  
-  if (el >= CONFIG.TV_SEGUNDOS) {
-    tvStart = Date.now();
-    show((cur + 1) % TABS.length);
+function render(){
+  if (!D) return;
+  const hash = window.location.hash.replace('#','');
+  if (hash && SECTIONS.some(s=>s.id===hash)) {
+    activeTab = hash;
   }
+  
+  document.querySelectorAll('nav#tabs button').forEach(b => {
+    b.setAttribute('aria-selected', b.getAttribute('data-tab') === activeTab);
+  });
+
+  SECTIONS.forEach(s => {
+    const el = $('#s-' + s.id);
+    if (s.id === activeTab) {
+      el.classList.add('on');
+      s.render();
+    } else {
+      el.classList.remove('on');
+    }
+  });
 }
 
-$('#tv').addEventListener('click', function() {
-  const on = this.getAttribute('aria-pressed') !== 'true';
-  this.setAttribute('aria-pressed', on);
-  document.body.classList.toggle('tvmode', on);
-  
-  clearInterval(tvTimer);
-  const bar = $('#bar');
-  if (bar) bar.style.width = '0%';
-  
-  if (on) {
-    tvStart = Date.now();
-    tvTimer = setInterval(tvTick, 200);
-    
-    try {
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(function(err) {
-          console.warn("Ecrã inteiro bloqueado pelo navegador:", err);
-        });
-      }
-    } catch (e) {}
-  } else {
-    try {
-      if (document.fullscreenElement && document.exitFullscreen) {
-        document.exitFullscreen().catch(function() {});
-      }
-    } catch (e) {}
-  }
+// EVENTOS DE MÍDIA E TEMA
+document.querySelectorAll('#basis button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#basis button').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    btn.setAttribute('aria-pressed', 'true');
+    basis = btn.getAttribute('data-b');
+    render();
+  });
 });
 
-const h = (location.hash||'').slice(1); const hi = TABS.findIndex(([id])=>id.slice(2)===h);
-show(hi>=0?hi:0);
-load();
-setInterval(load,CONFIG.ATUALIZAR_MIN*60000);
+$('#tv').addEventListener('click', () => {
+  const isTv = document.body.classList.toggle('tvmode');
+  $('#tv').setAttribute('aria-pressed', isTv);
+});
+
+// INICIALIZAÇÃO
+window.addEventListener('DOMContentLoaded', load);
+window.addEventListener('hashchange', render);
+setInterval(load, CONFIG.ATUALIZAR_MIN * 60 * 1000);
 </script>
 </body>
 </html>
