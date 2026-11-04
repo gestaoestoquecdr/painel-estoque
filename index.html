@@ -260,7 +260,9 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 7px 12px; border-radius: 6px; font-size: 14px; outline: none; transition: border-color .2s ease; }
 .filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
 
-.prod-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.prod-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.prod-controls select, .prod-controls input { background: var(--panel2); border: 1px solid var(--line); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 13px; outline: none; transition: border-color .2s ease; }
+.prod-controls select:focus, .prod-controls input:focus { border-color: var(--accent); }
 
 .toggle-btn {
   display: inline-flex;
@@ -291,7 +293,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   background: linear-gradient(135deg, #1b3d1f 0%, #2e6935 100%);
   border: 1px solid var(--ok);
   color: #fff;
-  padding: 7px 14px;
+  padding: 6px 12px;
   border-radius: 6px;
   font-weight: 700;
   font-size: 13px;
@@ -519,6 +521,7 @@ let basis = 'custo';
 /* ESTADO GLOBAL DE FILTROS INTERATIVOS */
 let filterLocalEst = 'todos'; 
 let filterStatusEst = 'todos';
+let filterArea = 'todos';
 let filterRua = 'todos';
 let filterShelfFaixa = 'todos';
 let filterAgingFaixa = 'todos';
@@ -551,14 +554,24 @@ const AGING_CLASS = {'0 a 15 dias':'ok','16 a 30 dias':'ok','30 a 60 dias':'warn
 const CLS = {ok:{n:'Saudável',c:'var(--ok)'},warn:{n:'Atenção',c:'var(--warn)'},crit:{n:'Crítico',c:'var(--crit)'},none:{n:'Sem validade',c:'var(--none)'}};
 const normF = s => String(s||'').replace(/\s+/g,' ').trim();
 
-// EXTRAÇÃO DE RUA DO ENDEREÇO LOGÍSTICO (EX: 205.1041.1.19.37.0.1 -> Rua 19)
-function extractRuaFromEndereco(endStr) {
-  if (!endStr) return 0;
-  const parts = String(endStr).split('.');
+// EXTRAÇÃO DE ÁREA (GALPÃO) E RUA
+function parseEnderecoInfo(endStr) {
+  if (!endStr) return { area: '0', rua: 0 };
+  const str = String(endStr);
+  const parts = str.split('.');
+  
+  let area = '0';
+  let rua = 0;
+
+  if (str.includes("205.1041.1.")) area = '1'; // Galpão 1
+  else if (str.includes("205.1041.7.")) area = '7'; // Galpão 2
+  else if (parts.length >= 3) area = parts[2] || '0';
+
   if (parts.length >= 4) {
-    return +parts[3] || 0;
+    rua = +parts[3] || 0;
   }
-  return 0;
+
+  return { area, rua };
 }
 
 // ORDENAÇÃO NATURAL DE ENDEREÇO (MENOR PARA O MAIOR SEQUENCIAL)
@@ -640,6 +653,7 @@ async function fromJsonFile(){
   
   const rows = rawRows.map(o => {
     const endStr = getProp(o, ["Endereço Logístico", "Endereco Logistico", "Endereço", "Endereco"]);
+    const parsed = parseEnderecoInfo(endStr);
     return {
       est: getProp(o, ["Local de Estoque", "Local Estoque", "Local"]).trim(),
       status: normF(getProp(o, ["Status", "Status Estoque"])),
@@ -651,7 +665,8 @@ async function fromJsonFile(){
       gtin: getProp(o, ["GTIN", "EAN", "Cod. Barras", "Código de Barras", "Codigo de Barras"]) || "-",
       prod: getProp(o, ["Produto", "Descrição", "Descricao"]).slice(0,60),
       end: endStr,
-      rua: extractRuaFromEndereco(endStr)
+      area: parsed.area,
+      rua: parsed.rua
     };
   }).filter(r => r.est !== "" && r.est.toLowerCase() !== "null");
 
@@ -809,6 +824,7 @@ const DEFAULT_COLORS = ['#ffc400','#ff5d62','#ff8b8f','#c084fc','#35d49a','#3a5d
 function clearAllFilters() {
   filterLocalEst = 'todos';
   filterStatusEst = 'todos';
+  filterArea = 'todos';
   filterRua = 'todos';
   filterShelfFaixa = 'todos';
   filterAgingFaixa = 'todos';
@@ -914,13 +930,18 @@ function printChecklist(items, title) {
   printWin.document.close();
 }
 
-/* 1. SEÇÃO VISÃO GERAL COM FILTRO DE RUA E CARA-CRACHÁ */
+/* 1. SEÇÃO VISÃO GERAL COM FILTROS EMBUTIDOS NO CARD */
 function secGeral(){
   const R_all = D.rows;
 
-  const ruasDisponiveis = Array.from(new Set(R_all.map(r => r.rua).filter(r => r > 0))).sort((a,b) => a - b);
+  let baseR = R_all;
+  if (filterArea !== 'todos') {
+    baseR = baseR.filter(r => r.area === filterArea);
+  }
+
+  const ruasDisponiveis = Array.from(new Set(baseR.map(r => r.rua).filter(r => r > 0))).sort((a,b) => a - b);
   
-  let R = R_all;
+  let R = baseR;
   if (filterLocalEst !== 'todos') {
     R = R.filter(r => r.est.toLowerCase().trim() === filterLocalEst.toLowerCase().trim());
   }
@@ -992,6 +1013,7 @@ function secGeral(){
     status: r.status,
     shelf: r.shelf,
     aging: r.aging,
+    area: r.area,
     rua: r.rua
   }));
 
@@ -1014,24 +1036,15 @@ function secGeral(){
     listEstoqueProds.sort((a,b) => b.qtd - a.qtd);
   }
 
-  const hasActiveFilters = filterLocalEst !== 'todos' || filterStatusEst !== 'todos' || filterRua !== 'todos';
-  const activeFiltersText = `Filtros Ativos: ${filterLocalEst !== 'todos' ? `Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''} ${filterRua !== 'todos' ? `| Rua = ${filterRua}` : ''}`;
+  const hasActiveFilters = filterLocalEst !== 'todos' || filterStatusEst !== 'todos' || filterArea !== 'todos' || filterRua !== 'todos';
+  const areaLabelStr = filterArea === '1' ? 'Galpão 1 (Área 1)' : (filterArea === '7' ? 'Galpão 2 (Área 7)' : 'Todas as Áreas');
+  const activeFiltersText = `Filtros Ativos: ${filterArea !== 'todos' ? `Área = ${areaLabelStr}` : ''} ${filterRua !== 'todos' ? `| Rua = ${filterRua}` : ''} ${filterLocalEst !== 'todos' ? `| Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
 
   $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque.</p>
 
   <div class="active-filters-bar ${hasActiveFilters ? 'visible' : ''}">
     <span>🔍 <b>${esc(activeFiltersText)}</b></span>
     <button onclick="clearAllFilters()">✕ Limpar Filtros</button>
-  </div>
-
-  <div class="filter-bar">
-    <label>🛤️ Filtrar por Rua do CD:
-      <select id="selectRuaFilter" style="font-weight:700;color:var(--accent)">
-        <option value="todos" ${filterRua==='todos'?'selected':''}>-- Todas as Ruas --</option>
-        ${ruasDisponiveis.map(r => `<option value="${r}" ${filterRua===String(r)?'selected':''}>Rua ${r}</option>`).join('')}
-      </select>
-    </label>
-    <button class="btn-export-pdf" id="btnExportCaraCrachaGeneral">🖨️ Exportar Cara-Crachá (PDF)</button>
   </div>
 
   <div class="grid kpis">
@@ -1080,12 +1093,26 @@ function secGeral(){
     <div class="card-header-action">
       <h3>📦 PRODUTOS EM ESTOQUE NO FILTRO (${listEstoqueProds.length} PALETES)</h3>
       <div class="prod-controls">
-        <input type="text" id="inputEstoqueProdSearch" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:280px" />
-        <select id="selectEstoqueProdSort">
-          <option value="endereco" ${estoqueProdSortOrder==='endereco'?'selected':''}>Ordenar por Endereço (Sequência Corredor)</option>
-          <option value="valor" ${estoqueProdSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
-          <option value="qtd" ${estoqueProdSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Endereçada</option>
+        <select id="selectAreaFilter" style="font-weight:700;color:var(--ok)">
+          <option value="todos" ${filterArea==='todos'?'selected':''}>-- Todos os Galpões --</option>
+          <option value="1" ${filterArea==='1'?'selected':''}>Galpão 1 (Área 1)</option>
+          <option value="7" ${filterArea==='7'?'selected':''}>Galpão 2 (Área 7)</option>
         </select>
+
+        <select id="selectRuaFilter" style="font-weight:700;color:var(--accent)">
+          <option value="todos" ${filterRua==='todos'?'selected':''}>-- Todas as Ruas --</option>
+          ${ruasDisponiveis.map(r => `<option value="${r}" ${filterRua===String(r)?'selected':''}>Rua ${r}</option>`).join('')}
+        </select>
+
+        <input type="text" id="inputEstoqueProdSearch" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:240px" />
+        
+        <select id="selectEstoqueProdSort">
+          <option value="endereco" ${estoqueProdSortOrder==='endereco'?'selected':''}>Ordenar por Endereço (Corredor)</option>
+          <option value="valor" ${estoqueProdSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
+          <option value="qtd" ${estoqueProdSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd</option>
+        </select>
+
+        <button class="btn-export-pdf" id="btnExportCaraCrachaGeneral">🖨️ Cara-Crachá (PDF)</button>
       </div>
     </div>
     <div class="tw">
@@ -1136,6 +1163,15 @@ function secGeral(){
     });
   });
 
+  const selectArea = $('#selectAreaFilter');
+  if (selectArea) {
+    selectArea.addEventListener('change', (e) => {
+      filterArea = e.target.value;
+      filterRua = 'todos';
+      secGeral();
+    });
+  }
+
   const selectRua = $('#selectRuaFilter');
   if (selectRua) {
     selectRua.addEventListener('change', (e) => {
@@ -1147,7 +1183,10 @@ function secGeral(){
   const btnCaraCracha = $('#btnExportCaraCrachaGeneral');
   if (btnCaraCracha) {
     btnCaraCracha.addEventListener('click', () => {
-      const tituloRel = filterRua !== 'todos' ? `Auditoria Rua ${filterRua}` : 'Auditoria Geral de Endereços';
+      let subTitle = [];
+      if (filterArea !== 'todos') subTitle.push(filterArea === '1' ? 'Galpão 1' : 'Galpão 2');
+      if (filterRua !== 'todos') subTitle.push(`Rua ${filterRua}`);
+      const tituloRel = subTitle.length ? `Auditoria ${subTitle.join(' - ')}` : 'Auditoria Geral de Endereços';
       printChecklist(listEstoqueProds, tituloRel);
     });
   }
@@ -1334,11 +1373,11 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     <div class="card-header-action">
       <h3>${topTitle} (${top.length} linhas encontradas)</h3>
       <div class="prod-controls">
-        <button class="btn-export-pdf" id="${btnPdfId}">🖨️ Exportar Cara-Crachá (PDF)</button>
+        <button class="btn-export-pdf" id="${btnPdfId}">🖨️ Cara-Crachá (PDF)</button>
         <input type="text" id="${inputId}" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:260px" />
         <select id="${selectId}">
           <option value="critico" ${currentSort==='critico'?'selected':''}>Ordenar por Mais Crítico</option>
-          <option value="endereco" ${currentSort==='endereco'?'selected':''}>Ordenar por Endereço (Corredor Sequencial)</option>
+          <option value="endereco" ${currentSort==='endereco'?'selected':''}>Ordenar por Endereço (Corredor)</option>
           <option value="valor" ${currentSort==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
           <option value="qtd" ${currentSort==='qtd'?'selected':''}>Ordenar por Maior Qtd Endereçada</option>
         </select>
