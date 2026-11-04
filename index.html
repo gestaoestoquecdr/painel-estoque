@@ -505,6 +505,7 @@ let filterAgingFaixa = 'todos';
 let resFilter = 'todos';
 let sepFilter = 'todos';
 let targetDestFilter = 'todos';
+let deptFilter = 'todos'; /* NOVO FILTRO DE DEPARTAMENTO NO ESTADO GLOBAL */
 let statusFilter = 'pendente'; 
 let destExpanded = false;
 let prodExpanded = false; 
@@ -736,7 +737,7 @@ const COLOR_MAP = {
   'pré alerta': '#ff8b8f',
   'suprimentos': '#c084fc'
 };
-const DEFAULT_COLORS = ['#ffc400','#ff5d62','#ff8b8f','#c084fc','#35d49a','#3a5db0','#4285f4'];
+const DEFAULT_COLORS = ['#ffc400','#ff5d62','#ff8b8f','#c084fc','#35d49a','#3a5db0','#4285f4','#e6a800','#ffb020','#ff5d62','#35d49a','#8da1cc'];
 
 function clearAllFilters() {
   filterLocalEst = 'todos';
@@ -745,6 +746,7 @@ function clearAllFilters() {
   filterAgingFaixa = 'todos';
   sepFilter = 'todos';
   targetDestFilter = 'todos';
+  deptFilter = 'todos';
   render();
 }
 
@@ -850,7 +852,7 @@ function secGeral(){
   const hasActiveFilters = filterLocalEst !== 'todos' || filterStatusEst !== 'todos';
   const activeFiltersText = `Filtro Ativo: ${filterLocalEst !== 'todos' ? `Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
 
-  $('#s-geral').innerHTML = `自由2<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque.</p>
+  $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque.</p>
 
   <div class="active-filters-bar ${hasActiveFilters ? 'visible' : ''}">
     <span>🔍 <b>${esc(activeFiltersText)}</b></span>
@@ -981,7 +983,7 @@ function secGeral(){
   attachTooltipEvents();
 }
 
-/* 2. SEÇÕES FAIXA (SHELF LIFE E AGING) CORRIGIDAS */
+/* 2. SEÇÕES FAIXA (SHELF LIFE E AGING) */
 function secShelf(){
   faixaSection(
     '#s-shelf',
@@ -1027,7 +1029,6 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   const activeFaixa = (tabType === 'shelf') ? filterShelfFaixa : filterAgingFaixa;
   let rev = revAll;
 
-  /* FILTRAGEM CORRIGIDA PARA MOLDAR TANTO CLASSIFICAÇÃO DA ROSCA (ok, warn, crit, none) QUANTO FAIXA DIRETA */
   if (activeFaixa !== 'todos') {
     const act = activeFaixa.toLowerCase().trim();
     if (['ok', 'warn', 'crit', 'none'].includes(act)) {
@@ -1322,7 +1323,7 @@ function secOcup(){
   attachTooltipEvents();
 }
 
-/* 4. SEÇÃO CARTEIRA DE PEDIDO */
+/* 4. SEÇÃO CARTEIRA DE PEDIDO COM FILTRO INTERATIVO POR DEPARTAMENTO CD */
 function secCarteira(){
   let C = (D && D.cart) ? D.cart : [];
   if (!C.length) {
@@ -1332,6 +1333,7 @@ function secCarteira(){
 
   const tiposSepDisponiveis = Array.from(new Set(C.map(r => r.tipoSep))).filter(Boolean);
   const destinosDisponiveis = Array.from(new Set(C.map(r => r.dest))).filter(Boolean).sort((a,b) => String(a).localeCompare(String(b), undefined, {numeric: true}));
+  const deptsDisponiveis = Array.from(new Set(C.map(r => r.dept))).filter(Boolean).sort((a,b) => String(a).localeCompare(String(b)));
 
   let filteredC = C;
   if (sepFilter !== 'todos') {
@@ -1339,6 +1341,9 @@ function secCarteira(){
   }
   if (targetDestFilter !== 'todos') {
     filteredC = filteredC.filter(r => String(r.dest) === String(targetDestFilter));
+  }
+  if (deptFilter !== 'todos') {
+    filteredC = filteredC.filter(r => r.dept.toLowerCase().trim() === deptFilter.toLowerCase().trim());
   }
 
   const totPedida = filteredC.reduce((s,r) => s + r.qtdPedida, 0);
@@ -1402,8 +1407,15 @@ function secCarteira(){
   const fullPctPend = fullTotQtd ? (fullPendQtd / fullTotQtd) * 100 : 0;
   const fullPctSep = fullTotQtd ? (fullSep.separada / fullTotQtd) * 100 : 0;
 
+  /* CÁLCULO DE DEPARTAMENTO BASEADO NA BASE COMPLETA DA CARTEIRA OU FILTRADA */
+  const baseDept = C.filter(r => {
+    if (sepFilter !== 'todos' && r.tipoSep.toLowerCase().trim() !== sepFilter.toLowerCase().trim()) return false;
+    if (targetDestFilter !== 'todos' && String(r.dest) !== String(targetDestFilter)) return false;
+    return true;
+  });
+
   const byDept = {};
-  filteredC.forEach(r => {
+  baseDept.forEach(r => {
     const k = r.dept || 'Outros';
     byDept[k] = byDept[k] || {qtd:0, valor:0};
     byDept[k].qtd += r.qtdPedida;
@@ -1411,7 +1423,7 @@ function secCarteira(){
   });
   const deptRows = Object.entries(byDept).sort((a,b) => (basis==='custo' ? b[1].valor - a[1].valor : b[1].qtd - a[1].qtd));
   const deptItems = deptRows.map(([n,o],i) => {
-    const topD = filteredC.filter(r => r.dept === n).sort((a,b) => b.valorTotal - a.valorTotal)[0];
+    const topD = baseDept.filter(r => r.dept === n).sort((a,b) => b.valorTotal - a.valorTotal)[0];
     return {
       rawKey: n,
       n: n,
@@ -1514,14 +1526,14 @@ function secCarteira(){
     ? 'PRODUTOS PENDENTES DE SEPARAÇÃO' 
     : (statusFilter === 'separado' ? 'PRODUTOS SEPARADOS' : 'TODOS OS PRODUTOS DA CARTEIRA');
 
-  const hasActiveCartFilter = sepFilter !== 'todos' || targetDestFilter !== 'todos';
+  const hasActiveCartFilter = sepFilter !== 'todos' || targetDestFilter !== 'todos' || deptFilter !== 'todos';
 
   $('#s-carteira').innerHTML = `
   <h2>Carteira de Pedido</h2>
   <p class="sub">Acompanhamento e status das reservas e solicitações do CD.</p>
 
   <div class="active-filters-bar ${hasActiveCartFilter ? 'visible' : ''}">
-    <span>🔍 <b>Filtro Ativo: ${sepFilter !== 'todos' ? `Tipo = ${sepFilter}` : ''} ${targetDestFilter !== 'todos' ? `| Destino = ${targetDestFilter}` : ''}</b></span>
+    <span>🔍 <b>Filtro Ativo: ${sepFilter !== 'todos' ? `Tipo = ${sepFilter}` : ''} ${targetDestFilter !== 'todos' ? `| Destino = ${targetDestFilter}` : ''} ${deptFilter !== 'todos' ? `| Depto = ${deptFilter}` : ''}</b></span>
     <button onclick="clearAllFilters()">✕ Limpar Filtros da Carteira</button>
   </div>
   
@@ -1533,10 +1545,17 @@ function secCarteira(){
       </select>
     </label>
 
-    <label>🏢 Filtrar Destino / Loja:
+    <label>🏢 Destino / Loja:
       <select id="targetDestFilterSelect" style="font-weight:700;color:var(--accent)">
         <option value="todos" ${targetDestFilter==='todos'?'selected':''}>-- Todos os Destinos --</option>
         ${destinosDisponiveis.map(d => `<option value="${esc(d)}" ${targetDestFilter===String(d)?'selected':''}>${esc(d)}</option>`).join('')}
+      </select>
+    </label>
+
+    <label>🏷️ Departamento CD:
+      <select id="deptFilterSelect" style="font-weight:700;color:var(--ok)">
+        <option value="todos" ${deptFilter==='todos'?'selected':''}>-- Todos os Departamentos --</option>
+        ${deptsDisponiveis.map(dp => `<option value="${esc(dp)}" ${deptFilter===dp?'selected':''}>${esc(dp)}</option>`).join('')}
       </select>
     </label>
   </div>
@@ -1603,8 +1622,11 @@ function secCarteira(){
     </div>
 
     <div class="card">
-      <h3>Participação por Departamento CD</h3>
-      <div class="donutwrap">${donut(deptItems, centerDept, basis==='custo'?'valor total':'qtd pedida')}${legend(deptItems)}</div>
+      <h3>Participação por Departamento CD (Clique para filtrar)</h3>
+      <div class="donutwrap">
+        ${donut(deptItems, centerDept, basis==='custo'?'valor total':'qtd pedida', 'data-filter-dept', deptFilter)}
+        ${legend(deptItems, 'data-filter-dept', deptFilter)}
+      </div>
     </div>
   </div>
 
@@ -1741,6 +1763,15 @@ function secCarteira(){
     });
   });
 
+  /* ADICIONA EVENTO DE CLIQUE PARA FILTRAR POR DEPARTAMENTO NO GRÁFICO DE ROSCA E LEGENDA */
+  document.querySelectorAll('[data-filter-dept]').forEach(el => {
+    el.addEventListener('click', () => {
+      const targetDept = el.getAttribute('data-filter-dept');
+      deptFilter = (deptFilter === targetDept) ? 'todos' : targetDept;
+      secCarteira();
+    });
+  });
+
   const selectSep = $('#sepFilterSelect');
   if (selectSep) {
     selectSep.addEventListener('change', (e) => {
@@ -1753,6 +1784,14 @@ function secCarteira(){
   if (selectTargetDest) {
     selectTargetDest.addEventListener('change', (e) => {
       targetDestFilter = e.target.value;
+      secCarteira();
+    });
+  }
+
+  const selectDept = $('#deptFilterSelect');
+  if (selectDept) {
+    selectDept.addEventListener('change', (e) => {
+      deptFilter = e.target.value;
       secCarteira();
     });
   }
