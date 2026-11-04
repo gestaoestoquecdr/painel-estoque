@@ -283,6 +283,26 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   color: #fff;
 }
 
+/* BOTÃO DE IMPRESSÃO / PDF */
+.btn-export-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #1b3d1f 0%, #2e6935 100%);
+  border: 1px solid var(--ok);
+  color: #fff;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+.btn-export-pdf:hover {
+  background: linear-gradient(135deg, #25542b 0%, #3a8543 100%);
+  transform: scale(1.03);
+  box-shadow: 0 0 12px rgba(53, 212, 154, 0.4);
+}
+
 .collapsible-content { display: none; margin-top: 14px; animation: fadeIn .25s ease-in-out; }
 .collapsible-content.open { display: block; }
 
@@ -1002,6 +1022,99 @@ function secGeral(){
   attachTooltipEvents();
 }
 
+/* FUNÇÃO GERADORA DE PDF / CHECKLIST DE IMPRESSÃO */
+function printChecklist(items, title) {
+  if (!items || !items.length) {
+    alert('Nenhum item disponível para exportar no filtro atual.');
+    return;
+  }
+
+  const nowStr = new Date().toLocaleString('pt-BR');
+  const printWin = window.open('', '_blank');
+
+  let tableRows = items.map((item, idx) => `
+    <tr>
+      <td style="text-align:center; font-weight:bold; width:30px;">[ &nbsp; ]</td>
+      <td style="font-family:monospace; font-weight:bold; font-size:12px;">${esc(item.end || 'S/ END')}</td>
+      <td style="font-family:monospace; font-weight:bold;">${esc(item.codProd)}</td>
+      <td style="font-size:11px;">${esc(item.prod)}</td>
+      <td style="font-size:11px;">${esc(item.gtin)}</td>
+      <td style="font-weight:bold; font-size:11px;">${esc(item.shelf || item.aging || '-')}</td>
+      <td style="text-align:center; font-weight:bold;">${fmtN.format(item.qtd)}</td>
+      <td style="font-size:10px;">${esc(item.status)}</td>
+    </tr>
+  `).join('');
+
+  const html = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>CHECKLIST DE AUDITORIA DE ESTOQUE - ${esc(title)}</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 20px; color: #000; font-size: 12px; }
+      .header-title { font-size: 18px; font-weight: bold; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+      .meta-info { margin-bottom: 15px; font-size: 11px; display: flex; gap: 30px; border-bottom: 1px #ccc solid; padding-bottom: 8px; }
+      .meta-info div { line-height: 1.4; }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+      th { background: #f0f0f0; text-align: left; padding: 6px; font-size: 10px; border: 1px solid #000; text-transform: uppercase; }
+      td { padding: 5px 6px; border: 1px solid #ccc; }
+      tr:nth-child(even) { background: #fafafa; }
+      .signature-space { margin-top: 30px; display: flex; justify-content: space-between; }
+      .sig-line { width: 45%; border-top: 1px solid #000; text-anchor: middle; text-align: center; padding-top: 5px; font-size: 10px; }
+      @media print {
+        body { margin: 0; }
+        button { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header-title">
+      <span>ROLDÃO ATACADISTA CD - CHECKLIST DE AUDITORIA</span>
+      <button onclick="window.print()" style="padding:6px 12px; font-weight:bold; cursor:pointer;">🖨️ IMPRIMIR / SALVAR PDF</button>
+    </div>
+    
+    <div class="meta-info">
+      <div><b>Relatório:</b> ${esc(title)}<br><b>Data/Hora Emissão:</b> ${nowStr}</div>
+      <div><b>Total de Linhas:</b> ${items.length}<br><b>Status Processado:</b> Crítico e Atenção</div>
+      <div><b>Operador Responsável:</b> ___________________________</div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:40px; text-align:center;">Visto</th>
+          <th>Endereço</th>
+          <th>Cód. Interno</th>
+          <th>Produto / Descrição</th>
+          <th>GTIN / EAN</th>
+          <th>Faixa</th>
+          <th style="text-align:center;">Qtd.</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows}
+      </tbody>
+    </table>
+
+    <div class="signature-space">
+      <div class="sig-line">Assinatura do Operador Auditores</div>
+      <div class="sig-line">Assinatura Encarregado / Liderança CD</div>
+    </div>
+
+    <script>
+      window.onload = function() {
+        setTimeout(function() { window.print(); }, 500);
+      }
+    <\/script>
+  </body>
+  </html>
+  `;
+
+  printWin.document.write(html);
+  printWin.document.close();
+}
+
 /* 2. SEÇÕES FAIXA (SHELF LIFE E AGING) */
 function secShelf(){
   faixaSection(
@@ -1118,6 +1231,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
 
   const inputId = tabType === 'shelf' ? 'inputShelfSearch' : 'inputAgingSearch';
   const selectId = tabType === 'shelf' ? 'selectShelfSort' : 'selectAgingSort';
+  const btnPdfId = tabType === 'shelf' ? 'btnExportShelfPdf' : 'btnExportAgingPdf';
 
   const critV = cls.crit, critN = revAll.filter(r=>cmap[r[field]]==='crit').length;
   const hasActiveFaixa = activeFaixa !== 'todos';
@@ -1160,7 +1274,8 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     <div class="card-header-action">
       <h3>${topTitle} (${top.length} linhas encontradas)</h3>
       <div class="prod-controls">
-        <input type="text" id="${inputId}" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:300px" />
+        <button class="btn-export-pdf" id="${btnPdfId}">🖨️ Exportar Checklist (PDF)</button>
+        <input type="text" id="${inputId}" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:260px" />
         <select id="${selectId}">
           <option value="critico" ${currentSort==='critico'?'selected':''}>Ordenar por Mais Crítico</option>
           <option value="valor" ${currentSort==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
@@ -1214,6 +1329,13 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
       }
     });
   });
+
+  const btnPdf = $('#' + btnPdfId);
+  if (btnPdf) {
+    btnPdf.addEventListener('click', () => {
+      printChecklist(top, title + (hasActiveFaixa ? ` - ${activeLabel}` : ' - Crítico e Atenção'));
+    });
+  }
 
   const sInput = $('#' + inputId);
   if (sInput) {
@@ -1317,7 +1439,7 @@ function secOcup(){
   const dn = donut(donutItems, fmtP(O.pct, 2), 'ocupação CD'); 
   basis = prev;
 
-  $('#s-ocup').innerHTML = `自由2<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos processados da chave ocupacao.</p>
+  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos processados da chave ocupacao.</p>
   <div class="occ">
     ${box('g1','Galpão 1',O.g1)}
     ${box('g2','Galpão 2',O.g2)}
