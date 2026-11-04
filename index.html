@@ -505,7 +505,7 @@ let filterAgingFaixa = 'todos';
 let resFilter = 'todos';
 let sepFilter = 'todos';
 let targetDestFilter = 'todos';
-let deptFilter = 'todos'; /* NOVO FILTRO DE DEPARTAMENTO NO ESTADO GLOBAL */
+let deptFilter = 'todos';
 let statusFilter = 'pendente'; 
 let destExpanded = false;
 let prodExpanded = false; 
@@ -556,12 +556,32 @@ function extractList(source) {
 }
 
 async function fromJsonFile(){
-  const url = CONFIG.DATA_URL + '?nocache=' + Date.now();
-  const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+  const timestamp = new Date().getTime();
+  const url = `${CONFIG.DATA_URL}?v=${timestamp}`;
+  
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    }
+  });
+
   if (!res.ok) throw new Error('Status HTTP ' + res.status);
   const data = await res.json();
   
   const jsonKeys = Object.keys(data);
+  let rawRows = extractList(data.dados1926);
+  if (rawRows.length === 0) {
+    for (let k of jsonKeys) {
+      if (k.toLowerCase().includes('1926') || k.toLowerCase().includes('estoque')) {
+        rawRows = extractList(data[k]);
+        if (rawRows.length > 0) break;
+      }
+    }
+  }
+
   let rawAddr = extractList(data.ocupacao);
   if (rawAddr.length === 0) {
     for (let k of jsonKeys) {
@@ -572,19 +592,18 @@ async function fromJsonFile(){
     }
   }
   
-  const rawRows = extractList(data.dados1926);
   const rawCart = extractList(data.carteira || data.dados1666 || data["1666 - Carteira de Pedido"]);
   
   const rows = rawRows.map(o => ({
-    est: getProp(o, ["Local de Estoque"]).trim(),
-    status: normF(getProp(o, ["Status"])),
-    shelf: normF(getProp(o, ["Desc Shelf"])),
-    aging: normF(getProp(o, ["Faixa Anging ", "Faixa Anging", "Faixa Aging"])),
-    qtd: +(getProp(o, ["Qtd. Endereçada", "Qtd Enderecada"]) || 0),
-    custo: +(getProp(o, ["Custo Bruto Total"]) || 0),
+    est: getProp(o, ["Local de Estoque", "Local Estoque", "Local"]).trim(),
+    status: normF(getProp(o, ["Status", "Status Estoque"])),
+    shelf: normF(getProp(o, ["Desc Shelf", "Shelf", "Desc. Shelf"])),
+    aging: normF(getProp(o, ["Faixa Anging ", "Faixa Anging", "Faixa Aging", "Aging"])),
+    qtd: +(getProp(o, ["Qtd. Endereçada", "Qtd Enderecada", "Qtd Endereçada Total", "Qtd Total"]) || 0),
+    custo: +(getProp(o, ["Custo Bruto Total", "Custo Total", "Custo Bruto", "Valor Total"]) || 0),
     codProd: getProp(o, ["Código Interno", "Codigo Interno", "Código Produto", "Codigo Produto", "Cód. Prod.", "Cod. Prod", "Código", "Codigo", "SKU"]) || "-",
     gtin: getProp(o, ["GTIN", "EAN", "Cod. Barras", "Código de Barras", "Codigo de Barras"]) || "-",
-    prod: getProp(o, ["Produto"]).slice(0,60),
+    prod: getProp(o, ["Produto", "Descrição", "Descricao"]).slice(0,60),
     end: getProp(o, ["Endereço Logístico", "Endereco Logistico", "Endereço", "Endereco"])
   })).filter(r => r.est !== "" && r.est.toLowerCase() !== "null");
 
@@ -1298,7 +1317,7 @@ function secOcup(){
   const dn = donut(donutItems, fmtP(O.pct, 2), 'ocupação CD'); 
   basis = prev;
 
-  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos processados da chave ocupacao.</p>
+  $('#s-ocup').innerHTML = `自由2<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos processados da chave ocupacao.</p>
   <div class="occ">
     ${box('g1','Galpão 1',O.g1)}
     ${box('g2','Galpão 2',O.g2)}
@@ -1323,7 +1342,7 @@ function secOcup(){
   attachTooltipEvents();
 }
 
-/* 4. SEÇÃO CARTEIRA DE PEDIDO COM FILTRO INTERATIVO POR DEPARTAMENTO CD */
+/* 4. SEÇÃO CARTEIRA DE PEDIDO */
 function secCarteira(){
   let C = (D && D.cart) ? D.cart : [];
   if (!C.length) {
@@ -1407,7 +1426,6 @@ function secCarteira(){
   const fullPctPend = fullTotQtd ? (fullPendQtd / fullTotQtd) * 100 : 0;
   const fullPctSep = fullTotQtd ? (fullSep.separada / fullTotQtd) * 100 : 0;
 
-  /* CÁLCULO DE DEPARTAMENTO BASEADO NA BASE COMPLETA DA CARTEIRA OU FILTRADA */
   const baseDept = C.filter(r => {
     if (sepFilter !== 'todos' && r.tipoSep.toLowerCase().trim() !== sepFilter.toLowerCase().trim()) return false;
     if (targetDestFilter !== 'todos' && String(r.dest) !== String(targetDestFilter)) return false;
@@ -1763,7 +1781,6 @@ function secCarteira(){
     });
   });
 
-  /* ADICIONA EVENTO DE CLIQUE PARA FILTRAR POR DEPARTAMENTO NO GRÁFICO DE ROSCA E LEGENDA */
   document.querySelectorAll('[data-filter-dept]').forEach(el => {
     el.addEventListener('click', () => {
       const targetDept = el.getAttribute('data-filter-dept');
