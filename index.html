@@ -283,7 +283,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   color: #fff;
 }
 
-/* BOTÃO DE IMPRESSÃO / PDF */
+/* BOTÃO DE IMPRESSÃO / PDF CARA-CRACHÁ */
 .btn-export-pdf {
   display: inline-flex;
   align-items: center;
@@ -519,6 +519,7 @@ let basis = 'custo';
 /* ESTADO GLOBAL DE FILTROS INTERATIVOS */
 let filterLocalEst = 'todos'; 
 let filterStatusEst = 'todos';
+let filterRua = 'todos';
 let filterShelfFaixa = 'todos';
 let filterAgingFaixa = 'todos';
 
@@ -533,7 +534,7 @@ let destSearch = '';
 let prodSearch = '';
 let prodSortOrder = 'qtd';
 let estoqueProdSearch = '';
-let estoqueProdSortOrder = 'valor';
+let estoqueProdSortOrder = 'endereco';
 
 let shelfSearch = '';
 let shelfSortOrder = 'critico';
@@ -549,6 +550,29 @@ const SHELF_CLASS = {'0 a 5 dias':'crit','06 a 15 dias':'crit','16 a 30 dias':'w
 const AGING_CLASS = {'0 a 15 dias':'ok','16 a 30 dias':'ok','30 a 60 dias':'warn','Acima de 60 dias':'crit'};
 const CLS = {ok:{n:'Saudável',c:'var(--ok)'},warn:{n:'Atenção',c:'var(--warn)'},crit:{n:'Crítico',c:'var(--crit)'},none:{n:'Sem validade',c:'var(--none)'}};
 const normF = s => String(s||'').replace(/\s+/g,' ').trim();
+
+// EXTRAÇÃO DE RUA DO ENDEREÇO LOGÍSTICO (EX: 205.1041.1.19.37.0.1 -> Rua 19)
+function extractRuaFromEndereco(endStr) {
+  if (!endStr) return 0;
+  const parts = String(endStr).split('.');
+  if (parts.length >= 4) {
+    return +parts[3] || 0;
+  }
+  return 0;
+}
+
+// ORDENAÇÃO NATURAL DE ENDEREÇO (MENOR PARA O MAIOR SEQUENCIAL)
+function compareEnderecosNatural(a, b) {
+  const partsA = String(a || '').split('.').map(p => parseInt(p, 10) || 0);
+  const partsB = String(b || '').split('.').map(p => parseInt(p, 10) || 0);
+  const len = Math.max(partsA.length, partsB.length);
+  for (let i = 0; i < len; i++) {
+    const numA = partsA[i] || 0;
+    const numB = partsB[i] || 0;
+    if (numA !== numB) return numA - numB;
+  }
+  return String(a).localeCompare(String(b));
+}
 
 function getProp(obj, propNames) {
   if (!obj || typeof obj !== 'object') return '';
@@ -614,18 +638,22 @@ async function fromJsonFile(){
   
   const rawCart = extractList(data.carteira || data.dados1666 || data["1666 - Carteira de Pedido"]);
   
-  const rows = rawRows.map(o => ({
-    est: getProp(o, ["Local de Estoque", "Local Estoque", "Local"]).trim(),
-    status: normF(getProp(o, ["Status", "Status Estoque"])),
-    shelf: normF(getProp(o, ["Desc Shelf", "Shelf", "Desc. Shelf"])),
-    aging: normF(getProp(o, ["Faixa Anging ", "Faixa Anging", "Faixa Aging", "Aging"])),
-    qtd: +(getProp(o, ["Qtd. Endereçada", "Qtd Enderecada", "Qtd Endereçada Total", "Qtd Total"]) || 0),
-    custo: +(getProp(o, ["Custo Bruto Total", "Custo Total", "Custo Bruto", "Valor Total"]) || 0),
-    codProd: getProp(o, ["Código Interno", "Codigo Interno", "Código Produto", "Codigo Produto", "Cód. Prod.", "Cod. Prod", "Código", "Codigo", "SKU"]) || "-",
-    gtin: getProp(o, ["GTIN", "EAN", "Cod. Barras", "Código de Barras", "Codigo de Barras"]) || "-",
-    prod: getProp(o, ["Produto", "Descrição", "Descricao"]).slice(0,60),
-    end: getProp(o, ["Endereço Logístico", "Endereco Logistico", "Endereço", "Endereco"])
-  })).filter(r => r.est !== "" && r.est.toLowerCase() !== "null");
+  const rows = rawRows.map(o => {
+    const endStr = getProp(o, ["Endereço Logístico", "Endereco Logistico", "Endereço", "Endereco"]);
+    return {
+      est: getProp(o, ["Local de Estoque", "Local Estoque", "Local"]).trim(),
+      status: normF(getProp(o, ["Status", "Status Estoque"])),
+      shelf: normF(getProp(o, ["Desc Shelf", "Shelf", "Desc. Shelf"])),
+      aging: normF(getProp(o, ["Faixa Anging ", "Faixa Anging", "Faixa Aging", "Aging"])),
+      qtd: +(getProp(o, ["Qtd. Endereçada", "Qtd Enderecada", "Qtd Endereçada Total", "Qtd Total"]) || 0),
+      custo: +(getProp(o, ["Custo Bruto Total", "Custo Total", "Custo Bruto", "Valor Total"]) || 0),
+      codProd: getProp(o, ["Código Interno", "Codigo Interno", "Código Produto", "Codigo Produto", "Cód. Prod.", "Cod. Prod", "Código", "Codigo", "SKU"]) || "-",
+      gtin: getProp(o, ["GTIN", "EAN", "Cod. Barras", "Código de Barras", "Codigo de Barras"]) || "-",
+      prod: getProp(o, ["Produto", "Descrição", "Descricao"]).slice(0,60),
+      end: endStr,
+      rua: extractRuaFromEndereco(endStr)
+    };
+  }).filter(r => r.est !== "" && r.est.toLowerCase() !== "null");
 
   const addr = rawAddr.map(o => {
     const statusVal = getProp(o, ["Status"]);
@@ -781,6 +809,7 @@ const DEFAULT_COLORS = ['#ffc400','#ff5d62','#ff8b8f','#c084fc','#35d49a','#3a5d
 function clearAllFilters() {
   filterLocalEst = 'todos';
   filterStatusEst = 'todos';
+  filterRua = 'todos';
   filterShelfFaixa = 'todos';
   filterAgingFaixa = 'todos';
   sepFilter = 'todos';
@@ -789,9 +818,107 @@ function clearAllFilters() {
   render();
 }
 
-/* 1. SEÇÃO VISÃO GERAL */
+/* FUNÇÃO GERADORA DE PDF / CHECKLIST CARA-CRACHÁ ORDENADO POR SEQUÊNCIA DO ENDEREÇO */
+function printChecklist(items, title) {
+  if (!items || !items.length) {
+    alert('Nenhum item disponível para exportar no filtro atual.');
+    return;
+  }
+
+  // Ordena estritamente por sequência de endereço (menor para o maior)
+  const itemsSorted = [...items].sort((a,b) => compareEnderecosNatural(a.end, b.end));
+
+  const nowStr = new Date().toLocaleString('pt-BR');
+  const printWin = window.open('', '_blank');
+
+  let tableRows = itemsSorted.map((item) => `
+    <tr>
+      <td style="text-align:center; font-weight:bold; width:35px; border:1px solid #000;">[ &nbsp; ]</td>
+      <td style="font-family:monospace; font-weight:bold; font-size:13px; color:#000;">${esc(item.end || 'S/ END')}</td>
+      <td style="font-family:monospace; font-weight:bold;">${esc(item.codProd)}</td>
+      <td style="font-size:11px;"><b>${esc(item.prod)}</b></td>
+      <td style="font-size:11px;">${esc(item.gtin)}</td>
+      <td style="font-weight:bold; font-size:11px;">${esc(item.shelf || item.aging || item.status || '-')}</td>
+      <td style="text-align:center; font-weight:bold; font-size:13px;">${fmtN.format(item.qtd)}</td>
+      <td style="border:1px solid #999; width:100px;"></td>
+    </tr>
+  `).join('');
+
+  const html = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>AUDITORIA CARA-CRACHÁ - ${esc(title)}</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 15px; color: #000; font-size: 11px; }
+      .header-title { font-size: 16px; font-weight: bold; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+      .meta-info { margin-bottom: 12px; font-size: 11px; display: flex; gap: 20px; border-bottom: 1px #ccc solid; padding-bottom: 6px; }
+      .meta-info div { line-height: 1.3; }
+      table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+      th { background: #e0e0e0; text-align: left; padding: 5px; font-size: 10px; border: 1px solid #000; text-transform: uppercase; }
+      td { padding: 4px 6px; border: 1px solid #bbb; }
+      tr:nth-child(even) { background: #f9f9f9; }
+      .signature-space { margin-top: 25px; display: flex; justify-content: space-between; }
+      .sig-line { width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 4px; font-size: 10px; }
+      @media print {
+        body { margin: 0; }
+        button { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header-title">
+      <span>ROLDÃO ATACADISTA CD - CONFERÊNCIA CARA-CRACHÁ</span>
+      <button onclick="window.print()" style="padding:5px 12px; font-weight:bold; cursor:pointer;">🖨️ IMPRIMIR / SALVAR PDF</button>
+    </div>
+    
+    <div class="meta-info">
+      <div><b>Relatório:</b> ${esc(title)}<br><b>Emissão:</b> ${nowStr}</div>
+      <div><b>Linhas de Palete:</b> ${itemsSorted.length}<br><b>Sequência:</b> Menor para Maior Endereço</div>
+      <div><b>Operador Auditor:</b> ___________________________</div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:35px; text-align:center;">Visto</th>
+          <th>Endereço Logístico</th>
+          <th>Cód. Interno</th>
+          <th>Produto / Descrição</th>
+          <th>GTIN / EAN</th>
+          <th>Status / Faixa</th>
+          <th style="text-align:center;">Qtd Fís.</th>
+          <th>Ajuste / Obs</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows}
+      </tbody>
+    </table>
+
+    <div class="signature-space">
+      <div class="sig-line">Assinatura do Conferente de Rua</div>
+      <div class="sig-line">Assinatura da Liderança de Estoque</div>
+    </div>
+
+    <script>
+      window.onload = function() {
+        setTimeout(function() { window.print(); }, 400);
+      }
+    <\/script>
+  </body>
+  </html>
+  `;
+
+  printWin.document.write(html);
+  printWin.document.close();
+}
+
+/* 1. SEÇÃO VISÃO GERAL COM FILTRO DE RUA E CARA-CRACHÁ */
 function secGeral(){
   const R_all = D.rows;
+
+  const ruasDisponiveis = Array.from(new Set(R_all.map(r => r.rua).filter(r => r > 0))).sort((a,b) => a - b);
   
   let R = R_all;
   if (filterLocalEst !== 'todos') {
@@ -799,6 +926,9 @@ function secGeral(){
   }
   if (filterStatusEst !== 'todos') {
     R = R.filter(r => r.status.toLowerCase().trim() === filterStatusEst.toLowerCase().trim());
+  }
+  if (filterRua !== 'todos') {
+    R = R.filter(r => r.rua === +filterRua);
   }
 
   const by = {};
@@ -851,20 +981,20 @@ function secGeral(){
   const cardTitle = basis==='custo' ? 'VALOR POR LOCAL DE ESTOQUE (R$)' : 'QUANTIDADE POR LOCAL DE ESTOQUE';
   const semFisicoPct = totV ? (semFisicoVal / totV) * 100 : 0;
 
-  const prodMap = {};
-  R.forEach(r => {
-    const k = (r.codProd && r.codProd !== '-') ? r.codProd : r.prod;
-    if (!prodMap[k]) {
-      prodMap[k] = { codProd: r.codProd, gtin: r.gtin, prod: r.prod, qtd: 0, custo: 0, est: r.est, end: r.end };
-    }
-    prodMap[k].qtd += r.qtd;
-    prodMap[k].custo += r.custo;
-    if (r.gtin && r.gtin !== '-') prodMap[k].gtin = r.gtin;
-    if (r.codProd && r.codProd !== '-') prodMap[k].codProd = r.codProd;
-    if (r.end && !prodMap[k].end) prodMap[k].end = r.end;
-  });
+  let listEstoqueProds = R.map(r => ({
+    codProd: r.codProd,
+    gtin: r.gtin,
+    prod: r.prod,
+    qtd: r.qtd,
+    custo: r.custo,
+    est: r.est,
+    end: r.end,
+    status: r.status,
+    shelf: r.shelf,
+    aging: r.aging,
+    rua: r.rua
+  }));
 
-  let listEstoqueProds = Object.values(prodMap);
   if (estoqueProdSearch) {
     const q = estoqueProdSearch.toLowerCase();
     listEstoqueProds = listEstoqueProds.filter(p => 
@@ -876,20 +1006,16 @@ function secGeral(){
     );
   }
 
-  if (estoqueProdSortOrder === 'valor') {
+  if (estoqueProdSortOrder === 'endereco') {
+    listEstoqueProds.sort((a,b) => compareEnderecosNatural(a.end, b.end));
+  } else if (estoqueProdSortOrder === 'valor') {
     listEstoqueProds.sort((a,b) => b.custo - a.custo);
-  } else {
+  } else if (estoqueProdSortOrder === 'qtd') {
     listEstoqueProds.sort((a,b) => b.qtd - a.qtd);
   }
 
-  const topEstoqueProds = listEstoqueProds.slice(0, 25);
-  const top3Estoque = listEstoqueProds.slice(0,3).map(p => ({
-    prod: p.prod,
-    sub: `${brl(p.custo)} | Qtd: ${fmtN.format(p.qtd)}`
-  }));
-
-  const hasActiveFilters = filterLocalEst !== 'todos' || filterStatusEst !== 'todos';
-  const activeFiltersText = `Filtro Ativo: ${filterLocalEst !== 'todos' ? `Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
+  const hasActiveFilters = filterLocalEst !== 'todos' || filterStatusEst !== 'todos' || filterRua !== 'todos';
+  const activeFiltersText = `Filtros Ativos: ${filterLocalEst !== 'todos' ? `Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''} ${filterRua !== 'todos' ? `| Rua = ${filterRua}` : ''}`;
 
   $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque.</p>
 
@@ -898,8 +1024,18 @@ function secGeral(){
     <button onclick="clearAllFilters()">✕ Limpar Filtros</button>
   </div>
 
+  <div class="filter-bar">
+    <label>🛤️ Filtrar por Rua do CD:
+      <select id="selectRuaFilter" style="font-weight:700;color:var(--accent)">
+        <option value="todos" ${filterRua==='todos'?'selected':''}>-- Todas as Ruas --</option>
+        ${ruasDisponiveis.map(r => `<option value="${r}" ${filterRua===String(r)?'selected':''}>Rua ${r}</option>`).join('')}
+      </select>
+    </label>
+    <button class="btn-export-pdf" id="btnExportCaraCrachaGeneral">🖨️ Exportar Cara-Crachá (PDF)</button>
+  </div>
+
   <div class="grid kpis">
-    ${kpi('Custo bruto total',brlShort(totC),brl(totC),'hl', 'Maior Valor em Estoque', top3Estoque)}
+    ${kpi('Custo bruto total',brlShort(totC),brl(totC),'hl')}
     ${kpi('Qtd. endereçada total',fmtN.format(totQ),fmtN.format(R.length)+' linhas de palete')}
     ${kpi('Estoque revenda',brlShort(rc),fmtN.format(rq)+' endereçados · '+fmtP(totC ? rc/totC*100 : 0)+' do valor')}
     ${kpi('Ocupação do CD',fmtP(occ.pct,2),fmtN.format(occ.ocup)+' de '+fmtN.format(occ.total)+' endereços')}
@@ -923,13 +1059,9 @@ function secGeral(){
           </thead>
           <tbody>
             ${stRows.map(([n,o])=> {
-              const top3St = R.filter(r => r.status === n).sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({
-                prod: r.prod,
-                sub: `${brl(r.custo)} | Endereço: ${r.end}`
-              }));
               const isSelectedSt = filterStatusEst.toLowerCase() === n.toLowerCase();
 
-              return `<tr class="clickable-row ${isSelectedSt ? 'active-row' : ''}" data-filter-status="${esc(n)}" data-tooltip-title="Top 3 em ${esc(n)}" data-tooltip-color="var(--accent)" data-tooltip-items="${JSON.stringify(top3St).replace(/"/g, '&quot;')}">
+              return `<tr class="clickable-row ${isSelectedSt ? 'active-row' : ''}" data-filter-status="${esc(n)}">
                 <td><b>${esc(n)}</b></td>
                 <td class="r">${fmtN.format(o.n)}</td>
                 <td class="r">${fmtN.format(o.qtd)}</td>
@@ -946,10 +1078,11 @@ function secGeral(){
 
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
-      <h3>📦 PRODUTOS FILTRADOS NO ESTOQUE (${listEstoqueProds.length} encontrados)</h3>
+      <h3>📦 PRODUTOS EM ESTOQUE NO FILTRO (${listEstoqueProds.length} PALETES)</h3>
       <div class="prod-controls">
-        <input type="text" id="inputEstoqueProdSearch" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:300px" />
+        <input type="text" id="inputEstoqueProdSearch" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:280px" />
         <select id="selectEstoqueProdSort">
+          <option value="endereco" ${estoqueProdSortOrder==='endereco'?'selected':''}>Ordenar por Endereço (Sequência Corredor)</option>
           <option value="valor" ${estoqueProdSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
           <option value="qtd" ${estoqueProdSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Endereçada</option>
         </select>
@@ -959,6 +1092,7 @@ function secGeral(){
       <table>
         <thead>
           <tr>
+            <th>Endereço Logístico</th>
             <th>Cód. Interno</th>
             <th>GTIN (EAN)</th>
             <th>Produto</th>
@@ -969,17 +1103,18 @@ function secGeral(){
           </tr>
         </thead>
         <tbody>
-          ${topEstoqueProds.length ? topEstoqueProds.map(p => `
+          ${listEstoqueProds.length ? listEstoqueProds.slice(0, 100).map(p => `
             <tr>
-              <td><span class="num" style="color:var(--accent);font-weight:700">${esc(p.codProd)}</span></td>
+              <td><span class="num" style="color:var(--accent);font-weight:800;font-size:15px">${esc(p.end)}</span></td>
+              <td><span class="num" style="color:var(--mute);font-weight:700">${esc(p.codProd)}</span></td>
               <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
               <td><b>${esc(p.prod)}</b></td>
               <td><span class="dot" style="background:var(--accent)"></span>${esc(nice(p.est))}</td>
-              <td>${esc(p.end)}</td>
+              <td>${esc(p.status)}</td>
               <td class="r" style="font-weight:700;color:var(--ok)">${fmtN.format(p.qtd)}</td>
               <td class="r" style="font-weight:700;color:var(--text)">${brl(p.custo)}</td>
             </tr>
-          `).join('') : '<tr><td colspan="7">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
+          `).join('') : '<tr><td colspan="8">Nenhum palete encontrado com os filtros aplicados.</td></tr>'}
         </tbody>
       </table>
     </div>
@@ -1001,6 +1136,22 @@ function secGeral(){
     });
   });
 
+  const selectRua = $('#selectRuaFilter');
+  if (selectRua) {
+    selectRua.addEventListener('change', (e) => {
+      filterRua = e.target.value;
+      secGeral();
+    });
+  }
+
+  const btnCaraCracha = $('#btnExportCaraCrachaGeneral');
+  if (btnCaraCracha) {
+    btnCaraCracha.addEventListener('click', () => {
+      const tituloRel = filterRua !== 'todos' ? `Auditoria Rua ${filterRua}` : 'Auditoria Geral de Endereços';
+      printChecklist(listEstoqueProds, tituloRel);
+    });
+  }
+
   const epSearch = $('#inputEstoqueProdSearch');
   if (epSearch) {
     epSearch.addEventListener('input', (e) => {
@@ -1020,99 +1171,6 @@ function secGeral(){
   }
 
   attachTooltipEvents();
-}
-
-/* FUNÇÃO GERADORA DE PDF / CHECKLIST DE IMPRESSÃO */
-function printChecklist(items, title) {
-  if (!items || !items.length) {
-    alert('Nenhum item disponível para exportar no filtro atual.');
-    return;
-  }
-
-  const nowStr = new Date().toLocaleString('pt-BR');
-  const printWin = window.open('', '_blank');
-
-  let tableRows = items.map((item, idx) => `
-    <tr>
-      <td style="text-align:center; font-weight:bold; width:30px;">[ &nbsp; ]</td>
-      <td style="font-family:monospace; font-weight:bold; font-size:12px;">${esc(item.end || 'S/ END')}</td>
-      <td style="font-family:monospace; font-weight:bold;">${esc(item.codProd)}</td>
-      <td style="font-size:11px;">${esc(item.prod)}</td>
-      <td style="font-size:11px;">${esc(item.gtin)}</td>
-      <td style="font-weight:bold; font-size:11px;">${esc(item.shelf || item.aging || '-')}</td>
-      <td style="text-align:center; font-weight:bold;">${fmtN.format(item.qtd)}</td>
-      <td style="font-size:10px;">${esc(item.status)}</td>
-    </tr>
-  `).join('');
-
-  const html = `
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <title>CHECKLIST DE AUDITORIA DE ESTOQUE - ${esc(title)}</title>
-    <style>
-      body { font-family: Arial, sans-serif; margin: 20px; color: #000; font-size: 12px; }
-      .header-title { font-size: 18px; font-weight: bold; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-      .meta-info { margin-bottom: 15px; font-size: 11px; display: flex; gap: 30px; border-bottom: 1px #ccc solid; padding-bottom: 8px; }
-      .meta-info div { line-height: 1.4; }
-      table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-      th { background: #f0f0f0; text-align: left; padding: 6px; font-size: 10px; border: 1px solid #000; text-transform: uppercase; }
-      td { padding: 5px 6px; border: 1px solid #ccc; }
-      tr:nth-child(even) { background: #fafafa; }
-      .signature-space { margin-top: 30px; display: flex; justify-content: space-between; }
-      .sig-line { width: 45%; border-top: 1px solid #000; text-anchor: middle; text-align: center; padding-top: 5px; font-size: 10px; }
-      @media print {
-        body { margin: 0; }
-        button { display: none; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="header-title">
-      <span>ROLDÃO ATACADISTA CD - CHECKLIST DE AUDITORIA</span>
-      <button onclick="window.print()" style="padding:6px 12px; font-weight:bold; cursor:pointer;">🖨️ IMPRIMIR / SALVAR PDF</button>
-    </div>
-    
-    <div class="meta-info">
-      <div><b>Relatório:</b> ${esc(title)}<br><b>Data/Hora Emissão:</b> ${nowStr}</div>
-      <div><b>Total de Linhas:</b> ${items.length}<br><b>Status Processado:</b> Crítico e Atenção</div>
-      <div><b>Operador Responsável:</b> ___________________________</div>
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th style="width:40px; text-align:center;">Visto</th>
-          <th>Endereço</th>
-          <th>Cód. Interno</th>
-          <th>Produto / Descrição</th>
-          <th>GTIN / EAN</th>
-          <th>Faixa</th>
-          <th style="text-align:center;">Qtd.</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${tableRows}
-      </tbody>
-    </table>
-
-    <div class="signature-space">
-      <div class="sig-line">Assinatura do Operador Auditores</div>
-      <div class="sig-line">Assinatura Encarregado / Liderança CD</div>
-    </div>
-
-    <script>
-      window.onload = function() {
-        setTimeout(function() { window.print(); }, 500);
-      }
-    <\/script>
-  </body>
-  </html>
-  `;
-
-  printWin.document.write(html);
-  printWin.document.close();
 }
 
 /* 2. SEÇÕES FAIXA (SHELF LIFE E AGING) */
@@ -1211,8 +1269,10 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
       if (idxA !== idxB && idxA !== -1 && idxB !== -1) {
         return idxA - idxB;
       }
-      return b.custo - a.custo;
+      return compareEnderecosNatural(a.end, b.end);
     });
+  } else if (currentSort === 'endereco') {
+    top.sort((a, b) => compareEnderecosNatural(a.end, b.end));
   } else if (currentSort === 'valor') {
     top.sort((a, b) => b.custo - a.custo);
   } else if (currentSort === 'qtd') {
@@ -1274,10 +1334,11 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     <div class="card-header-action">
       <h3>${topTitle} (${top.length} linhas encontradas)</h3>
       <div class="prod-controls">
-        <button class="btn-export-pdf" id="${btnPdfId}">🖨️ Exportar Checklist (PDF)</button>
+        <button class="btn-export-pdf" id="${btnPdfId}">🖨️ Exportar Cara-Crachá (PDF)</button>
         <input type="text" id="${inputId}" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:260px" />
         <select id="${selectId}">
           <option value="critico" ${currentSort==='critico'?'selected':''}>Ordenar por Mais Crítico</option>
+          <option value="endereco" ${currentSort==='endereco'?'selected':''}>Ordenar por Endereço (Corredor Sequencial)</option>
           <option value="valor" ${currentSort==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
           <option value="qtd" ${currentSort==='qtd'?'selected':''}>Ordenar por Maior Qtd Endereçada</option>
         </select>
@@ -1305,7 +1366,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
               <td><span class="num" style="color:var(--accent);font-weight:700">${esc(r.codProd)}</span></td>
               <td><span class="num" style="color:var(--mute);font-weight:600">${esc(r.gtin)}</span></td>
               <td><b>${esc(r.prod)}</b></td>
-              <td>${esc(r.end)}</td>
+              <td><b style="color:var(--accent);font-family:var(--f-num)">${esc(r.end)}</b></td>
               <td>${esc(r.status)}</td>
               <td><span class="dot" style="background:${badgeColor}"></span><b>${esc(r[field])}</b></td>
               <td class="r" style="font-weight:700">${fmtN.format(r.qtd)}</td>
