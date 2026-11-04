@@ -455,52 +455,56 @@ const CONFIG = {
   TV_SEGUNDOS: 20
 };
 
-// --- MAPA DE LOJAS ---
+// --- MAPA DE LOJAS ATUALIZADO (DIRETO NO CÓDIGO) ---
 const MAPA_LOJAS = {
-  "2": "BP02 - ROLDAO FREGUESIA",
-  "3": "BP03 - ROLDAO MOOCA",
-  "4": "BP04 - ROLDAO BUTANTA - MATRIZ",
-  "5": "BP05 - ROLDAO OSASCO",
-  "6": "BP06 - ROLDAO CAMPO LIMPO",
-  "7": "BP07 - ROLDAO SANTO ANDRE",
-  "8": "BP08 - ROLDAO JUNDIAI",
-  "9": "BP09 - ROLDAO GUARULHOS",
-  "10": "BP10 - ROLDAO IPIRANGA",
-  "11": "BP11 - ROLDAO MARECHAL",
-  "13": "BP13 - ROLDAO PRAIA GRANDE",
-  "15": "BP15 - ROLDAO GUARUJA",
-  "16": "BP16 - ROLDAO TIRADENTES",
-  "17": "BP17 - ROLDAO FRANCO DA ROCHA",
-  "18": "BP18 - ROLDAO SOROCABA",
-  "19": "BP19 - ROLDAO ATIBAIA",
-  "20": "BP20 - ROLDAO NACOES UNIDAS",
-  "22": "BP22 - ROLDAO CUPECE",
-  "24": "BP24 - ROLDAO JANDIRA",
-  "26": "BP26 - ROLDAO TAIPAS",
-  "27": "BP27 - ROLDAO SAO JOSE",
-  "28": "BP28 - ROLDAO BRASILANDIA",
-  "29": "BP29 - ROLDAO SANTOS II",
-  "30": "BP30 - ROLDAO CID. DUTRA",
-  "35": "BP35 - ROLDAO CAMPINAS",
-  "36": "BP36 - ROLDAO BAURU",
-  "37": "BP37 - ROLDAO LIMEIRA",
-  "39": "BP39 - ROLDAO ITU",
-  "41": "BP41 - ROLDAO MAUA",
-  "42": "BP42 - ROLDAO VALINHOS",
-  "43": "BP43 - ROLDAO PIRACICABA",
-  "44": "BP44 - ROLDAO ITANHAEM",
-  "46": "BP46 - ROLDAO SALTO",
-  "47": "BP47 - ROLDAO CARAPICUIBA",
-  "48": "BP48 - ROLDAO PAULINIA",
-  "50": "BP50 - ROLDAO SANTA BARBARA",
-  "51": "BP51 - ROLDAO MOGI DAS CRUZES",
-  "52": "BP52 - ROLDAO SERRA NEGRA",
-  "53": "BP53 - ROLDAO AMERICANA"
+  "2": "R002 - ROLDÃO FREGUESIA",
+  "3": "R003 - ROLDÃO MOOCA",
+  "4": "R004 - ROLDÃO BUTANTA",
+  "5": "R005 - ROLDÃO OSASCO",
+  "6": "R006 - ROLDÃO CAMPO LIMPO",
+  "7": "R007 - ROLDÃO SANTO ANDRE",
+  "8": "R008 - ROLDÃO JUNDIAI",
+  "9": "R009 - ROLDÃO GUARULHOS",
+  "10": "R010 - ROLDÃO IPIRANGA",
+  "11": "R011 - ROLDÃO M. TITO",
+  "13": "R013 - ROLDÃO P. GRANDE",
+  "15": "R015 - ROLDÃO GUARUJA",
+  "16": "R016 - ROLDÃO C. TIRADENTES",
+  "17": "R017 - ROLDÃO F DA ROCHA",
+  "18": "R018 - ROLDÃO SOROCABA",
+  "19": "R019 - ROLDÃO ATIBAIA",
+  "20": "R020 - ROLDÃO N. UNIDAS",
+  "22": "R022 - ROLDÃO CUPECE",
+  "24": "R024 - ROLDÃO JANDIRA",
+  "26": "R026 - ROLDÃO TAIPAS",
+  "27": "R027 - ROLDÃO SÃO JOSÉ",
+  "28": "R028 - ROLDÃO BRASILANDIA",
+  "29": "R029 - ROLDÃO VILA MATHIAS",
+  "30": "R030 - ROLDÃO CIDADE DUTRA",
+  "35": "R035 - ROLDÃO CAMPINAS",
+  "36": "R036 - ROLDÃO BAURU",
+  "37": "R037 - ROLDÃO LIMEIRA",
+  "39": "R039 - ROLDÃO ITU",
+  "41": "R041 - ROLDÃO MAUA",
+  "42": "R042 - ROLDÃO VALINHOS",
+  "43": "R043 - ROLDÃO PIRACICABA",
+  "44": "R044 - ROLDÃO ITANHAEM",
+  "46": "R046 - ROLDÃO SALTO",
+  "47": "R047 - ROLDÃO CARAPICUIBA",
+  "48": "R048 - ROLDÃO PAULINIA",
+  "50": "R050 - ROLDÃO SANTA BARBARA",
+  "51": "R051 - ROLDÃO MOGI DAS CRUZES",
+  "52": "R052 - ROLDÃO SERRA NEGRA",
+  "53": "R053 - ROLDÃO AMERICANA"
 };
 
 function getNomeLoja(cod) {
-  const k = String(cod || '').trim();
-  return MAPA_LOJAS[k] || (k ? `Loja ${k}` : 'Sem Destino');
+  const raw = String(cod || '').trim();
+  if (!raw) return 'Sem Destino';
+  
+  // Trata tanto o código simples ("2") quanto zerado à esquerda ("02", "002")
+  const numOnly = raw.replace(/^0+/, ''); 
+  return MAPA_LOJAS[numOnly] || MAPA_LOJAS[raw] || `Loja ${raw}`;
 }
 
 const $ = s => document.querySelector(s);
