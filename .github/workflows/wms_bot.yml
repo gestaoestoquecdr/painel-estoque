@@ -2,19 +2,18 @@ name: Executar Robô WMS Bluesoft
 
 on:
   schedule:
-    # Executa a cada 1 hora (no minuto 0 de cada hora)
     - cron: '0 * * * *'
-  workflow_dispatch: # Permite execução manual na aba Actions
+  workflow_dispatch:
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do Repositório
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Configurar Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -29,3 +28,10 @@ jobs:
           WMS_PASS: ${{ secrets.WMS_PASS }}
           GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
         run: python main.py
+
+      - name: Guardar Screenshots de Diagnóstico (se houver)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-bluesoft
+          path: '*.png'
