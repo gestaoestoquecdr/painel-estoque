@@ -51,9 +51,10 @@ def enviar_para_google_drive(caminho_arquivo_local, menu_code, prefixo_nome):
         'name': novo_nome,
         'parents': [folder_id]
     }
-    media = MediaFileUpload(caminho_arquivo_local, resumable=True)
     
-    # Parâmetros adicionados para permitir o upload direto por Service Account
+    # Upload direto (resumable=False) para evitar a checagem de quota da Service Account
+    media = MediaFileUpload(caminho_arquivo_local, resumable=False)
+    
     uploaded = drive_service.files().create(
         body=file_metadata, 
         media_body=media, 
