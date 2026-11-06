@@ -23,10 +23,18 @@ logging.basicConfig(
 # --- 1. AUTENTICAÇÃO E CONFIGURAÇÃO DA API DO GOOGLE DRIVE ---
 SCOPES = ['https://www.googleapis.com/auth/drive']
 service_account_info = json.loads(os.environ['GCP_SERVICE_ACCOUNT_JSON'])
-creds = ServiceAccountCredentials.from_service_account_info(service_account_info, scopes=SCOPES)
+
+# Delegação Domain-Wide (Impersonation): A Service Account atua em nome do seu e-mail
+EMAIL_PROPRIETARIO = "gestaoestoque.cdr@roldao.com.br"
+
+creds = ServiceAccountCredentials.from_service_account_info(
+    service_account_info, 
+    scopes=SCOPES
+).with_subject(EMAIL_PROPRIETARIO)
+
 drive_service = build('drive', 'v3', credentials=creds)
 
-# Mapeamento dos Menus com os IDs Reais das Pastas do Google Drive
+# Mapeamento dos Menus com os IDs das Pastas no seu "Meu Drive"
 PASTAS_DRIVE = {
     "1666": "15mzmHiAGRKR5rhDWgzHwIy6OptEgZ2j0",
     "1926": "1M5eEwCHSEGMYpzFzL6WtisF2YdeF36hl",
@@ -35,7 +43,7 @@ PASTAS_DRIVE = {
 }
 
 def enviar_para_google_drive(caminho_arquivo_local, menu_code, prefixo_nome):
-    """Envia o relatório baixado localmente para o Google Drive utilizando a cota da pasta pai."""
+    """Envia o relatório descarregado diretamente para a pasta correspondente no Google Drive."""
     folder_id = PASTAS_DRIVE.get(menu_code)
     if not folder_id:
         print(f"❌ ID da pasta para o menu {menu_code} não localizado.")
@@ -54,7 +62,6 @@ def enviar_para_google_drive(caminho_arquivo_local, menu_code, prefixo_nome):
     
     media = MediaFileUpload(caminho_arquivo_local, resumable=False)
     
-    # Upload especificando suporte a drives e ignorando cota direta da Service Account
     uploaded = drive_service.files().create(
         body=file_metadata, 
         media_body=media, 
@@ -65,7 +72,7 @@ def enviar_para_google_drive(caminho_arquivo_local, menu_code, prefixo_nome):
     print(f"✅ SUCESSO: Arquivo {novo_nome} enviado para o Drive com ID: {uploaded.get('id')}\n")
 
 def processar_download_e_upload(pasta_downloads, prefixo_nome, tempo_clique, menu_code):
-    """Aguarda o término do download e realiza o upload para a nuvem."""
+    """Aguarda a conclusão do download no servidor e aciona a transferência para o Google Drive."""
     caminho_arquivo_baixado = None
 
     for _ in range(30):
@@ -84,14 +91,13 @@ def processar_download_e_upload(pasta_downloads, prefixo_nome, tempo_clique, men
         logging.error(msg_erro)
         return
 
-    # Envia para o Drive e deleta o arquivo temporário
     enviar_para_google_drive(caminho_arquivo_baixado, menu_code, prefixo_nome)
     os.remove(caminho_arquivo_baixado)
 
 def rodar_automacao():
     print("🚀 Iniciando automação dos relatórios Bluesoft ERP no GitHub Actions...")
 
-    # Configuração do Chrome Headless e Pasta de Downloads no Linux do GitHub
+    # Configuração do Chrome Headless para ambiente Linux/GitHub Actions
     chrome_options = Options()
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
@@ -118,7 +124,7 @@ def rodar_automacao():
 
         time.sleep(3)
 
-        # --- LOGIN COM SECRETS DO GITHUB ---
+        # --- AUTENTICAÇÃO NO ERP VIA SECRETS ---
         campo_usuario = WebDriverWait(navegador, 10).until(
             EC.visibility_of_element_located((By.ID, "j_username"))
         )
@@ -249,7 +255,7 @@ def rodar_automacao():
         print("Download do Menu 1672 iniciado...")
         processar_download_e_upload(download_dir, "Relatorio_1672", tempo_clique_4, "1672")
 
-        print("🎉 Processo concluído com sucesso! Os 4 relatórios foram salvos nas pastas do Google Drive.")
+        print("🎉 Processo concluído com sucesso! Os 4 relatórios foram gravados no Google Drive.")
 
     except Exception as erro:
         print(f"❌ Erro durante a execução da automação: {erro}")
