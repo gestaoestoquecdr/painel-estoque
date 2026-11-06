@@ -2,8 +2,9 @@ name: Executar Robô WMS Bluesoft
 
 on:
   schedule:
+    # Executa automaticamente no minuto 0 de cada hora (ex: 13:00, 14:00, 15:00...)
     - cron: '0 * * * *'
-  workflow_dispatch:
+  workflow_dispatch: # Permite disparar manualmente a qualquer momento
 
 jobs:
   run-bot:
@@ -28,10 +29,3 @@ jobs:
           WMS_PASS: ${{ secrets.WMS_PASS }}
           GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
         run: python main.py
-
-      - name: Guardar Screenshots de Diagnóstico (se houver)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshots-bluesoft
-          path: '*.png'
