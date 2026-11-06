@@ -7,7 +7,7 @@
 <title>Painel de Estoque CD - Roldão Atacadista</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Barlow+Semi+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   color-scheme:dark;
@@ -15,401 +15,335 @@
   --text:#eaf0ff; --mute:#8da1cc; --accent:#ffc400;
   --blue:#4285f4; --navy:#3a5db0; --cream:#fce8b2;
   --ok:#35d49a; --warn:#ffb020; --crit:#ff5d62; --none:#5b6b8f;
-  --f-body:'Montserrat', system-ui, sans-serif; 
+  --f-body:'Montserrat', system-ui, sans-serif;
   --f-num:'Barlow Semi Condensed', 'Montserrat', system-ui, sans-serif;
-  --radius:10px;
+  --f-mono:'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --radius:12px;
+  --glass:linear-gradient(180deg, rgba(16,34,74,.78) 0%, rgba(10,23,51,.9) 100%);
+  --edge:rgba(120,160,255,.16);
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:15px;line-height:1.4;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 28px}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px;
+  -webkit-font-smoothing:antialiased;
+}
+/* fundo: malha técnica + brilho nas bordas */
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(900px 520px at 6% -8%, rgba(66,133,244,.20), transparent 62%),
+    radial-gradient(700px 420px at 104% 0%, rgba(255,196,0,.07), transparent 60%),
+    linear-gradient(rgba(66,133,244,.055) 1px, transparent 1px) 0 0/44px 44px,
+    linear-gradient(90deg, rgba(66,133,244,.055) 1px, transparent 1px) 0 0/44px 44px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 55%,rgba(0,0,0,.35) 100%);
+          mask-image:linear-gradient(180deg,#000 0%,#000 55%,rgba(0,0,0,.35) 100%);
+}
 button, input, select{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:12.5px;letter-spacing:-.01em}
+.ico{width:1.15em;height:1.15em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.2em;margin-right:.45em;flex:none}
 
-header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
-.brand-container { display: flex; align-items: center; gap: 16px; }
-
-/* Logo Efeito Premium */
-.roldao-logo-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  border-radius: 10px;
-  padding: 6px 14px;
-  background: linear-gradient(135deg, #02122b 0%, #0a224a 100%);
-  border: 1px solid rgba(255, 196, 0, 0.4);
-  box-shadow: 0 0 12px rgba(255, 196, 0, 0.15), inset 0 0 8px rgba(255, 196, 0, 0.1);
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.roldao-logo-wrap:hover {
-  transform: translateY(-2px) scale(1.03);
-  border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(255, 196, 0, 0.45), inset 0 0 12px rgba(255, 196, 0, 0.2);
-}
-
-.roldao-logo-img {
-  height: 40px;
-  width: auto;
-  display: block;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-}
-
-.brand{display:flex;flex-direction:column;line-height:1.1}
-.brand b{font-family:var(--f-body);font-size:20px;font-weight:700;letter-spacing:-.01em;color:#fff}
-.brand small{color:var(--mute);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
-
-/* Botões de Navegação */
-nav{display:flex;gap:8px;flex-wrap:wrap}
-nav button{
-  background: linear-gradient(135deg, #071530 0%, #0e234c 100%);
-  border: 1px solid rgba(255, 196, 0, 0.25);
-  border-radius: 10px;
-  padding: 9px 18px;
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--text);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-nav button:hover{
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 0 16px rgba(255, 196, 0, 0.35);
-  color: #fff;
-}
-nav button[aria-selected="true"]{
-  background: linear-gradient(135deg, #ffc400 0%, #e6a800 100%);
-  color: #120e00;
-  border-color: #ffe066;
-  font-weight: 800;
-  box-shadow: 0 0 22px rgba(255, 196, 0, 0.55), inset 0 0 10px rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
-}
-
-.tools{margin-left:auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-
-.seg{
-  display:inline-flex;
-  border:1px solid rgba(255, 196, 0, 0.3);
-  border-radius:10px;
+/* ---------- CABEÇALHO ---------- */
+header{
+  position:sticky;top:10px;z-index:10;margin-top:10px;
+  display:flex;flex-wrap:wrap;align-items:center;gap:12px 22px;padding:10px 14px;
+  background:rgba(6,15,34,.78);
+  -webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);
+  border:1px solid var(--edge);border-radius:16px;
+  box-shadow:0 18px 40px -18px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.05);
   overflow:hidden;
-  background:#040d21;
-  padding: 2px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
-.seg button{
-  background:transparent;
-  border:0;
-  padding:7px 15px;
-  font-size:13px;
-  font-weight:700;
-  color:var(--mute);
-  border-radius: 8px;
-  transition:all .3s ease;
+/* linha de varredura: acontece uma única vez ao abrir o painel */
+header::after{
+  content:"";position:absolute;left:0;top:0;height:2px;width:35%;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  transform:translateX(-110%);pointer-events:none;
 }
-.seg button:hover { color: #fff; }
-.seg button[aria-pressed="true"]{
-  background: linear-gradient(135deg, #102958 0%, #1a3c7e 100%);
-  color: var(--accent);
-  border: 1px solid rgba(255, 196, 0, 0.5);
-  box-shadow: 0 0 12px rgba(255, 196, 0, 0.3);
+@media (prefers-reduced-motion:no-preference){
+  header::after{animation:scan 1.6s .25s cubic-bezier(.5,0,.2,1) 1 forwards}
 }
+@keyframes scan{0%{transform:translateX(-110%);opacity:1}90%{opacity:1}100%{transform:translateX(300%);opacity:0}}
+
+.brand-container{display:flex;align-items:center;gap:14px}
+.roldao-logo-wrap{
+  display:flex;align-items:center;justify-content:center;border-radius:10px;padding:5px 12px;
+  background:linear-gradient(135deg,#02122b 0%,#0a224a 100%);
+  border:1px solid rgba(255,196,0,.4);
+  box-shadow:0 0 14px rgba(255,196,0,.14), inset 0 0 8px rgba(255,196,0,.08);
+  transition:box-shadow .3s ease,border-color .3s ease;
+}
+.roldao-logo-wrap:hover{border-color:var(--accent);box-shadow:0 0 22px rgba(255,196,0,.4), inset 0 0 12px rgba(255,196,0,.16)}
+.roldao-logo-img{height:38px;width:auto;display:block;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+.brand{display:flex;flex-direction:column;line-height:1.1;padding-left:14px;border-left:1px solid var(--line)}
+.brand b{font-size:18px;font-weight:700;letter-spacing:-.015em;color:#fff}
+.brand small{color:var(--mute);font-size:12px;font-weight:500;margin-top:3px}
+
+nav{display:flex;gap:2px;flex-wrap:wrap;padding:3px;background:rgba(3,10,26,.7);border:1px solid var(--line);border-radius:12px}
+nav button{
+  position:relative;background:transparent;border:0;border-radius:9px;padding:8px 16px;
+  font-weight:600;font-size:14px;color:var(--mute);transition:color .2s ease,background .2s ease;
+}
+nav button:hover{color:#fff;background:rgba(66,133,244,.12)}
+nav button[aria-selected="true"]{
+  color:var(--accent);background:linear-gradient(180deg,rgba(255,196,0,.16),rgba(255,196,0,.05));
+  box-shadow:inset 0 0 0 1px rgba(255,196,0,.32);
+}
+nav button[aria-selected="true"]::after{
+  content:"";position:absolute;left:14px;right:14px;bottom:-4px;height:2px;border-radius:2px;
+  background:var(--accent);box-shadow:0 0 10px var(--accent),0 0 22px rgba(255,196,0,.6);
+}
+
+.tools{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.seg{display:inline-flex;gap:2px;padding:3px;background:rgba(3,10,26,.7);border:1px solid var(--line);border-radius:12px}
+.seg button{background:transparent;border:0;padding:7px 14px;font-size:13px;font-weight:600;color:var(--mute);border-radius:9px;transition:color .2s ease,background .2s ease}
+.seg button:hover{color:#fff}
+.seg button[aria-pressed="true"]{background:rgba(66,133,244,.2);color:#fff;box-shadow:inset 0 0 0 1px rgba(66,133,244,.55)}
 
 .tv{
-  background: linear-gradient(135deg, #071530 0%, #0e234c 100%);
-  border: 1px solid rgba(255, 196, 0, 0.3);
-  border-radius: 10px;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: all 0.3s ease;
+  display:inline-flex;align-items:center;gap:2px;background:rgba(3,10,26,.7);border:1px solid var(--line);border-radius:12px;
+  padding:9px 14px;font-size:13px;font-weight:600;color:var(--text);transition:border-color .2s ease,box-shadow .2s ease;
 }
-.tv:hover{
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 0 16px rgba(255, 196, 0, 0.35);
-}
-.tv[aria-pressed="true"]{
-  background: linear-gradient(135deg, #ffc400 0%, #e6a800 100%);
-  color: #120e00;
-  border-color: #ffe066;
-  box-shadow: 0 0 20px rgba(255, 196, 0, 0.6);
-}
+.tv:hover{border-color:rgba(255,196,0,.6)}
+.tv[aria-pressed="true"]{background:linear-gradient(135deg,#ffc400,#e6a800);color:#120e00;border-color:#ffe066;box-shadow:0 0 20px rgba(255,196,0,.5)}
 
-#src{font-size:13px;color:var(--mute);width:100%;display:flex;gap:8px;align-items:center}
-#src i{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block}
-#src.live i{background:var(--ok)}
-#src.error i{background:var(--crit)}
+/* estado da conexão */
+#src{
+  display:inline-flex;align-items:center;gap:9px;padding:7px 13px;border-radius:999px;
+  background:rgba(3,10,26,.7);border:1px solid var(--line);font-size:12.5px;font-weight:500;color:var(--mute);white-space:nowrap;
+}
+#src i{width:8px;height:8px;border-radius:50%;background:var(--warn);display:inline-block;flex:none;position:relative}
+#src.live i{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+#src.error i{background:var(--crit);box-shadow:0 0 8px var(--crit)}
+#src.error{border-color:rgba(255,93,98,.45);color:#ff8b8f}
+@media (prefers-reduced-motion:no-preference){
+  #src.live i::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid var(--ok);animation:ping 2.2s cubic-bezier(0,0,.2,1) infinite}
+}
+@keyframes ping{0%{transform:scale(.6);opacity:.9}80%,100%{transform:scale(1.9);opacity:0}}
 #bar{height:3px;background:var(--accent);width:0;position:fixed;left:0;top:0;z-index:99}
 
-section{display:none;padding-top:20px}
+/* ---------- CONTEÚDO ---------- */
+section{display:none;padding-top:26px}
 section.on{display:block}
-h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;letter-spacing:-.01em}
-.sub{color:var(--mute);margin:0 0 18px;font-size:14px}
+h2{font-size:28px;font-weight:800;margin:0 0 6px;letter-spacing:-.025em;line-height:1.15}
+.sub{color:var(--mute);margin:0 0 22px;font-size:14px;max-width:70ch}
 .grid{display:grid;gap:16px}
-.kpis{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
 .two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:stretch}
 
 .card{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:20px;
-  min-width:0;
-  box-shadow:0 8px 24px rgba(0,0,0,0.3);
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-start;
-  transition: all 0.3s ease;
-  position: relative;
+  position:relative;min-width:0;display:flex;flex-direction:column;justify-content:flex-start;
+  background:var(--glass);border:1px solid var(--edge);border-radius:var(--radius);padding:20px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 16px 34px -18px rgba(0,0,0,.75);
 }
-.card:hover {
-  border-color: rgba(255, 196, 0, 0.35);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 0 15px rgba(255, 196, 0, 0.1);
-}
+.card h3{margin:0 0 14px;font-size:14px;letter-spacing:0;color:var(--text);font-weight:700}
+.card-header-action{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.card-header-action h3{margin:0}
 
-.card h3{margin:0 0 14px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:700}
-.card-header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
-.card-header-action h3 { margin: 0; }
-.kpi .v{font-family:var(--f-num);font-size:38px;font-weight:700;line-height:1.05}
-.kpi .s{color:var(--mute);font-size:13px;margin-top:6px}
-.kpi.hl{border-top:4px solid var(--accent)}
+/* KPI: o elemento de destaque do painel */
+.kpi{padding:18px 20px 18px 24px;overflow:hidden;transition:border-color .25s ease,box-shadow .25s ease}
+.kpi::before{
+  content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:0 3px 3px 0;
+  background:var(--blue);box-shadow:0 0 14px var(--blue);
+}
+.kpi::after{
+  content:"";position:absolute;right:-30px;top:-30px;width:130px;height:130px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(66,133,244,.20),transparent 68%);
+}
+.kpi.hl::before{background:var(--accent);box-shadow:0 0 16px var(--accent)}
+.kpi.hl::after{background:radial-gradient(circle,rgba(255,196,0,.20),transparent 68%)}
+.kpi.hl{border-color:rgba(255,196,0,.32)}
+.kpi[data-tooltip-title]:hover{border-color:rgba(255,196,0,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 0 24px rgba(255,196,0,.14)}
+.kpi h3{font-size:13px;font-weight:600;color:var(--mute);margin:0 0 10px}
+.kpi .v{font-family:var(--f-num);font-size:44px;font-weight:700;line-height:1;letter-spacing:-.01em;text-shadow:0 0 28px rgba(66,133,244,.4)}
+.kpi.hl .v{text-shadow:0 0 28px rgba(255,196,0,.35)}
+.kpi .s{color:var(--mute);font-size:13px;margin-top:10px;font-variant-numeric:tabular-nums}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-/* BARRA DE FILTROS ATIVOS */
-.active-filters-bar {
-  display: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: rgba(255, 196, 0, 0.12);
-  border: 1px solid var(--accent);
-  padding: 10px 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--accent);
-  box-shadow: 0 0 15px rgba(255, 196, 0, 0.15);
+/* barra de filtros ativos */
+.active-filters-bar{
+  display:none;align-items:center;justify-content:space-between;gap:12px;
+  background:linear-gradient(90deg,rgba(255,196,0,.16),rgba(255,196,0,.05));
+  border:1px solid rgba(255,196,0,.55);padding:10px 14px;border-radius:10px;margin-bottom:16px;
+  font-size:14px;font-weight:600;color:var(--accent);box-shadow:0 0 24px -6px rgba(255,196,0,.3);
 }
-.active-filters-bar.visible { display: flex; }
-.active-filters-bar button {
-  background: var(--accent);
-  color: #1a1400;
-  border: 0;
-  padding: 5px 14px;
-  border-radius: 6px;
-  font-weight: 800;
-  font-size: 12px;
-  transition: all 0.2s ease;
+.active-filters-bar.visible{display:flex}
+.active-filters-bar button{
+  background:var(--accent);color:#1a1400;border:0;padding:6px 14px;border-radius:8px;font-weight:700;font-size:12.5px;transition:box-shadow .2s ease,transform .2s ease;
 }
-.active-filters-bar button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(255, 196, 0, 0.5);
+.active-filters-bar button:hover{box-shadow:0 0 16px rgba(255,196,0,.55);transform:translateY(-1px)}
+
+/* tooltip */
+#floating-tooltip{
+  position:fixed;z-index:9999;display:none;pointer-events:none;
+  background:rgba(6,15,34,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  border:1px solid var(--accent);border-radius:12px;padding:12px 16px;max-width:330px;
+  box-shadow:0 18px 40px rgba(0,0,0,.65),0 0 22px rgba(255,196,0,.2);
+  animation:tooltipFadeIn .16s cubic-bezier(.4,0,.2,1);
 }
+@keyframes tooltipFadeIn{from{opacity:0;transform:scale(.97) translateY(4px)}to{opacity:1;transform:none}}
+#floating-tooltip .tt-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px;border-bottom:1px solid rgba(255,196,0,.2);padding-bottom:5px}
+#floating-tooltip .tt-item{font-size:12px;margin-top:7px;line-height:1.35}
+#floating-tooltip .tt-item b{color:#fff;display:block;font-weight:600}
+#floating-tooltip .tt-item span{color:var(--mute);font-variant-numeric:tabular-nums}
 
-/* TOOLTIP FLUTUANTE */
-#floating-tooltip {
-  position: fixed;
-  z-index: 9999;
-  display: none;
-  pointer-events: none;
-  background: rgba(8, 20, 48, 0.95);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--accent);
-  border-radius: 10px;
-  padding: 12px 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 15px rgba(255, 196, 0, 0.25);
-  max-width: 320px;
-  animation: tooltipFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* ---------- CAMPOS ---------- */
+select,input[type=text]{
+  background-color:rgba(3,10,26,.6);border:1px solid var(--line);color:var(--text);padding:8px 12px;border-radius:9px;
+  font-size:13.5px;outline:none;transition:border-color .2s ease,box-shadow .2s ease;
 }
-
-@keyframes tooltipFadeIn {
-  from { opacity: 0; transform: scale(0.95) translateY(5px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+select:hover,input[type=text]:hover{border-color:rgba(66,133,244,.55)}
+select:focus,input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,196,0,.15)}
+select{
+  appearance:none;-webkit-appearance:none;padding-right:32px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238da1cc' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 11px center;
 }
-
-#floating-tooltip .tt-title {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--accent);
-  text-transform: uppercase;
-  margin-bottom: 6px;
-  border-bottom: 1px solid rgba(255, 196, 0, 0.2);
-  padding-bottom: 4px;
+select option{background:#0a1733;color:var(--text)}
+input[type=text]{
+  padding-left:34px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%238da1cc' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:11px center;
 }
+input::placeholder{color:#6c80ac}
 
-#floating-tooltip .tt-item {
-  font-size: 12px;
-  margin-top: 6px;
-  line-height: 1.35;
+.filter-bar{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:16px;background:var(--glass);padding:12px 16px;border-radius:var(--radius);border:1px solid var(--edge)}
+.filter-bar label{font-size:13.5px;font-weight:600;color:var(--mute);display:flex;align-items:center;gap:8px}
+.filter-bar label .ico{margin-right:0;color:var(--accent)}
+.prod-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+.toggle-btn{
+  display:inline-flex;align-items:center;gap:2px;background:rgba(66,133,244,.14);border:1px solid rgba(66,133,244,.5);color:#cfe0ff;
+  padding:8px 14px;border-radius:10px;font-weight:600;font-size:13.5px;transition:background .2s ease,box-shadow .2s ease,border-color .2s ease;
 }
+.toggle-btn:hover{background:rgba(66,133,244,.26);border-color:var(--blue);box-shadow:0 0 18px rgba(66,133,244,.35);color:#fff}
 
-#floating-tooltip .tt-item b { color: #fff; display: block; }
-#floating-tooltip .tt-item span { color: var(--mute); }
-
-.filter-bar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; background: var(--panel2); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--line); }
-.filter-bar label { font-size: 14px; font-weight: 600; color: var(--mute); display: flex; align-items: center; gap: 8px; }
-.filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 7px 12px; border-radius: 6px; font-size: 14px; outline: none; transition: border-color .2s ease; }
-.filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
-
-.prod-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.prod-controls select, .prod-controls input { background: var(--panel2); border: 1px solid var(--line); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 13px; outline: none; transition: border-color .2s ease; }
-.prod-controls select:focus, .prod-controls input:focus { border-color: var(--accent); }
-
-.toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #0b1f44 0%, #122d63 100%);
-  border: 1px solid rgba(255, 196, 0, 0.35);
-  color: var(--accent);
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  transition: all .3s ease;
+.btn-export-pdf{
+  display:inline-flex;align-items:center;gap:2px;background:rgba(53,212,154,.12);border:1px solid rgba(53,212,154,.55);color:#9bf0cd;
+  padding:8px 13px;border-radius:10px;font-weight:600;font-size:13px;transition:background .2s ease,box-shadow .2s ease;
 }
-.toggle-btn:hover {
-  border-color: var(--accent);
-  transform: translateY(-1px);
-  box-shadow: 0 0 14px rgba(255, 196, 0, 0.35);
-  color: #fff;
-}
+.btn-export-pdf:hover{background:rgba(53,212,154,.24);box-shadow:0 0 16px rgba(53,212,154,.35);color:#fff}
 
-/* BOTÃO DE IMPRESSÃO / PDF CARA-CRACHÁ */
-.btn-export-pdf {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: linear-gradient(135deg, #1b3d1f 0%, #2e6935 100%);
-  border: 1px solid var(--ok);
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-weight: 700;
-  font-size: 13px;
-  transition: all 0.2s ease;
-}
-.btn-export-pdf:hover {
-  background: linear-gradient(135deg, #25542b 0%, #3a8543 100%);
-  transform: scale(1.03);
-  box-shadow: 0 0 12px rgba(53, 212, 154, 0.4);
-}
+.collapsible-content{display:none;margin-top:14px}
+.collapsible-content.open{display:block;animation:fadeIn .25s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 
-.collapsible-content { display: none; margin-top: 14px; animation: fadeIn .25s ease-in-out; }
-.collapsible-content.open { display: block; }
-
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-
-.sem-fisico-badge {
-  background: rgba(255, 93, 98, 0.15);
-  border: 1px solid var(--crit);
-  border-radius: 6px;
-  padding: 6px 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #ff8b8f;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.sem-fisico-badge{
+  background:rgba(255,93,98,.12);border:1px solid rgba(255,93,98,.6);border-radius:999px;padding:6px 14px;display:inline-flex;align-items:center;
+  font-size:13px;color:#ff9a9e;font-weight:600;cursor:pointer;transition:background .2s ease,box-shadow .2s ease;
 }
-.sem-fisico-badge:hover {
-  background: rgba(255, 93, 98, 0.3);
-  box-shadow: 0 0 10px rgba(255, 93, 98, 0.4);
-}
-.sem-fisico-badge b { color: var(--crit); font-family: var(--f-num); font-size: 16px; }
+.sem-fisico-badge:hover{background:rgba(255,93,98,.24);box-shadow:0 0 14px rgba(255,93,98,.4)}
+.sem-fisico-badge b{color:var(--crit);font-family:var(--f-num);font-size:16px;margin-left:6px}
 
-.donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;margin:auto 0;padding:12px 0;width:100%}
-.donut{width:210px;height:210px;flex:none; cursor: pointer;}
-.donut circle { transition: stroke-width 0.2s ease, opacity 0.2s ease; }
-.donut circle:hover { stroke-width: 32; opacity: 0.9; }
-.donut circle.active-slice { stroke-width: 34; filter: drop-shadow(0 0 8px var(--accent)); }
+/* ---------- ROSCA ---------- */
+.donutwrap{display:flex;gap:24px;align-items:center;flex-wrap:wrap;justify-content:center;margin:auto 0;padding:10px 0;width:100%}
+.donut{width:220px;height:220px;flex:none;cursor:pointer;overflow:visible}
+.donut circle{stroke-width:15;transition:stroke-width .2s ease,opacity .2s ease}
+.donut circle[data-tooltip-title]:hover{stroke-width:21}
+.donut circle.active-slice{stroke-width:23;filter:drop-shadow(0 0 8px var(--accent))}
+.donut circle.tick{stroke-width:5;pointer-events:none}
 .donut text{fill:var(--text);font-family:var(--f-num)}
-.legend{display:flex;flex-direction:column;gap:12px;min-width:200px;flex:1}
-.legend div{display:flex;align-items:center;gap:10px;font-size:14px; cursor: pointer; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;}
-.legend div:hover, .legend div.active-item { background: rgba(255, 196, 0, 0.15); border: 1px solid rgba(255, 196, 0, 0.3); }
-.legend i{width:14px;height:14px;border-radius:3px;flex:none}
-.legend span:last-child{margin-left:auto;font-family:var(--f-num);font-weight:700;white-space:nowrap}
+.legend{display:flex;flex-direction:column;gap:6px;min-width:210px;flex:1}
+.legend div{display:flex;align-items:center;gap:11px;font-size:13.5px;cursor:pointer;padding:7px 10px;border-radius:9px;border:1px solid transparent;transition:background .2s ease,border-color .2s ease}
+.legend div:hover,.legend div.active-item{background:rgba(255,196,0,.1);border-color:rgba(255,196,0,.35)}
+.legend i{width:4px;height:18px;border-radius:2px;flex:none;box-shadow:0 0 8px currentColor}
+.legend span:last-child{margin-left:auto;font-family:var(--f-num);font-weight:600;font-size:15px;white-space:nowrap;font-variant-numeric:tabular-nums}
 
-.tw{overflow-x:auto;width:100%}
-table{border-collapse:collapse;width:100%;font-size:14px}
-th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
-td{padding:11px 12px;border-bottom:1px solid #12244b;white-space:nowrap}
-tr.clickable-row { cursor: pointer; transition: background 0.2s ease; }
-tr.clickable-row:hover, tr.clickable-row.active-row { background: rgba(255, 196, 0, 0.12) !important; }
-th.r,td.r{text-align:right;font-family:var(--f-num)}
-tr.tot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
-td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
-.bar{display:block;height:8px;background:#162a58;border-radius:4px;min-width:70px;margin-top:6px}
-.bar b{display:block;height:100%;border-radius:4px}
-
-.sep-progress { display: flex; flex-direction: column; gap: 14px; margin-top: 6px; }
-.sep-item { display: flex; flex-direction: column; gap: 6px; cursor: pointer; padding: 4px; border-radius: 6px; transition: background 0.2s; }
-.sep-item:hover { background: rgba(255,255,255,0.05); }
-.sep-header { display: flex; justify-content: space-between; font-size: 14px; font-weight:600; }
-.sep-bar-bg { height: 12px; background: var(--panel2); border-radius: 6px; overflow: hidden; display: flex; }
-.sep-bar-fill { height: 100%; transition: width 0.3s ease; }
-
-.info-note {
-  background: rgba(66, 133, 244, 0.1);
-  border: 1px solid rgba(66, 133, 244, 0.3);
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-top: 16px;
-  font-size: 13px;
-  color: #b0cdff;
-  line-height: 1.4;
+/* ---------- TABELAS ---------- */
+.tw{overflow:auto;width:100%;max-height:620px;scrollbar-width:thin;scrollbar-color:#264383 transparent}
+.tw::-webkit-scrollbar{height:8px;width:8px}
+.tw::-webkit-scrollbar-thumb{background:#264383;border-radius:8px}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:14px}
+th{
+  position:sticky;top:0;z-index:1;background:#0c1a3a;font-size:12.5px;font-weight:600;color:var(--mute);text-align:left;
+  padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap;
 }
-.info-note b { color: var(--accent); }
+td{padding:11px 12px;border-bottom:1px solid rgba(26,49,99,.5);white-space:nowrap}
+tbody tr:hover td{background:rgba(66,133,244,.07)}
+tr.clickable-row{cursor:pointer}
+tr.clickable-row:hover td{background:rgba(255,196,0,.08)}
+tr.clickable-row.active-row td{background:rgba(255,196,0,.14) !important}
+tr.clickable-row.active-row td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+th.r{text-align:right}
+td.r{text-align:right;font-family:var(--f-num);font-size:15px;font-variant-numeric:tabular-nums}
+tr.tot td{font-weight:700;border-top:1px solid var(--line);border-bottom:0;background:rgba(66,133,244,.07)}
+td .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:9px;box-shadow:0 0 8px currentColor}
 
-.occ { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; align-items: stretch; }
-.mini { display: flex; flex-direction: column; gap: 8px; min-width: 0; cursor: pointer; transition: transform 0.2s; }
-.mini:hover { transform: translateY(-2px); }
-.mini .b { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 10px; text-align: center; }
-.mini .b small { display: block; color: var(--mute); font-size: 11px; text-transform: uppercase; margin-bottom: 4px; font-weight:600; }
-.mini .b strong { font-family: var(--f-num); font-size: 26px; line-height: 1.1; }
-.mini.g1 .b { border-left: 3px solid var(--blue); border-right: 3px solid var(--blue); }
-.mini.g2 .b { border-left: 3px solid var(--navy); border-right: 3px solid var(--navy); }
+/* barras em "LED" segmentado */
+.bar{display:block;position:relative;height:7px;background:#12274f;border-radius:4px;min-width:80px;margin-top:6px;overflow:hidden}
+.bar b{display:block;height:100%;border-radius:4px}
+.bar::after,.sep-bar-bg::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 6px,rgba(6,15,34,.7) 6px 7px);
+}
 
-.donutcard { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 16px; }
+.sep-progress{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.sep-item{display:flex;flex-direction:column;gap:8px;cursor:pointer;padding:8px 10px;border-radius:10px;border:1px solid transparent;transition:background .2s ease,border-color .2s ease}
+.sep-item:hover{background:rgba(66,133,244,.08);border-color:rgba(66,133,244,.35)}
+.sep-header{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.sep-header span:last-child{color:var(--mute);font-weight:500}
+.sep-bar-bg{position:relative;height:12px;background:#12274f;border-radius:6px;overflow:hidden;display:flex}
+.sep-bar-fill{height:100%;transition:width .4s ease}
 
-.pcts { display: flex; flex-direction: column; gap: 12px; justify-content: center; min-width: 0; }
-.pcts .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.pcts .b { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 14px; text-align: center; min-width: 0; }
-.pcts .b small { display: block; color: var(--mute); font-size: 11px; margin-bottom: 4px; font-weight:600; }
-.pcts .b strong { font-family: var(--f-num); font-size: 24px; }
-.pcts .big strong { font-size: 42px; color: var(--accent); }
+.info-note{
+  display:flex;gap:4px;background:rgba(66,133,244,.09);border:1px solid rgba(66,133,244,.3);border-left:3px solid var(--blue);
+  border-radius:10px;padding:12px 14px;margin-top:18px;font-size:13px;color:#b9d2ff;line-height:1.5;
+}
+.info-note .ico{color:var(--blue);margin-top:2px}
+.info-note b{color:var(--accent);font-weight:600}
 
-.rua-container { overflow-x: auto; width: 100%; }
-.rua { display: flex; gap: 12px; align-items: flex-end; height: 230px; padding-top: 10px; min-width: 600px; }
-.rua .c { flex: 1; min-width: 32px; display: flex; flex-direction: column; align-items: stretch; height: 100%; }
-.rua .stk { flex: 1; display: flex; flex-direction: column; border-radius: 4px; overflow: hidden; min-height: 0; }
-.rua .lv { display: flex; align-items: center; justify-content: center; font-family: var(--f-num); font-size: 12px; font-weight: 600; overflow: hidden; min-height: 0; }
-.rua .oc { background: var(--cream); color: #2b2205; }
-.rua .name { text-align: center; font-family: var(--f-num); font-size: 14px; font-weight: 600; margin-top: 8px; color: var(--mute); }
-.lg { display: flex; gap: 18px; font-size: 13px; color: var(--mute); margin-bottom: 10px; justify-content: center; }
-.lg i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
-.foot { color: var(--mute); font-size: 13px; margin-top: 18px; }
+/* ---------- OCUPAÇÃO ---------- */
+.occ{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;align-items:stretch}
+.mini{display:flex;flex-direction:column;gap:8px;min-width:0}
+.mini .b{background:var(--glass);border:1px solid var(--edge);border-radius:10px;padding:14px 12px;text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.mini .b small{display:block;color:var(--mute);font-size:12.5px;margin-bottom:4px;font-weight:600}
+.mini .b strong{font-family:var(--f-num);font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+.mini.g1 .b{box-shadow:inset 0 2px 0 var(--blue)}
+.mini.g2 .b{box-shadow:inset 0 2px 0 var(--navy)}
+.donutcard{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px}
+.pcts{display:flex;flex-direction:column;gap:12px;justify-content:center;min-width:0}
+.pcts .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pcts .b{background:var(--glass);border:1px solid var(--edge);border-radius:10px;padding:14px;text-align:center;min-width:0}
+.pcts .b small{display:block;color:var(--mute);font-size:12.5px;margin-bottom:4px;font-weight:600}
+.pcts .b strong{font-family:var(--f-num);font-size:22px;font-variant-numeric:tabular-nums}
+.pcts .row .b{padding:14px 6px}
+.pcts .big{border-color:rgba(255,196,0,.4);box-shadow:0 0 28px -8px rgba(255,196,0,.4)}
+.pcts .big strong{font-size:46px;color:var(--accent);text-shadow:0 0 24px rgba(255,196,0,.45)}
 
-body.tvmode header nav, body.tvmode .seg, body.tvmode #src { display: none !important; }
-body.tvmode header { border-bottom: 0; padding: 10px 0; }
-body.tvmode .card { padding: 24px; }
-body.tvmode h2 { font-size: 36px; }
-body.tvmode .kpi .v { font-size: 52px; }
+.rua-container{overflow-x:auto;width:100%;scrollbar-width:thin;scrollbar-color:#264383 transparent}
+.rua{display:flex;gap:10px;align-items:flex-end;height:240px;padding-top:10px;min-width:600px}
+.rua .c{flex:1;min-width:32px;display:flex;flex-direction:column;align-items:stretch;height:100%}
+.rua .stk{flex:1;display:flex;flex-direction:column;border-radius:6px;overflow:hidden;min-height:0;gap:2px;transition:filter .2s ease}
+.rua .stk:hover{filter:brightness(1.18) drop-shadow(0 0 8px rgba(255,196,0,.35))}
+.rua .lv{display:flex;align-items:center;justify-content:center;font-family:var(--f-num);font-size:12.5px;font-weight:600;overflow:hidden;min-height:0;border-radius:3px}
+.rua .oc{background:var(--cream);color:#2b2205}
+.rua .name{text-align:center;font-family:var(--f-mono);font-size:12px;font-weight:500;margin-top:8px;color:var(--mute)}
+.lg{display:flex;gap:18px;font-size:13px;color:var(--mute);margin-bottom:10px;justify-content:center}
+.lg i{display:inline-block;width:14px;height:6px;border-radius:2px;margin-right:7px;vertical-align:2px}
+.foot{color:var(--mute);font-size:13px;margin-top:18px}
 
-@media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
-@media (prefers-reduced-motion:no-preference){#bar{transition:width .3s linear}}
+/* ---------- MODO TV ---------- */
+body.tvmode header nav, body.tvmode .seg, body.tvmode #src{display:none !important}
+body.tvmode header{padding:10px 14px}
+body.tvmode .card{padding:26px}
+body.tvmode h2{font-size:38px}
+body.tvmode .kpi .v{font-size:58px}
+body.tvmode .tw{max-height:none}
+
+@media (max-width:820px){
+  .two{grid-template-columns:minmax(0,1fr)}
+  header{position:static}
+  .brand{display:none}
+  .tools{margin-left:0}
+  h2{font-size:24px}
+  .filter-bar{flex-direction:column;align-items:stretch}
+  .filter-bar label{flex-direction:column;align-items:flex-start}
+  .filter-bar select,.prod-controls select,.prod-controls input,.prod-controls button{width:100% !important}
+  .prod-controls{width:100%}
+}
 </style>
 </head>
 <body>
@@ -436,9 +370,9 @@ body.tvmode .kpi .v { font-size: 52px; }
       <button data-b="custo" aria-pressed="true">R$</button>
       <button data-b="qtd" aria-pressed="false">Qtd. endereçada</button>
     </div>
-    <button class="tv" id="tv" aria-pressed="false">📺 Modo TV</button>
+    <button class="tv" id="tv" aria-pressed="false"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Modo TV</button>
+    <div id="src"><i></i><span id="srctxt">Carregando…</span></div>
   </div>
-  <div id="src"><i></i><span id="srctxt">Carregando…</span></div>
 </header>
 
 <section id="s-geral"></section>
@@ -517,6 +451,21 @@ function brlShort(v){
   return brl(v);
 }
 const esc = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const ICONS = {
+  filter:'<path d="M3 5h18l-7 8v6l-4-2v-4z"/>',
+  alert:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17.5v.01"/>',
+  check:'<path d="m5 12.5 5 5 9-10"/>',
+  box:'<path d="m3 7 9-4 9 4v10l-9 4-9-4z"/><path d="m3 7 9 4 9-4M12 11v10"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/>',
+  bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  store:'<path d="M3 9 5 4h14l2 5M4 9v11h16V9M9 20v-6h6v6"/>',
+  tag:'<path d="M3 12V3h9l9 9-9 9z"/><path d="M7.5 7.5v.01"/>',
+  print:'<path d="M6 9V3h12v6M6 17H4v-6h16v6h-2M7 14h10v7H7z"/>',
+  down:'<path d="m6 9 6 6 6-6"/>',
+  up:'<path d="m6 15 6-6 6 6"/>'
+};
+const ico = n => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||''}</svg>`;
 const nice = s => String(s).replace(/^ESTOQUE\s+/i,'').toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase());
 
 let D = null;
@@ -792,11 +741,11 @@ function donut(items,center,sub, filterAttr = 'data-filter-local', activeValue =
     const isSelected = activeValue !== 'todos' && activeValue.toLowerCase() === i.rawKey.toLowerCase();
     
     if(L>0) {
-      segs+=`<circle class="${isSelected ? 'active-slice' : ''}" r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="26" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)" ${filterAttr}="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"></circle>`; 
+      segs+=`<circle class="${isSelected ? 'active-slice' : ''}" r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="26" stroke-dasharray="${Math.max(L-(items.length>1?2:0),0.01)} ${C-L+(items.length>1?2:0)}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)" ${filterAttr}="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"></circle>`; 
     }
     off+=L; 
   });
-  return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle r="${R}" cx="100" cy="100" fill="none" stroke="#162e5c" stroke-width="26"/>${segs}
+  return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle class="tick" r="94" cx="100" cy="100" fill="none" stroke="rgba(141,161,204,.38)" stroke-dasharray="1.2 5.5"/><circle r="${R}" cx="100" cy="100" fill="none" stroke="#12274f"/>${segs}
     <text x="100" y="${sub?98:106}" text-anchor="middle" font-size="${String(center).length>5?24:30}" font-weight="700">${center}</text>${sub?`<text x="100" y="122" text-anchor="middle" font-size="13" style="fill:var(--mute)">${sub}</text>`:''}</svg>`;
 }
 
@@ -807,7 +756,7 @@ function legend(items, filterAttr = 'data-filter-local', activeValue = 'todos'){
     const topProd = i.topProd ? [{prod: i.topProd, sub: `${brlShort(i.v)} (${fmtP(i.v/tot*100)})`}] : [];
     const tooltipData = JSON.stringify(topProd).replace(/"/g, '&quot;');
     const isSelected = activeValue !== 'todos' && activeValue.toLowerCase() === i.rawKey.toLowerCase();
-    return `<div class="${isSelected ? 'active-item' : ''}" ${filterAttr}="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"><i style="background:${i.c}"></i><span>${esc(i.n)}</span><span>${fmtV(i.v)} · ${fmtP(i.v/tot*100)}</span></div>`;
+    return `<div class="${isSelected ? 'active-item' : ''}" ${filterAttr}="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"><i style="background:${i.c};color:${i.c}"></i><span>${esc(i.n)}</span><span>${fmtV(i.v)} · ${fmtP(i.v/tot*100)}</span></div>`;
   }).join('')}</div>`;
 }
 
@@ -1003,7 +952,7 @@ function secGeral(){
   
   const centerLabel = basis==='custo' ? brlShort(totC).replace('R$ ','') : fmtN.format(totQ);
   const subLabel = basis==='custo' ? 'custo bruto' : 'qtd. endereçada';
-  const cardTitle = basis==='custo' ? 'VALOR POR LOCAL DE ESTOQUE (R$)' : 'QUANTIDADE POR LOCAL DE ESTOQUE';
+  const cardTitle = basis==='custo' ? 'Valor por local de estoque (R$)' : 'Quantidade por local de estoque';
   const semFisicoPct = totV ? (semFisicoVal / totV) * 100 : 0;
 
   let listEstoqueProds = R.map(r => ({
@@ -1047,8 +996,8 @@ function secGeral(){
   $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque.</p>
 
   <div class="active-filters-bar ${hasActiveFilters ? 'visible' : ''}">
-    <span>🔍 <b>${esc(activeFiltersText)}</b></span>
-    <button onclick="clearAllFilters()">✕ Limpar Filtros</button>
+    <span>${ico('filter')}<b>${esc(activeFiltersText)}</b></span>
+    <button onclick="clearAllFilters()">Limpar filtros</button>
   </div>
 
   <div class="grid kpis">
@@ -1062,7 +1011,7 @@ function secGeral(){
       <div class="card-header-action">
         <h3>${cardTitle}</h3>
         <div class="sem-fisico-badge" title="Soma do estoque Virtual e Pré Alerta">
-          🚨 Sem Físico: <b>${fmtV(semFisicoVal)} (${fmtP(semFisicoPct)})</b>
+          ${ico('alert')}Sem físico: <b>${fmtV(semFisicoVal)} (${fmtP(semFisicoPct)})</b>
         </div>
       </div>
       <div class="donutwrap">${donut(items, centerLabel, subLabel, 'data-filter-local', filterLocalEst)}${legend(items, 'data-filter-local', filterLocalEst)}</div>
@@ -1095,7 +1044,7 @@ function secGeral(){
 
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
-      <h3>📦 PRODUTOS EM ESTOQUE NO FILTRO (${listEstoqueProds.length} PALETES)</h3>
+      <h3>${ico('box')}Produtos em estoque no filtro (${listEstoqueProds.length} paletes)</h3>
       <div class="prod-controls">
         <select id="selectAreaFilter" style="font-weight:700;color:var(--ok)">
           <option value="todos" ${filterArea==='todos'?'selected':''}>-- Todos os Galpões --</option>
@@ -1108,7 +1057,7 @@ function secGeral(){
           ${ruasDisponiveis.map(r => `<option value="${r}" ${filterRua===String(r)?'selected':''}>Rua ${r}</option>`).join('')}
         </select>
 
-        <input type="text" id="inputEstoqueProdSearch" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:240px" />
+        <input type="text" id="inputEstoqueProdSearch" placeholder="Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:240px" />
         
         <select id="selectEstoqueProdSort">
           <option value="endereco" ${estoqueProdSortOrder==='endereco'?'selected':''}>Ordenar por Endereço (Corredor)</option>
@@ -1116,7 +1065,7 @@ function secGeral(){
           <option value="qtd" ${estoqueProdSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd</option>
         </select>
 
-        <button class="btn-export-pdf" id="btnExportCaraCrachaGeneral">🖨️ Cara-Crachá (PDF)</button>
+        <button class="btn-export-pdf" id="btnExportCaraCrachaGeneral">${ico('print')}Cara-crachá (PDF)</button>
       </div>
     </div>
     <div class="tw">
@@ -1136,11 +1085,11 @@ function secGeral(){
         <tbody>
           ${listEstoqueProds.length ? listEstoqueProds.slice(0, 100).map(p => `
             <tr>
-              <td><span class="num" style="color:var(--accent);font-weight:800;font-size:15px">${esc(p.end)}</span></td>
-              <td><span class="num" style="color:var(--mute);font-weight:700">${esc(p.codProd)}</span></td>
-              <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
+              <td><span class="mono" style="color:var(--accent);font-weight:800;font-size:15px">${esc(p.end)}</span></td>
+              <td><span class="mono" style="color:var(--mute);font-weight:700">${esc(p.codProd)}</span></td>
+              <td><span class="mono" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
               <td><b>${esc(p.prod)}</b></td>
-              <td><span class="dot" style="background:var(--accent)"></span>${esc(nice(p.est))}</td>
+              <td><span class="dot" style="background:var(--accent);color:var(--accent)"></span>${esc(nice(p.est))}</td>
               <td>${esc(p.status)}</td>
               <td class="r" style="font-weight:700;color:var(--ok)">${fmtN.format(p.qtd)}</td>
               <td class="r" style="font-weight:700;color:var(--text)">${brl(p.custo)}</td>
@@ -1226,7 +1175,7 @@ function secShelf(){
     ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'],
     SHELF_CLASS,
     ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias'],
-    'PRODUTOS EM CRÍTICO E ATENÇÃO',
+    'Produtos em crítico e atenção',
     true,
     'shelf'
   );
@@ -1241,7 +1190,7 @@ function secAging(){
     ['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'],
     AGING_CLASS,
     ['Acima de 60 dias','30 a 60 dias'],
-    'PRODUTOS EM CRÍTICO E ATENÇÃO',
+    'Produtos em crítico e atenção',
     true,
     'aging'
   );
@@ -1343,8 +1292,8 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   $(id).innerHTML = `<h2>${title}</h2><p class="sub">${sub}</p>
 
   <div class="active-filters-bar ${hasActiveFaixa ? 'visible' : ''}">
-    <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeLabel)}</b></span>
-    <button onclick="clearAllFilters()">✕ Limpar Filtro de Faixa</button>
+    <span>${ico('filter')}<b>Filtro Ativo na Faixa: ${esc(activeLabel)}</b></span>
+    <button onclick="clearAllFilters()">Limpar filtro de faixa</button>
   </div>
 
   <div class="grid kpis">
@@ -1364,7 +1313,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
         const isSelectedFaixa = activeFaixa.toLowerCase() === f.toLowerCase();
 
         return `<tr class="clickable-row ${isSelectedFaixa ? 'active-row' : ''}" data-filter-faixa="${esc(f)}" data-tooltip-title="${esc(f)}" data-tooltip-color="${c}" data-tooltip-items="${JSON.stringify(topData).replace(/"/g, '&quot;')}">
-          <td><span class="dot" style="background:${c}"></span><b>${esc(f)}</b></td>
+          <td><span class="dot" style="background:${c};color:${c}"></span><b>${esc(f)}</b></td>
           <td class="r">${fmtN.format(o.n)}</td>
           <td class="r">${fmtN.format(o.qtd)}</td>
           <td class="r">${brl(o.custo)}</td>
@@ -1377,8 +1326,8 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     <div class="card-header-action">
       <h3>${topTitle} (${top.length} linhas encontradas)</h3>
       <div class="prod-controls">
-        <button class="btn-export-pdf" id="${btnPdfId}">🖨️ Cara-Crachá (PDF)</button>
-        <input type="text" id="${inputId}" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:260px" />
+        <button class="btn-export-pdf" id="${btnPdfId}">${ico('print')}Cara-crachá (PDF)</button>
+        <input type="text" id="${inputId}" placeholder="Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:260px" />
         <select id="${selectId}">
           <option value="critico" ${currentSort==='critico'?'selected':''}>Ordenar por Mais Crítico</option>
           <option value="endereco" ${currentSort==='endereco'?'selected':''}>Ordenar por Endereço (Corredor)</option>
@@ -1406,12 +1355,12 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
             const classKey = cmap[r[field]] || 'none';
             const badgeColor = CLS[classKey].c;
             return `<tr>
-              <td><span class="num" style="color:var(--accent);font-weight:700">${esc(r.codProd)}</span></td>
-              <td><span class="num" style="color:var(--mute);font-weight:600">${esc(r.gtin)}</span></td>
+              <td><span class="mono" style="color:var(--accent);font-weight:700">${esc(r.codProd)}</span></td>
+              <td><span class="mono" style="color:var(--mute);font-weight:600">${esc(r.gtin)}</span></td>
               <td><b>${esc(r.prod)}</b></td>
-              <td><b style="color:var(--accent);font-family:var(--f-num)">${esc(r.end)}</b></td>
+              <td><b class="mono" style="color:var(--accent)">${esc(r.end)}</b></td>
               <td>${esc(r.status)}</td>
-              <td><span class="dot" style="background:${badgeColor}"></span><b>${esc(r[field])}</b></td>
+              <td><span class="dot" style="background:${badgeColor};color:${badgeColor}"></span><b>${esc(r[field])}</b></td>
               <td class="r" style="font-weight:700">${fmtN.format(r.qtd)}</td>
               <td class="r" style="font-weight:700">${brl(r.custo)}</td>
             </tr>`;
@@ -1446,773 +1395,4 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     sInput.addEventListener('input', (e) => {
       if (tabType === 'shelf') shelfSearch = e.target.value;
       else agingSearch = e.target.value;
-      if (tabType === 'shelf') secShelf(); else secAging();
-      const el = $('#' + inputId);
-      if (el) { 
-        const valLen = (tabType === 'shelf' ? shelfSearch : agingSearch).length;
-        el.focus(); 
-        el.setSelectionRange(valLen, valLen); 
-      }
-    });
-  }
-
-  const sSort = $('#' + selectId);
-  if (sSort) {
-    sSort.addEventListener('change', (e) => {
-      if (tabType === 'shelf') shelfSortOrder = e.target.value;
-      else agingSortOrder = e.target.value;
-      if (tabType === 'shelf') secShelf(); else secAging();
-    });
-  }
-
-  attachTooltipEvents();
-}
-
-/* 3. SEÇÃO OCUPAÇÃO DO CD */
-function occData(){
-  const g1 = {total:0, ocup:0, ruas:{}};
-  const g2 = {total:0, ocup:0, ruas:{}};
-  const bl = {total:0, ocup:0};
-  
-  if (D && D.addr) {
-    D.addr.forEach(a=>{
-      const area = String(a.area);
-      const end = String(a.end);
-      
-      const isG1 = area === '1' || end.includes("205.1041.1.");
-      const isG2 = area === '7' || end.includes("205.1041.7.");
-      const isBlocado = area === '5' || end.includes("205.1066.");
-      
-      let rua = a.rua;
-      if (!rua) {
-        const p = end.split('.');
-        rua = p.length >= 4 ? +p[3] : 0;
-      }
-      
-      if (isG1) {
-        g1.total++;
-        if (a.occ) g1.ocup++;
-        if (rua > 0) {
-          const r = (g1.ruas[rua] = g1.ruas[rua] || {t:0, o:0});
-          r.t++; if (a.occ) r.o++;
-        }
-      } else if (isG2) {
-        g2.total++;
-        if (a.occ) g2.ocup++;
-        if (rua > 0) {
-          const r = (g2.ruas[rua] = g2.ruas[rua] || {t:0, o:0});
-          r.t++; if (a.occ) r.o++;
-        }
-      } else if (isBlocado) {
-        bl.total++;
-        if (a.occ) bl.ocup++;
-      }
-    });
-  }
-
-  const total = g1.total + g2.total;
-  const ocup = g1.ocup + g2.ocup;
-  return {g1, g2, bl, total, ocup, pct: total ? (ocup/total)*100 : 0};
-}
-
-function ruaBars(g,livreCor){
-  const ruas = Object.entries(g.ruas).filter(([,r])=>r.t>=1).sort((a,b)=>+a[0]-+b[0]);
-  if(!ruas.length) return '<p style="color:var(--mute)">Nenhuma rua mapeada para esta área.</p>';
-  return `<div class="lg"><span><i style="background:${livreCor}"></i>Livre</span><span><i style="background:var(--cream)"></i>Ocupado</span></div>
-  <div class="rua-container"><div class="rua">${ruas.map(([n,r])=>{
-    const o=r.o/r.t*100,l=100-o;
-    const ttData = [{prod: `Rua ${n}`, sub: `Ocupados: ${fmtN.format(r.o)} / Total: ${fmtN.format(r.t)} (${fmtP(o)})`}];
-    return `<div class="c"><div class="stk" data-tooltip-title="Detalhamento Rua ${n}" data-tooltip-color="var(--accent)" data-tooltip-items="${JSON.stringify(ttData).replace(/"/g, '&quot;')}" style="cursor:pointer">
-    <div class="lv" style="flex:${l};background:${livreCor};color:#fff">${l>=8?fmtP(l,1):''}</div>
-    <div class="lv oc" style="flex:${Math.max(o,2)}">${o>=8?fmtP(o,1):''}</div></div><div class="name">${n}</div></div>`;
-  }).join('')}</div></div>`;
-}
-
-function secOcup(){
-  const O = occData(), v = o=>o.total-o.ocup;
-  const box = (cls,t,o)=>`<div class="mini ${cls}"><div class="b"><small>${t}</small><strong>${fmtN.format(o.total)}</strong></div><div class="b"><small>Ocupados</small><strong>${fmtN.format(o.ocup)}</strong></div><div class="b"><small>Vazios</small><strong>${fmtN.format(v(o))}</strong></div></div>`;
-  const all = {total:O.total,ocup:O.ocup};
-  
-  const donutItems = [
-    { rawKey: 'Livre', n: 'Livre', v: O.total - O.ocup, c: '#4285f4' },
-    { rawKey: 'Ocupado', n: 'Ocupado', v: O.ocup, c: '#ffc400' }
-  ];
-
-  const prev = basis; 
-  basis = 'qtd';
-  const dn = donut(donutItems, fmtP(O.pct, 2), 'ocupação CD'); 
-  basis = prev;
-
-  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos processados da chave ocupacao.</p>
-  <div class="occ">
-    ${box('g1','Galpão 1',O.g1)}
-    ${box('g2','Galpão 2',O.g2)}
-    ${box('','Endereços Total',all)}
-    ${box('','Blocados',O.bl)}
-    <div class="card donutcard">
-      <h3>% de ocupação CD</h3>
-      <div class="donutwrap">${dn}</div>
-    </div>
-    <div class="pcts">
-      <div class="row">
-        <div class="b"><small>% Galpão 1</small><strong>${fmtP(O.g1.total?O.g1.ocup/O.g1.total*100:0,2)}</strong></div>
-        <div class="b"><small>% Galpão 2</small><strong>${fmtP(O.g2.total?O.g2.ocup/O.g2.total*100:0,2)}</strong></div>
-      </div>
-      <div class="b big"><small>% Ocupação total CD</small><strong>${fmtP(O.pct,2)}</strong></div>
-    </div>
-  </div>
-  <div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'#4285f4')}</div>
-  <div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'#3a5db0')}</div>
-  <p class="foot">Todas as ruas ativas são exibidas nos gráficos e contam nos totais.</p>`;
-
-  attachTooltipEvents();
-}
-
-/* 4. SEÇÃO CARTEIRA DE PEDIDO */
-function secCarteira(){
-  let C = (D && D.cart) ? D.cart : [];
-  if (!C.length) {
-    $('#s-carteira').innerHTML = `<h2>Carteira de Pedido</h2><p class="sub">Nenhum dado encontrado na chave 'carteira' do JSON.</p>`;
-    return;
-  }
-
-  const tiposSepDisponiveis = Array.from(new Set(C.map(r => r.tipoSep))).filter(Boolean);
-  const destinosDisponiveis = Array.from(new Set(C.map(r => r.dest))).filter(Boolean).sort((a,b) => String(a).localeCompare(String(b), undefined, {numeric: true}));
-  const deptsDisponiveis = Array.from(new Set(C.map(r => r.dept))).filter(Boolean).sort((a,b) => String(a).localeCompare(String(b)));
-
-  let filteredC = C;
-  if (sepFilter !== 'todos') {
-    filteredC = filteredC.filter(r => r.tipoSep.toLowerCase().trim() === sepFilter.toLowerCase().trim());
-  }
-  if (targetDestFilter !== 'todos') {
-    filteredC = filteredC.filter(r => String(r.dest) === String(targetDestFilter));
-  }
-  if (deptFilter !== 'todos') {
-    filteredC = filteredC.filter(r => r.dept.toLowerCase().trim() === deptFilter.toLowerCase().trim());
-  }
-
-  const totPedida = filteredC.reduce((s,r) => s + r.qtdPedida, 0);
-  const totSeparada = filteredC.reduce((s,r) => s + r.qtdSeparada, 0);
-  const totValor = filteredC.reduce((s,r) => s + r.valorTotal, 0);
-  const pctAtendimento = totPedida ? (totSeparada / totPedida) * 100 : 0;
-
-  const datasPendentesSet = new Set();
-  filteredC.forEach(r => {
-    if (r.tipoSep !== 'Separado') {
-      if (r.gerReserva && r.gerReserva !== 'Sem data') {
-        datasPendentesSet.add(r.gerReserva);
-      }
-    }
-  });
-
-  const qtdDatasPendentes = datasPendentesSet.size;
-  const diasAtraso = qtdDatasPendentes; 
-  const isCritico = diasAtraso >= 2;
-  const atrasoStr = `D-${diasAtraso}`;
-  const atrasoSub = isCritico ? `🚨 CRÍTICO (${qtdDatasPendentes} datas pendentes)` : `Dentro da Meta (${qtdDatasPendentes} datas pendentes)`;
-  const kpiClassAtraso = isCritico ? 'hl' : '';
-
-  const topPedentesCrit = filteredC.filter(r => r.qtdPedida > r.qtdSeparada).sort((a,b) => b.valorTotal - a.valorTotal).slice(0, 3).map(r => ({
-    prod: r.prod,
-    sub: `Destino: ${r.dest} | Valor: ${brlShort(r.valorTotal)}`
-  }));
-
-  const bySep = {};
-  filteredC.forEach(r => {
-    const k = r.tipoSep || 'Não informado';
-    bySep[k] = bySep[k] || {pedida:0, separada:0, valor:0};
-    bySep[k].pedida += r.qtdPedida;
-    bySep[k].separada += r.qtdSeparada;
-    bySep[k].valor += r.valorTotal;
-  });
-
-  const prodDer = bySep["Produção Derrubada"] || {pedida:0, separada:0};
-  const prodSor = bySep["Produção Sorter"] || {pedida:0, separada:0};
-  const pendDer = bySep["Pendente Derrubada"] || {pedida:0, separada:0};
-  const pendSor = bySep["Pendente Sorter"] || {pedida:0, separada:0};
-  
-  const crossDock = bySep["Cross Docking"] || bySep["CROSS DOCKING"] || {pedida:0, separada:0};
-  const fullSep = bySep["Full"] || bySep["FULL"] || {pedida:0, separada:0};
-
-  const derTotQtd = prodDer.pedida + pendDer.pedida;
-  const derPctProd = derTotQtd ? (prodDer.pedida / derTotQtd) * 100 : 0;
-  const derPctPend = derTotQtd ? (pendDer.pedida / derTotQtd) * 100 : 0;
-
-  const sorTotQtd = prodSor.pedida + pendSor.pedida;
-  const sorPctProd = sorTotQtd ? (prodSor.pedida / sorTotQtd) * 100 : 0;
-  const sorPctPend = sorTotQtd ? (pendSor.pedida / sorTotQtd) * 100 : 0;
-
-  const cdTotQtd = crossDock.pedida;
-  const cdPendQtd = Math.max(0, crossDock.pedida - crossDock.separada);
-  const cdPctPend = cdTotQtd ? (cdPendQtd / cdTotQtd) * 100 : 0;
-  const cdPctSep = cdTotQtd ? (crossDock.separada / cdTotQtd) * 100 : 0;
-
-  const fullTotQtd = fullSep.pedida;
-  const fullPendQtd = Math.max(0, fullSep.pedida - fullSep.separada);
-  const fullPctPend = fullTotQtd ? (fullPendQtd / fullTotQtd) * 100 : 0;
-  const fullPctSep = fullTotQtd ? (fullSep.separada / fullTotQtd) * 100 : 0;
-
-  const baseDept = C.filter(r => {
-    if (sepFilter !== 'todos' && r.tipoSep.toLowerCase().trim() !== sepFilter.toLowerCase().trim()) return false;
-    if (targetDestFilter !== 'todos' && String(r.dest) !== String(targetDestFilter)) return false;
-    return true;
-  });
-
-  const byDept = {};
-  baseDept.forEach(r => {
-    const k = r.dept || 'Outros';
-    byDept[k] = byDept[k] || {qtd:0, valor:0};
-    byDept[k].qtd += r.qtdPedida;
-    byDept[k].valor += r.valorTotal;
-  });
-  const deptRows = Object.entries(byDept).sort((a,b) => (basis==='custo' ? b[1].valor - a[1].valor : b[1].qtd - a[1].qtd));
-  const deptItems = deptRows.map(([n,o],i) => {
-    const topD = baseDept.filter(r => r.dept === n).sort((a,b) => b.valorTotal - a.valorTotal)[0];
-    return {
-      rawKey: n,
-      n: n,
-      v: basis==='custo' ? o.valor : o.qtd,
-      c: DEFAULT_COLORS[i % DEFAULT_COLORS.length],
-      topProd: topD ? `Líder: ${topD.prod}` : ''
-    };
-  });
-  const centerDept = basis==='custo' ? brlShort(totValor).replace('R$ ','') : fmtN.format(totPedida);
-
-  const byRes = {};
-  filteredC.forEach(r => {
-    const k = r.gerReserva || 'Sem data';
-    byRes[k] = byRes[k] || {qtd:0, valor:0, qtdSep:0, pendentes:0, separados:0};
-    byRes[k].qtd += r.qtdPedida;
-    byRes[k].valor += r.valorTotal;
-    byRes[k].qtdSep += r.qtdSeparada;
-    if (r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada)) {
-      byRes[k].separados++;
-    } else {
-      byRes[k].pendentes++;
-    }
-  });
-  let resRows = Object.entries(byRes).sort((a,b) => a[0].localeCompare(b[0]));
-  if (resFilter === 'pendente') {
-    resRows = resRows.filter(([, o]) => o.pendentes > 0);
-  } else if (resFilter === 'separado') {
-    resRows = resRows.filter(([, o]) => o.pendentes === 0);
-  }
-
-  const byDest = {};
-  filteredC.forEach(r => {
-    const k = r.dest || "Sem Destino";
-    byDest[k] = byDest[k] || {pedida:0, separada:0, valor:0};
-    byDest[k].pedida += r.qtdPedida;
-    byDest[k].separada += r.qtdSeparada;
-    byDest[k].valor += r.valorTotal;
-  });
-  let destRows = Object.entries(byDest).sort((a,b) => b[1].pedida - a[1].pedida);
-  if (destSearch) {
-    destRows = destRows.filter(([k]) => k.toLowerCase().includes(destSearch.toLowerCase()));
-  }
-
-  const prodAggMap = {};
-  filteredC.forEach(r => {
-    const pendQtd = r.qtdPedida - r.qtdSeparada;
-    const isSeparado = r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada);
-    
-    if (statusFilter === 'pendente' && pendQtd <= 0) return;
-    if (statusFilter === 'separado' && !isSeparado) return;
-
-    const key = (r.codProd && r.codProd !== '-') ? r.codProd : r.prod;
-    if (!prodAggMap[key]) {
-      prodAggMap[key] = {
-        codProd: r.codProd || '-',
-        gtin: r.gtin || '-',
-        prod: r.prod || 'Sem Descrição',
-        tiposSet: new Set(),
-        qtdPedida: 0,
-        qtdSeparada: 0,
-        qtdPend: 0,
-        valorPend: 0
-      };
-    }
-
-    prodAggMap[key].qtdPedida += r.qtdPedida;
-    prodAggMap[key].qtdSeparada += r.qtdSeparada;
-    prodAggMap[key].qtdPend += Math.max(0, pendQtd);
-    
-    const pendVal = r.qtdPedida ? (r.valorTotal * (Math.max(0, pendQtd) / r.qtdPedida)) : 0;
-    prodAggMap[key].valorPend += pendVal;
-
-    if (r.tipoSep) prodAggMap[key].tiposSet.add(r.tipoSep);
-    if (r.gtin && r.gtin !== '-') prodAggMap[key].gtin = r.gtin;
-  });
-
-  let prodsList = Object.values(prodAggMap).map(p => ({
-    ...p,
-    tipoSep: Array.from(p.tiposSet).join(', ') || '-'
-  }));
-
-  if (prodSearch) {
-    const q = prodSearch.toLowerCase();
-    prodsList = prodsList.filter(p => 
-      p.prod.toLowerCase().includes(q) || 
-      p.codProd.toLowerCase().includes(q) || 
-      p.gtin.toLowerCase().includes(q)
-    );
-  }
-
-  if (prodSortOrder === 'valor') {
-    prodsList.sort((a,b) => b.valorPend - a.valorPend);
-  } else if (prodSortOrder === 'qtd') {
-    prodsList.sort((a,b) => b.qtdPend - a.qtdPend);
-  } else if (prodSortOrder === 'pedida') {
-    prodsList.sort((a,b) => b.qtdPedida - a.qtdPedida);
-  }
-
-  const statusTitleText = statusFilter === 'pendente' 
-    ? 'PRODUTOS PENDENTES DE SEPARAÇÃO' 
-    : (statusFilter === 'separado' ? 'PRODUTOS SEPARADOS' : 'TODOS OS PRODUTOS DA CARTEIRA');
-
-  const hasActiveCartFilter = sepFilter !== 'todos' || targetDestFilter !== 'todos' || deptFilter !== 'todos';
-
-  $('#s-carteira').innerHTML = `
-  <h2>Carteira de Pedido</h2>
-  <p class="sub">Acompanhamento e status das reservas e solicitações do CD.</p>
-
-  <div class="active-filters-bar ${hasActiveCartFilter ? 'visible' : ''}">
-    <span>🔍 <b>Filtro Ativo: ${sepFilter !== 'todos' ? `Tipo = ${sepFilter}` : ''} ${targetDestFilter !== 'todos' ? `| Destino = ${targetDestFilter}` : ''} ${deptFilter !== 'todos' ? `| Depto = ${deptFilter}` : ''}</b></span>
-    <button onclick="clearAllFilters()">✕ Limpar Filtros da Carteira</button>
-  </div>
-  
-  <div class="filter-bar">
-    <label>⚡ Tipo de Separação:
-      <select id="sepFilterSelect">
-        <option value="todos" ${sepFilter==='todos'?'selected':''}>-- Todos os Tipos (${C.length} itens) --</option>
-        ${tiposSepDisponiveis.map(t => `<option value="${esc(t)}" ${sepFilter===t?'selected':''}>${esc(t)}</option>`).join('')}
-      </select>
-    </label>
-
-    <label>🏢 Destino / Loja:
-      <select id="targetDestFilterSelect" style="font-weight:700;color:var(--accent)">
-        <option value="todos" ${targetDestFilter==='todos'?'selected':''}>-- Todos os Destinos --</option>
-        ${destinosDisponiveis.map(d => `<option value="${esc(d)}" ${targetDestFilter===String(d)?'selected':''}>${esc(d)}</option>`).join('')}
-      </select>
-    </label>
-
-    <label>🏷️ Departamento CD:
-      <select id="deptFilterSelect" style="font-weight:700;color:var(--ok)">
-        <option value="todos" ${deptFilter==='todos'?'selected':''}>-- Todos os Departamentos --</option>
-        ${deptsDisponiveis.map(dp => `<option value="${esc(dp)}" ${deptFilter===dp?'selected':''}>${esc(dp)}</option>`).join('')}
-      </select>
-    </label>
-  </div>
-
-  <div class="grid kpis">
-    ${kpi('Total Pedido', fmtN.format(totPedida), brlShort(totValor))}
-    ${kpi('Total Separado', fmtN.format(totSeparada), fmtP(pctAtendimento) + ' atendido')}
-    ${kpi('Pendente de Separação', fmtN.format(totPedida - totSeparada), brlShort(filteredC.reduce((s,r) => s + (r.tipoSep !== 'Separado' ? r.valorTotal : 0), 0)), '', 'Maiores Pedidos Pendentes', topPedentesCrit, 'var(--warn)')}
-    ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso, 'Datas em Atraso Crítico', Array.from(datasPendentesSet).map(d => ({prod: `Data Reserva: ${d}`, sub: 'Pendente de liberação'})), isCritico ? 'var(--crit)' : 'var(--warn)')}
-  </div>
-
-  <div class="grid two" style="margin-top:16px">
-    <div class="card">
-      <h3>Progresso da Separação (Clique para filtrar)</h3>
-      <div class="sep-progress">
-        <div class="sep-item" data-filter-carteira-sep="Produção Derrubada">
-          <div class="sep-header">
-            <span>Derrubada (Total: ${fmtN.format(derTotQtd)})</span>
-            <span>Prod: ${fmtP(derPctProd)} | Pend: ${fmtP(derPctPend)}</span>
-          </div>
-          <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${derPctProd}%;background:var(--ok);" title="Produção: ${fmtN.format(prodDer.pedida)}"></div>
-            <div class="sep-bar-fill" style="width:${derPctPend}%;background:var(--warn);" title="Pendente: ${fmtN.format(pendDer.pedida)}"></div>
-          </div>
-        </div>
-
-        <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Produção Sorter">
-          <div class="sep-header">
-            <span>Sorter (Total: ${fmtN.format(sorTotQtd)})</span>
-            <span>Prod: ${fmtP(sorPctProd)} | Pend: ${fmtP(sorPctPend)}</span>
-          </div>
-          <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${sorPctProd}%;background:var(--blue);" title="Produção: ${fmtN.format(prodSor.pedida)}"></div>
-            <div class="sep-bar-fill" style="width:${sorPctPend}%;background:var(--crit);" title="Pendente: ${fmtN.format(pendSor.pedida)}"></div>
-          </div>
-        </div>
-
-        <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Cross Docking">
-          <div class="sep-header">
-            <span>Cross Docking (Total: ${fmtN.format(cdTotQtd)})</span>
-            <span>Sep: ${fmtP(cdPctSep)} | Pend: ${fmtP(cdPctPend)}</span>
-          </div>
-          <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${cdPctSep}%;background:var(--ok);" title="Separado: ${fmtN.format(crossDock.separada)}"></div>
-            <div class="sep-bar-fill" style="width:${cdPctPend}%;background:var(--accent);" title="Pendente: ${fmtN.format(cdPendQtd)}"></div>
-          </div>
-        </div>
-
-        <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Full">
-          <div class="sep-header">
-            <span>Full (Total: ${fmtN.format(fullTotQtd)})</span>
-            <span>Sep: ${fmtP(fullPctSep)} | Pend: ${fmtP(fullPctPend)}</span>
-          </div>
-          <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${fullPctSep}%;background:var(--ok);" title="Separado: ${fmtN.format(fullSep.separada)}"></div>
-            <div class="sep-bar-fill" style="width:${fullPctPend}%;background:#c084fc;" title="Pendente: ${fmtN.format(fullPendQtd)}"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="info-note">
-        💡 <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Participação por Departamento CD (Clique para filtrar)</h3>
-      <div class="donutwrap">
-        ${donut(deptItems, centerDept, basis==='custo'?'valor total':'qtd pedida', 'data-filter-dept', deptFilter)}
-        ${legend(deptItems, 'data-filter-dept', deptFilter)}
-      </div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:16px">
-    <div class="card-header-action">
-      <h3>📦 ${statusTitleText} (${prodsList.length} PRODUTOS ÚNICOS SOMADOS)</h3>
-      <button class="toggle-btn" id="btnToggleProds">
-        ${prodExpanded ? '▲ Ocultar Produtos' : '▼ Exibir Produtos (' + prodsList.length + ')'}
-      </button>
-    </div>
-
-    <div class="collapsible-content ${prodExpanded ? 'open' : ''}" id="boxProdutos">
-      <div class="prod-controls">
-        <select id="selectStatusFilter" style="font-weight:700;color:var(--accent)">
-          <option value="pendente" ${statusFilter==='pendente'?'selected':''}>Status: Apenas Pendentes</option>
-          <option value="separado" ${statusFilter==='separado'?'selected':''}>Status: Apenas Separados</option>
-          <option value="todos" ${statusFilter==='todos'?'selected':''}>Status: Todos os Status</option>
-        </select>
-        <input type="text" id="inputProdSearch" placeholder="🔍 Buscar código / GTIN / produto..." value="${esc(prodSearch)}" style="width:240px" />
-        <select id="selectProdSort">
-          <option value="qtd" ${prodSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Pendente</option>
-          <option value="pedida" ${prodSortOrder==='pedida'?'selected':''}>Ordenar por Maior Qtd Pedida Total</option>
-          <option value="valor" ${prodSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
-        </select>
-      </div>
-      <div class="tw">
-        <table>
-          <thead>
-            <tr>
-              <th>Cód. Interno</th>
-              <th>GTIN (EAN)</th>
-              <th>Produto</th>
-              <th>Tipo Separação</th>
-              <th class="r">Qtd Pedida Total</th>
-              <th class="r">Qtd Separada</th>
-              <th class="r">Qtd Pendente Total</th>
-              <th class="r">Valor Pendente Estimado</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${prodsList.length ? prodsList.map(p => `
-              <tr>
-                <td><span class="num" style="color:var(--accent);font-weight:700">${esc(p.codProd)}</span></td>
-                <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
-                <td><b>${esc(p.prod)}</b></td>
-                <td><span class="dot" style="background:var(--accent)"></span>${esc(p.tipoSep)}</td>
-                <td class="r" style="font-weight:700">${fmtN.format(p.qtdPedida)}</td>
-                <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(p.qtdSeparada)}</td>
-                <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'};font-weight:700;font-size:15px">${fmtN.format(p.qtdPend)}</td>
-                <td class="r" style="font-weight:700;color:var(--text)">${brl(p.valorPend)}</td>
-              </tr>
-            `).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:16px">
-    <h3>Status por Data de Geração da Reserva</h3>
-    <div class="tw">
-      <table>
-        <thead>
-          <tr>
-            <th>Data Reserva</th>
-            <th class="r">Qtd Pedida</th>
-            <th class="r">Qtd Separada</th>
-            <th class="r">Valor Total</th>
-            <th class="r">Status Pendentes</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${resRows.map(([dt, o]) => `
-            <tr>
-              <td><b>${esc(dt)}</b></td>
-              <td class="r">${fmtN.format(o.qtd)}</td>
-              <td class="r">${fmtN.format(o.qtdSep)}</td>
-              <td class="r">${brlShort(o.valor)}</td>
-              <td class="r">
-                ${o.pendentes > 0 
-                  ? `<span style="color:var(--crit);font-weight:700">🚨 ${o.pendentes} pendentes</span>` 
-                  : `<span style="color:var(--ok);font-weight:700">✔ Concluído</span>`}
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:16px">
-    <div class="card-header-action">
-      <h3>RESUMO DE SEPARAÇÃO POR DESTINATÁRIO (DESTINO)</h3>
-      <button class="toggle-btn" id="btnToggleDest">
-        ${destExpanded ? '▲ Ocultar Lojas' : '▼ Exibir Lojas / Destinos (' + destRows.length + ')'}
-      </button>
-    </div>
-
-    <div class="collapsible-content ${destExpanded ? 'open' : ''}" id="boxDestinos">
-      <div style="margin-bottom: 12px;">
-        <input type="text" id="inputDestSearch" placeholder="🔍 Buscar loja / destino..." value="${esc(destSearch)}" style="width: 100%; max-width: 320px;" />
-      </div>
-      <div class="tw">
-        <table>
-          <thead>
-            <tr>
-              <th>Destinatário</th>
-              <th class="r">Qtd Pedida</th>
-              <th class="r">Qtd Separada</th>
-              <th class="r">Valor Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${destRows.length ? destRows.map(([k,o]) => `
-              <tr class="clickable-row" onclick="targetDestFilter='${esc(k)}'; secCarteira();">
-                <td><b>${esc(k)}</b></td>
-                <td class="r">${fmtN.format(o.pedida)}</td>
-                <td class="r" style="color:${o.separada > 0 ? 'var(--ok)' : 'var(--mute)'}">${fmtN.format(o.separada)}</td>
-                <td class="r">${brlShort(o.valor)}</td>
-              </tr>
-            `).join('') : '<tr><td colspan="4">Nenhuma loja encontrada.</td></tr>'}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-  `;
-
-  document.querySelectorAll('[data-filter-carteira-sep]').forEach(el => {
-    el.addEventListener('click', () => {
-      const targetSep = el.getAttribute('data-filter-carteira-sep');
-      sepFilter = (sepFilter === targetSep) ? 'todos' : targetSep;
-      secCarteira();
-    });
-  });
-
-  document.querySelectorAll('[data-filter-dept]').forEach(el => {
-    el.addEventListener('click', () => {
-      const targetDept = el.getAttribute('data-filter-dept');
-      deptFilter = (deptFilter === targetDept) ? 'todos' : targetDept;
-      secCarteira();
-    });
-  });
-
-  const selectSep = $('#sepFilterSelect');
-  if (selectSep) {
-    selectSep.addEventListener('change', (e) => {
-      sepFilter = e.target.value;
-      secCarteira();
-    });
-  }
-
-  const selectTargetDest = $('#targetDestFilterSelect');
-  if (selectTargetDest) {
-    selectTargetDest.addEventListener('change', (e) => {
-      targetDestFilter = e.target.value;
-      secCarteira();
-    });
-  }
-
-  const selectDept = $('#deptFilterSelect');
-  if (selectDept) {
-    selectDept.addEventListener('change', (e) => {
-      deptFilter = e.target.value;
-      secCarteira();
-    });
-  }
-
-  const btnProds = $('#btnToggleProds');
-  if (btnProds) {
-    btnProds.addEventListener('click', () => {
-      prodExpanded = !prodExpanded;
-      secCarteira();
-    });
-  }
-
-  const selectStatus = $('#selectStatusFilter');
-  if (selectStatus) {
-    selectStatus.addEventListener('change', (e) => {
-      statusFilter = e.target.value;
-      secCarteira();
-    });
-  }
-
-  const pSearch = $('#inputProdSearch');
-  if (pSearch) {
-    pSearch.addEventListener('input', (e) => {
-      prodSearch = e.target.value;
-      secCarteira();
-      const el = $('#inputProdSearch');
-      if (el) { el.focus(); el.setSelectionRange(prodSearch.length, prodSearch.length); }
-    });
-  }
-
-  const pSort = $('#selectProdSort');
-  if (pSort) {
-    pSort.addEventListener('change', (e) => {
-      prodSortOrder = e.target.value;
-      secCarteira();
-    });
-  }
-
-  const btnDest = $('#btnToggleDest');
-  if (btnDest) {
-    btnDest.addEventListener('click', () => {
-      destExpanded = !destExpanded;
-      secCarteira();
-    });
-  }
-
-  const dSearch = $('#inputDestSearch');
-  if (dSearch) {
-    dSearch.addEventListener('input', (e) => {
-      destSearch = e.target.value;
-      secCarteira();
-      const el = $('#inputDestSearch');
-      if (el) { el.focus(); el.setSelectionRange(destSearch.length, destSearch.length); }
-    });
-  }
-
-  attachTooltipEvents();
-}
-
-const SECTIONS = [
-  {id:'geral', title:'Visão Geral', render:secGeral},
-  {id:'shelf', title:'Shelf Life', render:secShelf},
-  {id:'aging', title:'Aging', render:secAging},
-  {id:'ocup', title:'Ocupação', render:secOcup},
-  {id:'carteira', title:'Carteira', render:secCarteira}
-];
-
-let activeTab = 'carteira';
-
-function renderNav(){
-  const nav = $('#tabs');
-  if (!nav) return;
-  nav.innerHTML = SECTIONS.map(s => `<button data-tab="${s.id}" role="tab" aria-selected="${s.id===activeTab}">${s.title}</button>`).join('');
-  
-  nav.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      activeTab = btn.getAttribute('data-tab');
-      window.location.hash = activeTab;
-      render();
-    });
-  });
-}
-
-function render(){
-  if (!D) return;
-  const hash = window.location.hash.replace('#','');
-  if (hash && SECTIONS.some(s=>s.id===hash)) {
-    activeTab = hash;
-  }
-  
-  document.querySelectorAll('nav#tabs button').forEach(b => {
-    b.setAttribute('aria-selected', b.getAttribute('data-tab') === activeTab);
-  });
-
-  SECTIONS.forEach(s => {
-    const el = $('#s-' + s.id);
-    if (el) {
-      if (s.id === activeTab) {
-        el.classList.add('on');
-        try {
-          s.render();
-        } catch(err) {
-          console.error('Erro ao renderizar seção ' + s.id, err);
-          el.innerHTML = '<div class="card"><h3>Erro de Exibição</h3><p>Ocorreu um erro ao carregar esta aba.</p></div>';
-        }
-      } else {
-        el.classList.remove('on');
-      }
-    }
-  });
-}
-
-document.querySelectorAll('#basis button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('#basis button').forEach(b => b.setAttribute('aria-pressed', 'false'));
-    btn.setAttribute('aria-pressed', 'true');
-    basis = btn.getAttribute('data-b');
-    render();
-  });
-});
-
-function toggleTvMode() {
-  const isTv = document.body.classList.toggle('tvmode');
-  const btnTv = $('#tv');
-  if (btnTv) btnTv.setAttribute('aria-pressed', isTv);
-
-  if (isTv) {
-    if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    }
-    startTvRotation();
-  } else {
-    if (document.exitFullscreen && document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
-    }
-    stopTvRotation();
-  }
-}
-
-function startTvRotation() {
-  stopTvRotation();
-  tvTimer = setInterval(() => {
-    const currentIndex = SECTIONS.findIndex(s => s.id === activeTab);
-    const nextIndex = (currentIndex + 1) % SECTIONS.length;
-    activeTab = SECTIONS[nextIndex].id;
-    window.location.hash = activeTab;
-    render();
-  }, CONFIG.TV_SEGUNDOS * 1000);
-}
-
-function stopTvRotation() {
-  if (tvTimer) {
-    clearInterval(tvTimer);
-    tvTimer = null;
-  }
-}
-
-document.addEventListener('fullscreenchange', () => {
-  if (!document.fullscreenElement && document.body.classList.contains('tvmode')) {
-    document.body.classList.remove('tvmode');
-    const btnTv = $('#tv');
-    if (btnTv) btnTv.setAttribute('aria-pressed', 'false');
-    stopTvRotation();
-  }
-});
-
-const btnTv = $('#tv');
-if (btnTv) {
-  btnTv.addEventListener('click', toggleTvMode);
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-  renderNav();
-  load();
-});
-
-window.addEventListener('hashchange', render);
-setInterval(load, CONFIG.ATUALIZAR_MIN * 60 * 1000);
-</script>
-</body>
-</html>
+      if (tabType === 'shelf') secShelf(); e
