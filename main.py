@@ -24,13 +24,11 @@ logging.basicConfig(
 SCOPES = ['https://www.googleapis.com/auth/drive']
 service_account_info = json.loads(os.environ['GCP_SERVICE_ACCOUNT_JSON'])
 
-# Delegação Domain-Wide (Impersonation): A Service Account atua em nome do seu e-mail
-EMAIL_PROPRIETARIO = "gestaoestoque.cdr@roldao.com.br"
-
+# Autenticação direta com a Conta de Serviço (sem delegacão com .with_subject)
 creds = ServiceAccountCredentials.from_service_account_info(
     service_account_info, 
     scopes=SCOPES
-).with_subject(EMAIL_PROPRIETARIO)
+)
 
 drive_service = build('drive', 'v3', credentials=creds)
 
