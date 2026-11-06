@@ -4,6 +4,8 @@ import json
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from google.oauth2.service_account import Credentials as ServiceAccountCredentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
@@ -32,28 +34,39 @@ prefs = {
 chrome_options.add_experimental_option("prefs", prefs)
 
 driver = webdriver.Chrome(options=chrome_options)
+wait = WebDriverWait(driver, 15)
 
 try:
     print("Iniciando acesso ao WMS Bluesoft...")
-    # URL real de login do ERP Bluesoft Roldão
     driver.get("https://erp.bluesoft.com.br/roldao/seguranca/login/login?redirectTo=/app/#/menu")
-    time.sleep(3)
     
-    # Preenchimento das credenciais e clique no login
-    username_input = driver.find_element(By.NAME, "username")
+    # Aguardar até 15 segundos para o campo de utilizador carregar no ecrã
+    username_input = wait.until(
+        EC.presence_of_element_located((
+            By.XPATH, 
+            "//input[@name='username' or @id='username' or @name='usuario' or @id='usuario' or @type='text']"
+        ))
+    )
     username_input.clear()
     username_input.send_keys(os.environ['WMS_USER'])
     
-    password_input = driver.find_element(By.NAME, "password")
+    # Localizar campo de palavra-passe
+    password_input = driver.find_element(
+        By.XPATH, 
+        "//input[@name='password' or @id='password' or @name='senha' or @id='senha' or @type='password']"
+    )
     password_input.clear()
     password_input.send_keys(os.environ['WMS_PASS'])
     
-    # Clique no botão Entrar
-    submit_button = driver.find_element(By.XPATH, "//button[@type='submit'] | //input[@type='submit']")
+    # Localizar e clicar no botão de submissão
+    submit_button = driver.find_element(
+        By.XPATH, 
+        "//button[@type='submit'] | //input[@type='submit'] | //button[contains(text(), 'Entrar')]"
+    )
     submit_button.click()
     
     time.sleep(5)
-    print("Login efetuado com sucesso!")
+    print("Login efetuado com sucesso no Bluesoft Roldão!")
 
 except Exception as e:
     print(f"Erro durante a execução: {str(e)}")
