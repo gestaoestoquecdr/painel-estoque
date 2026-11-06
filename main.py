@@ -58,7 +58,7 @@ driver = webdriver.Chrome(options=chrome_options)
 
 try:
     # Fazer Login no WMS Bluesoft
-    driver.get("https://seu-wms-bluesoft-url.com") # Coloque a URL do seu WMS
+    driver.get("https://erp.bluesoft.com.br/roldao/seguranca/login/login?redirectTo=/app/#/menu") # Coloque a URL do seu WMS
     time.sleep(2)
     
     driver.find_element(By.ID, "username").send_keys(os.environ['WMS_USER']) # Ajuste o ID do input se necessário
