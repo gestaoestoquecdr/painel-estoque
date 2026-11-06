@@ -35,7 +35,7 @@ PASTAS_DRIVE = {
 }
 
 def enviar_para_google_drive(caminho_arquivo_local, menu_code, prefixo_nome):
-    """Envia o relatório baixado localmente direto para a pasta correta no Google Drive."""
+    """Envia o relatório baixado localmente para o Google Drive utilizando a cota da pasta pai."""
     folder_id = PASTAS_DRIVE.get(menu_code)
     if not folder_id:
         print(f"❌ ID da pasta para o menu {menu_code} não localizado.")
@@ -52,9 +52,9 @@ def enviar_para_google_drive(caminho_arquivo_local, menu_code, prefixo_nome):
         'parents': [folder_id]
     }
     
-    # Upload direto (resumable=False) para evitar a checagem de quota da Service Account
     media = MediaFileUpload(caminho_arquivo_local, resumable=False)
     
+    # Upload especificando suporte a drives e ignorando cota direta da Service Account
     uploaded = drive_service.files().create(
         body=file_metadata, 
         media_body=media, 
