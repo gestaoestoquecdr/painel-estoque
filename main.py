@@ -4,7 +4,6 @@ import json
 import glob
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -12,7 +11,9 @@ from google.oauth2.service_account import Credentials as ServiceAccountCredentia
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
-# 1. Google Drive Config
+# ---------------------------------------------------------
+# 1. Autenticação na API do Google Drive via Conta de Serviço
+# ---------------------------------------------------------
 SCOPES = ['https://www.googleapis.com/auth/drive']
 service_account_info = json.loads(os.environ['GCP_SERVICE_ACCOUNT_JSON'])
 creds = ServiceAccountCredentials.from_service_account_info(service_account_info, scopes=SCOPES)
@@ -31,9 +32,11 @@ def upload_to_drive(file_path, folder_id):
     file_metadata = {'name': file_name, 'parents': [folder_id]}
     media = MediaFileUpload(file_path, resumable=True)
     uploaded = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-    print(f"Sucesso! File ID: {uploaded.get('id')}")
+    print(f"Sucesso! Ficheiro enviado com ID: {uploaded.get('id')}")
 
-# 2. Configurar Chrome
+# ---------------------------------------------------------
+# 2. Configurar o Selenium Chrome em modo Headless
+# ---------------------------------------------------------
 chrome_options = Options()
 chrome_options.add_argument("--headless=new")
 chrome_options.add_argument("--no-sandbox")
@@ -50,13 +53,13 @@ chrome_options.add_experimental_option("prefs", {
 })
 
 driver = webdriver.Chrome(options=chrome_options)
-wait = WebDriverWait(driver, 15)
+wait = WebDriverWait(driver, 20)
 
 try:
     print("Conectando ao Bluesoft ERP...")
     driver.get("https://erp.bluesoft.com.br/roldao/seguranca/login/login?redirectTo=/app/#/menu")
     
-    # Login
+    # Preenchimento de Login
     user_elem = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@name='username' or @id='username' or @type='text']")))
     user_elem.clear()
     user_elem.send_keys(os.environ['WMS_USER'])
@@ -67,63 +70,75 @@ try:
     
     driver.find_element(By.XPATH, "//button[@type='submit'] | //input[@type='submit']").click()
     time.sleep(5)
-    print("Login efetuado!")
+    print("Login efetuado com sucesso!")
 
     for item in REPORTS_CONFIG:
         menu_code = item["menu"]
         folder_id = item["folder_id"]
-        print(f"\n--- Abrindo Menu {menu_code} ---")
+        print(f"\n--- Processando Menu {menu_code} ---")
         
-        # Tenta acionar a barra de pesquisa rápida do menu Bluesoft se disponível, ou via URL direta com refresh
+        driver.get(f"https://erp.bluesoft.com.br/roldao/app/#/menu/{menu_code}")
+        time.sleep(6)
+        
+        # Verificar se a tela carrega dentro de um iframe
+        iframes = driver.find_elements(By.TAG_NAME, "iframe")
+        if len(iframes) > 0:
+            driver.switch_to.frame(0)
+
+        # 1. Clicar no botão BUSCAR para carregar a tabela com os dados
         try:
-            driver.get(f"https://erp.bluesoft.com.br/roldao/app/#/menu/{menu_code}")
-            time.sleep(5)
-            
-            # Tirar foto da página para debug se não encontrar botões
-            driver.save_screenshot(f"screenshot_menu_{menu_code}.png")
-            print(f"Screenshot da tela salva como screenshot_menu_{menu_code}.png")
-            
-            # Muda para iframe se o Bluesoft carregar a tela dentro de um iframe legacy
-            iframes = driver.find_elements(By.TAG_NAME, "iframe")
-            if len(iframes) > 0:
-                print(f"Encontrado {len(iframes)} iframe(s). Alternando...")
-                driver.switch_to.frame(0)
-            
-            # Buscar botão Consultar / Pesquisar
-            buttons = driver.find_elements(By.XPATH, "//button | //a | //input[@type='button' or @type='submit']")
-            print(f"Elementos clicáveis encontrados na tela: {len(buttons)}")
-            
-            # Procura por elementos com texto Excel, Exportar ou Gerar
-            export_target = None
-            for btn in buttons:
-                txt = btn.text.lower()
-                title = (btn.get_attribute("title") or "").lower()
-                val = (btn.get_attribute("value") or "").lower()
-                if "excel" in txt or "excel" in title or "excel" in val or "exportar" in txt or "exportar" in title:
-                    export_target = btn
-                    break
-            
-            if export_target:
-                export_target.click()
-                print(f"Botão de exportação clicado no menu {menu_code}!")
-                time.sleep(8)
-            else:
-                print(f"Nenhum botão de Excel/Exportar identificado visivelmente no menu {menu_code}.")
-
-            driver.switch_to.default_content()
-
+            buscar_btn = wait.until(
+                EC.element_to_be_clickable((
+                    By.XPATH, 
+                    "//button[contains(text(), 'BUSCAR') or contains(text(), 'Buscar') or contains(text(), 'Consultar') or contains(@class, 'btn-primary')]"
+                ))
+            )
+            buscar_btn.click()
+            print(f"Botão BUSCAR clicado no menu {menu_code}. Aguardando dados...")
+            time.sleep(8)
         except Exception as e:
-            print(f"Erro ao processar menu {menu_code}: {e}")
+            print(f"Aviso: Não foi necessário/possível clicar em BUSCAR: {e}")
+
+        # 2. Clicar no botão do Menu da Tabela UI-Grid (Ícone de Opções/Grelha)
+        try:
+            grid_menu_btn = wait.until(
+                EC.element_to_be_clickable((
+                    By.XPATH, 
+                    "//div[contains(@class, 'ui-grid-menu-button')] | //button[contains(@class, 'ui-grid-menu-button')]"
+                ))
+            )
+            grid_menu_btn.click()
+            time.sleep(2)
+            
+            # 3. Clicar na opção 'Exportar todos os dados como excel'
+            export_excel_btn = wait.until(
+                EC.element_to_be_clickable((
+                    By.XPATH, 
+                    "//button[contains(text(), 'Exportar todos os dados como excel') or contains(text(), 'como excel')]"
+                ))
+            )
+            export_excel_btn.click()
+            print(f"Exportação para Excel disparada no menu {menu_code}!")
+            time.sleep(10)  # Aguarda tempo do download terminar
+            
+        except Exception as err:
+            print(f"Erro ao tentar exportar a grelha no menu {menu_code}: {err}")
             driver.switch_to.default_content()
             continue
 
-        # Upload
+        driver.switch_to.default_content()
+
+        # 4. Verificar download e enviar para o Google Drive
         downloaded = glob.glob(os.path.join(download_dir, "*"))
         if downloaded:
             latest = max(downloaded, key=os.path.getmtime)
             if os.path.isfile(latest) and not latest.endswith(".crdownload"):
                 upload_to_drive(latest, folder_id)
                 os.remove(latest)
+            else:
+                print(f"O ficheiro ainda está em transferência ou é inválido: {latest}")
+        else:
+            print(f"Nenhum ficheiro descarregado para o menu {menu_code}.")
 
 except Exception as e:
     print(f"Falha na execução: {e}")
@@ -131,3 +146,4 @@ except Exception as e:
 
 finally:
     driver.quit()
+    print("\nProcessamento concluído.")
