@@ -1395,4 +1395,773 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     sInput.addEventListener('input', (e) => {
       if (tabType === 'shelf') shelfSearch = e.target.value;
       else agingSearch = e.target.value;
-      if (tabType === 'shelf') secShelf(); e
+      if (tabType === 'shelf') secShelf(); else secAging();
+      const el = $('#' + inputId);
+      if (el) { 
+        const valLen = (tabType === 'shelf' ? shelfSearch : agingSearch).length;
+        el.focus(); 
+        el.setSelectionRange(valLen, valLen); 
+      }
+    });
+  }
+
+  const sSort = $('#' + selectId);
+  if (sSort) {
+    sSort.addEventListener('change', (e) => {
+      if (tabType === 'shelf') shelfSortOrder = e.target.value;
+      else agingSortOrder = e.target.value;
+      if (tabType === 'shelf') secShelf(); else secAging();
+    });
+  }
+
+  attachTooltipEvents();
+}
+
+/* 3. SEÇÃO OCUPAÇÃO DO CD */
+function occData(){
+  const g1 = {total:0, ocup:0, ruas:{}};
+  const g2 = {total:0, ocup:0, ruas:{}};
+  const bl = {total:0, ocup:0};
+  
+  if (D && D.addr) {
+    D.addr.forEach(a=>{
+      const area = String(a.area);
+      const end = String(a.end);
+      
+      const isG1 = area === '1' || end.includes("205.1041.1.");
+      const isG2 = area === '7' || end.includes("205.1041.7.");
+      const isBlocado = area === '5' || end.includes("205.1066.");
+      
+      let rua = a.rua;
+      if (!rua) {
+        const p = end.split('.');
+        rua = p.length >= 4 ? +p[3] : 0;
+      }
+      
+      if (isG1) {
+        g1.total++;
+        if (a.occ) g1.ocup++;
+        if (rua > 0) {
+          const r = (g1.ruas[rua] = g1.ruas[rua] || {t:0, o:0});
+          r.t++; if (a.occ) r.o++;
+        }
+      } else if (isG2) {
+        g2.total++;
+        if (a.occ) g2.ocup++;
+        if (rua > 0) {
+          const r = (g2.ruas[rua] = g2.ruas[rua] || {t:0, o:0});
+          r.t++; if (a.occ) r.o++;
+        }
+      } else if (isBlocado) {
+        bl.total++;
+        if (a.occ) bl.ocup++;
+      }
+    });
+  }
+
+  const total = g1.total + g2.total;
+  const ocup = g1.ocup + g2.ocup;
+  return {g1, g2, bl, total, ocup, pct: total ? (ocup/total)*100 : 0};
+}
+
+function ruaBars(g,livreCor){
+  const ruas = Object.entries(g.ruas).filter(([,r])=>r.t>=1).sort((a,b)=>+a[0]-+b[0]);
+  if(!ruas.length) return '<p style="color:var(--mute)">Nenhuma rua mapeada para esta área.</p>';
+  return `<div class="lg"><span><i style="background:${livreCor}"></i>Livre</span><span><i style="background:var(--cream)"></i>Ocupado</span></div>
+  <div class="rua-container"><div class="rua">${ruas.map(([n,r])=>{
+    const o=r.o/r.t*100,l=100-o;
+    const ttData = [{prod: `Rua ${n}`, sub: `Ocupados: ${fmtN.format(r.o)} / Total: ${fmtN.format(r.t)} (${fmtP(o)})`}];
+    return `<div class="c"><div class="stk" data-tooltip-title="Detalhamento Rua ${n}" data-tooltip-color="var(--accent)" data-tooltip-items="${JSON.stringify(ttData).replace(/"/g, '&quot;')}" style="cursor:pointer">
+    <div class="lv" style="flex:${l};background:${livreCor};color:#fff">${l>=8?fmtP(l,1):''}</div>
+    <div class="lv oc" style="flex:${Math.max(o,2)}">${o>=8?fmtP(o,1):''}</div></div><div class="name">${n}</div></div>`;
+  }).join('')}</div></div>`;
+}
+
+function secOcup(){
+  const O = occData(), v = o=>o.total-o.ocup;
+  const box = (cls,t,o)=>`<div class="mini ${cls}"><div class="b"><small>${t}</small><strong>${fmtN.format(o.total)}</strong></div><div class="b"><small>Ocupados</small><strong>${fmtN.format(o.ocup)}</strong></div><div class="b"><small>Vazios</small><strong>${fmtN.format(v(o))}</strong></div></div>`;
+  const all = {total:O.total,ocup:O.ocup};
+  
+  const donutItems = [
+    { rawKey: 'Livre', n: 'Livre', v: O.total - O.ocup, c: '#4285f4' },
+    { rawKey: 'Ocupado', n: 'Ocupado', v: O.ocup, c: '#ffc400' }
+  ];
+
+  const prev = basis; 
+  basis = 'qtd';
+  const dn = donut(donutItems, fmtP(O.pct, 2), 'ocupação CD'); 
+  basis = prev;
+
+  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos processados da chave ocupacao.</p>
+  <div class="occ">
+    ${box('g1','Galpão 1',O.g1)}
+    ${box('g2','Galpão 2',O.g2)}
+    ${box('','Endereços Total',all)}
+    ${box('','Blocados',O.bl)}
+    <div class="card donutcard">
+      <h3>% de ocupação CD</h3>
+      <div class="donutwrap">${dn}</div>
+    </div>
+    <div class="pcts">
+      <div class="row">
+        <div class="b"><small>% Galpão 1</small><strong>${fmtP(O.g1.total?O.g1.ocup/O.g1.total*100:0,2)}</strong></div>
+        <div class="b"><small>% Galpão 2</small><strong>${fmtP(O.g2.total?O.g2.ocup/O.g2.total*100:0,2)}</strong></div>
+      </div>
+      <div class="b big"><small>% Ocupação total CD</small><strong>${fmtP(O.pct,2)}</strong></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'#4285f4')}</div>
+  <div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'#3a5db0')}</div>
+  <p class="foot">Todas as ruas ativas são exibidas nos gráficos e contam nos totais.</p>`;
+
+  attachTooltipEvents();
+}
+
+/* 4. SEÇÃO CARTEIRA DE PEDIDO */
+function secCarteira(){
+  let C = (D && D.cart) ? D.cart : [];
+  if (!C.length) {
+    $('#s-carteira').innerHTML = `<h2>Carteira de Pedido</h2><p class="sub">Nenhum dado encontrado na chave 'carteira' do JSON.</p>`;
+    return;
+  }
+
+  const tiposSepDisponiveis = Array.from(new Set(C.map(r => r.tipoSep))).filter(Boolean);
+  const destinosDisponiveis = Array.from(new Set(C.map(r => r.dest))).filter(Boolean).sort((a,b) => String(a).localeCompare(String(b), undefined, {numeric: true}));
+  const deptsDisponiveis = Array.from(new Set(C.map(r => r.dept))).filter(Boolean).sort((a,b) => String(a).localeCompare(String(b)));
+
+  let filteredC = C;
+  if (sepFilter !== 'todos') {
+    filteredC = filteredC.filter(r => r.tipoSep.toLowerCase().trim() === sepFilter.toLowerCase().trim());
+  }
+  if (targetDestFilter !== 'todos') {
+    filteredC = filteredC.filter(r => String(r.dest) === String(targetDestFilter));
+  }
+  if (deptFilter !== 'todos') {
+    filteredC = filteredC.filter(r => r.dept.toLowerCase().trim() === deptFilter.toLowerCase().trim());
+  }
+
+  const totPedida = filteredC.reduce((s,r) => s + r.qtdPedida, 0);
+  const totSeparada = filteredC.reduce((s,r) => s + r.qtdSeparada, 0);
+  const totValor = filteredC.reduce((s,r) => s + r.valorTotal, 0);
+  const pctAtendimento = totPedida ? (totSeparada / totPedida) * 100 : 0;
+
+  const datasPendentesSet = new Set();
+  filteredC.forEach(r => {
+    if (r.tipoSep !== 'Separado') {
+      if (r.gerReserva && r.gerReserva !== 'Sem data') {
+        datasPendentesSet.add(r.gerReserva);
+      }
+    }
+  });
+
+  const qtdDatasPendentes = datasPendentesSet.size;
+  const diasAtraso = qtdDatasPendentes; 
+  const isCritico = diasAtraso >= 2;
+  const atrasoStr = `D-${diasAtraso}`;
+  const atrasoSub = isCritico ? `${ico('alert')}Crítico (${qtdDatasPendentes} datas pendentes)` : `Dentro da Meta (${qtdDatasPendentes} datas pendentes)`;
+  const kpiClassAtraso = isCritico ? 'hl' : '';
+
+  const topPedentesCrit = filteredC.filter(r => r.qtdPedida > r.qtdSeparada).sort((a,b) => b.valorTotal - a.valorTotal).slice(0, 3).map(r => ({
+    prod: r.prod,
+    sub: `Destino: ${r.dest} | Valor: ${brlShort(r.valorTotal)}`
+  }));
+
+  const bySep = {};
+  filteredC.forEach(r => {
+    const k = r.tipoSep || 'Não informado';
+    bySep[k] = bySep[k] || {pedida:0, separada:0, valor:0};
+    bySep[k].pedida += r.qtdPedida;
+    bySep[k].separada += r.qtdSeparada;
+    bySep[k].valor += r.valorTotal;
+  });
+
+  const prodDer = bySep["Produção Derrubada"] || {pedida:0, separada:0};
+  const prodSor = bySep["Produção Sorter"] || {pedida:0, separada:0};
+  const pendDer = bySep["Pendente Derrubada"] || {pedida:0, separada:0};
+  const pendSor = bySep["Pendente Sorter"] || {pedida:0, separada:0};
+  
+  const crossDock = bySep["Cross Docking"] || bySep["CROSS DOCKING"] || {pedida:0, separada:0};
+  const fullSep = bySep["Full"] || bySep["FULL"] || {pedida:0, separada:0};
+
+  const derTotQtd = prodDer.pedida + pendDer.pedida;
+  const derPctProd = derTotQtd ? (prodDer.pedida / derTotQtd) * 100 : 0;
+  const derPctPend = derTotQtd ? (pendDer.pedida / derTotQtd) * 100 : 0;
+
+  const sorTotQtd = prodSor.pedida + pendSor.pedida;
+  const sorPctProd = sorTotQtd ? (prodSor.pedida / sorTotQtd) * 100 : 0;
+  const sorPctPend = sorTotQtd ? (pendSor.pedida / sorTotQtd) * 100 : 0;
+
+  const cdTotQtd = crossDock.pedida;
+  const cdPendQtd = Math.max(0, crossDock.pedida - crossDock.separada);
+  const cdPctPend = cdTotQtd ? (cdPendQtd / cdTotQtd) * 100 : 0;
+  const cdPctSep = cdTotQtd ? (crossDock.separada / cdTotQtd) * 100 : 0;
+
+  const fullTotQtd = fullSep.pedida;
+  const fullPendQtd = Math.max(0, fullSep.pedida - fullSep.separada);
+  const fullPctPend = fullTotQtd ? (fullPendQtd / fullTotQtd) * 100 : 0;
+  const fullPctSep = fullTotQtd ? (fullSep.separada / fullTotQtd) * 100 : 0;
+
+  const baseDept = C.filter(r => {
+    if (sepFilter !== 'todos' && r.tipoSep.toLowerCase().trim() !== sepFilter.toLowerCase().trim()) return false;
+    if (targetDestFilter !== 'todos' && String(r.dest) !== String(targetDestFilter)) return false;
+    return true;
+  });
+
+  const byDept = {};
+  baseDept.forEach(r => {
+    const k = r.dept || 'Outros';
+    byDept[k] = byDept[k] || {qtd:0, valor:0};
+    byDept[k].qtd += r.qtdPedida;
+    byDept[k].valor += r.valorTotal;
+  });
+  const deptRows = Object.entries(byDept).sort((a,b) => (basis==='custo' ? b[1].valor - a[1].valor : b[1].qtd - a[1].qtd));
+  const deptItems = deptRows.map(([n,o],i) => {
+    const topD = baseDept.filter(r => r.dept === n).sort((a,b) => b.valorTotal - a.valorTotal)[0];
+    return {
+      rawKey: n,
+      n: n,
+      v: basis==='custo' ? o.valor : o.qtd,
+      c: DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+      topProd: topD ? `Líder: ${topD.prod}` : ''
+    };
+  });
+  const centerDept = basis==='custo' ? brlShort(totValor).replace('R$ ','') : fmtN.format(totPedida);
+
+  const byRes = {};
+  filteredC.forEach(r => {
+    const k = r.gerReserva || 'Sem data';
+    byRes[k] = byRes[k] || {qtd:0, valor:0, qtdSep:0, pendentes:0, separados:0};
+    byRes[k].qtd += r.qtdPedida;
+    byRes[k].valor += r.valorTotal;
+    byRes[k].qtdSep += r.qtdSeparada;
+    if (r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada)) {
+      byRes[k].separados++;
+    } else {
+      byRes[k].pendentes++;
+    }
+  });
+  let resRows = Object.entries(byRes).sort((a,b) => a[0].localeCompare(b[0]));
+  if (resFilter === 'pendente') {
+    resRows = resRows.filter(([, o]) => o.pendentes > 0);
+  } else if (resFilter === 'separado') {
+    resRows = resRows.filter(([, o]) => o.pendentes === 0);
+  }
+
+  const byDest = {};
+  filteredC.forEach(r => {
+    const k = r.dest || "Sem Destino";
+    byDest[k] = byDest[k] || {pedida:0, separada:0, valor:0};
+    byDest[k].pedida += r.qtdPedida;
+    byDest[k].separada += r.qtdSeparada;
+    byDest[k].valor += r.valorTotal;
+  });
+  let destRows = Object.entries(byDest).sort((a,b) => b[1].pedida - a[1].pedida);
+  if (destSearch) {
+    destRows = destRows.filter(([k]) => k.toLowerCase().includes(destSearch.toLowerCase()));
+  }
+
+  const prodAggMap = {};
+  filteredC.forEach(r => {
+    const pendQtd = r.qtdPedida - r.qtdSeparada;
+    const isSeparado = r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada);
+    
+    if (statusFilter === 'pendente' && pendQtd <= 0) return;
+    if (statusFilter === 'separado' && !isSeparado) return;
+
+    const key = (r.codProd && r.codProd !== '-') ? r.codProd : r.prod;
+    if (!prodAggMap[key]) {
+      prodAggMap[key] = {
+        codProd: r.codProd || '-',
+        gtin: r.gtin || '-',
+        prod: r.prod || 'Sem Descrição',
+        tiposSet: new Set(),
+        qtdPedida: 0,
+        qtdSeparada: 0,
+        qtdPend: 0,
+        valorPend: 0
+      };
+    }
+
+    prodAggMap[key].qtdPedida += r.qtdPedida;
+    prodAggMap[key].qtdSeparada += r.qtdSeparada;
+    prodAggMap[key].qtdPend += Math.max(0, pendQtd);
+    
+    const pendVal = r.qtdPedida ? (r.valorTotal * (Math.max(0, pendQtd) / r.qtdPedida)) : 0;
+    prodAggMap[key].valorPend += pendVal;
+
+    if (r.tipoSep) prodAggMap[key].tiposSet.add(r.tipoSep);
+    if (r.gtin && r.gtin !== '-') prodAggMap[key].gtin = r.gtin;
+  });
+
+  let prodsList = Object.values(prodAggMap).map(p => ({
+    ...p,
+    tipoSep: Array.from(p.tiposSet).join(', ') || '-'
+  }));
+
+  if (prodSearch) {
+    const q = prodSearch.toLowerCase();
+    prodsList = prodsList.filter(p => 
+      p.prod.toLowerCase().includes(q) || 
+      p.codProd.toLowerCase().includes(q) || 
+      p.gtin.toLowerCase().includes(q)
+    );
+  }
+
+  if (prodSortOrder === 'valor') {
+    prodsList.sort((a,b) => b.valorPend - a.valorPend);
+  } else if (prodSortOrder === 'qtd') {
+    prodsList.sort((a,b) => b.qtdPend - a.qtdPend);
+  } else if (prodSortOrder === 'pedida') {
+    prodsList.sort((a,b) => b.qtdPedida - a.qtdPedida);
+  }
+
+  const statusTitleText = statusFilter === 'pendente' 
+    ? 'Produtos pendentes de separação' 
+    : (statusFilter === 'separado' ? 'Produtos separados' : 'Todos os produtos da carteira');
+
+  const hasActiveCartFilter = sepFilter !== 'todos' || targetDestFilter !== 'todos' || deptFilter !== 'todos';
+
+  $('#s-carteira').innerHTML = `
+  <h2>Carteira de Pedido</h2>
+  <p class="sub">Acompanhamento e status das reservas e solicitações do CD.</p>
+
+  <div class="active-filters-bar ${hasActiveCartFilter ? 'visible' : ''}">
+    <span>${ico('filter')}<b>Filtro Ativo: ${sepFilter !== 'todos' ? `Tipo = ${sepFilter}` : ''} ${targetDestFilter !== 'todos' ? `| Destino = ${targetDestFilter}` : ''} ${deptFilter !== 'todos' ? `| Depto = ${deptFilter}` : ''}</b></span>
+    <button onclick="clearAllFilters()">Limpar filtros da carteira</button>
+  </div>
+  
+  <div class="filter-bar">
+    <label>${ico('bolt')}Tipo de separação
+      <select id="sepFilterSelect">
+        <option value="todos" ${sepFilter==='todos'?'selected':''}>-- Todos os Tipos (${C.length} itens) --</option>
+        ${tiposSepDisponiveis.map(t => `<option value="${esc(t)}" ${sepFilter===t?'selected':''}>${esc(t)}</option>`).join('')}
+      </select>
+    </label>
+
+    <label>${ico('store')}Destino / loja
+      <select id="targetDestFilterSelect" style="font-weight:700;color:var(--accent)">
+        <option value="todos" ${targetDestFilter==='todos'?'selected':''}>-- Todos os Destinos --</option>
+        ${destinosDisponiveis.map(d => `<option value="${esc(d)}" ${targetDestFilter===String(d)?'selected':''}>${esc(d)}</option>`).join('')}
+      </select>
+    </label>
+
+    <label>${ico('tag')}Departamento CD
+      <select id="deptFilterSelect" style="font-weight:700;color:var(--ok)">
+        <option value="todos" ${deptFilter==='todos'?'selected':''}>-- Todos os Departamentos --</option>
+        ${deptsDisponiveis.map(dp => `<option value="${esc(dp)}" ${deptFilter===dp?'selected':''}>${esc(dp)}</option>`).join('')}
+      </select>
+    </label>
+  </div>
+
+  <div class="grid kpis">
+    ${kpi('Total Pedido', fmtN.format(totPedida), brlShort(totValor))}
+    ${kpi('Total Separado', fmtN.format(totSeparada), fmtP(pctAtendimento) + ' atendido')}
+    ${kpi('Pendente de Separação', fmtN.format(totPedida - totSeparada), brlShort(filteredC.reduce((s,r) => s + (r.tipoSep !== 'Separado' ? r.valorTotal : 0), 0)), '', 'Maiores Pedidos Pendentes', topPedentesCrit, 'var(--warn)')}
+    ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso, 'Datas em Atraso Crítico', Array.from(datasPendentesSet).map(d => ({prod: `Data Reserva: ${d}`, sub: 'Pendente de liberação'})), isCritico ? 'var(--crit)' : 'var(--warn)')}
+  </div>
+
+  <div class="grid two" style="margin-top:16px">
+    <div class="card">
+      <h3>Progresso da Separação (Clique para filtrar)</h3>
+      <div class="sep-progress">
+        <div class="sep-item" data-filter-carteira-sep="Produção Derrubada">
+          <div class="sep-header">
+            <span>Derrubada (Total: ${fmtN.format(derTotQtd)})</span>
+            <span>Prod: ${fmtP(derPctProd)} | Pend: ${fmtP(derPctPend)}</span>
+          </div>
+          <div class="sep-bar-bg">
+            <div class="sep-bar-fill" style="width:${derPctProd}%;background:var(--ok);" title="Produção: ${fmtN.format(prodDer.pedida)}"></div>
+            <div class="sep-bar-fill" style="width:${derPctPend}%;background:var(--warn);" title="Pendente: ${fmtN.format(pendDer.pedida)}"></div>
+          </div>
+        </div>
+
+        <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Produção Sorter">
+          <div class="sep-header">
+            <span>Sorter (Total: ${fmtN.format(sorTotQtd)})</span>
+            <span>Prod: ${fmtP(sorPctProd)} | Pend: ${fmtP(sorPctPend)}</span>
+          </div>
+          <div class="sep-bar-bg">
+            <div class="sep-bar-fill" style="width:${sorPctProd}%;background:var(--blue);" title="Produção: ${fmtN.format(prodSor.pedida)}"></div>
+            <div class="sep-bar-fill" style="width:${sorPctPend}%;background:var(--crit);" title="Pendente: ${fmtN.format(pendSor.pedida)}"></div>
+          </div>
+        </div>
+
+        <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Cross Docking">
+          <div class="sep-header">
+            <span>Cross Docking (Total: ${fmtN.format(cdTotQtd)})</span>
+            <span>Sep: ${fmtP(cdPctSep)} | Pend: ${fmtP(cdPctPend)}</span>
+          </div>
+          <div class="sep-bar-bg">
+            <div class="sep-bar-fill" style="width:${cdPctSep}%;background:var(--ok);" title="Separado: ${fmtN.format(crossDock.separada)}"></div>
+            <div class="sep-bar-fill" style="width:${cdPctPend}%;background:var(--accent);" title="Pendente: ${fmtN.format(cdPendQtd)}"></div>
+          </div>
+        </div>
+
+        <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Full">
+          <div class="sep-header">
+            <span>Full (Total: ${fmtN.format(fullTotQtd)})</span>
+            <span>Sep: ${fmtP(fullPctSep)} | Pend: ${fmtP(fullPctPend)}</span>
+          </div>
+          <div class="sep-bar-bg">
+            <div class="sep-bar-fill" style="width:${fullPctSep}%;background:var(--ok);" title="Separado: ${fmtN.format(fullSep.separada)}"></div>
+            <div class="sep-bar-fill" style="width:${fullPctPend}%;background:#c084fc;" title="Pendente: ${fmtN.format(fullPendQtd)}"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-note">
+        ${ico('info')}<span><b>Nota operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Participação por Departamento CD (Clique para filtrar)</h3>
+      <div class="donutwrap">
+        ${donut(deptItems, centerDept, basis==='custo'?'valor total':'qtd pedida', 'data-filter-dept', deptFilter)}
+        ${legend(deptItems, 'data-filter-dept', deptFilter)}
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-header-action">
+      <h3>${ico('box')}${statusTitleText} (${prodsList.length} produtos únicos)</h3>
+      <button class="toggle-btn" id="btnToggleProds">
+        ${prodExpanded ? ico('up')+'Ocultar produtos' : ico('down')+'Exibir produtos (' + prodsList.length + ')'}
+      </button>
+    </div>
+
+    <div class="collapsible-content ${prodExpanded ? 'open' : ''}" id="boxProdutos">
+      <div class="prod-controls">
+        <select id="selectStatusFilter" style="font-weight:700;color:var(--accent)">
+          <option value="pendente" ${statusFilter==='pendente'?'selected':''}>Status: Apenas Pendentes</option>
+          <option value="separado" ${statusFilter==='separado'?'selected':''}>Status: Apenas Separados</option>
+          <option value="todos" ${statusFilter==='todos'?'selected':''}>Status: Todos os Status</option>
+        </select>
+        <input type="text" id="inputProdSearch" placeholder="Buscar código / GTIN / produto..." value="${esc(prodSearch)}" style="width:240px" />
+        <select id="selectProdSort">
+          <option value="qtd" ${prodSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Pendente</option>
+          <option value="pedida" ${prodSortOrder==='pedida'?'selected':''}>Ordenar por Maior Qtd Pedida Total</option>
+          <option value="valor" ${prodSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
+        </select>
+      </div>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Cód. Interno</th>
+              <th>GTIN (EAN)</th>
+              <th>Produto</th>
+              <th>Tipo Separação</th>
+              <th class="r">Qtd Pedida Total</th>
+              <th class="r">Qtd Separada</th>
+              <th class="r">Qtd Pendente Total</th>
+              <th class="r">Valor Pendente Estimado</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${prodsList.length ? prodsList.map(p => `
+              <tr>
+                <td><span class="mono" style="color:var(--accent);font-weight:700">${esc(p.codProd)}</span></td>
+                <td><span class="mono" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
+                <td><b>${esc(p.prod)}</b></td>
+                <td><span class="dot" style="background:var(--accent);color:var(--accent)"></span>${esc(p.tipoSep)}</td>
+                <td class="r" style="font-weight:700">${fmtN.format(p.qtdPedida)}</td>
+                <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(p.qtdSeparada)}</td>
+                <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'};font-weight:700;font-size:15px">${fmtN.format(p.qtdPend)}</td>
+                <td class="r" style="font-weight:700;color:var(--text)">${brl(p.valorPend)}</td>
+              </tr>
+            `).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>Status por Data de Geração da Reserva</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>Data Reserva</th>
+            <th class="r">Qtd Pedida</th>
+            <th class="r">Qtd Separada</th>
+            <th class="r">Valor Total</th>
+            <th class="r">Status Pendentes</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${resRows.map(([dt, o]) => `
+            <tr>
+              <td><b>${esc(dt)}</b></td>
+              <td class="r">${fmtN.format(o.qtd)}</td>
+              <td class="r">${fmtN.format(o.qtdSep)}</td>
+              <td class="r">${brlShort(o.valor)}</td>
+              <td class="r">
+                ${o.pendentes > 0 
+                  ? `<span style="color:var(--crit);font-weight:700">${ico('alert')}${o.pendentes} pendentes</span>` 
+                  : `<span style="color:var(--ok);font-weight:700">${ico('check')}Concluído</span>`}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-header-action">
+      <h3>Resumo de separação por destinatário</h3>
+      <button class="toggle-btn" id="btnToggleDest">
+        ${destExpanded ? ico('up')+'Ocultar lojas' : ico('down')+'Exibir lojas / destinos (' + destRows.length + ')'}
+      </button>
+    </div>
+
+    <div class="collapsible-content ${destExpanded ? 'open' : ''}" id="boxDestinos">
+      <div style="margin-bottom: 12px;">
+        <input type="text" id="inputDestSearch" placeholder="Buscar loja / destino..." value="${esc(destSearch)}" style="width: 100%; max-width: 320px;" />
+      </div>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Destinatário</th>
+              <th class="r">Qtd Pedida</th>
+              <th class="r">Qtd Separada</th>
+              <th class="r">Valor Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${destRows.length ? destRows.map(([k,o]) => `
+              <tr class="clickable-row" onclick="targetDestFilter='${esc(k)}'; secCarteira();">
+                <td><b>${esc(k)}</b></td>
+                <td class="r">${fmtN.format(o.pedida)}</td>
+                <td class="r" style="color:${o.separada > 0 ? 'var(--ok)' : 'var(--mute)'}">${fmtN.format(o.separada)}</td>
+                <td class="r">${brlShort(o.valor)}</td>
+              </tr>
+            `).join('') : '<tr><td colspan="4">Nenhuma loja encontrada.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  `;
+
+  document.querySelectorAll('[data-filter-carteira-sep]').forEach(el => {
+    el.addEventListener('click', () => {
+      const targetSep = el.getAttribute('data-filter-carteira-sep');
+      sepFilter = (sepFilter === targetSep) ? 'todos' : targetSep;
+      secCarteira();
+    });
+  });
+
+  document.querySelectorAll('[data-filter-dept]').forEach(el => {
+    el.addEventListener('click', () => {
+      const targetDept = el.getAttribute('data-filter-dept');
+      deptFilter = (deptFilter === targetDept) ? 'todos' : targetDept;
+      secCarteira();
+    });
+  });
+
+  const selectSep = $('#sepFilterSelect');
+  if (selectSep) {
+    selectSep.addEventListener('change', (e) => {
+      sepFilter = e.target.value;
+      secCarteira();
+    });
+  }
+
+  const selectTargetDest = $('#targetDestFilterSelect');
+  if (selectTargetDest) {
+    selectTargetDest.addEventListener('change', (e) => {
+      targetDestFilter = e.target.value;
+      secCarteira();
+    });
+  }
+
+  const selectDept = $('#deptFilterSelect');
+  if (selectDept) {
+    selectDept.addEventListener('change', (e) => {
+      deptFilter = e.target.value;
+      secCarteira();
+    });
+  }
+
+  const btnProds = $('#btnToggleProds');
+  if (btnProds) {
+    btnProds.addEventListener('click', () => {
+      prodExpanded = !prodExpanded;
+      secCarteira();
+    });
+  }
+
+  const selectStatus = $('#selectStatusFilter');
+  if (selectStatus) {
+    selectStatus.addEventListener('change', (e) => {
+      statusFilter = e.target.value;
+      secCarteira();
+    });
+  }
+
+  const pSearch = $('#inputProdSearch');
+  if (pSearch) {
+    pSearch.addEventListener('input', (e) => {
+      prodSearch = e.target.value;
+      secCarteira();
+      const el = $('#inputProdSearch');
+      if (el) { el.focus(); el.setSelectionRange(prodSearch.length, prodSearch.length); }
+    });
+  }
+
+  const pSort = $('#selectProdSort');
+  if (pSort) {
+    pSort.addEventListener('change', (e) => {
+      prodSortOrder = e.target.value;
+      secCarteira();
+    });
+  }
+
+  const btnDest = $('#btnToggleDest');
+  if (btnDest) {
+    btnDest.addEventListener('click', () => {
+      destExpanded = !destExpanded;
+      secCarteira();
+    });
+  }
+
+  const dSearch = $('#inputDestSearch');
+  if (dSearch) {
+    dSearch.addEventListener('input', (e) => {
+      destSearch = e.target.value;
+      secCarteira();
+      const el = $('#inputDestSearch');
+      if (el) { el.focus(); el.setSelectionRange(destSearch.length, destSearch.length); }
+    });
+  }
+
+  attachTooltipEvents();
+}
+
+const SECTIONS = [
+  {id:'geral', title:'Visão Geral', render:secGeral},
+  {id:'shelf', title:'Shelf Life', render:secShelf},
+  {id:'aging', title:'Aging', render:secAging},
+  {id:'ocup', title:'Ocupação', render:secOcup},
+  {id:'carteira', title:'Carteira', render:secCarteira}
+];
+
+let activeTab = 'carteira';
+
+function renderNav(){
+  const nav = $('#tabs');
+  if (!nav) return;
+  nav.innerHTML = SECTIONS.map(s => `<button data-tab="${s.id}" role="tab" aria-selected="${s.id===activeTab}">${s.title}</button>`).join('');
+  
+  nav.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeTab = btn.getAttribute('data-tab');
+      window.location.hash = activeTab;
+      render();
+    });
+  });
+}
+
+function render(){
+  if (!D) return;
+  const hash = window.location.hash.replace('#','');
+  if (hash && SECTIONS.some(s=>s.id===hash)) {
+    activeTab = hash;
+  }
+  
+  document.querySelectorAll('nav#tabs button').forEach(b => {
+    b.setAttribute('aria-selected', b.getAttribute('data-tab') === activeTab);
+  });
+
+  SECTIONS.forEach(s => {
+    const el = $('#s-' + s.id);
+    if (el) {
+      if (s.id === activeTab) {
+        el.classList.add('on');
+        try {
+          s.render();
+        } catch(err) {
+          console.error('Erro ao renderizar seção ' + s.id, err);
+          el.innerHTML = '<div class="card"><h3>Erro de Exibição</h3><p>Ocorreu um erro ao carregar esta aba.</p></div>';
+        }
+      } else {
+        el.classList.remove('on');
+      }
+    }
+  });
+}
+
+document.querySelectorAll('#basis button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#basis button').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    btn.setAttribute('aria-pressed', 'true');
+    basis = btn.getAttribute('data-b');
+    render();
+  });
+});
+
+function toggleTvMode() {
+  const isTv = document.body.classList.toggle('tvmode');
+  const btnTv = $('#tv');
+  if (btnTv) btnTv.setAttribute('aria-pressed', isTv);
+
+  if (isTv) {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+    startTvRotation();
+  } else {
+    if (document.exitFullscreen && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+    stopTvRotation();
+  }
+}
+
+function startTvRotation() {
+  stopTvRotation();
+  tvTimer = setInterval(() => {
+    const currentIndex = SECTIONS.findIndex(s => s.id === activeTab);
+    const nextIndex = (currentIndex + 1) % SECTIONS.length;
+    activeTab = SECTIONS[nextIndex].id;
+    window.location.hash = activeTab;
+    render();
+  }, CONFIG.TV_SEGUNDOS * 1000);
+}
+
+function stopTvRotation() {
+  if (tvTimer) {
+    clearInterval(tvTimer);
+    tvTimer = null;
+  }
+}
+
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && document.body.classList.contains('tvmode')) {
+    document.body.classList.remove('tvmode');
+    const btnTv = $('#tv');
+    if (btnTv) btnTv.setAttribute('aria-pressed', 'false');
+    stopTvRotation();
+  }
+});
+
+const btnTv = $('#tv');
+if (btnTv) {
+  btnTv.addEventListener('click', toggleTvMode);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  renderNav();
+  load();
+});
+
+window.addEventListener('hashchange', render);
+setInterval(load, CONFIG.ATUALIZAR_MIN * 60 * 1000);
+</script>
+</body>
+</html>
