@@ -52,7 +52,14 @@ def enviar_para_google_drive(caminho_arquivo_local, menu_code, prefixo_nome):
         'parents': [folder_id]
     }
     media = MediaFileUpload(caminho_arquivo_local, resumable=True)
-    uploaded = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+    
+    # Parâmetros adicionados para permitir o upload direto por Service Account
+    uploaded = drive_service.files().create(
+        body=file_metadata, 
+        media_body=media, 
+        fields='id',
+        supportsAllDrives=True
+    ).execute()
     
     print(f"✅ SUCESSO: Arquivo {novo_nome} enviado para o Drive com ID: {uploaded.get('id')}\n")
 
