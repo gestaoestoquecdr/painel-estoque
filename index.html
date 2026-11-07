@@ -183,6 +183,77 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
+/* ESTILOS DOS BARS / DASHBOARDS HISTÓRICOS */
+.bar-chart-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  height: 220px;
+  padding: 30px 10px 10px 10px;
+  overflow-x: auto;
+  position: relative;
+}
+.bar-chart-col {
+  flex: 1;
+  min-width: 45px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  position: relative;
+}
+.bar-chart-bar {
+  width: 100%;
+  max-width: 50px;
+  background: linear-gradient(180deg, #102958 0%, #3a5db0 100%);
+  border: 1px solid var(--blue);
+  border-radius: 4px 4px 0 0;
+  transition: all 0.3s ease;
+  position: relative;
+  cursor: pointer;
+}
+.bar-chart-bar:hover {
+  background: linear-gradient(180deg, #ffc400 0%, #e6a800 100%);
+  border-color: #ffe066;
+  box-shadow: 0 0 15px rgba(255, 196, 0, 0.4);
+}
+.bar-val-label {
+  position: absolute;
+  top: -24px;
+  font-family: var(--f-num);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.bar-date-label {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--mute);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.limit-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 2px dashed var(--crit);
+  z-index: 2;
+  pointer-events: none;
+}
+.limit-line-label {
+  position: absolute;
+  right: 10px;
+  top: -18px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--crit);
+  background: rgba(5, 12, 26, 0.85);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 /* BARRA DE FILTROS ATIVOS */
 .active-filters-bar {
   display: none;
@@ -455,7 +526,7 @@ const CONFIG = {
   TV_SEGUNDOS: 20
 };
 
-// --- MAPA DE LOJAS ATUALIZADO (DIRETO NO CÓDIGO) ---
+// --- MAPA DE LOJAS ATUALIZADO ---
 const MAPA_LOJAS = {
   "2": "R002 - ROLDÃO FREGUESIA",
   "3": "R003 - ROLDÃO MOOCA",
@@ -502,8 +573,6 @@ const MAPA_LOJAS = {
 function getNomeLoja(cod) {
   const raw = String(cod || '').trim();
   if (!raw) return 'Sem Destino';
-  
-  // Trata tanto o código simples ("2") quanto zerado à esquerda ("02", "002")
   const numOnly = raw.replace(/^0+/, ''); 
   return MAPA_LOJAS[numOnly] || MAPA_LOJAS[raw] || `Loja ${raw}`;
 }
@@ -559,7 +628,6 @@ const AGING_CLASS = {'0 a 15 dias':'ok','16 a 30 dias':'ok','30 a 60 dias':'warn
 const CLS = {ok:{n:'Saudável',c:'var(--ok)'},warn:{n:'Atenção',c:'var(--warn)'},crit:{n:'Crítico',c:'var(--crit)'},none:{n:'Sem validade',c:'var(--none)'}};
 const normF = s => String(s||'').replace(/\s+/g,' ').trim();
 
-// EXTRAÇÃO DE ÁREA (GALPÃO) E RUA
 function parseEnderecoInfo(endStr) {
   if (!endStr) return { area: '0', rua: 0 };
   const str = String(endStr);
@@ -568,8 +636,8 @@ function parseEnderecoInfo(endStr) {
   let area = '0';
   let rua = 0;
 
-  if (str.includes("205.1041.1.")) area = '1'; // Galpão 1
-  else if (str.includes("205.1041.7.")) area = '7'; // Galpão 2
+  if (str.includes("205.1041.1.")) area = '1';
+  else if (str.includes("205.1041.7.")) area = '7';
   else if (parts.length >= 3) area = parts[2] || '0';
 
   if (parts.length >= 4) {
@@ -579,7 +647,6 @@ function parseEnderecoInfo(endStr) {
   return { area, rua };
 }
 
-// ORDENAÇÃO NATURAL DE ENDEREÇO (MENOR PARA O MAIOR SEQUENCIAL)
 function compareEnderecosNatural(a, b) {
   const partsA = String(a || '').split('.').map(p => parseInt(p, 10) || 0);
   const partsB = String(b || '').split('.').map(p => parseInt(p, 10) || 0);
@@ -655,7 +722,8 @@ async function fromJsonFile(){
   }
   
   const rawCart = extractList(data.carteira || data.dados1666 || data["1666 - Carteira de Pedido"]);
-  
+  const rawAcum = extractList(data.estoqueAcumulado || data.acumulado);
+
   const rows = rawRows.map(o => {
     const endStr = getProp(o, ["Endereço Logístico", "Endereco Logistico", "Endereço", "Endereco"]);
     const parsed = parseEnderecoInfo(endStr);
@@ -716,9 +784,19 @@ async function fromJsonFile(){
     };
   });
 
+  const acum = rawAcum.map(o => ({
+    data: getProp(o, ["Data", "data"]),
+    qtdContabil: +(getProp(o, ["Quantidade Contábil", "qtdContabil", "Quantidade Contabil"]) || 0),
+    custoMedio: +(getProp(o, ["Custo Médio Contábil (R$)", "custoMedio"]) || 0),
+    custoTotal: +(getProp(o, ["Custo Contábil Total (R$)", "custoTotal", "Custo Contabil Total"]) || 0),
+    evolucaoPct: +(getProp(o, ["% de Evolução", "evolucaoPct"]) || 0),
+    seguro: +(getProp(o, ["Seguro", "seguro"]) || 0),
+    mes: +(getProp(o, ["Mês", "mes", "Mes"]) || 0)
+  }));
+
   const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-  return { rows, addr, cart, live: true, when: 'Atualizado às ' + timeStr };
+  return { rows, addr, cart, acum, live: true, when: 'Atualizado às ' + timeStr };
 }
 
 async function load(){
@@ -736,7 +814,6 @@ async function load(){
   }
 }
 
-/* SISTEMA DE TOOLTIP DINÂMICO */
 function attachTooltipEvents() {
   const tt = $('#floating-tooltip');
   if (!tt) return;
@@ -839,16 +916,13 @@ function clearAllFilters() {
   render();
 }
 
-/* FUNÇÃO GERADORA DE PDF / CHECKLIST CARA-CRACHÁ ORDENADO POR SEQUÊNCIA DO ENDEREÇO */
 function printChecklist(items, title) {
   if (!items || !items.length) {
     alert('Nenhum item disponível para exportar no filtro atual.');
     return;
   }
 
-  // Ordena estritamente por sequência de endereço (menor para o maior)
   const itemsSorted = [...items].sort((a,b) => compareEnderecosNatural(a.end, b.end));
-
   const nowStr = new Date().toLocaleString('pt-BR');
   const printWin = window.open('', '_blank');
 
@@ -935,7 +1009,7 @@ function printChecklist(items, title) {
   printWin.document.close();
 }
 
-/* 1. SEÇÃO VISÃO GERAL COM FILTROS EMBUTIDOS NO CARD */
+/* 1. SEÇÃO VISÃO GERAL COM EVOLUÇÃO DIÁRIA DE ESTOQUE COMPLETA */
 function secGeral(){
   const R_all = D.rows;
 
@@ -1045,7 +1119,51 @@ function secGeral(){
   const areaLabelStr = filterArea === '1' ? 'Galpão 1 (Área 1)' : (filterArea === '7' ? 'Galpão 2 (Área 7)' : 'Todas as Áreas');
   const activeFiltersText = `Filtros Ativos: ${filterArea !== 'todos' ? `Área = ${areaLabelStr}` : ''} ${filterRua !== 'todos' ? `| Rua = ${filterRua}` : ''} ${filterLocalEst !== 'todos' ? `| Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
 
-  $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque.</p>
+  // --- RENDERIZAÇÃO DO DASHBOARD DE EVOLUÇÃO DIÁRIA DO ESTOQUE (ACUMULADO) ---
+  const acumData = D.acum || [];
+  const limitSeguro = 45000000; // R$ 45 Milhões
+  const maxValAcum = Math.max(limitSeguro, ...acumData.map(a => a.custoTotal || 0)) * 1.1;
+
+  let acumHtml = '';
+  if (acumData.length) {
+    const limitTopPct = 100 - (limitSeguro / maxValAcum * 100);
+
+    acumHtml = `
+    <div class="card" style="margin-top:16px;">
+      <div class="card-header-action">
+        <h3>📈 POSIÇÃO DE ESTOQUE DIÁRIO (FECHAMENTO R$ - SEM IMPOSTOS)</h3>
+        <span style="font-size:12px; font-weight:700; color:var(--accent);">Limite Assegurado: <b>R$ 45,0 mi</b></span>
+      </div>
+      <div class="bar-chart-container">
+        <div class="limit-line" style="top: ${limitTopPct}%;">
+          <span class="limit-line-label">LIMITE R$ 45 MI</span>
+        </div>
+        ${acumData.map(item => {
+          const valBar = item.custoTotal || 0;
+          const pctHeight = (valBar / maxValAcum) * 100;
+          const tooltipItems = [
+            { prod: `Data: ${item.data}`, sub: `Valor Total: ${brl(valBar)} | Evolução: ${fmtP(item.evolucaoPct)}` },
+            { prod: `Qtd Contábil: ${fmtN.format(item.qtdContabil)}`, sub: `Custo Médio: ${brl(item.custoMedio)}` }
+          ];
+
+          return `
+          <div class="bar-chart-col">
+            <div class="bar-val-label">${brlShort(valBar)}</div>
+            <div class="bar-chart-bar" style="height: ${Math.max(pctHeight, 4)}%;" 
+                 data-tooltip-title="Fechamento do Dia" 
+                 data-tooltip-color="var(--accent)" 
+                 data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}">
+            </div>
+            <div class="bar-date-label">${esc(item.data ? item.data.slice(0, 5) : '-')}</div>
+          </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+    `;
+  }
+
+  $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque e acompanhamento de fechamento.</p>
 
   <div class="active-filters-bar ${hasActiveFilters ? 'visible' : ''}">
     <span>🔍 <b>${esc(activeFiltersText)}</b></span>
@@ -1058,6 +1176,9 @@ function secGeral(){
     ${kpi('Estoque revenda',brlShort(rc),fmtN.format(rq)+' endereçados · '+fmtP(totC ? rc/totC*100 : 0)+' do valor')}
     ${kpi('Ocupação do CD',fmtP(occ.pct,2),fmtN.format(occ.ocup)+' de '+fmtN.format(occ.total)+' endereços')}
   </div>
+
+  ${acumHtml}
+
   <div class="grid two" style="margin-top:16px">
     <div class="card">
       <div class="card-header-action">
@@ -2103,7 +2224,7 @@ const SECTIONS = [
   {id:'carteira', title:'Carteira', render:secCarteira}
 ];
 
-let activeTab = 'carteira';
+let activeTab = 'geral';
 
 function renderNav(){
   const nav = $('#tabs');
