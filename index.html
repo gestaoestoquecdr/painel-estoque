@@ -183,19 +183,19 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-/* ESTILOS DOS BARS / DASHBOARDS HISTÓRICOS */
+/* GRÁFICO DE BARRAS HISTÓRICO */
 .bar-chart-container {
   display: flex;
   align-items: flex-end;
-  gap: 14px;
-  height: 220px;
-  padding: 30px 10px 10px 10px;
+  gap: 12px;
+  height: 230px;
+  padding: 35px 10px 10px 10px;
   overflow-x: auto;
   position: relative;
 }
 .bar-chart-col {
   flex: 1;
-  min-width: 45px;
+  min-width: 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -205,7 +205,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 }
 .bar-chart-bar {
   width: 100%;
-  max-width: 50px;
+  max-width: 48px;
   background: linear-gradient(180deg, #102958 0%, #3a5db0 100%);
   border: 1px solid var(--blue);
   border-radius: 4px 4px 0 0;
@@ -216,7 +216,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .bar-chart-bar:hover {
   background: linear-gradient(180deg, #ffc400 0%, #e6a800 100%);
   border-color: #ffe066;
-  box-shadow: 0 0 15px rgba(255, 196, 0, 0.4);
+  box-shadow: 0 0 16px rgba(255, 196, 0, 0.45);
 }
 .bar-val-label {
   position: absolute;
@@ -249,7 +249,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   font-size: 11px;
   font-weight: 800;
   color: var(--crit);
-  background: rgba(5, 12, 26, 0.85);
+  background: rgba(5, 12, 26, 0.9);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -356,7 +356,6 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   color: #fff;
 }
 
-/* BOTÃO DE IMPRESSÃO / PDF CARA-CRACHÁ */
 .btn-export-pdf {
   display: inline-flex;
   align-items: center;
@@ -526,7 +525,7 @@ const CONFIG = {
   TV_SEGUNDOS: 20
 };
 
-// --- MAPA DE LOJAS ATUALIZADO ---
+// --- MAPA DE LOJAS ---
 const MAPA_LOJAS = {
   "2": "R002 - ROLDÃO FREGUESIA",
   "3": "R003 - ROLDÃO MOOCA",
@@ -599,6 +598,8 @@ let filterArea = 'todos';
 let filterRua = 'todos';
 let filterShelfFaixa = 'todos';
 let filterAgingFaixa = 'todos';
+
+let geralProdExpanded = false; // Produtos da Visão Geral Ocultos por Padrão
 
 let resFilter = 'todos';
 let sepFilter = 'todos';
@@ -722,7 +723,7 @@ async function fromJsonFile(){
   }
   
   const rawCart = extractList(data.carteira || data.dados1666 || data["1666 - Carteira de Pedido"]);
-  const rawAcum = extractList(data.estoqueAcumulado || data.acumulado);
+  const rawAcum = extractList(data.estoqueAcumulado || data.acumulado || data["Estoque Acumulado"]);
 
   const rows = rawRows.map(o => {
     const endStr = getProp(o, ["Endereço Logístico", "Endereco Logistico", "Endereço", "Endereco"]);
@@ -784,15 +785,24 @@ async function fromJsonFile(){
     };
   });
 
-  const acum = rawAcum.map(o => ({
-    data: getProp(o, ["Data", "data"]),
-    qtdContabil: +(getProp(o, ["Quantidade Contábil", "qtdContabil", "Quantidade Contabil"]) || 0),
-    custoMedio: +(getProp(o, ["Custo Médio Contábil (R$)", "custoMedio"]) || 0),
-    custoTotal: +(getProp(o, ["Custo Contábil Total (R$)", "custoTotal", "Custo Contabil Total"]) || 0),
-    evolucaoPct: +(getProp(o, ["% de Evolução", "evolucaoPct"]) || 0),
-    seguro: +(getProp(o, ["Seguro", "seguro"]) || 0),
-    mes: +(getProp(o, ["Mês", "mes", "Mes"]) || 0)
-  }));
+  // MAPEAMENTO FLEXÍVEL DE NOMES DAS COLUNAS DO HISTÓRICO DIÁRIO
+  const acum = rawAcum.map(o => {
+    let dtStr = getProp(o, ["Data", "data", "DATA"]);
+    if (dtStr && dtStr.includes('T')) dtStr = dtStr.split('T')[0];
+    if (dtStr && dtStr.includes('-')) {
+      const p = dtStr.split('-');
+      if (p.length === 3) dtStr = `${p[2]}/${p[1]}/${p[0]}`;
+    }
+    
+    return {
+      data: dtStr || '-',
+      qtdContabil: +(getProp(o, ["Quantidade Contábil", "Quantidade Contabil", "qtdContabil", "Qtd Contabil"]) || 0),
+      custoMedio: +(getProp(o, ["Custo Médio Contábil (R$)", "Custo Médio Contábil", "Custo Medio Contabil", "custoMedio"]) || 0),
+      custoTotal: +(getProp(o, ["Custo Contábil Total (R$)", "Custo Contábil Total", "Custo Contabil Total", "custoTotal", "Custo Total"]) || 0),
+      evolucaoPct: +(getProp(o, ["% de Evolução", "% de Evolucao", "Evolução", "evolucaoPct"]) || 0),
+      seguro: +(getProp(o, ["Seguro", "seguro"]) || 0)
+    };
+  }).filter(a => a.data !== '-' || a.custoTotal > 0);
 
   const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
@@ -1009,7 +1019,7 @@ function printChecklist(items, title) {
   printWin.document.close();
 }
 
-/* 1. SEÇÃO VISÃO GERAL COM EVOLUÇÃO DIÁRIA DE ESTOQUE COMPLETA */
+/* 1. SEÇÃO VISÃO GERAL (COM DASHBOARD DIÁRIO E PRODUTOS RETRÁTEIS) */
 function secGeral(){
   const R_all = D.rows;
 
@@ -1119,13 +1129,13 @@ function secGeral(){
   const areaLabelStr = filterArea === '1' ? 'Galpão 1 (Área 1)' : (filterArea === '7' ? 'Galpão 2 (Área 7)' : 'Todas as Áreas');
   const activeFiltersText = `Filtros Ativos: ${filterArea !== 'todos' ? `Área = ${areaLabelStr}` : ''} ${filterRua !== 'todos' ? `| Rua = ${filterRua}` : ''} ${filterLocalEst !== 'todos' ? `| Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
 
-  // --- RENDERIZAÇÃO DO DASHBOARD DE EVOLUÇÃO DIÁRIA DO ESTOQUE (ACUMULADO) ---
+  // --- DASHBOARD GRÁFICO HISTÓRICO DE FECHAMENTO ---
   const acumData = D.acum || [];
-  const limitSeguro = 45000000; // R$ 45 Milhões
-  const maxValAcum = Math.max(limitSeguro, ...acumData.map(a => a.custoTotal || 0)) * 1.1;
+  const limitSeguro = 45000000; 
+  const maxValAcum = Math.max(limitSeguro, ...acumData.map(a => a.custoTotal || 0)) * 1.15;
 
   let acumHtml = '';
-  if (acumData.length) {
+  if (acumData.length > 0) {
     const limitTopPct = 100 - (limitSeguro / maxValAcum * 100);
 
     acumHtml = `
@@ -1149,7 +1159,7 @@ function secGeral(){
           return `
           <div class="bar-chart-col">
             <div class="bar-val-label">${brlShort(valBar)}</div>
-            <div class="bar-chart-bar" style="height: ${Math.max(pctHeight, 4)}%;" 
+            <div class="bar-chart-bar" style="height: ${Math.max(pctHeight, 5)}%;" 
                  data-tooltip-title="Fechamento do Dia" 
                  data-tooltip-color="var(--accent)" 
                  data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}">
@@ -1215,10 +1225,17 @@ function secGeral(){
     </div>
   </div>
 
+  <!-- TABELA DE PRODUTOS OCULTA POR PADRÃO (ATIVADA POR BOTÃO) -->
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
       <h3>📦 PRODUTOS EM ESTOQUE NO FILTRO (${listEstoqueProds.length} PALETES)</h3>
-      <div class="prod-controls">
+      <button class="toggle-btn" id="btnToggleGeralProds">
+        ${geralProdExpanded ? '▲ Ocultar Produtos' : '▼ Exibir Produtos (' + listEstoqueProds.length + ')'}
+      </button>
+    </div>
+
+    <div class="collapsible-content ${geralProdExpanded ? 'open' : ''}" id="boxGeralProdutos">
+      <div class="prod-controls" style="margin-bottom: 12px;">
         <select id="selectAreaFilter" style="font-weight:700;color:var(--ok)">
           <option value="todos" ${filterArea==='todos'?'selected':''}>-- Todos os Galpões --</option>
           <option value="1" ${filterArea==='1'?'selected':''}>Galpão 1 (Área 1)</option>
@@ -1240,36 +1257,37 @@ function secGeral(){
 
         <button class="btn-export-pdf" id="btnExportCaraCrachaGeneral">🖨️ Cara-Crachá (PDF)</button>
       </div>
-    </div>
-    <div class="tw">
-      <table>
-        <thead>
-          <tr>
-            <th>Endereço Logístico</th>
-            <th>Cód. Interno</th>
-            <th>GTIN (EAN)</th>
-            <th>Produto</th>
-            <th>Local Estoque</th>
-            <th>Status</th>
-            <th class="r">Qtd. Endereçada</th>
-            <th class="r">Custo Bruto Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${listEstoqueProds.length ? listEstoqueProds.slice(0, 100).map(p => `
+
+      <div class="tw">
+        <table>
+          <thead>
             <tr>
-              <td><span class="num" style="color:var(--accent);font-weight:800;font-size:15px">${esc(p.end)}</span></td>
-              <td><span class="num" style="color:var(--mute);font-weight:700">${esc(p.codProd)}</span></td>
-              <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
-              <td><b>${esc(p.prod)}</b></td>
-              <td><span class="dot" style="background:var(--accent)"></span>${esc(nice(p.est))}</td>
-              <td>${esc(p.status)}</td>
-              <td class="r" style="font-weight:700;color:var(--ok)">${fmtN.format(p.qtd)}</td>
-              <td class="r" style="font-weight:700;color:var(--text)">${brl(p.custo)}</td>
+              <th>Endereço Logístico</th>
+              <th>Cód. Interno</th>
+              <th>GTIN (EAN)</th>
+              <th>Produto</th>
+              <th>Local Estoque</th>
+              <th>Status</th>
+              <th class="r">Qtd. Endereçada</th>
+              <th class="r">Custo Bruto Total</th>
             </tr>
-          `).join('') : '<tr><td colspan="8">Nenhum palete encontrado com os filtros aplicados.</td></tr>'}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            ${listEstoqueProds.length ? listEstoqueProds.slice(0, 100).map(p => `
+              <tr>
+                <td><span class="num" style="color:var(--accent);font-weight:800;font-size:15px">${esc(p.end)}</span></td>
+                <td><span class="num" style="color:var(--mute);font-weight:700">${esc(p.codProd)}</span></td>
+                <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
+                <td><b>${esc(p.prod)}</b></td>
+                <td><span class="dot" style="background:var(--accent)"></span>${esc(nice(p.est))}</td>
+                <td>${esc(p.status)}</td>
+                <td class="r" style="font-weight:700;color:var(--ok)">${fmtN.format(p.qtd)}</td>
+                <td class="r" style="font-weight:700;color:var(--text)">${brl(p.custo)}</td>
+              </tr>
+            `).join('') : '<tr><td colspan="8">Nenhum palete encontrado com os filtros aplicados.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>`;
 
@@ -1288,6 +1306,14 @@ function secGeral(){
       secGeral();
     });
   });
+
+  const btnGeralProds = $('#btnToggleGeralProds');
+  if (btnGeralProds) {
+    btnGeralProds.addEventListener('click', () => {
+      geralProdExpanded = !geralProdExpanded;
+      secGeral();
+    });
+  }
 
   const selectArea = $('#selectAreaFilter');
   if (selectArea) {
@@ -1462,7 +1488,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   const hasActiveFaixa = activeFaixa !== 'todos';
   const activeLabel = CLS[activeFaixa] ? CLS[activeFaixa].n : activeFaixa;
 
-  $(id).innerHTML = `<h2>${title}</h2><p class="sub">${sub}</p>
+  $(id).innerHTML = `h2>${title}</h2><p class="sub">${sub}</p>
 
   <div class="active-filters-bar ${hasActiveFaixa ? 'visible' : ''}">
     <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeLabel)}</b></span>
