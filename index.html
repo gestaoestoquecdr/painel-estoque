@@ -172,6 +172,13 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   border-color: rgba(255, 196, 0, 0.35);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 0 15px rgba(255, 196, 0, 0.1);
 }
+.card.clickable-card {
+  cursor: pointer;
+}
+.card.clickable-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+}
 
 .card h3{margin:0 0 14px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:700}
 .card-header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
@@ -968,10 +975,18 @@ function legend(items, filterAttr = 'data-filter-local', activeValue = 'todos'){
   }).join('')}</div>`;
 }
 
-const kpi = (l,v,s,cls='', tooltipTitle='', tooltipItems=[], tooltipColor='') => {
-  const ttAttr = tooltipTitle ? `data-tooltip-title="${esc(tooltipTitle)}" data-tooltip-color="${tooltipColor || 'var(--accent)'}" data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}" style="cursor:pointer"` : '';
-  return `<div class="card kpi ${cls}" ${ttAttr}><h3>${l}</h3><div class="v">${v}</div><div class="s">${s||''}</div></div>`;
+const kpi = (l,v,s,cls='', tooltipTitle='', tooltipItems=[], tooltipColor='', clickTab='') => {
+  const ttAttr = tooltipTitle ? `data-tooltip-title="${esc(tooltipTitle)}" data-tooltip-color="${tooltipColor || 'var(--accent)'}" data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}"` : '';
+  const clickAttr = clickTab ? `onclick="switchTab('${clickTab}')" class="card kpi ${cls} clickable-card"` : `class="card kpi ${cls}"`;
+  return `<div ${clickAttr} ${ttAttr}><h3>${l} ${clickTab ? '↗' : ''}</h3><div class="v">${v}</div><div class="s">${s||''}</div></div>`;
 };
+
+function switchTab(tabId) {
+  activeTab = tabId;
+  window.location.hash = tabId;
+  renderNav();
+  render();
+}
 
 const COLOR_MAP = {
   'revenda': '#ffc400',
@@ -1157,6 +1172,30 @@ function secGeral(){
   const rc = rev.reduce((s,r)=>s+r.custo,0), rq = rev.reduce((s,r)=>s+r.qtd,0);
   const occ = occData();
   
+  // --- CÁLCULO DE RESUMO DE SHELF LIFE E AGING PARA OS KPIS DA VISÃO GERAL ---
+  const revFisico = R_all.filter(r => r.est.trim() === CONFIG.ESTOQUE_FISICO);
+  let shelfOkVal = 0, shelfCritVal = 0, shelfTot = 0;
+  revFisico.forEach(r => {
+    const classK = SHELF_CLASS[r.shelf] || 'none';
+    const v = val(r);
+    if (classK !== 'none') {
+      shelfTot += v;
+      if (classK === 'ok') shelfOkVal += v;
+      if (classK === 'crit') shelfCritVal += v;
+    }
+  });
+  const pctShelfOk = shelfTot ? (shelfOkVal / shelfTot) * 100 : 0;
+
+  let agingOkVal = 0, agingCritVal = 0, agingTot = 0;
+  revFisico.forEach(r => {
+    const classK = AGING_CLASS[r.aging] || 'none';
+    const v = val(r);
+    agingTot += v;
+    if (classK === 'ok') agingOkVal += v;
+    if (classK === 'crit') agingCritVal += v;
+  });
+  const pctAgingOk = agingTot ? (agingOkVal / agingTot) * 100 : 0;
+
   const centerLabel = basis==='custo' ? brlShort(totC).replace('R$ ','') : fmtN.format(totQ);
   const subLabel = basis==='custo' ? 'custo bruto' : 'qtd. endereçada';
   const cardTitle = basis==='custo' ? 'VALOR POR LOCAL DE ESTOQUE (R$)' : 'QUANTIDADE POR LOCAL DE ESTOQUE';
@@ -1200,7 +1239,7 @@ function secGeral(){
   const areaLabelStr = filterArea === '1' ? 'Galpão 1 (Área 1)' : (filterArea === '7' ? 'Galpão 2 (Área 7)' : 'Todas as Áreas');
   const activeFiltersText = `Filtros Ativos: ${filterArea !== 'todos' ? `Área = ${areaLabelStr}` : ''} ${filterRua !== 'todos' ? `| Rua = ${filterRua}` : ''} ${filterLocalEst !== 'todos' ? `| Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
 
-  // --- AGRUPAMENTO DE BARRAS COM CÁLCULO DE MÉDIA MENSAL, VARIAÇÕES E PROJEÇÃO DE DEZEMBRO ---
+  // --- AGRUPAMENTO DE BARRAS HISTÓRICO ---
   const acumRawData = D.acum || [];
   let listaDiasUnicos = Array.from(new Set(acumRawData.map(a => a.data))).filter(d => d && d !== '-');
   
@@ -1245,12 +1284,11 @@ function secGeral(){
       };
     });
 
-    // Se o mês 12 (Dezembro) não estiver no JSON, adicionamos uma Projeção de Dezembro
     const possuiDezembro = chartItems.some(i => i.label.toLowerCase().includes('dezembro'));
     if (!possuiDezembro && chartItems.length > 0) {
       const ultimos = chartItems.slice(-3);
       const mediaUltimos = ultimos.reduce((s, x) => s + x.custoTotal, 0) / (ultimos.length || 1);
-      const projValorDezembro = mediaUltimos * 1.12; // Projeção sazonal estimada (+12% em Dezembro)
+      const projValorDezembro = mediaUltimos * 1.12; 
       const ultVal = chartItems[chartItems.length - 1].custoTotal;
       const projVarPct = ultVal ? ((projValorDezembro - ultVal) / ultVal) * 100 : 0;
 
@@ -1365,7 +1403,7 @@ function secGeral(){
   </div>
   `;
 
-  $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque e acompanhamento de fechamento.</p>
+  $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque, saúde da operação e acompanhamento de fechamento.</p>
 
   <div class="active-filters-bar ${hasActiveFilters ? 'visible' : ''}">
     <span>🔍 <b>${esc(activeFiltersText)}</b></span>
@@ -1374,9 +1412,9 @@ function secGeral(){
 
   <div class="grid kpis">
     ${kpi('Custo bruto total',brlShort(totC),brl(totC),'hl')}
-    ${kpi('Qtd. endereçada total',fmtN.format(totQ),fmtN.format(R.length)+' linhas de palete')}
-    ${kpi('Estoque revenda',brlShort(rc),fmtN.format(rq)+' endereçados · '+fmtP(totC ? rc/totC*100 : 0)+' do valor')}
-    ${kpi('Ocupação do CD',fmtP(occ.pct,2),fmtN.format(occ.ocup)+' de '+fmtN.format(occ.total)+' endereços')}
+    ${kpi('Saúde Shelf Life', `<span class="good">${fmtP(pctShelfOk)}</span>`, 'Crítico: ' + fmtV(shelfCritVal) + ' (Clique p/ ver)', '', 'Detalhamento Shelf Life', [{prod: 'Clique para navegar', sub: 'Redireciona para a aba detalhada de Shelf Life'}], 'var(--ok)', 'shelf')}
+    ${kpi('Saúde Aging (Giro)', `<span class="good">${fmtP(pctAgingOk)}</span>`, 'Crítico (>60d): ' + fmtV(agingCritVal) + ' (Clique p/ ver)', '', 'Detalhamento Aging', [{prod: 'Clique para navegar', sub: 'Redireciona para a aba detalhada de Aging'}], 'var(--accent)', 'aging')}
+    ${kpi('Ocupação do CD',fmtP(occ.pct,2),fmtN.format(occ.ocup)+' de '+fmtN.format(occ.total)+' endereços (Clique p/ ver)', '', 'Detalhamento Ocupação', [{prod: 'Clique para navegar', sub: 'Redireciona para o detalhamento por rua e área'}], 'var(--blue)', 'ocup')}
   </div>
 
   ${acumHtml}
@@ -1695,7 +1733,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   const hasActiveFaixa = activeFaixa !== 'todos';
   const activeLabel = CLS[activeFaixa] ? CLS[activeFaixa].n : activeFaixa;
 
-  $(id).innerHTML = `<h2>${title}</h2><p class="sub">${sub}</p>
+  $(id).innerHTML = `h2>${title}</h2><p class="sub">${sub}</p>
 
   <div class="active-filters-bar ${hasActiveFaixa ? 'visible' : ''}">
     <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeLabel)}</b></span>
