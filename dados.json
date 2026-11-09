@@ -851454,7 +851454,23 @@
       "Custo Contábil Total (R$)": 13077886.43,
       "% de Evolução": -0.03340129815037329,
       "Seguro": 31470200.71
+    },
+    {
+      "Data": "08/11/2026",
+      "Quantidade Contábil": 3026667.746,
+      "Custo Médio Contábil (R$)": 17016.57,
+      "Custo Contábil Total (R$)": 12425711.67,
+      "% de Evolução": -0.04986851380693624,
+      "Seguro": 31922113.57
+    },
+    {
+      "Data": "09/11/2026",
+      "Quantidade Contábil": 2804795.746,
+      "Custo Médio Contábil (R$)": 16884.14,
+      "Custo Contábil Total (R$)": 11702852.71,
+      "% de Evolução": -0.05817445142761779,
+      "Seguro": 32574288.33
     }
   ],
-  "ultimaAtualizacao": "2026-11-09T20:27:19.060Z"
+  "ultimaAtualizacao": "2026-11-09T20:30:44.096Z"
 }
