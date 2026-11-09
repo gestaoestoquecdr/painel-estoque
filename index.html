@@ -31,7 +31,6 @@ button{cursor:pointer}
 header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
 .brand-container { display: flex; align-items: center; gap: 16px; }
 
-/* Logo Efeito Premium */
 .roldao-logo-wrap {
   display: flex;
   align-items: center;
@@ -63,7 +62,6 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
 .brand b{font-family:var(--f-body);font-size:20px;font-weight:700;letter-spacing:-.01em;color:#fff}
 .brand small{color:var(--mute);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
 
-/* Botões de Navegação */
 nav{display:flex;gap:8px;flex-wrap:wrap}
 nav button{
   background: linear-gradient(135deg, #071530 0%, #0e234c 100%);
@@ -254,7 +252,6 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   border-radius: 4px;
 }
 
-/* BARRA DE FILTROS ATIVOS */
 .active-filters-bar {
   display: none;
   align-items: center;
@@ -286,7 +283,6 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   box-shadow: 0 0 12px rgba(255, 196, 0, 0.5);
 }
 
-/* TOOLTIP FLUTUANTE */
 #floating-tooltip {
   position: fixed;
   z-index: 9999;
@@ -485,7 +481,6 @@ body.tvmode .kpi .v { font-size: 52px; }
 <body>
 <div id="bar"></div>
 
-<!-- TOOLTIP DINÂMICO FLUTUANTE -->
 <div id="floating-tooltip"></div>
 
 <header>
@@ -525,7 +520,6 @@ const CONFIG = {
   TV_SEGUNDOS: 20
 };
 
-// --- MAPA DE LOJAS ---
 const MAPA_LOJAS = {
   "2": "R002 - ROLDÃO FREGUESIA",
   "3": "R003 - ROLDÃO MOOCA",
@@ -591,7 +585,6 @@ const nice = s => String(s).replace(/^ESTOQUE\s+/i,'').toLowerCase().replace(/(^
 let D = null;
 let basis = 'custo';
 
-/* ESTADO GLOBAL DE FILTROS INTERATIVOS */
 let filterLocalEst = 'todos'; 
 let filterStatusEst = 'todos';
 let filterArea = 'todos';
@@ -599,7 +592,11 @@ let filterRua = 'todos';
 let filterShelfFaixa = 'todos';
 let filterAgingFaixa = 'todos';
 
-let geralProdExpanded = false; // Produtos da Visão Geral Ocultos por Padrão
+/* FILTROS DO GRÁFICO DIÁRIO/MENSAL */
+let filterModoAcum = 'mes'; // 'mes' ou 'dia'
+let filterDiaEspec = 'todos';
+
+let geralProdExpanded = false; 
 
 let resFilter = 'todos';
 let sepFilter = 'todos';
@@ -673,6 +670,17 @@ function getProp(obj, propNames) {
   return '';
 }
 
+function parseNum(val) {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  var str = String(val).replace(/R\$\s?/gi, '').replace(/%/gi, '').trim();
+  if (str.indexOf(',') !== -1) {
+    str = str.replace(/\./g, '').replace(',', '.');
+  }
+  var res = parseFloat(str);
+  return isNaN(res) ? 0 : res;
+}
+
 function extractList(source) {
   if (Array.isArray(source)) return source;
   if (source && typeof source === 'object') {
@@ -733,8 +741,8 @@ async function fromJsonFile(){
       status: normF(getProp(o, ["Status", "Status Estoque"])),
       shelf: normF(getProp(o, ["Desc Shelf", "Shelf", "Desc. Shelf"])),
       aging: normF(getProp(o, ["Faixa Anging ", "Faixa Anging", "Faixa Aging", "Aging"])),
-      qtd: +(getProp(o, ["Qtd. Endereçada", "Qtd Enderecada", "Qtd Endereçada Total", "Qtd Total"]) || 0),
-      custo: +(getProp(o, ["Custo Bruto Total", "Custo Total", "Custo Bruto", "Valor Total"]) || 0),
+      qtd: parseNum(getProp(o, ["Qtd. Endereçada", "Qtd Enderecada", "Qtd Endereçada Total", "Qtd Total"])),
+      custo: parseNum(getProp(o, ["Custo Bruto Total", "Custo Total", "Custo Bruto", "Valor Total"])),
       codProd: getProp(o, ["Código Interno", "Codigo Interno", "Código Produto", "Codigo Produto", "Cód. Prod.", "Cod. Prod", "Código", "Codigo", "SKU"]) || "-",
       gtin: getProp(o, ["GTIN", "EAN", "Cod. Barras", "Código de Barras", "Codigo de Barras"]) || "-",
       prod: getProp(o, ["Produto", "Descrição", "Descricao"]).slice(0,60),
@@ -779,13 +787,12 @@ async function fromJsonFile(){
       dept: getProp(o, ["Departamento CD", "Departamento"]) || "Outros",
       tipoSep: getProp(o, ["Tipo de separação", "Tipo de separacao", "Tipo Separação"]) || "Não informado",
       gerReserva: formattedDt || "Sem data",
-      qtdPedida: +(getProp(o, ["Qtd Pedida", "Qtd. Pedida"]) || 0),
-      qtdSeparada: +(getProp(o, ["Qtd Separada", "Qtd. Separada"]) || 0),
-      valorTotal: +(getProp(o, ["Valor Total", "Valor"]) || 0)
+      qtdPedida: parseNum(getProp(o, ["Qtd Pedida", "Qtd. Pedida"])),
+      qtdSeparada: parseNum(getProp(o, ["Qtd Separada", "Qtd. Separada"])),
+      valorTotal: parseNum(getProp(o, ["Valor Total", "Valor"]))
     };
   });
 
-  // MAPEAMENTO FLEXÍVEL DE NOMES DAS COLUNAS DO HISTÓRICO DIÁRIO
   const acum = rawAcum.map(o => {
     let dtStr = getProp(o, ["Data", "data", "DATA"]);
     if (dtStr && dtStr.includes('T')) dtStr = dtStr.split('T')[0];
@@ -796,13 +803,13 @@ async function fromJsonFile(){
     
     return {
       data: dtStr || '-',
-      qtdContabil: +(getProp(o, ["Quantidade Contábil", "Quantidade Contabil", "qtdContabil", "Qtd Contabil"]) || 0),
-      custoMedio: +(getProp(o, ["Custo Médio Contábil (R$)", "Custo Médio Contábil", "Custo Medio Contabil", "custoMedio"]) || 0),
-      custoTotal: +(getProp(o, ["Custo Contábil Total (R$)", "Custo Contábil Total", "Custo Contabil Total", "custoTotal", "Custo Total"]) || 0),
-      evolucaoPct: +(getProp(o, ["% de Evolução", "% de Evolucao", "Evolução", "evolucaoPct"]) || 0),
-      seguro: +(getProp(o, ["Seguro", "seguro"]) || 0)
+      qtdContabil: parseNum(getProp(o, ["Quantidade Contábil", "Quantidade Contabil", "qtdContabil"])),
+      custoMedio: parseNum(getProp(o, ["Custo Médio Contábil (R$)", "Custo Médio Contábil", "custoMedio"])),
+      custoTotal: parseNum(getProp(o, ["Custo Contábil Total (R$)", "Custo Contábil Total", "custoTotal"])),
+      evolucaoPct: parseNum(getProp(o, ["% de Evolução", "evolucaoPct"])),
+      seguro: parseNum(getProp(o, ["Seguro", "seguro"]))
     };
-  }).filter(a => a.data !== '-' || a.custoTotal > 0);
+  }).filter(a => a.data !== '-' && (a.custoTotal > 0 || a.qtdContabil > 0));
 
   const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
@@ -923,6 +930,7 @@ function clearAllFilters() {
   sepFilter = 'todos';
   targetDestFilter = 'todos';
   deptFilter = 'todos';
+  filterDiaEspec = 'todos';
   render();
 }
 
@@ -1019,7 +1027,7 @@ function printChecklist(items, title) {
   printWin.document.close();
 }
 
-/* 1. SEÇÃO VISÃO GERAL (COM DASHBOARD DIÁRIO E PRODUTOS RETRÁTEIS) */
+/* VISÃO GERAL DA OPERAÇÃO */
 function secGeral(){
   const R_all = D.rows;
 
@@ -1129,49 +1137,101 @@ function secGeral(){
   const areaLabelStr = filterArea === '1' ? 'Galpão 1 (Área 1)' : (filterArea === '7' ? 'Galpão 2 (Área 7)' : 'Todas as Áreas');
   const activeFiltersText = `Filtros Ativos: ${filterArea !== 'todos' ? `Área = ${areaLabelStr}` : ''} ${filterRua !== 'todos' ? `| Rua = ${filterRua}` : ''} ${filterLocalEst !== 'todos' ? `| Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
 
-  // --- DASHBOARD GRÁFICO HISTÓRICO DE FECHAMENTO ---
-  const acumData = D.acum || [];
+  // --- COMPATIBILIDADE E AGRUPAMENTO (MÊS vs DIA) ---
+  const acumRawData = D.acum || [];
+  let listaDiasUnicos = Array.from(new Set(acumRawData.map(a => a.data))).filter(d => d && d !== '-');
+  
+  let chartItems = [];
+  if (filterModoAcum === 'mes') {
+    // Agrupa por Mês/Ano (ex: 01/2026)
+    const porMes = {};
+    acumRawData.forEach(item => {
+      if (!item.data || item.data === '-') return;
+      const parts = item.data.split('/');
+      const chaveMes = (parts.length === 3) ? `${parts[1]}/${parts[2]}` : item.data;
+      
+      porMes[chaveMes] = porMes[chaveMes] || { mes: chaveMes, custoTotal: 0, qtdContabil: 0, count: 0, ultimoDia: item.data };
+      porMes[chaveMes].custoTotal = item.custoTotal; // Pega o fechamento mais recente do mês
+      porMes[chaveMes].qtdContabil = item.qtdContabil;
+      porMes[chaveMes].count++;
+    });
+
+    chartItems = Object.values(porMes).map(m => ({
+      label: `Mês ${m.mes}`,
+      custoTotal: m.custoTotal,
+      subText: `Fechamento (${m.ultimoDia})`,
+      qtd: m.qtdContabil
+    }));
+  } else {
+    // Exibe por Dia
+    let dadosFiltrados = acumRawData;
+    if (filterDiaEspec !== 'todos') {
+      dadosFiltrados = dadosFiltrados.filter(a => a.data === filterDiaEspec);
+    }
+    chartItems = dadosFiltrados.map(item => ({
+      label: item.data.slice(0, 5),
+      fullData: item.data,
+      custoTotal: item.custoTotal,
+      subText: `Dia ${item.data}`,
+      qtd: item.qtdContabil,
+      evolucao: item.evolucaoPct
+    }));
+  }
+
   const limitSeguro = 45000000; 
-  const maxValAcum = Math.max(limitSeguro, ...acumData.map(a => a.custoTotal || 0)) * 1.15;
+  const maxValAcum = Math.max(limitSeguro, ...chartItems.map(a => a.custoTotal || 0)) * 1.15;
 
-  let acumHtml = '';
-  if (acumData.length > 0) {
-    const limitTopPct = 100 - (limitSeguro / maxValAcum * 100);
+  let acumHtml = `
+  <div class="card" style="margin-top:16px;">
+    <div class="card-header-action">
+      <h3>📈 POSIÇÃO DE ESTOQUE HISTÓRICO (FECHAMENTO R$)</h3>
+      
+      <div class="prod-controls">
+        <select id="selectModoAcum" style="font-weight:700;color:var(--accent)">
+          <option value="mes" ${filterModoAcum==='mes'?'selected':''}>📅 Agrupado por MÊS</option>
+          <option value="dia" ${filterModoAcum==='dia'?'selected':''}>📆 Detalhado por DIA</option>
+        </select>
 
-    acumHtml = `
-    <div class="card" style="margin-top:16px;">
-      <div class="card-header-action">
-        <h3>📈 POSIÇÃO DE ESTOQUE DIÁRIO (FECHAMENTO R$ - SEM IMPOSTOS)</h3>
-        <span style="font-size:12px; font-weight:700; color:var(--accent);">Limite Assegurado: <b>R$ 45,0 mi</b></span>
+        ${filterModoAcum === 'dia' ? `
+          <select id="selectDiaEspec" style="font-weight:700;color:var(--ok)">
+            <option value="todos" ${filterDiaEspec==='todos'?'selected':''}>-- Todos os Dias --</option>
+            ${listaDiasUnicos.map(d => `<option value="${d}" ${filterDiaEspec===d?'selected':''}>${d}</option>`).join('')}
+          </select>
+        ` : ''}
+
+        <span style="font-size:12px; font-weight:700; color:var(--accent); margin-left:8px;">Limite: <b>R$ 45,0 mi</b></span>
       </div>
+    </div>
+    
+    ${chartItems.length > 0 ? `
       <div class="bar-chart-container">
-        <div class="limit-line" style="top: ${limitTopPct}%;">
+        <div class="limit-line" style="top: ${100 - (limitSeguro / maxValAcum * 100)}%;">
           <span class="limit-line-label">LIMITE R$ 45 MI</span>
         </div>
-        ${acumData.map(item => {
+        ${chartItems.map(item => {
           const valBar = item.custoTotal || 0;
           const pctHeight = (valBar / maxValAcum) * 100;
           const tooltipItems = [
-            { prod: `Data: ${item.data}`, sub: `Valor Total: ${brl(valBar)} | Evolução: ${fmtP(item.evolucaoPct)}` },
-            { prod: `Qtd Contábil: ${fmtN.format(item.qtdContabil)}`, sub: `Custo Médio: ${brl(item.custoMedio)}` }
+            { prod: item.subText, sub: `Valor Fechamento: ${brl(valBar)}` },
+            { prod: `Qtd Contábil: ${fmtN.format(item.qtd)}`, sub: item.evolucao !== undefined ? `Evolução: ${fmtP(item.evolucao)}` : '' }
           ];
 
           return `
           <div class="bar-chart-col">
             <div class="bar-val-label">${brlShort(valBar)}</div>
             <div class="bar-chart-bar" style="height: ${Math.max(pctHeight, 5)}%;" 
-                 data-tooltip-title="Fechamento do Dia" 
+                 data-tooltip-title="Fechamento de Estoque" 
                  data-tooltip-color="var(--accent)" 
                  data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}">
             </div>
-            <div class="bar-date-label">${esc(item.data ? item.data.slice(0, 5) : '-')}</div>
+            <div class="bar-date-label">${esc(item.label)}</div>
           </div>
           `;
         }).join('')}
       </div>
-    </div>
-    `;
-  }
+    ` : '<p style="color:var(--mute); padding: 20px;">Nenhum dado de fechamento encontrado no filtro selecionado.</p>'}
+  </div>
+  `;
 
   $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque e acompanhamento de fechamento.</p>
 
@@ -1225,7 +1285,6 @@ function secGeral(){
     </div>
   </div>
 
-  <!-- TABELA DE PRODUTOS OCULTA POR PADRÃO (ATIVADA POR BOTÃO) -->
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
       <h3>📦 PRODUTOS EM ESTOQUE NO FILTRO (${listEstoqueProds.length} PALETES)</h3>
@@ -1290,6 +1349,24 @@ function secGeral(){
       </div>
     </div>
   </div>`;
+
+  // --- EVENT LISTENERS DA VISÃO GERAL ---
+  const selModoAcum = $('#selectModoAcum');
+  if (selModoAcum) {
+    selModoAcum.addEventListener('change', (e) => {
+      filterModoAcum = e.target.value;
+      filterDiaEspec = 'todos';
+      secGeral();
+    });
+  }
+
+  const selDiaEspec = $('#selectDiaEspec');
+  if (selDiaEspec) {
+    selDiaEspec.addEventListener('change', (e) => {
+      filterDiaEspec = e.target.value;
+      secGeral();
+    });
+  }
 
   document.querySelectorAll('[data-filter-local]').forEach(el => {
     el.addEventListener('click', () => {
@@ -1364,7 +1441,6 @@ function secGeral(){
   attachTooltipEvents();
 }
 
-/* 2. SEÇÕES FAIXA (SHELF LIFE E AGING) */
 function secShelf(){
   faixaSection(
     '#s-shelf',
@@ -1488,7 +1564,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   const hasActiveFaixa = activeFaixa !== 'todos';
   const activeLabel = CLS[activeFaixa] ? CLS[activeFaixa].n : activeFaixa;
 
-  $(id).innerHTML = `h2>${title}</h2><p class="sub">${sub}</p>
+  $(id).innerHTML = `<h2>${title}</h2><p class="sub">${sub}</p>
 
   <div class="active-filters-bar ${hasActiveFaixa ? 'visible' : ''}">
     <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeLabel)}</b></span>
@@ -1616,7 +1692,6 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   attachTooltipEvents();
 }
 
-/* 3. SEÇÃO OCUPAÇÃO DO CD */
 function occData(){
   const g1 = {total:0, ocup:0, ruas:{}};
   const g2 = {total:0, ocup:0, ruas:{}};
@@ -1716,7 +1791,6 @@ function secOcup(){
   attachTooltipEvents();
 }
 
-/* 4. SEÇÃO CARTEIRA DE PEDIDO */
 function secCarteira(){
   let C = (D && D.cart) ? D.cart : [];
   if (!C.length) {
