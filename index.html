@@ -186,17 +186,25 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   display: flex;
   align-items: flex-end;
   gap: 16px;
-  height: 260px;
-  padding: 45px 16px 12px 16px;
+  height: 270px;
+  padding: 55px 16px 14px 16px;
   overflow-x: auto;
   position: relative;
   background: rgba(4, 13, 33, 0.4);
   border-radius: 8px;
   border: 1px solid rgba(26, 49, 99, 0.6);
 }
+.bar-chart-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  min-width: 100%;
+  height: 100%;
+  position: relative;
+}
 .bar-chart-col {
   flex: 1;
-  min-width: 52px;
+  min-width: 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -224,7 +232,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 }
 .bar-val-label {
   position: absolute;
-  top: -26px;
+  top: -40px;
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--f-num);
@@ -234,14 +242,29 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   white-space: nowrap;
   text-shadow: 0 2px 6px rgba(0,0,0,0.9);
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
 }
+.bar-var-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-top: 2px;
+}
+.bar-var-tag.up { color: var(--ok); background: rgba(53, 212, 154, 0.15); }
+.bar-var-tag.down { color: var(--crit); background: rgba(255, 93, 98, 0.15); }
+.bar-var-tag.neutral { color: var(--mute); }
+
 .bar-chart-bar:hover .bar-val-label {
   color: #fff;
-  transform: translateX(-50%) scale(1.1);
+  transform: translateX(-50%) scale(1.08);
 }
 .bar-date-label {
   margin-top: 10px;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--mute);
   font-weight: 700;
   white-space: nowrap;
@@ -250,7 +273,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .limit-line {
   position: absolute;
   left: 0;
-  right: 0;
+  width: 100%;
   border-top: 2px dashed #ff5d62;
   z-index: 2;
   pointer-events: none;
@@ -537,6 +560,12 @@ const CONFIG = {
   TV_SEGUNDOS: 20
 };
 
+const MAPA_MESES = {
+  "01": "Janeiro", "02": "Fevereiro", "03": "Março", "04": "Abril",
+  "05": "Maio", "06": "Junho", "07": "Julho", "08": "Agosto",
+  "09": "Setembro", "10": "Outubro", "11": "Novembro", "12": "Dezembro"
+};
+
 const MAPA_LOJAS = {
   "2": "R002 - ROLDÃO FREGUESIA",
   "3": "R003 - ROLDÃO MOOCA",
@@ -585,6 +614,16 @@ function getNomeLoja(cod) {
   if (!raw) return 'Sem Destino';
   const numOnly = raw.replace(/^0+/, ''); 
   return MAPA_LOJAS[numOnly] || MAPA_LOJAS[raw] || `Loja ${raw}`;
+}
+
+function getNomeMesAno(chave) {
+  if (!chave) return chave;
+  const parts = chave.split('/');
+  if (parts.length === 2) {
+    const mesExtenso = MAPA_MESES[parts[0]] || parts[0];
+    return `${mesExtenso}/${parts[1]}`;
+  }
+  return chave;
 }
 
 const $ = s => document.querySelector(s);
@@ -1154,7 +1193,7 @@ function secGeral(){
   const areaLabelStr = filterArea === '1' ? 'Galpão 1 (Área 1)' : (filterArea === '7' ? 'Galpão 2 (Área 7)' : 'Todas as Áreas');
   const activeFiltersText = `Filtros Ativos: ${filterArea !== 'todos' ? `Área = ${areaLabelStr}` : ''} ${filterRua !== 'todos' ? `| Rua = ${filterRua}` : ''} ${filterLocalEst !== 'todos' ? `| Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
 
-  // --- AGRUPAMENTO DE BARRAS COM CÁLCULO DE MÉDIA MENSAL ---
+  // --- AGRUPAMENTO DE BARRAS COM CÁLCULO DE MÉDIA MENSAL E VARIAÇÕES ---
   const acumRawData = D.acum || [];
   let listaDiasUnicos = Array.from(new Set(acumRawData.map(a => a.data))).filter(d => d && d !== '-');
   
@@ -1172,15 +1211,28 @@ function secGeral(){
       porMes[chaveMes].count++;
     });
 
-    chartItems = Object.values(porMes).map(m => {
+    const arrMeses = Object.values(porMes);
+    chartItems = arrMeses.map((m, idx) => {
       const mediaCusto = m.count ? (m.somaCustoTotal / m.count) : 0;
       const mediaQtd = m.count ? (m.somaQtdContabil / m.count) : 0;
+      
+      let varPct = null;
+      if (idx > 0) {
+        const prevMedia = arrMeses[idx - 1].count ? (arrMeses[idx - 1].somaCustoTotal / arrMeses[idx - 1].count) : 0;
+        if (prevMedia > 0) {
+          varPct = ((mediaCusto - prevMedia) / prevMedia) * 100;
+        }
+      }
+
+      const nomeMesPorExtenso = getNomeMesAno(m.mes);
+
       return {
-        label: `Mês ${m.mes}`,
+        label: nomeMesPorExtenso,
         custoTotal: mediaCusto,
-        subText: `Média Mensal (${m.count} dias)`,
+        subText: `Média Mensal (${m.count} dias no mês)`,
         qtd: mediaQtd,
-        tooltipTitle: `Média de Estoque (${m.mes})`
+        varPct: varPct,
+        tooltipTitle: `Média de Estoque (${nomeMesPorExtenso})`
       };
     });
   } else {
@@ -1188,19 +1240,29 @@ function secGeral(){
     if (filterDiaEspec !== 'todos') {
       dadosFiltrados = dadosFiltrados.filter(a => a.data === filterDiaEspec);
     }
-    chartItems = dadosFiltrados.map(item => ({
-      label: item.data.slice(0, 5),
-      fullData: item.data,
-      custoTotal: item.custoTotal,
-      subText: `Fechamento do Dia (${item.data})`,
-      qtd: item.qtdContabil,
-      evolucao: item.evolucaoPct,
-      tooltipTitle: `Fechamento (${item.data})`
-    }));
+    chartItems = dadosFiltrados.map((item, idx) => {
+      let varPct = null;
+      if (idx > 0) {
+        const prevVal = dadosFiltrados[idx - 1].custoTotal || 0;
+        if (prevVal > 0) {
+          varPct = (((item.custoTotal || 0) - prevVal) / prevVal) * 100;
+        }
+      }
+      return {
+        label: item.data.slice(0, 5),
+        fullData: item.data,
+        custoTotal: item.custoTotal,
+        subText: `Fechamento do Dia (${item.data})`,
+        qtd: item.qtdContabil,
+        varPct: varPct,
+        evolucao: item.evolucaoPct,
+        tooltipTitle: `Fechamento (${item.data})`
+      };
+    });
   }
 
   const limitSeguro = 45000000; 
-  const maxValAcum = Math.max(limitSeguro, ...chartItems.map(a => a.custoTotal || 0)) * 1.18;
+  const maxValAcum = Math.max(limitSeguro, ...chartItems.map(a => a.custoTotal || 0)) * 1.2;
 
   let acumHtml = `
   <div class="card" style="margin-top:16px;">
@@ -1226,29 +1288,45 @@ function secGeral(){
     
     ${chartItems.length > 0 ? `
       <div class="bar-chart-container">
-        <div class="limit-line" style="top: ${100 - (limitSeguro / maxValAcum * 100)}%;">
-          <span class="limit-line-label">LIMITE R$ 45 MI</span>
-        </div>
-        ${chartItems.map(item => {
-          const valBar = item.custoTotal || 0;
-          const pctHeight = (valBar / maxValAcum) * 100;
-          const tooltipItems = [
-            { prod: item.subText, sub: `Valor Médio: ${brl(valBar)}` },
-            { prod: `Qtd Contábil Média: ${fmtN.format(item.qtd)}`, sub: item.evolucao !== undefined ? `Evolução: ${fmtP(item.evolucao)}` : '' }
-          ];
-
-          return `
-          <div class="bar-chart-col">
-            <div class="bar-chart-bar" style="height: ${Math.max(pctHeight, 6)}%;" 
-                 data-tooltip-title="${esc(item.tooltipTitle)}" 
-                 data-tooltip-color="var(--accent)" 
-                 data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}">
-              <div class="bar-val-label">${brlShort(valBar)}</div>
-            </div>
-            <div class="bar-date-label">${esc(item.label)}</div>
+        <div class="bar-chart-wrapper">
+          <div class="limit-line" style="top: ${100 - (limitSeguro / maxValAcum * 100)}%;">
+            <span class="limit-line-label">LIMITE R$ 45 MI</span>
           </div>
-          `;
-        }).join('')}
+          ${chartItems.map(item => {
+            const valBar = item.custoTotal || 0;
+            const pctHeight = (valBar / maxValAcum) * 100;
+            
+            let tagVarHtml = '';
+            let strVarTooltip = 'Primeiro período';
+            if (item.varPct !== null && item.varPct !== undefined) {
+              const signal = item.varPct > 0 ? '+' : '';
+              const clsVar = item.varPct > 0 ? 'up' : (item.varPct < 0 ? 'down' : 'neutral');
+              const formattedVar = `${signal}${fmtP(item.varPct, 1)}`;
+              tagVarHtml = `<span class="bar-var-tag ${clsVar}">${formattedVar}</span>`;
+              strVarTooltip = `Variação: ${formattedVar} em relação ao anterior`;
+            }
+
+            const tooltipItems = [
+              { prod: item.subText, sub: `Valor: ${brl(valBar)}` },
+              { prod: `Qtd Contábil: ${fmtN.format(item.qtd)}`, sub: strVarTooltip }
+            ];
+
+            return `
+            <div class="bar-chart-col">
+              <div class="bar-chart-bar" style="height: ${Math.max(pctHeight, 6)}%;" 
+                   data-tooltip-title="${esc(item.tooltipTitle)}" 
+                   data-tooltip-color="var(--accent)" 
+                   data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}">
+                <div class="bar-val-label">
+                  <span>${brlShort(valBar)}</span>
+                  ${tagVarHtml}
+                </div>
+              </div>
+              <div class="bar-date-label">${esc(item.label)}</div>
+            </div>
+            `;
+          }).join('')}
+        </div>
       </div>
     ` : '<p style="color:var(--mute); padding: 20px;">Nenhum dado histórico encontrado no filtro selecionado.</p>'}
   </div>
@@ -1584,7 +1662,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   const hasActiveFaixa = activeFaixa !== 'todos';
   const activeLabel = CLS[activeFaixa] ? CLS[activeFaixa].n : activeFaixa;
 
-  $(id).innerHTML = `h2>${title}</h2><p class="sub">${sub}</p>
+  $(id).innerHTML = `<h2>${title}</h2><p class="sub">${sub}</p>
 
   <div class="active-filters-bar ${hasActiveFaixa ? 'visible' : ''}">
     <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeLabel)}</b></span>
@@ -2164,7 +2242,7 @@ function secCarteira(){
                 <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'};font-weight:700;font-size:15px">${fmtN.format(p.qtdPend)}</td>
                 <td class="r" style="font-weight:700;color:var(--text)">${brl(p.valorPend)}</td>
               </tr>
-            `).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
+            `).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros applied.</td></tr>'}
           </tbody>
         </table>
       </div>
