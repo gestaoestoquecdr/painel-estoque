@@ -181,13 +181,13 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-/* DESIGN MODERNO DO GRÁFICO DE BARRAS HISTÓRICO */
+/* DESIGN DO GRÁFICO COM ESPAÇAMENTO ADICIONAL PARA O VALOR / LIMITE */
 .bar-chart-container {
   display: flex;
   align-items: flex-end;
   gap: 16px;
-  height: 270px;
-  padding: 55px 16px 14px 16px;
+  height: 295px;
+  padding: 65px 16px 14px 16px;
   overflow-x: auto;
   position: relative;
   background: rgba(4, 13, 33, 0.4);
@@ -224,6 +224,10 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
+.bar-chart-bar.is-proj {
+  background: linear-gradient(180deg, rgba(255, 196, 0, 0.8) 0%, rgba(138, 98, 0, 0.6) 100%);
+  border: 1px dashed var(--accent);
+}
 .bar-chart-bar:hover {
   background: linear-gradient(180deg, #ffc400 0%, #d49b00 100%);
   border-color: #ffe066;
@@ -232,7 +236,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 }
 .bar-val-label {
   position: absolute;
-  top: -40px;
+  top: -46px;
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--f-num);
@@ -282,7 +286,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .limit-line-label {
   position: absolute;
   right: 12px;
-  top: -18px;
+  top: -20px;
   font-size: 11px;
   font-weight: 800;
   color: #ff5d62;
@@ -654,6 +658,8 @@ let filterDiaEspec = 'todos';
 
 let geralProdExpanded = false; 
 
+/* FILTROS DA CARTEIRA */
+let dateReservaFilter = 'todos'; 
 let resFilter = 'todos';
 let sepFilter = 'todos';
 let targetDestFilter = 'todos';
@@ -983,6 +989,7 @@ function clearAllFilters() {
   filterRua = 'todos';
   filterShelfFaixa = 'todos';
   filterAgingFaixa = 'todos';
+  dateReservaFilter = 'todos';
   sepFilter = 'todos';
   targetDestFilter = 'todos';
   deptFilter = 'todos';
@@ -1193,7 +1200,7 @@ function secGeral(){
   const areaLabelStr = filterArea === '1' ? 'Galpão 1 (Área 1)' : (filterArea === '7' ? 'Galpão 2 (Área 7)' : 'Todas as Áreas');
   const activeFiltersText = `Filtros Ativos: ${filterArea !== 'todos' ? `Área = ${areaLabelStr}` : ''} ${filterRua !== 'todos' ? `| Rua = ${filterRua}` : ''} ${filterLocalEst !== 'todos' ? `| Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
 
-  // --- AGRUPAMENTO DE BARRAS COM CÁLCULO DE MÉDIA MENSAL E VARIAÇÕES ---
+  // --- AGRUPAMENTO DE BARRAS COM CÁLCULO DE MÉDIA MENSAL, VARIAÇÕES E PROJEÇÃO DE DEZEMBRO ---
   const acumRawData = D.acum || [];
   let listaDiasUnicos = Array.from(new Set(acumRawData.map(a => a.data))).filter(d => d && d !== '-');
   
@@ -1212,6 +1219,7 @@ function secGeral(){
     });
 
     const arrMeses = Object.values(porMes);
+
     chartItems = arrMeses.map((m, idx) => {
       const mediaCusto = m.count ? (m.somaCustoTotal / m.count) : 0;
       const mediaQtd = m.count ? (m.somaQtdContabil / m.count) : 0;
@@ -1232,9 +1240,31 @@ function secGeral(){
         subText: `Média Mensal (${m.count} dias no mês)`,
         qtd: mediaQtd,
         varPct: varPct,
-        tooltipTitle: `Média de Estoque (${nomeMesPorExtenso})`
+        tooltipTitle: `Média de Estoque (${nomeMesPorExtenso})`,
+        isProj: false
       };
     });
+
+    // Se o mês 12 (Dezembro) não estiver no JSON, adicionamos uma Projeção de Dezembro
+    const possuiDezembro = chartItems.some(i => i.label.toLowerCase().includes('dezembro'));
+    if (!possuiDezembro && chartItems.length > 0) {
+      const ultimos = chartItems.slice(-3);
+      const mediaUltimos = ultimos.reduce((s, x) => s + x.custoTotal, 0) / (ultimos.length || 1);
+      const projValorDezembro = mediaUltimos * 1.12; // Projeção sazonal estimada (+12% em Dezembro)
+      const ultVal = chartItems[chartItems.length - 1].custoTotal;
+      const projVarPct = ultVal ? ((projValorDezembro - ultVal) / ultVal) * 100 : 0;
+
+      chartItems.push({
+        label: "Dezembro/2026",
+        custoTotal: projValorDezembro,
+        subText: "Projeção de Estoque Estimada (Dezembro)",
+        qtd: 0,
+        varPct: projVarPct,
+        tooltipTitle: "Projeção de Estoque (Dezembro/2026)",
+        isProj: true
+      });
+    }
+
   } else {
     let dadosFiltrados = acumRawData;
     if (filterDiaEspec !== 'todos') {
@@ -1256,18 +1286,19 @@ function secGeral(){
         qtd: item.qtdContabil,
         varPct: varPct,
         evolucao: item.evolucaoPct,
-        tooltipTitle: `Fechamento (${item.data})`
+        tooltipTitle: `Fechamento (${item.data})`,
+        isProj: false
       };
     });
   }
 
   const limitSeguro = 45000000; 
-  const maxValAcum = Math.max(limitSeguro, ...chartItems.map(a => a.custoTotal || 0)) * 1.2;
+  const maxValAcum = Math.max(limitSeguro, ...chartItems.map(a => a.custoTotal || 0)) * 1.25;
 
   let acumHtml = `
   <div class="card" style="margin-top:16px;">
     <div class="card-header-action">
-      <h3>📈 POSIÇÃO DE ESTOQUE HISTÓRICO (${filterModoAcum === 'mes' ? 'MÉDIA MENSAL R$' : 'FECHAMENTO DIÁRIO R$'})</h3>
+      <h3>📈 POSIÇÃO DE ESTOQUE HISTÓRICO E PROJEÇÃO (${filterModoAcum === 'mes' ? 'MÉDIA MENSAL R$' : 'FECHAMENTO DIÁRIO R$'})</h3>
       
       <div class="prod-controls">
         <select id="selectModoAcum" style="font-weight:700;color:var(--accent)">
@@ -1308,21 +1339,23 @@ function secGeral(){
 
             const tooltipItems = [
               { prod: item.subText, sub: `Valor: ${brl(valBar)}` },
-              { prod: `Qtd Contábil: ${fmtN.format(item.qtd)}`, sub: strVarTooltip }
+              { prod: item.isProj ? '⭐ Valor Projetado' : `Qtd Contábil: ${fmtN.format(item.qtd)}`, sub: strVarTooltip }
             ];
 
             return `
             <div class="bar-chart-col">
-              <div class="bar-chart-bar" style="height: ${Math.max(pctHeight, 6)}%;" 
+              <div class="bar-chart-bar ${item.isProj ? 'is-proj' : ''}" style="height: ${Math.max(pctHeight, 6)}%;" 
                    data-tooltip-title="${esc(item.tooltipTitle)}" 
-                   data-tooltip-color="var(--accent)" 
+                   data-tooltip-color="${item.isProj ? 'var(--accent)' : 'var(--blue)'}" 
                    data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}">
                 <div class="bar-val-label">
-                  <span>${brlShort(valBar)}</span>
+                  <span>${brlShort(valBar)}${item.isProj ? ' *' : ''}</span>
                   ${tagVarHtml}
                 </div>
               </div>
-              <div class="bar-date-label">${esc(item.label)}</div>
+              <div class="bar-date-label" style="${item.isProj ? 'color:var(--accent);font-weight:800' : ''}">
+                ${esc(item.label)}${item.isProj ? ' (Proj)' : ''}
+              </div>
             </div>
             `;
           }).join('')}
@@ -1896,11 +1929,16 @@ function secCarteira(){
     return;
   }
 
+  const datasReservaDisponiveis = Array.from(new Set(C.map(r => r.gerReserva))).filter(Boolean).sort((a,b) => a.localeCompare(b));
   const tiposSepDisponiveis = Array.from(new Set(C.map(r => r.tipoSep))).filter(Boolean);
   const destinosDisponiveis = Array.from(new Set(C.map(r => r.dest))).filter(Boolean).sort((a,b) => String(a).localeCompare(String(b), undefined, {numeric: true}));
   const deptsDisponiveis = Array.from(new Set(C.map(r => r.dept))).filter(Boolean).sort((a,b) => String(a).localeCompare(String(b)));
 
   let filteredC = C;
+
+  if (dateReservaFilter !== 'todos') {
+    filteredC = filteredC.filter(r => r.gerReserva === dateReservaFilter);
+  }
   if (sepFilter !== 'todos') {
     filteredC = filteredC.filter(r => r.tipoSep.toLowerCase().trim() === sepFilter.toLowerCase().trim());
   }
@@ -1973,6 +2011,7 @@ function secCarteira(){
   const fullPctSep = fullTotQtd ? (fullSep.separada / fullTotQtd) * 100 : 0;
 
   const baseDept = C.filter(r => {
+    if (dateReservaFilter !== 'todos' && r.gerReserva !== dateReservaFilter) return false;
     if (sepFilter !== 'todos' && r.tipoSep.toLowerCase().trim() !== sepFilter.toLowerCase().trim()) return false;
     if (targetDestFilter !== 'todos' && String(r.dest) !== String(targetDestFilter)) return false;
     return true;
@@ -2090,18 +2129,25 @@ function secCarteira(){
     ? 'PRODUTOS PENDENTES DE SEPARAÇÃO' 
     : (statusFilter === 'separado' ? 'PRODUTOS SEPARADOS' : 'TODOS OS PRODUTOS DA CARTEIRA');
 
-  const hasActiveCartFilter = sepFilter !== 'todos' || targetDestFilter !== 'todos' || deptFilter !== 'todos';
+  const hasActiveCartFilter = dateReservaFilter !== 'todos' || sepFilter !== 'todos' || targetDestFilter !== 'todos' || deptFilter !== 'todos';
 
   $('#s-carteira').innerHTML = `
   <h2>Carteira de Pedido</h2>
   <p class="sub">Acompanhamento e status das reservas e solicitações do CD.</p>
 
   <div class="active-filters-bar ${hasActiveCartFilter ? 'visible' : ''}">
-    <span>🔍 <b>Filtro Ativo: ${sepFilter !== 'todos' ? `Tipo = ${sepFilter}` : ''} ${targetDestFilter !== 'todos' ? `| Destino = ${targetDestFilter}` : ''} ${deptFilter !== 'todos' ? `| Depto = ${deptFilter}` : ''}</b></span>
+    <span>🔍 <b>Filtro Ativo: ${dateReservaFilter !== 'todos' ? `Data Reserva = ${dateReservaFilter}` : ''} ${sepFilter !== 'todos' ? `| Tipo = ${sepFilter}` : ''} ${targetDestFilter !== 'todos' ? `| Destino = ${targetDestFilter}` : ''} ${deptFilter !== 'todos' ? `| Depto = ${deptFilter}` : ''}</b></span>
     <button onclick="clearAllFilters()">✕ Limpar Filtros da Carteira</button>
   </div>
   
   <div class="filter-bar">
+    <label>📅 Data de Geração:
+      <select id="dateReservaFilterSelect" style="font-weight:700;color:var(--accent)">
+        <option value="todos" ${dateReservaFilter==='todos'?'selected':''}>-- Todas as Datas --</option>
+        ${datasReservaDisponiveis.map(d => `<option value="${esc(d)}" ${dateReservaFilter===d?'selected':''}>Data ${esc(d)}</option>`).join('')}
+      </select>
+    </label>
+
     <label>⚡ Tipo de Separação:
       <select id="sepFilterSelect">
         <option value="todos" ${sepFilter==='todos'?'selected':''}>-- Todos os Tipos (${C.length} itens) --</option>
@@ -2110,7 +2156,7 @@ function secCarteira(){
     </label>
 
     <label>🏢 Destino / Loja:
-      <select id="targetDestFilterSelect" style="font-weight:700;color:var(--accent)">
+      <select id="targetDestFilterSelect" style="font-weight:700;">
         <option value="todos" ${targetDestFilter==='todos'?'selected':''}>-- Todos os Destinos --</option>
         ${destinosDisponiveis.map(d => `<option value="${esc(d)}" ${targetDestFilter===String(d)?'selected':''}>${esc(d)}</option>`).join('')}
       </select>
@@ -2242,7 +2288,7 @@ function secCarteira(){
                 <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'};font-weight:700;font-size:15px">${fmtN.format(p.qtdPend)}</td>
                 <td class="r" style="font-weight:700;color:var(--text)">${brl(p.valorPend)}</td>
               </tr>
-            `).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros applied.</td></tr>'}
+            `).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -2250,7 +2296,7 @@ function secCarteira(){
   </div>
 
   <div class="card" style="margin-top:16px">
-    <h3>Status por Data de Geração da Reserva</h3>
+    <h3>Status por Data de Geração da Reserva (Clique na linha para filtrar a data)</h3>
     <div class="tw">
       <table>
         <thead>
@@ -2263,8 +2309,10 @@ function secCarteira(){
           </tr>
         </thead>
         <tbody>
-          ${resRows.map(([dt, o]) => `
-            <tr>
+          ${resRows.map(([dt, o]) => {
+            const isSelectedDt = dateReservaFilter === dt;
+            return `
+            <tr class="clickable-row ${isSelectedDt ? 'active-row' : ''}" onclick="dateReservaFilter='${esc(dt)}'; secCarteira();">
               <td><b>${esc(dt)}</b></td>
               <td class="r">${fmtN.format(o.qtd)}</td>
               <td class="r">${fmtN.format(o.qtdSep)}</td>
@@ -2275,7 +2323,8 @@ function secCarteira(){
                   : `<span style="color:var(--ok);font-weight:700">✔ Concluído</span>`}
               </td>
             </tr>
-          `).join('')}
+            `;
+          }).join('')}
         </tbody>
       </table>
     </div>
@@ -2318,6 +2367,14 @@ function secCarteira(){
     </div>
   </div>
   `;
+
+  const selectDateRes = $('#dateReservaFilterSelect');
+  if (selectDateRes) {
+    selectDateRes.addEventListener('change', (e) => {
+      dateReservaFilter = e.target.value;
+      secCarteira();
+    });
+  }
 
   document.querySelectorAll('[data-filter-carteira-sep]').forEach(el => {
     el.addEventListener('click', () => {
