@@ -7,7 +7,7 @@
 <title>Painel de Estoque CD - Roldão Atacadista</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Barlow+Semi+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   color-scheme:dark;
@@ -181,75 +181,92 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-/* GRÁFICO DE BARRAS HISTÓRICO */
+/* DESIGN MODERNO DO GRÁFICO DE BARRAS HISTÓRICO */
 .bar-chart-container {
   display: flex;
   align-items: flex-end;
-  gap: 12px;
-  height: 230px;
-  padding: 35px 10px 10px 10px;
+  gap: 16px;
+  height: 260px;
+  padding: 45px 16px 12px 16px;
   overflow-x: auto;
   position: relative;
+  background: rgba(4, 13, 33, 0.4);
+  border-radius: 8px;
+  border: 1px solid rgba(26, 49, 99, 0.6);
 }
 .bar-chart-col {
   flex: 1;
-  min-width: 48px;
+  min-width: 52px;
   display: flex;
   flex-direction: column;
   align-items: center;
   height: 100%;
   justify-content: flex-end;
   position: relative;
+  z-index: 3;
 }
 .bar-chart-bar {
   width: 100%;
-  max-width: 48px;
-  background: linear-gradient(180deg, #102958 0%, #3a5db0 100%);
-  border: 1px solid var(--blue);
-  border-radius: 4px 4px 0 0;
-  transition: all 0.3s ease;
+  max-width: 44px;
+  background: linear-gradient(180deg, #4285f4 0%, #1a3c7e 100%);
+  border: 1px solid rgba(141, 161, 204, 0.4);
+  border-radius: 6px 6px 2px 2px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 .bar-chart-bar:hover {
-  background: linear-gradient(180deg, #ffc400 0%, #e6a800 100%);
+  background: linear-gradient(180deg, #ffc400 0%, #d49b00 100%);
   border-color: #ffe066;
-  box-shadow: 0 0 16px rgba(255, 196, 0, 0.45);
+  box-shadow: 0 0 20px rgba(255, 196, 0, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
 }
 .bar-val-label {
   position: absolute;
-  top: -24px;
+  top: -26px;
+  left: 50%;
+  transform: translateX(-50%);
   font-family: var(--f-num);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 800;
   color: var(--accent);
   white-space: nowrap;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+  pointer-events: none;
+}
+.bar-chart-bar:hover .bar-val-label {
+  color: #fff;
+  transform: translateX(-50%) scale(1.1);
 }
 .bar-date-label {
-  margin-top: 8px;
-  font-size: 11px;
+  margin-top: 10px;
+  font-size: 12px;
   color: var(--mute);
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
+  font-family: var(--f-num);
 }
 .limit-line {
   position: absolute;
   left: 0;
   right: 0;
-  border-top: 2px dashed var(--crit);
+  border-top: 2px dashed #ff5d62;
   z-index: 2;
   pointer-events: none;
+  box-shadow: 0 0 8px rgba(255, 93, 98, 0.4);
 }
 .limit-line-label {
   position: absolute;
-  right: 10px;
+  right: 12px;
   top: -18px;
   font-size: 11px;
   font-weight: 800;
-  color: var(--crit);
-  background: rgba(5, 12, 26, 0.9);
-  padding: 2px 6px;
+  color: #ff5d62;
+  background: #081329;
+  padding: 2px 8px;
   border-radius: 4px;
+  border: 1px solid rgba(255, 93, 98, 0.4);
 }
 
 .active-filters-bar {
@@ -593,7 +610,7 @@ let filterShelfFaixa = 'todos';
 let filterAgingFaixa = 'todos';
 
 /* FILTROS DO GRÁFICO DIÁRIO/MENSAL */
-let filterModoAcum = 'mes'; // 'mes' ou 'dia'
+let filterModoAcum = 'mes'; 
 let filterDiaEspec = 'todos';
 
 let geralProdExpanded = false; 
@@ -1137,33 +1154,36 @@ function secGeral(){
   const areaLabelStr = filterArea === '1' ? 'Galpão 1 (Área 1)' : (filterArea === '7' ? 'Galpão 2 (Área 7)' : 'Todas as Áreas');
   const activeFiltersText = `Filtros Ativos: ${filterArea !== 'todos' ? `Área = ${areaLabelStr}` : ''} ${filterRua !== 'todos' ? `| Rua = ${filterRua}` : ''} ${filterLocalEst !== 'todos' ? `| Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
 
-  // --- COMPATIBILIDADE E AGRUPAMENTO (MÊS vs DIA) ---
+  // --- AGRUPAMENTO DE BARRAS COM CÁLCULO DE MÉDIA MENSAL ---
   const acumRawData = D.acum || [];
   let listaDiasUnicos = Array.from(new Set(acumRawData.map(a => a.data))).filter(d => d && d !== '-');
   
   let chartItems = [];
   if (filterModoAcum === 'mes') {
-    // Agrupa por Mês/Ano (ex: 01/2026)
     const porMes = {};
     acumRawData.forEach(item => {
       if (!item.data || item.data === '-') return;
       const parts = item.data.split('/');
       const chaveMes = (parts.length === 3) ? `${parts[1]}/${parts[2]}` : item.data;
       
-      porMes[chaveMes] = porMes[chaveMes] || { mes: chaveMes, custoTotal: 0, qtdContabil: 0, count: 0, ultimoDia: item.data };
-      porMes[chaveMes].custoTotal = item.custoTotal; // Pega o fechamento mais recente do mês
-      porMes[chaveMes].qtdContabil = item.qtdContabil;
+      porMes[chaveMes] = porMes[chaveMes] || { mes: chaveMes, somaCustoTotal: 0, somaQtdContabil: 0, count: 0 };
+      porMes[chaveMes].somaCustoTotal += (item.custoTotal || 0);
+      porMes[chaveMes].somaQtdContabil += (item.qtdContabil || 0);
       porMes[chaveMes].count++;
     });
 
-    chartItems = Object.values(porMes).map(m => ({
-      label: `Mês ${m.mes}`,
-      custoTotal: m.custoTotal,
-      subText: `Fechamento (${m.ultimoDia})`,
-      qtd: m.qtdContabil
-    }));
+    chartItems = Object.values(porMes).map(m => {
+      const mediaCusto = m.count ? (m.somaCustoTotal / m.count) : 0;
+      const mediaQtd = m.count ? (m.somaQtdContabil / m.count) : 0;
+      return {
+        label: `Mês ${m.mes}`,
+        custoTotal: mediaCusto,
+        subText: `Média Mensal (${m.count} dias)`,
+        qtd: mediaQtd,
+        tooltipTitle: `Média de Estoque (${m.mes})`
+      };
+    });
   } else {
-    // Exibe por Dia
     let dadosFiltrados = acumRawData;
     if (filterDiaEspec !== 'todos') {
       dadosFiltrados = dadosFiltrados.filter(a => a.data === filterDiaEspec);
@@ -1172,23 +1192,24 @@ function secGeral(){
       label: item.data.slice(0, 5),
       fullData: item.data,
       custoTotal: item.custoTotal,
-      subText: `Dia ${item.data}`,
+      subText: `Fechamento do Dia (${item.data})`,
       qtd: item.qtdContabil,
-      evolucao: item.evolucaoPct
+      evolucao: item.evolucaoPct,
+      tooltipTitle: `Fechamento (${item.data})`
     }));
   }
 
   const limitSeguro = 45000000; 
-  const maxValAcum = Math.max(limitSeguro, ...chartItems.map(a => a.custoTotal || 0)) * 1.15;
+  const maxValAcum = Math.max(limitSeguro, ...chartItems.map(a => a.custoTotal || 0)) * 1.18;
 
   let acumHtml = `
   <div class="card" style="margin-top:16px;">
     <div class="card-header-action">
-      <h3>📈 POSIÇÃO DE ESTOQUE HISTÓRICO (FECHAMENTO R$)</h3>
+      <h3>📈 POSIÇÃO DE ESTOQUE HISTÓRICO (${filterModoAcum === 'mes' ? 'MÉDIA MENSAL R$' : 'FECHAMENTO DIÁRIO R$'})</h3>
       
       <div class="prod-controls">
         <select id="selectModoAcum" style="font-weight:700;color:var(--accent)">
-          <option value="mes" ${filterModoAcum==='mes'?'selected':''}>📅 Agrupado por MÊS</option>
+          <option value="mes" ${filterModoAcum==='mes'?'selected':''}>📊 Média Agrupada por MÊS</option>
           <option value="dia" ${filterModoAcum==='dia'?'selected':''}>📆 Detalhado por DIA</option>
         </select>
 
@@ -1212,24 +1233,24 @@ function secGeral(){
           const valBar = item.custoTotal || 0;
           const pctHeight = (valBar / maxValAcum) * 100;
           const tooltipItems = [
-            { prod: item.subText, sub: `Valor Fechamento: ${brl(valBar)}` },
-            { prod: `Qtd Contábil: ${fmtN.format(item.qtd)}`, sub: item.evolucao !== undefined ? `Evolução: ${fmtP(item.evolucao)}` : '' }
+            { prod: item.subText, sub: `Valor Médio: ${brl(valBar)}` },
+            { prod: `Qtd Contábil Média: ${fmtN.format(item.qtd)}`, sub: item.evolucao !== undefined ? `Evolução: ${fmtP(item.evolucao)}` : '' }
           ];
 
           return `
           <div class="bar-chart-col">
-            <div class="bar-val-label">${brlShort(valBar)}</div>
-            <div class="bar-chart-bar" style="height: ${Math.max(pctHeight, 5)}%;" 
-                 data-tooltip-title="Fechamento de Estoque" 
+            <div class="bar-chart-bar" style="height: ${Math.max(pctHeight, 6)}%;" 
+                 data-tooltip-title="${esc(item.tooltipTitle)}" 
                  data-tooltip-color="var(--accent)" 
                  data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}">
+              <div class="bar-val-label">${brlShort(valBar)}</div>
             </div>
             <div class="bar-date-label">${esc(item.label)}</div>
           </div>
           `;
         }).join('')}
       </div>
-    ` : '<p style="color:var(--mute); padding: 20px;">Nenhum dado de fechamento encontrado no filtro selecionado.</p>'}
+    ` : '<p style="color:var(--mute); padding: 20px;">Nenhum dado histórico encontrado no filtro selecionado.</p>'}
   </div>
   `;
 
@@ -1350,7 +1371,6 @@ function secGeral(){
     </div>
   </div>`;
 
-  // --- EVENT LISTENERS DA VISÃO GERAL ---
   const selModoAcum = $('#selectModoAcum');
   if (selModoAcum) {
     selModoAcum.addEventListener('change', (e) => {
@@ -1564,7 +1584,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   const hasActiveFaixa = activeFaixa !== 'todos';
   const activeLabel = CLS[activeFaixa] ? CLS[activeFaixa].n : activeFaixa;
 
-  $(id).innerHTML = `<h2>${title}</h2><p class="sub">${sub}</p>
+  $(id).innerHTML = `h2>${title}</h2><p class="sub">${sub}</p>
 
   <div class="active-filters-bar ${hasActiveFaixa ? 'visible' : ''}">
     <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeLabel)}</b></span>
