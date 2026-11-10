@@ -24,11 +24,14 @@ logging.basicConfig(
 SCOPES = ['https://www.googleapis.com/auth/drive']
 service_account_info = json.loads(os.environ['GCP_SERVICE_ACCOUNT_JSON'])
 
-# Autenticação direta com a Conta de Serviço (sem delegacão com .with_subject)
+# E-mail corporativo que o robô irá impersonar para utilizar a sua cota no Drive
+USER_TO_IMPERSONATE = 'gestaoestoque.cdr@roldao.com.br'
+
+# Autenticação com Delegação de Domínio (.with_subject)
 creds = ServiceAccountCredentials.from_service_account_info(
     service_account_info, 
     scopes=SCOPES
-)
+).with_subject(USER_TO_IMPERSONATE)
 
 drive_service = build('drive', 'v3', credentials=creds)
 
