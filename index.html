@@ -562,10 +562,12 @@ body.tvmode .kpi .v { font-size: 52px; }
 <section id="s-aging"></section>
 <section id="s-ocup"></section>
 <section id="s-carteira"></section>
+<section id="s-admin"></section>
 
 <script>
 const CONFIG = {
   DATA_URL: "./dados.json",
+  ADMIN_URL: "./administrativo.json",
   ESTOQUE_FISICO: "ESTOQUE REVENDA",
   ATUALIZAR_MIN: 1,
   TV_SEGUNDOS: 20
@@ -888,6 +890,7 @@ async function fromJsonFile(){
 async function load(){
   try {
     const d = await fromJsonFile();
+    await loadAdminData();
     D = d;
     $('#src').className = 'live';
     $('#srctxt').textContent = d.when;
@@ -2509,12 +2512,179 @@ function secCarteira(){
   attachTooltipEvents();
 }
 
+
+let AdminD = null;
+let searchNotas = '';
+let searchPre = '';
+
+async function loadAdminData(){
+  try {
+    const timestamp = new Date().getTime();
+    const res = await fetch(`${CONFIG.ADMIN_URL}?v=${timestamp}`);
+    if (res.ok) AdminD = await res.json();
+  } catch(e) {
+    console.error("Erro ao carregar administrativo.json:", e);
+  }
+}
+
+function secAdmin(){
+  if (!AdminD) {
+    const elAdmin = $('#s-admin');
+    if (elAdmin) elAdmin.innerHTML = `<div class="card"><h3>Administrativo</h3><p>Carregando dados do administrativo.json...</p></div>`;
+    return;
+  }
+
+  const notas = AdminD.notas_transito || [];
+  const pre = AdminD.pre_alerta || [];
+
+  const totNotasVal = notas.reduce((s,n) => s + (n.valorNota || 0), 0);
+  const notasAntigas = notas.filter(n => (n.dias || 0) > 30);
+  const totAntigasVal = notasAntigas.reduce((s,n) => s + (n.valorNota || 0), 0);
+
+  const sobraVal = pre.filter(p => (p.tipo || '').toUpperCase() === 'SOBRA').reduce((s,p) => s + (p.valorTotal || 0), 0);
+  const faltaVal = pre.filter(p => (p.tipo || '').toUpperCase() === 'FALTA').reduce((s,p) => s + (p.valorTotal || 0), 0);
+
+  const listNotas = notas.filter(n => 
+    (n.nf || '').toLowerCase().includes(searchNotas.toLowerCase()) || 
+    (n.destino || '').toLowerCase().includes(searchNotas.toLowerCase()) || 
+    (n.prod || '').toLowerCase().includes(searchNotas.toLowerCase())
+  );
+
+  const listPre = pre.filter(p => 
+    (p.loja || '').toLowerCase().includes(searchPre.toLowerCase()) || 
+    (p.prod || '').toLowerCase().includes(searchPre.toLowerCase()) || 
+    (p.tipo || '').toLowerCase().includes(searchPre.toLowerCase())
+  );
+
+  const el = $('#s-admin');
+  if (!el) return;
+
+  el.innerHTML = `
+    <h2>Setor Administrativo</h2>
+    <p class="sub">Acompanhamento de Notas em Trânsito e Ocorrências de Pré-Alerta (Sobra e Falta).</p>
+
+    <div class="grid kpis">
+      <div class="card kpi hl"><h3>Total Notas em Trânsito</h3><div class="v">${brlShort(totNotasVal)}</div><div class="s">${fmtN.format(notas.length)} notas registradas</div></div>
+      <div class="card kpi"><h3>Notas Antigas Pendentes (>30d)</h3><div class="v" style="color:var(--crit)">${brlShort(totAntigasVal)}</div><div class="s">${fmtN.format(notasAntigas.length)} notas críticas</div></div>
+      <div class="card kpi"><h3>Total Ocorrências de Sobra</h3><div class="v" style="color:var(--ok)">${brlShort(sobraVal)}</div><div class="s">Itens sobrando na recepção</div></div>
+      <div class="card kpi"><h3>Total Ocorrências de Falta</h3><div class="v" style="color:var(--warn)">${brlShort(faltaVal)}</div><div class="s">Itens faltantes na recepção</div></div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-header-action">
+        <h3>📋 NOTAS EM TRÂNSITO - DETALHAMENTO (${listNotas.length} LINHAS)</h3>
+        <div class="prod-controls">
+          <input type="text" id="inputSearchNotas" placeholder="🔍 Buscar NF, loja destino, produto..." value="${esc(searchNotas)}" style="width:280px">
+        </div>
+      </div>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>NF</th>
+              <th>Origem</th>
+              <th>Destino</th>
+              <th>Data Emissão</th>
+              <th class="r">Dias em Trânsito</th>
+              <th>Cód. Prod</th>
+              <th>Descrição Produto</th>
+              <th class="r">Qtd</th>
+              <th class="r">Valor Nota Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${listNotas.length ? listNotas.slice(0, 150).map(n => `
+              <tr>
+                <td><b style="color:var(--accent)">${esc(n.nf)}</b></td>
+                <td>${esc(n.origem)}</td>
+                <td><b>${esc(n.destino)}</b></td>
+                <td>${esc(n.dataEmissao)}</td>
+                <td class="r" style="color:${n.dias > 30 ? 'var(--crit)' : 'var(--text)'};font-weight:700">${n.dias} dias</td>
+                <td>${esc(n.codProd)}</td>
+                <td>${esc(n.prod)}</td>
+                <td class="r">${fmtN.format(n.qtd)}</td>
+                <td class="r" style="font-weight:700">${brl(n.valorNota)}</td>
+              </tr>
+            `).join('') : '<tr><td colspan="9">Nenhuma nota encontrada.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-header-action">
+        <h3>⚠️ PRÉ-ALERTA / SOBRA E FALTA - DETALHAMENTO (${listPre.length} LINHAS)</h3>
+        <div class="prod-controls">
+          <input type="text" id="inputSearchPre" placeholder="🔍 Buscar loja, produto, SOBRA/FALTA..." value="${esc(searchPre)}" style="width:280px">
+        </div>
+      </div>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Loja</th>
+              <th>Data Reg.</th>
+              <th>Pedido</th>
+              <th>NF</th>
+              <th>Tipo</th>
+              <th>Cód. Prod</th>
+              <th>Descrição Produto</th>
+              <th class="r">Qtd</th>
+              <th class="r">Valor Total</th>
+              <th>Status CD</th>
+              <th>Status Loja</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${listPre.length ? listPre.slice(0, 150).map(p => `
+              <tr>
+                <td><b>${esc(p.loja)}</b></td>
+                <td>${esc(p.dataRegistro)}</td>
+                <td>${esc(p.pedido)}</td>
+                <td>${esc(p.nf)}</td>
+                <td><b style="color:${(p.tipo||'').toUpperCase() === 'SOBRA' ? 'var(--ok)' : 'var(--crit)'}">${esc(p.tipo)}</b></td>
+                <td>${esc(p.codProd)}</td>
+                <td>${esc(p.prod)}</td>
+                <td class="r">${fmtN.format(p.qtd)} ${esc(p.um)}</td>
+                <td class="r" style="font-weight:700">${brl(p.valorTotal)}</td>
+                <td>${esc(p.statusCd)}</td>
+                <td>${esc(p.statusLoja)}</td>
+              </tr>
+            `).join('') : '<tr><td colspan="11">Nenhuma ocorrência encontrada.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  const inNotas = $('#inputSearchNotas');
+  if (inNotas) {
+    inNotas.addEventListener('input', (e) => {
+      searchNotas = e.target.value;
+      secAdmin();
+      const el = $('#inputSearchNotas');
+      if (el) { el.focus(); el.setSelectionRange(searchNotas.length, searchNotas.length); }
+    });
+  }
+
+  const inPre = $('#inputSearchPre');
+  if (inPre) {
+    inPre.addEventListener('input', (e) => {
+      searchPre = e.target.value;
+      secAdmin();
+      const el = $('#inputSearchPre');
+      if (el) { el.focus(); el.setSelectionRange(searchPre.length, searchPre.length); }
+    });
+  }
+}
+
 const SECTIONS = [
   {id:'geral', title:'Visão Geral', render:secGeral},
   {id:'shelf', title:'Shelf Life', render:secShelf},
   {id:'aging', title:'Aging', render:secAging},
   {id:'ocup', title:'Ocupação', render:secOcup},
-  {id:'carteira', title:'Carteira', render:secCarteira}
+  {id:'carteira', title:'Carteira', render:secCarteira},
+  {id:'admin', title:'Administrativo', render:secAdmin}
 ];
 
 let activeTab = 'geral';
