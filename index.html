@@ -567,46 +567,12 @@ body.tvmode .kpi .v { font-size: 52px; }
 <script>
 const CONFIG = {
   DATA_URL: "./dados.json",
-  ADMIN_URL: "./administrativo.json", // <-- LÊ O ARQUIVO SEPARADO DO ADMIN
+  ADMIN_URL: "./administrativo.json",
   ESTOQUE_FISICO: "ESTOQUE REVENDA",
   ATUALIZAR_MIN: 1,
   TV_SEGUNDOS: 20
 };
 
-// Variáveis globais para os dados do administrativo
-let AdminD = null;
-let searchNotas = '';
-let searchPre = '';
-
-// Função para procurar o arquivo administrativo.json
-async function loadAdminData(){
-  try {
-    const timestamp = new Date().getTime();
-    const res = await fetch(`${CONFIG.ADMIN_URL}?v=${timestamp}`);
-    if (res.ok) AdminD = await res.json();
-  } catch(e) {
-    console.warn("Aviso: administrativo.json ainda não foi encontrado.");
-  }
-}
-
-// Atualização da função load() original para carregar também o Admin
-async function load(){
-  try {
-    const d = await fromJsonFile();
-    await loadAdminData(); // <-- CARREGA O ADMIN SEM MEXER NO ESTOQUE
-    D = d;
-    $('#src').className = 'live';
-    $('#srctxt').textContent = d.when;
-    renderNav();
-    render();
-  } catch(err) {
-    console.error('Erro ao carregar dados:', err);
-    $('#src').className = 'error';
-    $('#srctxt').textContent = 'Erro de atualização (' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ')';
-  }
-}
-
-  //AUXILIAR LOJAS
 const MAPA_MESES = {
   "01": "Janeiro", "02": "Fevereiro", "03": "Março", "04": "Abril",
   "05": "Maio", "06": "Junho", "07": "Julho", "08": "Agosto",
@@ -2562,11 +2528,9 @@ async function loadAdminData(){
 }
 
 function secAdmin(){
-  const el = $('#s-admin');
-  if (!el) return;
-
   if (!AdminD) {
-    el.innerHTML = `<div class="card"><h2>Setor Administrativo</h2><p class="sub">Aguardando dados do arquivo administrativo.json...</p></div>`;
+    const elAdmin = $('#s-admin');
+    if (elAdmin) elAdmin.innerHTML = `<div class="card"><h3>Administrativo</h3><p>Carregando dados do administrativo.json...</p></div>`;
     return;
   }
 
@@ -2591,6 +2555,9 @@ function secAdmin(){
     (p.prod || '').toLowerCase().includes(searchPre.toLowerCase()) || 
     (p.tipo || '').toLowerCase().includes(searchPre.toLowerCase())
   );
+
+  const el = $('#s-admin');
+  if (!el) return;
 
   el.innerHTML = `
     <h2>Setor Administrativo</h2>
