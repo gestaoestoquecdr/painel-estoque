@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Painel de Estoque CD - Roldão Atacadista</title>
+<title>Painel CDR - Roldão Ataacadista</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Barlow+Semi+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -578,7 +578,7 @@ body.tvmode .kpi .v { font-size: 52px; }
 @media (prefers-reduced-motion:no-preference){#bar{transition:width .3s linear}}
 
 /* ===== SETORES + BARRA DE FILTROS ===== */
-.side{--side-w:216px;position:fixed;left:0;top:0;bottom:0;width:var(--side-w);z-index:20;display:flex;flex-direction:column;background:linear-gradient(180deg,#0b1b3d 0%,#07122b 100%);border-right:1px solid var(--line);padding:14px 10px;transition:width .25s ease}
+.side{position:fixed;left:0;top:0;bottom:0;width:var(--side-w);z-index:20;display:flex;flex-direction:column;background:linear-gradient(180deg,#0b1b3d 0%,#07122b 100%);border-right:1px solid var(--line);padding:14px 10px;transition:width .25s ease}
 body{--side-w:216px}
 body.side-collapsed{--side-w:64px}
 .side{width:var(--side-w)}
@@ -589,9 +589,9 @@ body{padding-left:calc(var(--side-w) + 16px) !important;transition:padding-left 
 .setores button .si{font-size:19px;flex:0 0 24px;text-align:center}
 .setores button:hover{color:#fff;background:rgba(255,255,255,.05)}
 .setores button[aria-pressed="true"]{background:rgba(255,196,0,.12);color:var(--accent);border-left-color:var(--accent)}
-.side-toggle{margin-top:auto;align-self:flex-start;width:34px;height:34px;border-radius:6px;background:transparent;border:1px solid var(--line);color:var(--mute);font-size:16px;font-weight:800;line-height:1}
+.side-toggle{margin-top:auto;align-self:flex-start;width:34px;height:34px;border-radius:6px;background:transparent;border:1px solid var(--line);color:var(--mute);font-size:16px;font-weight:800;line-height:1;transition:transform .25s ease}
 .side-toggle:hover{color:#fff;border-color:var(--accent)}
-body.side-collapsed .side-toggle{transform:rotate(180deg)}
+body.side-collapsed .side-toggle{transform:rotate(180deg);align-self:center}
 body.side-collapsed .side-label,body.side-collapsed .setores button .st{display:none}
 body.side-collapsed .setores button{justify-content:center;padding:11px 0;gap:0}
 body[data-setor="admin"] #basis{display:none}
@@ -621,6 +621,9 @@ body[data-setor="admin"] #basis{display:none}
 body.tvmode .side, body.tvmode .gfbar{display:none !important}
 body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
 @media (max-width:820px){.gf{flex:1 1 140px}.gf-clear{margin-left:0}.side-label{display:none}}
+
+/* o aviso de filtro ativo agora é só o da barra do topo (chips) */
+.active-filters-bar{display:none !important}
 </style>
 </head>
 <body>
@@ -631,7 +634,7 @@ body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
 <aside class="side" id="side" aria-label="Setores">
   <div class="side-label">Setores</div>
   <div class="setores" id="setores" role="group" aria-label="Setor"></div>
-  <button class="side-toggle" id="sideToggle" title="Recolher/expandir menu" aria-label="Recolher menu">‹</button>
+  <button class="side-toggle" id="sideToggle" title="Recolher/expandir menu" aria-label="Recolher ou expandir menu">‹</button>
 </aside>
 
 <header>
@@ -641,7 +644,7 @@ body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
     </div>
 
     <div class="brand">
-      <b>Painel de Estoque</b>
+      <b>Painel CDR</b>
       <small>Centro de Distribuição</small>
     </div>
   </div>
@@ -3383,17 +3386,18 @@ function renderFilterBar(){
 });
 
 
-/* barra lateral recolhível (começa recolhida em telas estreitas) */
+/* barra lateral recolhível: lembra a escolha; sem escolha, recolhe só em tela estreita */
 (function(){
-  let col = window.innerWidth < 820;
-  try { const v = localStorage.getItem('sideCollapsed'); if (v !== null) col = v === '1'; } catch(e) {}
-  document.body.classList.toggle('side-collapsed', col);
-  window.addEventListener('DOMContentLoaded', () => {
-    const b = document.getElementById('sideToggle');
-    if (b) b.addEventListener('click', () => {
-      const c = document.body.classList.toggle('side-collapsed');
-      try { localStorage.setItem('sideCollapsed', c ? '1' : '0'); } catch(e) {}
-    });
+  let manual = null;
+  try { const v = localStorage.getItem('sideCollapsed'); if (v !== null) manual = v === '1'; } catch(e) {}
+  const aplica = () => document.body.classList.toggle('side-collapsed', manual !== null ? manual : window.innerWidth < 820);
+  aplica();
+  window.addEventListener('resize', aplica);
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#sideToggle')) return;
+    manual = !document.body.classList.contains('side-collapsed');
+    try { localStorage.setItem('sideCollapsed', manual ? '1' : '0'); } catch(err) {}
+    aplica();
   });
 })();
 
