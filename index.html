@@ -7,562 +7,295 @@
 <title>Painel de Estoque CD - Roldão Atacadista</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Barlow+Semi+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Barlow+Semi+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   color-scheme:dark;
-  --bg:#050c1a; --panel:#0a1733; --panel2:#0f2046; --line:#1a3163;
-  --text:#eaf0ff; --mute:#8da1cc; --accent:#ffc400;
-  --blue:#4285f4; --navy:#3a5db0; --cream:#fce8b2;
-  --ok:#35d49a; --warn:#ffb020; --crit:#ff5d62; --none:#5b6b8f;
+  --bg:#070a12; 
+  --sidebar-bg:#0d111d; 
+  --panel:#121826; 
+  --panel2:#1a2235; 
+  --line:#222c42;
+  --text:#f0f4ff; 
+  --mute:#8ea0c4; 
+  --accent:#ffc400;
+  --blue:#3b82f6; 
+  --navy:#2563eb; 
+  --cream:#fce8b2;
+  --ok:#10b981; 
+  --warn:#f59e0b; 
+  --crit:#ef4444; 
+  --none:#64748b;
   --f-body:'Montserrat', system-ui, sans-serif; 
   --f-num:'Barlow Semi Condensed', 'Montserrat', system-ui, sans-serif;
-  --radius:10px;
+  --radius:12px;
 }
 *{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:15px;line-height:1.4;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 28px}
+html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:14px;line-height:1.4}
 button, input, select{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 
-header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
-.brand-container { display: flex; align-items: center; gap: 16px; }
+/* App Layout Structure */
+.app-container { display: flex; min-height: 100vh; }
+aside { width: 250px; background: var(--sidebar-bg); border-right: 1px solid var(--line); display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease; z-index: 20; }
+main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow-y: auto; }
 
+/* Sidebar Components */
+.sidebar-header { padding: 20px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
 .roldao-logo-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  border-radius: 10px;
-  padding: 6px 14px;
+  display: flex; align-items: center; justify-content: center; border-radius: 8px; padding: 4px 10px;
   background: linear-gradient(135deg, #02122b 0%, #0a224a 100%);
-  border: 1px solid rgba(255, 196, 0, 0.4);
-  box-shadow: 0 0 12px rgba(255, 196, 0, 0.15), inset 0 0 8px rgba(255, 196, 0, 0.1);
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 196, 0, 0.4); box-shadow: 0 0 10px rgba(255, 196, 0, 0.15);
 }
-.roldao-logo-wrap:hover {
-  transform: translateY(-2px) scale(1.03);
-  border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(255, 196, 0, 0.45), inset 0 0 12px rgba(255, 196, 0, 0.2);
-}
+.roldao-logo-img { height: 32px; width: auto; object-fit: contain; }
+.sidebar-brand b { font-size: 16px; font-weight: 700; color: #fff; display: block; line-height: 1.1; }
+.sidebar-brand small { color: var(--mute); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
 
-.roldao-logo-img {
-  height: 40px;
-  width: auto;
-  display: block;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+.menu-label { padding: 18px 20px 8px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); font-weight: 800; }
+.nav-menu { display: flex; flex-direction: column; gap: 4px; padding: 0 12px; }
+.nav-menu button {
+  display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-radius: 8px; border: 0;
+  background: transparent; color: var(--mute); font-weight: 600; font-size: 13.5px; text-align: left; transition: all 0.2s ease;
 }
+.nav-menu button:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.nav-menu button[aria-selected="true"] {
+  background: linear-gradient(135deg, rgba(255,196,0,0.15) 0%, rgba(255,196,0,0.05) 100%);
+  color: var(--accent); border: 1px solid rgba(255,196,0,0.3); font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.nav-menu button .icon { font-size: 16px; width: 20px; text-align: center; }
 
-.brand{display:flex;flex-direction:column;line-height:1.1}
-.brand b{font-family:var(--f-body);font-size:20px;font-weight:700;letter-spacing:-.01em;color:#fff}
-.brand small{color:var(--mute);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+/* Top Header Bar */
+header { height: 65px; background: rgba(13, 17, 29, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); display: flex; align-items: center; padding: 0 24px; gap: 16px; position: sticky; top: 0; z-index: 10; }
+.search-global { display: flex; align-items: center; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 14px; width: 280px; gap: 8px; color: var(--mute); }
+.search-global input { background: transparent; border: 0; width: 100%; outline: none; font-size: 13px; color: var(--text); }
 
-nav{display:flex;gap:8px;flex-wrap:wrap}
-nav button{
-  background: linear-gradient(135deg, #071530 0%, #0e234c 100%);
-  border: 1px solid rgba(255, 196, 0, 0.25);
-  border-radius: 10px;
-  padding: 9px 18px;
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--text);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-nav button:hover{
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 0 16px rgba(255, 196, 0, 0.35);
-  color: #fff;
-}
-nav button[aria-selected="true"]{
-  background: linear-gradient(135deg, #ffc400 0%, #e6a800 100%);
-  color: #120e00;
-  border-color: #ffe066;
-  font-weight: 800;
-  box-shadow: 0 0 22px rgba(255, 196, 0, 0.55), inset 0 0 10px rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
-}
-
-.tools{margin-left:auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-
-.seg{
-  display:inline-flex;
-  border:1px solid rgba(255, 196, 0, 0.3);
-  border-radius:10px;
-  overflow:hidden;
-  background:#040d21;
-  padding: 2px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-.seg button{
-  background:transparent;
-  border:0;
-  padding:7px 15px;
-  font-size:13px;
-  font-weight:700;
-  color:var(--mute);
-  border-radius: 8px;
-  transition:all .3s ease;
-}
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel2); padding: 2px; }
+.seg button { background: transparent; border: 0; padding: 6px 14px; font-size: 12px; font-weight: 700; color: var(--mute); border-radius: 6px; transition: all .2s; }
 .seg button:hover { color: #fff; }
-.seg button[aria-pressed="true"]{
-  background: linear-gradient(135deg, #102958 0%, #1a3c7e 100%);
-  color: var(--accent);
-  border: 1px solid rgba(255, 196, 0, 0.5);
-  box-shadow: 0 0 12px rgba(255, 196, 0, 0.3);
-}
+.seg button[aria-pressed="true"] { background: var(--panel); color: var(--accent); border: 1px solid rgba(255, 196, 0, 0.4); }
 
-.tv{
-  background: linear-gradient(135deg, #071530 0%, #0e234c 100%);
-  border: 1px solid rgba(255, 196, 0, 0.3);
-  border-radius: 10px;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: all 0.3s ease;
-}
-.tv:hover{
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 0 16px rgba(255, 196, 0, 0.35);
-}
-.tv[aria-pressed="true"]{
-  background: linear-gradient(135deg, #ffc400 0%, #e6a800 100%);
-  color: #120e00;
-  border-color: #ffe066;
-  box-shadow: 0 0 20px rgba(255, 196, 0, 0.6);
-}
+.tv { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 700; color: var(--text); transition: all 0.2s; }
+.tv:hover { border-color: var(--accent); color: var(--accent); }
+.tv[aria-pressed="true"] { background: var(--accent); color: #120e00; font-weight: 800; }
 
-#src{font-size:13px;color:var(--mute);width:100%;display:flex;gap:8px;align-items:center}
-#src i{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block}
-#src.live i{background:var(--ok)}
-#src.error i{background:var(--crit)}
-#bar{height:3px;background:var(--accent);width:0;position:fixed;left:0;top:0;z-index:99}
+#src { font-size: 12px; color: var(--mute); display: flex; align-items: center; gap: 6px; background: var(--panel2); padding: 6px 12px; border-radius: 20px; border: 1px solid var(--line); }
+#src i { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); display: inline-block; }
+#src.live i { background: var(--ok); }
+#src.error i { background: var(--crit); }
+#bar { height: 3px; background: var(--accent); width: 0; position: fixed; left: 0; top: 0; z-index: 99; }
 
-section{display:none;padding-top:20px}
-section.on{display:block}
-h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;letter-spacing:-.01em}
-.sub{color:var(--mute);margin:0 0 18px;font-size:14px}
-.grid{display:grid;gap:16px}
-.kpis{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:stretch}
+/* Main Section Content Area */
+.content-body { padding: 24px; flex: 1; }
+section { display: none; }
+section.on { display: block; }
+h2 { font-size: 22px; font-weight: 700; margin: 0 0 4px; letter-spacing: -.01em; }
+.sub { color: var(--mute); margin: 0 0 20px; font-size: 13px; }
 
-.card{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:20px;
-  min-width:0;
-  box-shadow:0 8px 24px rgba(0,0,0,0.3);
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-start;
-  transition: all 0.3s ease;
-  position: relative;
-}
-.card:hover {
-  border-color: rgba(255, 196, 0, 0.35);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 0 15px rgba(255, 196, 0, 0.1);
-}
-.card.clickable-card {
-  cursor: pointer;
-}
-.card.clickable-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--accent);
-}
+/* Grid and Cards */
+.grid { display: grid; gap: 18px; }
+.kpis { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.two { grid-template-columns: 1fr 1.3fr; align-items: stretch; }
 
-.card h3{margin:0 0 14px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:700}
+.card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25); display: flex; flex-direction: column; justify-content: flex-start; transition: all 0.25s ease; position: relative;
+}
+.card:hover { border-color: rgba(255, 196, 0, 0.3); transform: translateY(-2px); }
+.card.clickable-card { cursor: pointer; }
+
+.card h3 { margin: 0 0 14px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); font-weight: 700; }
 .card-header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
 .card-header-action h3 { margin: 0; }
-.kpi .v{font-family:var(--f-num);font-size:38px;font-weight:700;line-height:1.05}
-.kpi .s{color:var(--mute);font-size:13px;margin-top:6px}
-.kpi.hl{border-top:4px solid var(--accent)}
-.good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-/* DESIGN DO GRÁFICO COM ESPAÇAMENTO ADICIONAL PARA O VALOR / LIMITE */
+/* KPI Cards Layout */
+.kpi .v { font-family: var(--f-num); font-size: 34px; font-weight: 700; line-height: 1.1; margin-top: 4px; }
+.kpi .s { color: var(--mute); font-size: 12px; margin-top: 8px; }
+.kpi .progress-bar-sm { height: 4px; width: 100%; background: var(--panel2); border-radius: 2px; margin-top: 12px; overflow: hidden; }
+.kpi .progress-bar-sm div { height: 100%; border-radius: 2px; }
+.kpi.hl { border-top: 3px solid var(--accent); }
+.good { color: var(--ok); } .warnc { color: var(--warn); } .critc { color: var(--crit); }
+
+/* Bar Chart Component */
 .bar-chart-container {
-  display: flex;
-  align-items: flex-end;
-  gap: 16px;
-  height: 295px;
-  padding: 65px 16px 14px 16px;
-  overflow-x: auto;
-  position: relative;
-  background: rgba(4, 13, 33, 0.4);
-  border-radius: 8px;
-  border: 1px solid rgba(26, 49, 99, 0.6);
+  display: flex; align-items: flex-end; gap: 16px; height: 280px; padding: 60px 16px 14px 16px;
+  overflow-x: auto; position: relative; background: var(--panel2); border-radius: 8px; border: 1px solid var(--line);
 }
-.bar-chart-wrapper {
-  display: flex;
-  align-items: flex-end;
-  gap: 16px;
-  min-width: 100%;
-  height: 100%;
-  position: relative;
-}
-.bar-chart-col {
-  flex: 1;
-  min-width: 48px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  justify-content: flex-end;
-  position: relative;
-  z-index: 3;
-}
+.bar-chart-wrapper { display: flex; align-items: flex-end; gap: 16px; min-width: 100%; height: 100%; position: relative; }
+.bar-chart-col { flex: 1; min-width: 44px; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; position: relative; z-index: 3; }
 .bar-chart-bar {
-  width: 100%;
-  max-width: 44px;
-  background: linear-gradient(180deg, #4285f4 0%, #1a3c7e 100%);
-  border: 1px solid rgba(141, 161, 204, 0.4);
-  border-radius: 6px 6px 2px 2px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  width: 100%; max-width: 40px; background: linear-gradient(180deg, var(--blue) 0%, var(--navy) 100%);
+  border: 1px solid rgba(141, 161, 204, 0.3); border-radius: 6px 6px 2px 2px; transition: all 0.3s ease; position: relative; cursor: pointer;
 }
-.bar-chart-bar.is-proj {
-  background: linear-gradient(180deg, rgba(255, 196, 0, 0.8) 0%, rgba(138, 98, 0, 0.6) 100%);
-  border: 1px dashed var(--accent);
-}
-.bar-chart-bar:hover {
-  background: linear-gradient(180deg, #ffc400 0%, #d49b00 100%);
-  border-color: #ffe066;
-  box-shadow: 0 0 20px rgba(255, 196, 0, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.4);
-  transform: translateY(-2px);
-}
+.bar-chart-bar.is-proj { background: linear-gradient(180deg, rgba(255, 196, 0, 0.8) 0%, rgba(138, 98, 0, 0.6) 100%); border: 1px dashed var(--accent); }
+.bar-chart-bar:hover { background: linear-gradient(180deg, #ffc400 0%, #d49b00 100%); border-color: #ffe066; box-shadow: 0 0 16px rgba(255, 196, 0, 0.5); transform: translateY(-2px); }
 .bar-val-label {
-  position: absolute;
-  top: -46px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--f-num);
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--accent);
-  white-space: nowrap;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.9);
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1.15;
+  position: absolute; top: -44px; left: 50%; transform: translateX(-50%); font-family: var(--f-num); font-size: 12px; font-weight: 800;
+  color: var(--accent); white-space: nowrap; pointer-events: none; display: flex; flex-direction: column; align-items: center;
 }
-.bar-var-tag {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 4px;
-  border-radius: 3px;
-  margin-top: 2px;
-}
-.bar-var-tag.up { color: var(--ok); background: rgba(53, 212, 154, 0.15); }
-.bar-var-tag.down { color: var(--crit); background: rgba(255, 93, 98, 0.15); }
-.bar-var-tag.neutral { color: var(--mute); }
+.bar-var-tag { font-size: 9px; font-weight: 700; padding: 1px 4px; border-radius: 3px; margin-top: 2px; }
+.bar-var-tag.up { color: var(--ok); background: rgba(16, 185, 129, 0.15); }
+.bar-var-tag.down { color: var(--crit); background: rgba(239, 68, 68, 0.15); }
+.bar-date-label { margin-top: 10px; font-size: 11px; color: var(--mute); font-weight: 700; font-family: var(--f-num); }
+.limit-line { position: absolute; left: 0; width: 100%; border-top: 2px dashed var(--crit); z-index: 2; pointer-events: none; opacity: 0.8; }
+.limit-line-label { position: absolute; right: 12px; top: -18px; font-size: 10px; font-weight: 800; color: var(--crit); background: var(--panel); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.4); }
 
-.bar-chart-bar:hover .bar-val-label {
-  color: #fff;
-  transform: translateX(-50%) scale(1.08);
-}
-.bar-date-label {
-  margin-top: 10px;
-  font-size: 11px;
-  color: var(--mute);
-  font-weight: 700;
-  white-space: nowrap;
-  font-family: var(--f-num);
-}
-.limit-line {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  border-top: 2px dashed #ff5d62;
-  z-index: 2;
-  pointer-events: none;
-  box-shadow: 0 0 8px rgba(255, 93, 98, 0.4);
-}
-.limit-line-label {
-  position: absolute;
-  right: 12px;
-  top: -20px;
-  font-size: 11px;
-  font-weight: 800;
-  color: #ff5d62;
-  background: #081329;
-  padding: 2px 8px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 93, 98, 0.4);
-}
-
-.active-filters-bar {
-  display: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: rgba(255, 196, 0, 0.12);
-  border: 1px solid var(--accent);
-  padding: 10px 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--accent);
-  box-shadow: 0 0 15px rgba(255, 196, 0, 0.15);
-}
-.active-filters-bar.visible { display: flex; }
-.active-filters-bar button {
-  background: var(--accent);
-  color: #1a1400;
-  border: 0;
-  padding: 5px 14px;
-  border-radius: 6px;
-  font-weight: 800;
-  font-size: 12px;
-  transition: all 0.2s ease;
-}
-.active-filters-bar button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(255, 196, 0, 0.5);
-}
-
-#floating-tooltip {
-  position: fixed;
-  z-index: 9999;
-  display: none;
-  pointer-events: none;
-  background: rgba(8, 20, 48, 0.95);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--accent);
-  border-radius: 10px;
-  padding: 12px 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 15px rgba(255, 196, 0, 0.25);
-  max-width: 320px;
-  animation: tooltipFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes tooltipFadeIn {
-  from { opacity: 0; transform: scale(0.95) translateY(5px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-#floating-tooltip .tt-title {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--accent);
-  text-transform: uppercase;
-  margin-bottom: 6px;
-  border-bottom: 1px solid rgba(255, 196, 0, 0.2);
-  padding-bottom: 4px;
-}
-
-#floating-tooltip .tt-item {
-  font-size: 12px;
-  margin-top: 6px;
-  line-height: 1.35;
-}
-
-#floating-tooltip .tt-item b { color: #fff; display: block; }
-#floating-tooltip .tt-item span { color: var(--mute); }
-
-.filter-bar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; background: var(--panel2); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--line); }
-.filter-bar label { font-size: 14px; font-weight: 600; color: var(--mute); display: flex; align-items: center; gap: 8px; }
-.filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 7px 12px; border-radius: 6px; font-size: 14px; outline: none; transition: border-color .2s ease; }
-.filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
-
-.prod-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.prod-controls select, .prod-controls input { background: var(--panel2); border: 1px solid var(--line); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 13px; outline: none; transition: border-color .2s ease; }
-.prod-controls select:focus, .prod-controls input:focus { border-color: var(--accent); }
-
-.toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #0b1f44 0%, #122d63 100%);
-  border: 1px solid rgba(255, 196, 0, 0.35);
-  color: var(--accent);
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  transition: all .3s ease;
-}
-.toggle-btn:hover {
-  border-color: var(--accent);
-  transform: translateY(-1px);
-  box-shadow: 0 0 14px rgba(255, 196, 0, 0.35);
-  color: #fff;
-}
-
-.btn-export-pdf {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: linear-gradient(135deg, #1b3d1f 0%, #2e6935 100%);
-  border: 1px solid var(--ok);
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-weight: 700;
-  font-size: 13px;
-  transition: all 0.2s ease;
-}
-.btn-export-pdf:hover {
-  background: linear-gradient(135deg, #25542b 0%, #3a8543 100%);
-  transform: scale(1.03);
-  box-shadow: 0 0 12px rgba(53, 212, 154, 0.4);
-}
-
-.collapsible-content { display: none; margin-top: 14px; animation: fadeIn .25s ease-in-out; }
-.collapsible-content.open { display: block; }
-
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-
-.sem-fisico-badge {
-  background: rgba(255, 93, 98, 0.15);
-  border: 1px solid var(--crit);
-  border-radius: 6px;
-  padding: 6px 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #ff8b8f;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.sem-fisico-badge:hover {
-  background: rgba(255, 93, 98, 0.3);
-  box-shadow: 0 0 10px rgba(255, 93, 98, 0.4);
-}
-.sem-fisico-badge b { color: var(--crit); font-family: var(--f-num); font-size: 16px; }
-
-.donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;margin:auto 0;padding:12px 0;width:100%}
-.donut{width:210px;height:210px;flex:none; cursor: pointer;}
+/* Donut & Legend Components */
+.donutwrap { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; justify-content: center; margin: auto 0; padding: 12px 0; width: 100%; }
+.donut { width: 190px; height: 190px; flex: none; cursor: pointer; }
 .donut circle { transition: stroke-width 0.2s ease, opacity 0.2s ease; }
 .donut circle:hover { stroke-width: 32; opacity: 0.9; }
 .donut circle.active-slice { stroke-width: 34; filter: drop-shadow(0 0 8px var(--accent)); }
-.donut text{fill:var(--text);font-family:var(--f-num)}
-.legend{display:flex;flex-direction:column;gap:12px;min-width:200px;flex:1}
-.legend div{display:flex;align-items:center;gap:10px;font-size:14px; cursor: pointer; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;}
-.legend div:hover, .legend div.active-item { background: rgba(255, 196, 0, 0.15); border: 1px solid rgba(255, 196, 0, 0.3); }
-.legend i{width:14px;height:14px;border-radius:3px;flex:none}
-.legend span:last-child{margin-left:auto;font-family:var(--f-num);font-weight:700;white-space:nowrap}
+.donut text { fill: var(--text); font-family: var(--f-num); }
+.legend { display: flex; flex-direction: column; gap: 10px; min-width: 180px; flex: 1; }
+.legend div { display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 5px 8px; border-radius: 6px; transition: all 0.2s; }
+.legend div:hover, .legend div.active-item { background: rgba(255, 196, 0, 0.12); border: 1px solid rgba(255, 196, 0, 0.25); }
+.legend i { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+.legend span:last-child { margin-left: auto; font-family: var(--f-num); font-weight: 700; white-space: nowrap; }
 
-.tw{overflow-x:auto;width:100%}
-table{border-collapse:collapse;width:100%;font-size:14px}
-th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
-td{padding:11px 12px;border-bottom:1px solid #12244b;white-space:nowrap}
+/* Filter Bars & Active Badges */
+.active-filters-bar { display: none; align-items: center; justify-content: space-between; gap: 12px; background: rgba(255, 196, 0, 0.1); border: 1px solid var(--accent); padding: 8px 14px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; font-weight: 600; color: var(--accent); }
+.active-filters-bar.visible { display: flex; }
+.active-filters-bar button { background: var(--accent); color: #120e00; border: 0; padding: 4px 10px; border-radius: 4px; font-weight: 800; font-size: 11px; }
+
+.filter-bar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; background: var(--panel2); padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--line); }
+.filter-bar label { font-size: 13px; font-weight: 600; color: var(--mute); display: flex; align-items: center; gap: 8px; }
+.filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 13px; outline: none; }
+.filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
+
+.prod-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.prod-controls select, .prod-controls input { background: var(--panel2); border: 1px solid var(--line); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 12px; outline: none; }
+
+.toggle-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--panel2); border: 1px solid var(--line); color: var(--accent); padding: 6px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; }
+.toggle-btn:hover { border-color: var(--accent); color: #fff; }
+.btn-export-pdf { display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--ok); color: var(--ok); padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; }
+.btn-export-pdf:hover { background: var(--ok); color: #000; }
+
+.sem-fisico-badge { background: rgba(239, 68, 68, 0.12); border: 1px solid var(--crit); border-radius: 6px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #ff8b8f; font-weight: 600; }
+.sem-fisico-badge b { color: var(--crit); font-family: var(--f-num); font-size: 15px; }
+
+/* Tables */
+.tw { overflow-x: auto; width: 100%; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-weight: 700; white-space: nowrap; }
+td { padding: 10px 12px; border-bottom: 1px solid rgba(34, 44, 66, 0.6); white-space: nowrap; }
 tr.clickable-row { cursor: pointer; transition: background 0.2s ease; }
-tr.clickable-row:hover, tr.clickable-row.active-row { background: rgba(255, 196, 0, 0.12) !important; }
-th.r,td.r{text-align:right;font-family:var(--f-num)}
-tr.tot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
-td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
-.bar{display:block;height:8px;background:#162a58;border-radius:4px;min-width:70px;margin-top:6px}
-.bar b{display:block;height:100%;border-radius:4px}
+tr.clickable-row:hover, tr.clickable-row.active-row { background: rgba(255, 196, 0, 0.1) !important; }
+th.r, td.r { text-align: right; font-family: var(--f-num); }
+tr.tot td { font-weight: 700; border-top: 2px solid var(--line); border-bottom: 0; }
+td .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.bar { display: block; height: 6px; background: var(--panel2); border-radius: 3px; min-width: 60px; margin-top: 4px; }
+.bar b { display: block; height: 100%; border-radius: 3px; }
 
-.sep-progress { display: flex; flex-direction: column; gap: 14px; margin-top: 6px; }
-.sep-item { display: flex; flex-direction: column; gap: 6px; cursor: pointer; padding: 4px; border-radius: 6px; transition: background 0.2s; }
-.sep-item:hover { background: rgba(255,255,255,0.05); }
-.sep-header { display: flex; justify-content: space-between; font-size: 14px; font-weight:600; }
-.sep-bar-bg { height: 12px; background: var(--panel2); border-radius: 6px; overflow: hidden; display: flex; }
+.collapsible-content { display: none; margin-top: 14px; animation: fadeIn .2s ease; }
+.collapsible-content.open { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Separation Progress Bars */
+.sep-progress { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+.sep-item { display: flex; flex-direction: column; gap: 4px; cursor: pointer; padding: 4px; border-radius: 6px; }
+.sep-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; }
+.sep-bar-bg { height: 10px; background: var(--panel2); border-radius: 5px; overflow: hidden; display: flex; }
 .sep-bar-fill { height: 100%; transition: width 0.3s ease; }
 
-.info-note {
-  background: rgba(66, 133, 244, 0.1);
-  border: 1px solid rgba(66, 133, 244, 0.3);
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-top: 16px;
-  font-size: 13px;
-  color: #b0cdff;
-  line-height: 1.4;
-}
+.info-note { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 8px; padding: 10px 14px; margin-top: 14px; font-size: 12px; color: #93c5fd; }
 .info-note b { color: var(--accent); }
 
-.occ { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; align-items: stretch; }
-.mini { display: flex; flex-direction: column; gap: 8px; min-width: 0; cursor: pointer; transition: transform 0.2s; }
-.mini:hover { transform: translateY(-2px); }
-.mini .b { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 10px; text-align: center; }
-.mini .b small { display: block; color: var(--mute); font-size: 11px; text-transform: uppercase; margin-bottom: 4px; font-weight:600; }
-.mini .b strong { font-family: var(--f-num); font-size: 26px; line-height: 1.1; }
-.mini.g1 .b { border-left: 3px solid var(--blue); border-right: 3px solid var(--blue); }
-.mini.g2 .b { border-left: 3px solid var(--navy); border-right: 3px solid var(--navy); }
-
-.donutcard { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 16px; }
-
-.pcts { display: flex; flex-direction: column; gap: 12px; justify-content: center; min-width: 0; }
-.pcts .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.pcts .b { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 14px; text-align: center; min-width: 0; }
-.pcts .b small { display: block; color: var(--mute); font-size: 11px; margin-bottom: 4px; font-weight:600; }
-.pcts .b strong { font-family: var(--f-num); font-size: 24px; }
-.pcts .big strong { font-size: 42px; color: var(--accent); }
+/* Occupation Grid */
+.occ { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+.mini { display: flex; flex-direction: column; gap: 6px; }
+.mini .b { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 10px; text-align: center; }
+.mini .b small { display: block; color: var(--mute); font-size: 10px; text-transform: uppercase; margin-bottom: 2px; font-weight: 700; }
+.mini .b strong { font-family: var(--f-num); font-size: 22px; }
 
 .rua-container { overflow-x: auto; width: 100%; }
-.rua { display: flex; gap: 12px; align-items: flex-end; height: 230px; padding-top: 10px; min-width: 600px; }
-.rua .c { flex: 1; min-width: 32px; display: flex; flex-direction: column; align-items: stretch; height: 100%; }
-.rua .stk { flex: 1; display: flex; flex-direction: column; border-radius: 4px; overflow: hidden; min-height: 0; }
-.rua .lv { display: flex; align-items: center; justify-content: center; font-family: var(--f-num); font-size: 12px; font-weight: 600; overflow: hidden; min-height: 0; }
+.rua { display: flex; gap: 10px; align-items: flex-end; height: 210px; padding-top: 10px; min-width: 550px; }
+.rua .c { flex: 1; min-width: 28px; display: flex; flex-direction: column; align-items: stretch; height: 100%; }
+.rua .stk { flex: 1; display: flex; flex-direction: column; border-radius: 4px; overflow: hidden; }
+.rua .lv { display: flex; align-items: center; justify-content: center; font-family: var(--f-num); font-size: 11px; font-weight: 600; }
 .rua .oc { background: var(--cream); color: #2b2205; }
-.rua .name { text-align: center; font-family: var(--f-num); font-size: 14px; font-weight: 600; margin-top: 8px; color: var(--mute); }
-.lg { display: flex; gap: 18px; font-size: 13px; color: var(--mute); margin-bottom: 10px; justify-content: center; }
-.lg i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
-.foot { color: var(--mute); font-size: 13px; margin-top: 18px; }
+.rua .name { text-align: center; font-family: var(--f-num); font-size: 13px; font-weight: 600; margin-top: 6px; color: var(--mute); }
+.lg { display: flex; gap: 16px; font-size: 12px; color: var(--mute); margin-bottom: 8px; justify-content: center; }
+.lg i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
 
-body.tvmode header nav, body.tvmode .seg, body.tvmode #src { display: none !important; }
-body.tvmode header { border-bottom: 0; padding: 10px 0; }
+#floating-tooltip {
+  position: fixed; z-index: 9999; display: none; pointer-events: none; background: rgba(13, 17, 29, 0.95);
+  backdrop-filter: blur(12px); border: 1px solid var(--accent); border-radius: 8px; padding: 10px 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 300px;
+}
+#floating-tooltip .tt-title { font-size: 12px; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; border-bottom: 1px solid rgba(255,196,0,0.2); padding-bottom: 4px; }
+#floating-tooltip .tt-item { font-size: 11.5px; margin-top: 4px; }
+#floating-tooltip .tt-item b { color: #fff; display: block; }
+#floating-tooltip .tt-item span { color: var(--mute); }
+
+body.tvmode aside, body.tvmode header nav, body.tvmode .seg, body.tvmode .search-global { display: none !important; }
+body.tvmode header { border-bottom: 0; padding: 10px 24px; }
 body.tvmode .card { padding: 24px; }
-body.tvmode h2 { font-size: 36px; }
-body.tvmode .kpi .v { font-size: 52px; }
+body.tvmode h2 { font-size: 32px; }
+body.tvmode .kpi .v { font-size: 46px; }
 
-@media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
-@media (prefers-reduced-motion:no-preference){#bar{transition:width .3s linear}}
+@media (max-width: 900px){
+  aside { width: 70px; }
+  .sidebar-brand, .menu-label, .nav-menu button span:not(.icon) { display: none; }
+  .two { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
 <div id="bar"></div>
-
 <div id="floating-tooltip"></div>
 
-<header>
-  <div class="brand-container">
-    <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
-      <img class="roldao-logo-img" src="./logo%20Roldao%20Painel.png" alt="Roldão Atacadista">
+<div class="app-container">
+  <!-- Left Navigation Sidebar -->
+  <aside>
+    <div class="sidebar-header">
+      <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
+        <img class="roldao-logo-img" src="./logo%20Roldao%20Painel.png" alt="Roldão" onerror="this.style.display='none'">
+      </div>
+      <div class="sidebar-brand">
+        <b>Estoque CD</b>
+        <small>Roldão Atacadista</small>
+      </div>
     </div>
 
-    <div class="brand">
-      <b>Painel de Estoque</b>
-      <small>Centro de Distribuição</small>
-    </div>
-  </div>
+    <div class="menu-label">Menu Principal</div>
+    <nav class="nav-menu" id="tabs" role="tablist">
+      <!-- Navigation Buttons populated by JS -->
+    </nav>
+  </aside>
 
-  <nav id="tabs" role="tablist" aria-label="Seções"></nav>
-  <div class="tools">
-    <div class="seg" id="basis" role="group" aria-label="Medida">
-      <button data-b="custo" aria-pressed="true">R$</button>
-      <button data-b="qtd" aria-pressed="false">Qtd. endereçada</button>
-    </div>
-    <button class="tv" id="tv" aria-pressed="false">📺 Modo TV</button>
-  </div>
-  <div id="src"><i></i><span id="srctxt">Carregando…</span></div>
-</header>
+  <!-- Main Content Area -->
+  <main>
+    <header>
+      <div class="search-global">
+        <span>🔍</span>
+        <input type="text" id="globalSearchInput" placeholder="Busca global (código, EAN, produto)...">
+      </div>
 
-<section id="s-geral"></section>
-<section id="s-shelf"></section>
-<section id="s-aging"></section>
-<section id="s-ocup"></section>
-<section id="s-carteira"></section>
-<section id="s-admin"></section>
+      <div class="header-right">
+        <div class="seg" id="basis" role="group" aria-label="Medida">
+          <button data-b="custo" aria-pressed="true">R$</button>
+          <button data-b="qtd" aria-pressed="false">Qtd. endereçada</button>
+        </div>
+
+        <button class="tv" id="tv" aria-pressed="false">📺 Modo TV</button>
+
+        <div id="src"><i></i><span id="srctxt">Carregando…</span></div>
+      </div>
+    </header>
+
+    <div class="content-body">
+      <section id="s-geral"></section>
+      <section id="s-shelf"></section>
+      <section id="s-aging"></section>
+      <section id="s-ocup"></section>
+      <section id="s-carteira"></section>
+      <section id="s-admin"></section>
+    </div>
+  </main>
+</div>
 
 <script>
 const CONFIG = {
@@ -580,45 +313,19 @@ const MAPA_MESES = {
 };
 
 const MAPA_LOJAS = {
-  "2": "R002 - ROLDÃO FREGUESIA",
-  "3": "R003 - ROLDÃO MOOCA",
-  "4": "R004 - ROLDÃO BUTANTA",
-  "5": "R005 - ROLDÃO OSASCO",
-  "6": "R006 - ROLDÃO CAMPO LIMPO",
-  "7": "R007 - ROLDÃO SANTO ANDRE",
-  "8": "R008 - ROLDÃO JUNDIAI",
-  "9": "R009 - ROLDÃO GUARULHOS",
-  "10": "R010 - ROLDÃO IPIRANGA",
-  "11": "R011 - ROLDÃO M. TITO",
-  "13": "R013 - ROLDÃO P. GRANDE",
-  "15": "R015 - ROLDÃO GUARUJA",
-  "16": "R016 - ROLDÃO C. TIRADENTES",
-  "17": "R017 - ROLDÃO F DA ROCHA",
-  "18": "R018 - ROLDÃO SOROCABA",
-  "19": "R019 - ROLDÃO ATIBAIA",
-  "20": "R020 - ROLDÃO N. UNIDAS",
-  "22": "R022 - ROLDÃO CUPECE",
-  "24": "R024 - ROLDÃO JANDIRA",
-  "26": "R026 - ROLDÃO TAIPAS",
-  "27": "R027 - ROLDÃO SÃO JOSÉ",
-  "28": "R028 - ROLDÃO BRASILANDIA",
-  "29": "R029 - ROLDÃO VILA MATHIAS",
-  "30": "R030 - ROLDÃO CIDADE DUTRA",
-  "35": "R035 - ROLDÃO CAMPINAS",
-  "36": "R036 - ROLDÃO BONSUCESO",
-  "37": "R037 - ROLDÃO VILA EMA",
-  "39": "R039 - ROLDÃO OSASCO 2",
-  "41": "R041 - ROLDÃO MAUA",
-  "40": "R040 - ROLDÃO VALINHOS",
-  "42": "R042 - ROLDÃO S. ANDRE 2",
-  "43": "R043 - ROLDÃO SANTANA",
-  "44": "R044 - ROLDÃO ITANHAEM",
-  "46": "R046 - ROLDÃO SALTO",
-  "47": "R047 - ROLDÃO ITU",
-  "48": "R048 - ROLDÃO INDAIATUBA",
-  "50": "R050 - ROLDÃO JUNDIAI 3",
-  "51": "R051 - ROLDÃO P. GRANDE 2",
-  "52": "R052 - ROLDÃO PIRITUBA",
+  "2": "R002 - ROLDÃO FREGUESIA", "3": "R003 - ROLDÃO MOOCA", "4": "R004 - ROLDÃO BUTANTA",
+  "5": "R005 - ROLDÃO OSASCO", "6": "R006 - ROLDÃO CAMPO LIMPO", "7": "R007 - ROLDÃO SANTO ANDRE",
+  "8": "R008 - ROLDÃO JUNDIAI", "9": "R009 - ROLDÃO GUARULHOS", "10": "R010 - ROLDÃO IPIRANGA",
+  "11": "R011 - ROLDÃO M. TITO", "13": "R013 - ROLDÃO P. GRANDE", "15": "R015 - ROLDÃO GUARUJA",
+  "16": "R016 - ROLDÃO C. TIRADENTES", "17": "R017 - ROLDÃO F DA ROCHA", "18": "R018 - ROLDÃO SOROCABA",
+  "19": "R019 - ROLDÃO ATIBAIA", "20": "R020 - ROLDÃO N. UNIDAS", "22": "R022 - ROLDÃO CUPECE",
+  "24": "R024 - ROLDÃO JANDIRA", "26": "R026 - ROLDÃO TAIPAS", "27": "R027 - ROLDÃO SÃO JOSÉ",
+  "28": "R028 - ROLDÃO BRASILANDIA", "29": "R029 - ROLDÃO VILA MATHIAS", "30": "R030 - ROLDÃO CIDADE DUTRA",
+  "35": "R035 - ROLDÃO CAMPINAS", "36": "R036 - ROLDÃO BONSUCESO", "37": "R037 - ROLDÃO VILA EMA",
+  "39": "R039 - ROLDÃO OSASCO 2", "40": "R040 - ROLDÃO VALINHOS", "41": "R041 - ROLDÃO MAUA",
+  "42": "R042 - ROLDÃO S. ANDRE 2", "43": "R043 - ROLDÃO SANTANA", "44": "R044 - ROLDÃO ITANHAEM",
+  "46": "R046 - ROLDÃO SALTO", "47": "R047 - ROLDÃO ITU", "48": "R048 - ROLDÃO INDAIATUBA",
+  "50": "R050 - ROLDÃO JUNDIAI 3", "51": "R051 - ROLDÃO P. GRANDE 2", "52": "R052 - ROLDÃO PIRITUBA",
   "53": "R053 - ROLDÃO SÃO VICENTE"
 };
 
@@ -653,6 +360,7 @@ const nice = s => String(s).replace(/^ESTOQUE\s+/i,'').toLowerCase().replace(/(^
 
 let D = null;
 let basis = 'custo';
+let activeTab = 'geral';
 
 let filterLocalEst = 'todos'; 
 let filterStatusEst = 'todos';
@@ -661,13 +369,11 @@ let filterRua = 'todos';
 let filterShelfFaixa = 'todos';
 let filterAgingFaixa = 'todos';
 
-/* FILTROS DO GRÁFICO DIÁRIO/MENSAL */
 let filterModoAcum = 'mes'; 
 let filterDiaEspec = 'todos';
 
 let geralProdExpanded = false; 
 
-/* FILTROS DA CARTEIRA */
 let dateReservaFilter = 'todos'; 
 let resFilter = 'todos';
 let sepFilter = 'todos';
@@ -770,11 +476,7 @@ async function fromJsonFile(){
   
   const res = await fetch(url, {
     method: 'GET',
-    headers: {
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
-    }
+    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
   });
 
   if (!res.ok) throw new Error('Status HTTP ' + res.status);
@@ -899,7 +601,7 @@ async function load(){
   } catch(err) {
     console.error('Erro ao carregar dados:', err);
     $('#src').className = 'error';
-    $('#srctxt').textContent = 'Erro de atualização (' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ')';
+    $('#srctxt').textContent = 'Erro (' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ')';
   }
 }
 
@@ -930,7 +632,6 @@ function attachTooltipEvents() {
     el.addEventListener('mousemove', (e) => {
       const x = e.clientX + 15;
       const y = e.clientY + 15;
-      
       const ttWidth = tt.offsetWidth;
       const ttHeight = tt.offsetHeight;
       const winWidth = window.innerWidth;
@@ -959,12 +660,12 @@ function donut(items,center,sub, filterAttr = 'data-filter-local', activeValue =
     const isSelected = activeValue !== 'todos' && activeValue.toLowerCase() === i.rawKey.toLowerCase();
     
     if(L>0) {
-      segs+=`<circle class="${isSelected ? 'active-slice' : ''}" r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="26" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)" ${filterAttr}="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"></circle>`; 
+      segs+=`<circle class="${isSelected ? 'active-slice' : ''}" r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="24" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)" ${filterAttr}="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"></circle>`; 
     }
     off+=L; 
   });
-  return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle r="${R}" cx="100" cy="100" fill="none" stroke="#162e5c" stroke-width="26"/>${segs}
-    <text x="100" y="${sub?98:106}" text-anchor="middle" font-size="${String(center).length>5?24:30}" font-weight="700">${center}</text>${sub?`<text x="100" y="122" text-anchor="middle" font-size="13" style="fill:var(--mute)">${sub}</text>`:''}</svg>`;
+  return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle r="${R}" cx="100" cy="100" fill="none" stroke="#1c2538" stroke-width="24"/>${segs}
+    <text x="100" y="${sub?98:106}" text-anchor="middle" font-size="${String(center).length>5?22:28}" font-weight="700">${center}</text>${sub?`<text x="100" y="122" text-anchor="middle" font-size="12" style="fill:var(--mute)">${sub}</text>`:''}</svg>`;
 }
 
 function legend(items, filterAttr = 'data-filter-local', activeValue = 'todos'){
@@ -978,10 +679,19 @@ function legend(items, filterAttr = 'data-filter-local', activeValue = 'todos'){
   }).join('')}</div>`;
 }
 
-const kpi = (l,v,s,cls='', tooltipTitle='', tooltipItems=[], tooltipColor='', clickTab='') => {
+const kpi = (l,v,s,cls='', tooltipTitle='', tooltipItems=[], tooltipColor='', clickTab='', progressPct=100) => {
   const ttAttr = tooltipTitle ? `data-tooltip-title="${esc(tooltipTitle)}" data-tooltip-color="${tooltipColor || 'var(--accent)'}" data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}"` : '';
   const clickAttr = clickTab ? `onclick="switchTab('${clickTab}')" class="card kpi ${cls} clickable-card"` : `class="card kpi ${cls}"`;
-  return `<div ${clickAttr} ${ttAttr}><h3>${l} ${clickTab ? '↗' : ''}</h3><div class="v">${v}</div><div class="s">${s||''}</div></div>`;
+  const colorMap = { ok: 'var(--ok)', warn: 'var(--warn)', crit: 'var(--crit)' };
+  const pColor = colorMap[cls] || 'var(--blue)';
+
+  return `
+  <div ${clickAttr} ${ttAttr}>
+    <h3>${l} ${clickTab ? '↗' : ''}</h3>
+    <div class="v">${v}</div>
+    <div class="s">${s||''}</div>
+    <div class="progress-bar-sm"><div style="width:${progressPct}%; background:${pColor}"></div></div>
+  </div>`;
 };
 
 function switchTab(tabId) {
@@ -993,12 +703,12 @@ function switchTab(tabId) {
 
 const COLOR_MAP = {
   'revenda': '#ffc400',
-  'virtual': '#ff5d62',
-  'pre alerta': '#ff8b8f',
-  'pré alerta': '#ff8b8f',
+  'virtual': '#ef4444',
+  'pre alerta': '#f87171',
+  'pré alerta': '#f87171',
   'suprimentos': '#c084fc'
 };
-const DEFAULT_COLORS = ['#ffc400','#ff5d62','#ff8b8f','#c084fc','#35d49a','#3a5db0','#4285f4','#e6a800','#ffb020','#ff5d62','#35d49a','#8da1cc'];
+const DEFAULT_COLORS = ['#ffc400','#ef4444','#f87171','#c084fc','#10b981','#2563eb','#3b82f6','#e6a800','#f59e0b','#ef4444','#10b981','#8ea0c4'];
 
 function clearAllFilters() {
   filterLocalEst = 'todos';
@@ -1047,17 +757,13 @@ function printChecklist(items, title) {
       body { font-family: Arial, sans-serif; margin: 15px; color: #000; font-size: 11px; }
       .header-title { font-size: 16px; font-weight: bold; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
       .meta-info { margin-bottom: 12px; font-size: 11px; display: flex; gap: 20px; border-bottom: 1px #ccc solid; padding-bottom: 6px; }
-      .meta-info div { line-height: 1.3; }
       table { width: 100%; border-collapse: collapse; margin-top: 5px; }
       th { background: #e0e0e0; text-align: left; padding: 5px; font-size: 10px; border: 1px solid #000; text-transform: uppercase; }
       td { padding: 4px 6px; border: 1px solid #bbb; }
       tr:nth-child(even) { background: #f9f9f9; }
       .signature-space { margin-top: 25px; display: flex; justify-content: space-between; }
       .sig-line { width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 4px; font-size: 10px; }
-      @media print {
-        body { margin: 0; }
-        button { display: none; }
-      }
+      @media print { body { margin: 0; } button { display: none; } }
     </style>
   </head>
   <body>
@@ -1065,13 +771,11 @@ function printChecklist(items, title) {
       <span>ROLDÃO ATACADISTA CD - CONFERÊNCIA CARA-CRACHÁ</span>
       <button onclick="window.print()" style="padding:5px 12px; font-weight:bold; cursor:pointer;">🖨️ IMPRIMIR / SALVAR PDF</button>
     </div>
-    
     <div class="meta-info">
       <div><b>Relatório:</b> ${esc(title)}<br><b>Emissão:</b> ${nowStr}</div>
       <div><b>Linhas de Palete:</b> ${itemsSorted.length}<br><b>Sequência:</b> Menor para Maior Endereço</div>
       <div><b>Operador Auditor:</b> ___________________________</div>
     </div>
-
     <table>
       <thead>
         <tr>
@@ -1085,50 +789,31 @@ function printChecklist(items, title) {
           <th>Ajuste / Obs</th>
         </tr>
       </thead>
-      <tbody>
-        ${tableRows}
-      </tbody>
+      <tbody>${tableRows}</tbody>
     </table>
-
     <div class="signature-space">
       <div class="sig-line">Assinatura do Conferente de Rua</div>
       <div class="sig-line">Assinatura da Liderança de Estoque</div>
     </div>
-
-    <script>
-      window.onload = function() {
-        setTimeout(function() { window.print(); }, 400);
-      }
-    <\/script>
+    <script>window.onload = function() { setTimeout(function() { window.print(); }, 400); }</script>
   </body>
-  </html>
-  `;
+  </html>`;
 
   printWin.document.write(html);
   printWin.document.close();
 }
 
-/* VISÃO GERAL DA OPERAÇÃO */
+/* Section Rendering Functions */
 function secGeral(){
   const R_all = D.rows;
-
   let baseR = R_all;
-  if (filterArea !== 'todos') {
-    baseR = baseR.filter(r => r.area === filterArea);
-  }
+  if (filterArea !== 'todos') baseR = baseR.filter(r => r.area === filterArea);
 
   const ruasDisponiveis = Array.from(new Set(baseR.map(r => r.rua).filter(r => r > 0))).sort((a,b) => a - b);
-  
   let R = baseR;
-  if (filterLocalEst !== 'todos') {
-    R = R.filter(r => r.est.toLowerCase().trim() === filterLocalEst.toLowerCase().trim());
-  }
-  if (filterStatusEst !== 'todos') {
-    R = R.filter(r => r.status.toLowerCase().trim() === filterStatusEst.toLowerCase().trim());
-  }
-  if (filterRua !== 'todos') {
-    R = R.filter(r => r.rua === +filterRua);
-  }
+  if (filterLocalEst !== 'todos') R = R.filter(r => r.est.toLowerCase().trim() === filterLocalEst.toLowerCase().trim());
+  if (filterStatusEst !== 'todos') R = R.filter(r => r.status.toLowerCase().trim() === filterStatusEst.toLowerCase().trim());
+  if (filterRua !== 'todos') R = R.filter(r => r.rua === +filterRua);
 
   const by = {};
   let semFisicoVal = 0;
@@ -1148,18 +833,9 @@ function secGeral(){
   const items = ests.map(([n,o],i) => {
     const key = n.toLowerCase().trim();
     const valItem = basis==='custo' ? o.custo : o.qtd;
-    if (key.includes('virtual') || key.includes('pre alerta') || key.includes('pré alerta')) {
-      semFisicoVal += valItem;
-    }
+    if (key.includes('virtual') || key.includes('pre alerta') || key.includes('pré alerta')) semFisicoVal += valItem;
     const topItem = R_all.filter(r => r.est === n).sort((a,b) => b.custo - a.custo)[0];
-
-    return {
-      rawKey: n,
-      n: nice(n),
-      v: valItem,
-      c: COLOR_MAP[key] || DEFAULT_COLORS[i % DEFAULT_COLORS.length],
-      topProd: topItem ? `Maior Item: ${topItem.prod}` : ''
-    };
+    return { rawKey: n, n: nice(n), v: valItem, c: COLOR_MAP[key] || DEFAULT_COLORS[i % DEFAULT_COLORS.length], topProd: topItem ? `Maior Item: ${topItem.prod}` : '' };
   });
   
   const rev = R.filter(r=>r.est.trim()===CONFIG.ESTOQUE_FISICO || filterLocalEst !== 'todos');
@@ -1175,7 +851,6 @@ function secGeral(){
   const rc = rev.reduce((s,r)=>s+r.custo,0), rq = rev.reduce((s,r)=>s+r.qtd,0);
   const occ = occData();
   
-  // --- CÁLCULO DE RESUMO DE SHELF LIFE E AGING PARA OS KPIS DA VISÃO GERAL ---
   const revFisico = R_all.filter(r => r.est.trim() === CONFIG.ESTOQUE_FISICO);
   let shelfOkVal = 0, shelfCritVal = 0, shelfTot = 0;
   revFisico.forEach(r => {
@@ -1205,55 +880,34 @@ function secGeral(){
   const semFisicoPct = totV ? (semFisicoVal / totV) * 100 : 0;
 
   let listEstoqueProds = R.map(r => ({
-    codProd: r.codProd,
-    gtin: r.gtin,
-    prod: r.prod,
-    qtd: r.qtd,
-    custo: r.custo,
-    est: r.est,
-    end: r.end,
-    status: r.status,
-    shelf: r.shelf,
-    aging: r.aging,
-    area: r.area,
-    rua: r.rua
+    codProd: r.codProd, gtin: r.gtin, prod: r.prod, qtd: r.qtd, custo: r.custo, est: r.est, end: r.end, status: r.status, shelf: r.shelf, aging: r.aging, area: r.area, rua: r.rua
   }));
 
   if (estoqueProdSearch) {
     const q = estoqueProdSearch.toLowerCase();
     listEstoqueProds = listEstoqueProds.filter(p => 
-      p.prod.toLowerCase().includes(q) || 
-      p.codProd.toLowerCase().includes(q) || 
-      p.gtin.toLowerCase().includes(q) || 
-      p.est.toLowerCase().includes(q) ||
-      (p.end && p.end.toLowerCase().includes(q))
+      p.prod.toLowerCase().includes(q) || p.codProd.toLowerCase().includes(q) || p.gtin.toLowerCase().includes(q) || p.est.toLowerCase().includes(q) || (p.end && p.end.toLowerCase().includes(q))
     );
   }
 
-  if (estoqueProdSortOrder === 'endereco') {
-    listEstoqueProds.sort((a,b) => compareEnderecosNatural(a.end, b.end));
-  } else if (estoqueProdSortOrder === 'valor') {
-    listEstoqueProds.sort((a,b) => b.custo - a.custo);
-  } else if (estoqueProdSortOrder === 'qtd') {
-    listEstoqueProds.sort((a,b) => b.qtd - a.qtd);
-  }
+  if (estoqueProdSortOrder === 'endereco') listEstoqueProds.sort((a,b) => compareEnderecosNatural(a.end, b.end));
+  else if (estoqueProdSortOrder === 'valor') listEstoqueProds.sort((a,b) => b.custo - a.custo);
+  else if (estoqueProdSortOrder === 'qtd') listEstoqueProds.sort((a,b) => b.qtd - a.qtd);
 
   const hasActiveFilters = filterLocalEst !== 'todos' || filterStatusEst !== 'todos' || filterArea !== 'todos' || filterRua !== 'todos';
   const areaLabelStr = filterArea === '1' ? 'Galpão 1 (Área 1)' : (filterArea === '7' ? 'Galpão 2 (Área 7)' : 'Todas as Áreas');
   const activeFiltersText = `Filtros Ativos: ${filterArea !== 'todos' ? `Área = ${areaLabelStr}` : ''} ${filterRua !== 'todos' ? `| Rua = ${filterRua}` : ''} ${filterLocalEst !== 'todos' ? `| Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
 
-  // --- AGRUPAMENTO DE BARRAS HISTÓRICO ---
   const acumRawData = D.acum || [];
   let listaDiasUnicos = Array.from(new Set(acumRawData.map(a => a.data))).filter(d => d && d !== '-');
-  
   let chartItems = [];
+
   if (filterModoAcum === 'mes') {
     const porMes = {};
     acumRawData.forEach(item => {
       if (!item.data || item.data === '-') return;
       const parts = item.data.split('/');
       const chaveMes = (parts.length === 3) ? `${parts[1]}/${parts[2]}` : item.data;
-      
       porMes[chaveMes] = porMes[chaveMes] || { mes: chaveMes, somaCustoTotal: 0, somaQtdContabil: 0, count: 0 };
       porMes[chaveMes].somaCustoTotal += (item.custoTotal || 0);
       porMes[chaveMes].somaQtdContabil += (item.qtdContabil || 0);
@@ -1261,30 +915,16 @@ function secGeral(){
     });
 
     const arrMeses = Object.values(porMes);
-
     chartItems = arrMeses.map((m, idx) => {
       const mediaCusto = m.count ? (m.somaCustoTotal / m.count) : 0;
       const mediaQtd = m.count ? (m.somaQtdContabil / m.count) : 0;
-      
       let varPct = null;
       if (idx > 0) {
         const prevMedia = arrMeses[idx - 1].count ? (arrMeses[idx - 1].somaCustoTotal / arrMeses[idx - 1].count) : 0;
-        if (prevMedia > 0) {
-          varPct = ((mediaCusto - prevMedia) / prevMedia) * 100;
-        }
+        if (prevMedia > 0) varPct = ((mediaCusto - prevMedia) / prevMedia) * 100;
       }
-
       const nomeMesPorExtenso = getNomeMesAno(m.mes);
-
-      return {
-        label: nomeMesPorExtenso,
-        custoTotal: mediaCusto,
-        subText: `Média Mensal (${m.count} dias no mês)`,
-        qtd: mediaQtd,
-        varPct: varPct,
-        tooltipTitle: `Média de Estoque (${nomeMesPorExtenso})`,
-        isProj: false
-      };
+      return { label: nomeMesPorExtenso, custoTotal: mediaCusto, subText: `Média Mensal (${m.count} dias)`, qtd: mediaQtd, varPct: varPct, tooltipTitle: `Média (${nomeMesPorExtenso})`, isProj: false };
     });
 
     const possuiDezembro = chartItems.some(i => i.label.toLowerCase().includes('dezembro'));
@@ -1295,41 +935,18 @@ function secGeral(){
       const ultVal = chartItems[chartItems.length - 1].custoTotal;
       const projVarPct = ultVal ? ((projValorDezembro - ultVal) / ultVal) * 100 : 0;
 
-      chartItems.push({
-        label: "Dezembro/2026",
-        custoTotal: projValorDezembro,
-        subText: "Projeção de Estoque Estimada (Dezembro)",
-        qtd: 0,
-        varPct: projVarPct,
-        tooltipTitle: "Projeção de Estoque (Dezembro/2026)",
-        isProj: true
-      });
+      chartItems.push({ label: "Dezembro/2026", custoTotal: projValorDezembro, subText: "Projeção Estimada", qtd: 0, varPct: projVarPct, tooltipTitle: "Projeção (Dez/2026)", isProj: true });
     }
-
   } else {
     let dadosFiltrados = acumRawData;
-    if (filterDiaEspec !== 'todos') {
-      dadosFiltrados = dadosFiltrados.filter(a => a.data === filterDiaEspec);
-    }
+    if (filterDiaEspec !== 'todos') dadosFiltrados = dadosFiltrados.filter(a => a.data === filterDiaEspec);
     chartItems = dadosFiltrados.map((item, idx) => {
       let varPct = null;
       if (idx > 0) {
         const prevVal = dadosFiltrados[idx - 1].custoTotal || 0;
-        if (prevVal > 0) {
-          varPct = (((item.custoTotal || 0) - prevVal) / prevVal) * 100;
-        }
+        if (prevVal > 0) varPct = (((item.custoTotal || 0) - prevVal) / prevVal) * 100;
       }
-      return {
-        label: item.data.slice(0, 5),
-        fullData: item.data,
-        custoTotal: item.custoTotal,
-        subText: `Fechamento do Dia (${item.data})`,
-        qtd: item.qtdContabil,
-        varPct: varPct,
-        evolucao: item.evolucaoPct,
-        tooltipTitle: `Fechamento (${item.data})`,
-        isProj: false
-      };
+      return { label: item.data.slice(0, 5), fullData: item.data, custoTotal: item.custoTotal, subText: `Fechamento (${item.data})`, qtd: item.qtdContabil, varPct: varPct, evolucao: item.evolucaoPct, tooltipTitle: `Fechamento (${item.data})`, isProj: false };
     });
   }
 
@@ -1337,24 +954,21 @@ function secGeral(){
   const maxValAcum = Math.max(limitSeguro, ...chartItems.map(a => a.custoTotal || 0)) * 1.25;
 
   let acumHtml = `
-  <div class="card" style="margin-top:16px;">
+  <div class="card" style="margin-top:18px;">
     <div class="card-header-action">
       <h3>📈 POSIÇÃO DE ESTOQUE HISTÓRICO E PROJEÇÃO (${filterModoAcum === 'mes' ? 'MÉDIA MENSAL R$' : 'FECHAMENTO DIÁRIO R$'})</h3>
-      
       <div class="prod-controls">
         <select id="selectModoAcum" style="font-weight:700;color:var(--accent)">
           <option value="mes" ${filterModoAcum==='mes'?'selected':''}>📊 Média Agrupada por MÊS</option>
           <option value="dia" ${filterModoAcum==='dia'?'selected':''}>📆 Detalhado por DIA</option>
         </select>
-
         ${filterModoAcum === 'dia' ? `
           <select id="selectDiaEspec" style="font-weight:700;color:var(--ok)">
             <option value="todos" ${filterDiaEspec==='todos'?'selected':''}>-- Todos os Dias --</option>
             ${listaDiasUnicos.map(d => `<option value="${d}" ${filterDiaEspec===d?'selected':''}>${d}</option>`).join('')}
           </select>
         ` : ''}
-
-        <span style="font-size:12px; font-weight:700; color:var(--accent); margin-left:8px;">Limite: <b>R$ 45,0 mi</b></span>
+        <span style="font-size:11px; font-weight:700; color:var(--accent); margin-left:8px;">Limite: <b>R$ 45,0 mi</b></span>
       </div>
     </div>
     
@@ -1367,7 +981,6 @@ function secGeral(){
           ${chartItems.map(item => {
             const valBar = item.custoTotal || 0;
             const pctHeight = (valBar / maxValAcum) * 100;
-            
             let tagVarHtml = '';
             let strVarTooltip = 'Primeiro período';
             if (item.varPct !== null && item.varPct !== undefined) {
@@ -1377,18 +990,14 @@ function secGeral(){
               tagVarHtml = `<span class="bar-var-tag ${clsVar}">${formattedVar}</span>`;
               strVarTooltip = `Variação: ${formattedVar} em relação ao anterior`;
             }
-
             const tooltipItems = [
               { prod: item.subText, sub: `Valor: ${brl(valBar)}` },
               { prod: item.isProj ? '⭐ Valor Projetado' : `Qtd Contábil: ${fmtN.format(item.qtd)}`, sub: strVarTooltip }
             ];
-
             return `
             <div class="bar-chart-col">
               <div class="bar-chart-bar ${item.isProj ? 'is-proj' : ''}" style="height: ${Math.max(pctHeight, 6)}%;" 
-                   data-tooltip-title="${esc(item.tooltipTitle)}" 
-                   data-tooltip-color="${item.isProj ? 'var(--accent)' : 'var(--blue)'}" 
-                   data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}">
+                   data-tooltip-title="${esc(item.tooltipTitle)}" data-tooltip-color="${item.isProj ? 'var(--accent)' : 'var(--blue)'}" data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}">
                 <div class="bar-val-label">
                   <span>${brlShort(valBar)}${item.isProj ? ' *' : ''}</span>
                   ${tagVarHtml}
@@ -1397,16 +1006,16 @@ function secGeral(){
               <div class="bar-date-label" style="${item.isProj ? 'color:var(--accent);font-weight:800' : ''}">
                 ${esc(item.label)}${item.isProj ? ' (Proj)' : ''}
               </div>
-            </div>
-            `;
+            </div>`;
           }).join('')}
         </div>
       </div>
     ` : '<p style="color:var(--mute); padding: 20px;">Nenhum dado histórico encontrado no filtro selecionado.</p>'}
-  </div>
-  `;
+  </div>`;
 
-  $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque, saúde da operação e acompanhamento de fechamento.</p>
+  $('#s-geral').innerHTML = `
+  <h2>Visão Geral da Operação</h2>
+  <p class="sub">Estoque endereçado nos locais de estoque, saúde da operação e acompanhamento de fechamento.</p>
 
   <div class="active-filters-bar ${hasActiveFilters ? 'visible' : ''}">
     <span>🔍 <b>${esc(activeFiltersText)}</b></span>
@@ -1414,21 +1023,19 @@ function secGeral(){
   </div>
 
   <div class="grid kpis">
-    ${kpi('Custo bruto total',brlShort(totC),brl(totC),'hl')}
-    ${kpi('Saúde Shelf Life', `<span class="good">${fmtP(pctShelfOk)}</span>`, 'Crítico: ' + fmtV(shelfCritVal) + ' (Clique p/ ver)', '', 'Detalhamento Shelf Life', [{prod: 'Clique para navegar', sub: 'Redireciona para a aba detalhada de Shelf Life'}], 'var(--ok)', 'shelf')}
-    ${kpi('Saúde Aging (Giro)', `<span class="good">${fmtP(pctAgingOk)}</span>`, 'Crítico (>60d): ' + fmtV(agingCritVal) + ' (Clique p/ ver)', '', 'Detalhamento Aging', [{prod: 'Clique para navegar', sub: 'Redireciona para a aba detalhada de Aging'}], 'var(--accent)', 'aging')}
-    ${kpi('Ocupação do CD',fmtP(occ.pct,2),fmtN.format(occ.ocup)+' de '+fmtN.format(occ.total)+' endereços (Clique p/ ver)', '', 'Detalhamento Ocupação', [{prod: 'Clique para navegar', sub: 'Redireciona para o detalhamento por rua e área'}], 'var(--blue)', 'ocup')}
+    ${kpi('Custo bruto total',brlShort(totC),brl(totC),'hl','',[],'','',100)}
+    ${kpi('Saúde Shelf Life', `<span class="good">${fmtP(pctShelfOk)}</span>`, 'Crítico: ' + fmtV(shelfCritVal), 'ok', 'Detalhamento Shelf Life', [{prod: 'Clique para navegar', sub: 'Aba de Shelf Life'}], 'var(--ok)', 'shelf', pctShelfOk)}
+    ${kpi('Saúde Aging (Giro)', `<span class="good">${fmtP(pctAgingOk)}</span>`, 'Crítico (>60d): ' + fmtV(agingCritVal), 'warn', 'Detalhamento Aging', [{prod: 'Clique para navegar', sub: 'Aba de Aging'}], 'var(--accent)', 'aging', pctAgingOk)}
+    ${kpi('Ocupação do CD',fmtP(occ.pct,2),fmtN.format(occ.ocup)+' de '+fmtN.format(occ.total)+' endereços', 'ok', 'Detalhamento Ocupação', [{prod: 'Clique para navegar', sub: 'Detalhamento por rua'}], 'var(--blue)', 'ocup', occ.pct)}
   </div>
 
   ${acumHtml}
 
-  <div class="grid two" style="margin-top:16px">
+  <div class="grid two" style="margin-top:18px">
     <div class="card">
       <div class="card-header-action">
         <h3>${cardTitle}</h3>
-        <div class="sem-fisico-badge" title="Soma do estoque Virtual e Pré Alerta">
-          🚨 Sem Físico: <b>${fmtV(semFisicoVal)} (${fmtP(semFisicoPct)})</b>
-        </div>
+        <div class="sem-fisico-badge" title="Soma do estoque Virtual e Pré Alerta">🚨 Sem Físico: <b>${fmtV(semFisicoVal)} (${fmtP(semFisicoPct)})</b></div>
       </div>
       <div class="donutwrap">${donut(items, centerLabel, subLabel, 'data-filter-local', filterLocalEst)}${legend(items, 'data-filter-local', filterLocalEst)}</div>
     </div>
@@ -1442,7 +1049,6 @@ function secGeral(){
           <tbody>
             ${stRows.map(([n,o])=> {
               const isSelectedSt = filterStatusEst.toLowerCase() === n.toLowerCase();
-
               return `<tr class="clickable-row ${isSelectedSt ? 'active-row' : ''}" data-filter-status="${esc(n)}">
                 <td><b>${esc(n)}</b></td>
                 <td class="r">${fmtN.format(o.n)}</td>
@@ -1458,7 +1064,7 @@ function secGeral(){
     </div>
   </div>
 
-  <div class="card" style="margin-top:16px">
+  <div class="card" style="margin-top:18px">
     <div class="card-header-action">
       <h3>📦 PRODUTOS EM ESTOQUE NO FILTRO (${listEstoqueProds.length} PALETES)</h3>
       <button class="toggle-btn" id="btnToggleGeralProds">
@@ -1473,20 +1079,16 @@ function secGeral(){
           <option value="1" ${filterArea==='1'?'selected':''}>Galpão 1 (Área 1)</option>
           <option value="7" ${filterArea==='7'?'selected':''}>Galpão 2 (Área 7)</option>
         </select>
-
         <select id="selectRuaFilter" style="font-weight:700;color:var(--accent)">
           <option value="todos" ${filterRua==='todos'?'selected':''}>-- Todas as Ruas --</option>
           ${ruasDisponiveis.map(r => `<option value="${r}" ${filterRua===String(r)?'selected':''}>Rua ${r}</option>`).join('')}
         </select>
-
-        <input type="text" id="inputEstoqueProdSearch" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:240px" />
-        
+        <input type="text" id="inputEstoqueProdSearch" placeholder="🔍 Buscar código / GTIN / produto..." value="${esc(estoqueProdSearch)}" style="width:240px" />
         <select id="selectEstoqueProdSort">
-          <option value="endereco" ${estoqueProdSortOrder==='endereco'?'selected':''}>Ordenar por Endereço (Corredor)</option>
+          <option value="endereco" ${estoqueProdSortOrder==='endereco'?'selected':''}>Ordenar por Endereço</option>
           <option value="valor" ${estoqueProdSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
           <option value="qtd" ${estoqueProdSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd</option>
         </select>
-
         <button class="btn-export-pdf" id="btnExportCaraCrachaGeneral">🖨️ Cara-Crachá (PDF)</button>
       </div>
 
@@ -1507,7 +1109,7 @@ function secGeral(){
           <tbody>
             ${listEstoqueProds.length ? listEstoqueProds.slice(0, 100).map(p => `
               <tr>
-                <td><span class="num" style="color:var(--accent);font-weight:800;font-size:15px">${esc(p.end)}</span></td>
+                <td><span class="num" style="color:var(--accent);font-weight:800">${esc(p.end)}</span></td>
                 <td><span class="num" style="color:var(--mute);font-weight:700">${esc(p.codProd)}</span></td>
                 <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
                 <td><b>${esc(p.prod)}</b></td>
@@ -1524,21 +1126,9 @@ function secGeral(){
   </div>`;
 
   const selModoAcum = $('#selectModoAcum');
-  if (selModoAcum) {
-    selModoAcum.addEventListener('change', (e) => {
-      filterModoAcum = e.target.value;
-      filterDiaEspec = 'todos';
-      secGeral();
-    });
-  }
-
+  if (selModoAcum) selModoAcum.addEventListener('change', (e) => { filterModoAcum = e.target.value; filterDiaEspec = 'todos'; secGeral(); });
   const selDiaEspec = $('#selectDiaEspec');
-  if (selDiaEspec) {
-    selDiaEspec.addEventListener('change', (e) => {
-      filterDiaEspec = e.target.value;
-      secGeral();
-    });
-  }
+  if (selDiaEspec) selDiaEspec.addEventListener('change', (e) => { filterDiaEspec = e.target.value; secGeral(); });
 
   document.querySelectorAll('[data-filter-local]').forEach(el => {
     el.addEventListener('click', () => {
@@ -1557,29 +1147,11 @@ function secGeral(){
   });
 
   const btnGeralProds = $('#btnToggleGeralProds');
-  if (btnGeralProds) {
-    btnGeralProds.addEventListener('click', () => {
-      geralProdExpanded = !geralProdExpanded;
-      secGeral();
-    });
-  }
-
+  if (btnGeralProds) btnGeralProds.addEventListener('click', () => { geralProdExpanded = !geralProdExpanded; secGeral(); });
   const selectArea = $('#selectAreaFilter');
-  if (selectArea) {
-    selectArea.addEventListener('change', (e) => {
-      filterArea = e.target.value;
-      filterRua = 'todos';
-      secGeral();
-    });
-  }
-
+  if (selectArea) selectArea.addEventListener('change', (e) => { filterArea = e.target.value; filterRua = 'todos'; secGeral(); });
   const selectRua = $('#selectRuaFilter');
-  if (selectRua) {
-    selectRua.addEventListener('change', (e) => {
-      filterRua = e.target.value;
-      secGeral();
-    });
-  }
+  if (selectRua) selectRua.addEventListener('change', (e) => { filterRua = e.target.value; secGeral(); });
 
   const btnCaraCracha = $('#btnExportCaraCrachaGeneral');
   if (btnCaraCracha) {
@@ -1593,60 +1165,29 @@ function secGeral(){
   }
 
   const epSearch = $('#inputEstoqueProdSearch');
-  if (epSearch) {
-    epSearch.addEventListener('input', (e) => {
-      estoqueProdSearch = e.target.value;
-      secGeral();
-      const el = $('#inputEstoqueProdSearch');
-      if (el) { el.focus(); el.setSelectionRange(estoqueProdSearch.length, estoqueProdSearch.length); }
-    });
-  }
-
+  if (epSearch) epSearch.addEventListener('input', (e) => { estoqueProdSearch = e.target.value; secGeral(); });
   const epSort = $('#selectEstoqueProdSort');
-  if (epSort) {
-    epSort.addEventListener('change', (e) => {
-      estoqueProdSortOrder = e.target.value;
-      secGeral();
-    });
-  }
+  if (epSort) epSort.addEventListener('change', (e) => { estoqueProdSortOrder = e.target.value; secGeral(); });
 
   attachTooltipEvents();
 }
 
 function secShelf(){
-  faixaSection(
-    '#s-shelf',
-    'Validade (Shelf Life)',
-    'Análise do prazo de validade do estoque revenda (Apenas status Disponível, Reservado e Pendente de Saída).',
-    'shelf',
+  faixaSection('#s-shelf', 'Validade (Shelf Life)', 'Análise do prazo de validade do estoque revenda.', 'shelf',
     ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'],
-    SHELF_CLASS,
-    ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias'],
-    'PRODUTOS EM CRÍTICO E ATENÇÃO',
-    true,
-    'shelf'
+    SHELF_CLASS, ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias'], 'PRODUTOS EM CRÍTICO E ATENÇÃO', true, 'shelf'
   );
 }
 
 function secAging(){
-  faixaSection(
-    '#s-aging',
-    'Tempo de permanência (Aging)',
-    'Tempo em que o palete está no endereço (Apenas status Disponível, Reservado e Pendente de Saída).',
-    'aging',
-    ['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'],
-    AGING_CLASS,
-    ['Acima de 60 dias','30 a 60 dias'],
-    'PRODUTOS EM CRÍTICO E ATENÇÃO',
-    true,
-    'aging'
+  faixaSection('#s-aging', 'Tempo de permanência (Aging)', 'Tempo em que o palete está no endereço.', 'aging',
+    ['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'], AGING_CLASS, ['Acima de 60 dias','30 a 60 dias'], 'PRODUTOS EM CRÍTICO E ATENÇÃO', true, 'aging'
   );
 }
 
 function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisicoOnly = false, tabType = 'shelf'){
   try {
     const allowedStatus = ['disponivel', 'disponível', 'reservado', 'pendente de saída', 'pendente de saida', 'pendente saída', 'pendente saida'];
-    
     let revAll = D.rows.filter(r => {
       if (r.est.trim() !== CONFIG.ESTOQUE_FISICO) return false;
       if (filterFisicoOnly) {
@@ -1676,17 +1217,10 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     
     const items = ['ok','warn','crit','none'].filter(k=>cls[k]>0).map(k=> {
       const topItem = revAll.filter(r => cmap[r[field]] === k).sort((a,b) => b.custo - a.custo)[0];
-      return {
-        rawKey: k,
-        n: CLS[k].n,
-        v: cls[k],
-        c: CLS[k].c,
-        topProd: topItem ? `Líder: ${topItem.prod}` : ''
-      };
+      return { rawKey: k, n: CLS[k].n, v: cls[k], c: CLS[k].c, topProd: topItem ? `Líder: ${topItem.prod}` : '' };
     });
     
     const pctOk = cls.ok/comVal*100, totB = Object.values(g).reduce((s,o)=>s+(basis==='custo'?o.custo:o.qtd),0)||1;
-    
     let top = (activeFaixa !== 'todos') ? rev : rev.filter(r => topCls.includes(r[field]));
 
     const currentSearch = tabType === 'shelf' ? shelfSearch : agingSearch;
@@ -1694,40 +1228,22 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
 
     if (currentSearch) {
       const q = currentSearch.toLowerCase();
-      top = top.filter(r => 
-        r.prod.toLowerCase().includes(q) || 
-        r.codProd.toLowerCase().includes(q) || 
-        r.gtin.toLowerCase().includes(q) || 
-        (r.end && r.end.toLowerCase().includes(q))
-      );
+      top = top.filter(r => r.prod.toLowerCase().includes(q) || r.codProd.toLowerCase().includes(q) || r.gtin.toLowerCase().includes(q) || (r.end && r.end.toLowerCase().includes(q)));
     }
 
     if (currentSort === 'critico') {
       top.sort((a, b) => {
         const idxA = topCls.indexOf(a[field]);
         const idxB = topCls.indexOf(b[field]);
-        if (idxA !== idxB && idxA !== -1 && idxB !== -1) {
-          return idxA - idxB;
-        }
+        if (idxA !== idxB && idxA !== -1 && idxB !== -1) return idxA - idxB;
         return compareEnderecosNatural(a.end, b.end);
       });
-    } else if (currentSort === 'endereco') {
-      top.sort((a, b) => compareEnderecosNatural(a.end, b.end));
-    } else if (currentSort === 'valor') {
-      top.sort((a, b) => b.custo - a.custo);
-    } else if (currentSort === 'qtd') {
-      top.sort((a, b) => b.qtd - a.qtd);
-    }
+    } else if (currentSort === 'endereco') top.sort((a, b) => compareEnderecosNatural(a.end, b.end));
+    else if (currentSort === 'valor') top.sort((a, b) => b.custo - a.custo);
+    else if (currentSort === 'qtd') top.sort((a, b) => b.qtd - a.qtd);
 
-    const topCriticos = revAll.filter(r => cmap[r[field]] === 'crit').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({
-      prod: r.prod,
-      sub: `${brl(r.custo)} | Faixa: ${r[field]}`
-    }));
-
-    const topAtencao = revAll.filter(r => cmap[r[field]] === 'warn').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({
-      prod: r.prod,
-      sub: `${brl(r.custo)} | Faixa: ${r[field]}`
-    }));
+    const topCriticos = revAll.filter(r => cmap[r[field]] === 'crit').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({ prod: r.prod, sub: `${brl(r.custo)} | Faixa: ${r[field]}` }));
+    const topAtencao = revAll.filter(r => cmap[r[field]] === 'warn').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({ prod: r.prod, sub: `${brl(r.custo)} | Faixa: ${r[field]}` }));
 
     const inputId = tabType === 'shelf' ? 'inputShelfSearch' : 'inputAgingSearch';
     const selectId = tabType === 'shelf' ? 'selectShelfSort' : 'selectAgingSort';
@@ -1740,7 +1256,9 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     const elTarget = $(id);
     if (!elTarget) return;
 
-    elTarget.innerHTML = `<h2>${esc(title)}</h2><p class="sub">${esc(sub)}</p>
+    elTarget.innerHTML = `
+    <h2>${esc(title)}</h2>
+    <p class="sub">${esc(sub)}</p>
 
     <div class="active-filters-bar ${hasActiveFaixa ? 'visible' : ''}">
       <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeLabel)}</b></span>
@@ -1748,42 +1266,56 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     </div>
 
     <div class="grid kpis">
-      ${kpi('Estoque revenda',fmtV(rev.reduce((s,r)=>s+val(r),0)),fmtN.format(rev.length)+' linhas de palete')}
-      ${kpi('Saudável',`<span class="good">${fmtP(pctOk)}</span>`,fmtV(cls.ok)+(cls.none?' · sem validade fora da conta':''))}
-      ${kpi('Em atenção',`<span class="warnc">${fmtP(cls.warn/comVal*100)}</span>`,fmtV(cls.warn), '', 'Top 3 em Atenção', topAtencao, 'var(--warn)')}
-      ${kpi('Crítico',`<span class="critc">${fmtP(cls.crit/comVal*100)}</span>`,fmtV(critV)+' · '+fmtN.format(critN)+' linhas', '', 'Top 3 Críticos (Maior Valor)', topCriticos, 'var(--crit)')}
+      ${kpi('Estoque revenda',fmtV(rev.reduce((s,r)=>s+val(r),0)),fmtN.format(rev.length)+' linhas de palete', 'hl')}
+      ${kpi('Saudável',`<span class="good">${fmtP(pctOk)}</span>`,fmtV(cls.ok), 'ok', '', [], '', '', pctOk)}
+      ${kpi('Em atenção',`<span class="warnc">${fmtP(cls.warn/comVal*100)}</span>`,fmtV(cls.warn), 'warn', 'Top 3 em Atenção', topAtencao, 'var(--warn)', '', (cls.warn/comVal*100))}
+      ${kpi('Crítico',`<span class="critc">${fmtP(cls.crit/comVal*100)}</span>`,fmtV(critV)+' · '+fmtN.format(critN)+' linhas', 'crit', 'Top 3 Críticos', topCriticos, 'var(--crit)', '', (cls.crit/comVal*100))}
     </div>
-    <div class="grid two" style="margin-top:16px">
-      <div class="card"><h3>Saúde do estoque revenda</h3><div class="donutwrap">${donut(items,fmtP(pctOk,0),'saudável', 'data-filter-faixa', activeFaixa)}${legend(items, 'data-filter-faixa', activeFaixa)}</div></div>
-      <div class="card"><h3>Por faixa (Clique para filtrar)</h3><div class="tw"><table>
-        <tr><th>Faixa</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th>Participação</th></tr>
-        ${order.map(f=>{
-          const o=g[f],c=CLS[cmap[f]||'none'].c,v=basis==='custo'?o.custo:o.qtd;
-          const topF = revAll.filter(r => r[field] === f).sort((a,b) => b.custo - a.custo)[0];
-          const topData = topF ? [{prod: topF.prod, sub: `Maior Valor: ${brl(topF.custo)}`}] : [];
-          const isSelectedFaixa = activeFaixa.toLowerCase() === f.toLowerCase();
 
-          return `<tr class="clickable-row ${isSelectedFaixa ? 'active-row' : ''}" data-filter-faixa="${esc(f)}" data-tooltip-title="${esc(f)}" data-tooltip-color="${c}" data-tooltip-items="${JSON.stringify(topData).replace(/"/g, '&quot;')}">
-            <td><span class="dot" style="background:${c}"></span><b>${esc(f)}</b></td>
-            <td class="r">${fmtN.format(o.n)}</td>
-            <td class="r">${fmtN.format(o.qtd)}</td>
-            <td class="r">${brl(o.custo)}</td>
-            <td><span class="num">${fmtP(totB ? v/totB*100 : 0)}</span><span class="bar"><b style="width:${totB ? v/totB*100 : 0}%;background:${c}"></b></span></td>
-          </tr>`;
-        }).join('')}
-      </table></div></div>
+    <div class="grid two" style="margin-top:18px">
+      <div class="card">
+        <h3>Saúde do estoque revenda</h3>
+        <div class="donutwrap">${donut(items,fmtP(pctOk,0),'saudável', 'data-filter-faixa', activeFaixa)}${legend(items, 'data-filter-faixa', activeFaixa)}</div>
+      </div>
+      <div class="card">
+        <h3>Por faixa (Clique para filtrar)</h3>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr><th>Faixa</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th>Participação</th></tr>
+            </thead>
+            <tbody>
+              ${order.map(f=>{
+                const o=g[f],c=CLS[cmap[f]||'none'].c,v=basis==='custo'?o.custo:o.qtd;
+                const topF = revAll.filter(r => r[field] === f).sort((a,b) => b.custo - a.custo)[0];
+                const topData = topF ? [{prod: topF.prod, sub: `Maior Valor: ${brl(topF.custo)}`}] : [];
+                const isSelectedFaixa = activeFaixa.toLowerCase() === f.toLowerCase();
+                return `
+                <tr class="clickable-row ${isSelectedFaixa ? 'active-row' : ''}" data-filter-faixa="${esc(f)}" data-tooltip-title="${esc(f)}" data-tooltip-color="${c}" data-tooltip-items="${JSON.stringify(topData).replace(/"/g, '&quot;')}">
+                  <td><span class="dot" style="background:${c}"></span><b>${esc(f)}</b></td>
+                  <td class="r">${fmtN.format(o.n)}</td>
+                  <td class="r">${fmtN.format(o.qtd)}</td>
+                  <td class="r">${brl(o.custo)}</td>
+                  <td><span class="num">${fmtP(totB ? v/totB*100 : 0)}</span><span class="bar"><b style="width:${totB ? v/totB*100 : 0}%;background:${c}"></b></span></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div class="card" style="margin-top:16px">
+
+    <div class="card" style="margin-top:18px">
       <div class="card-header-action">
-        <h3>${esc(topTitle)} (${top.length} linhas encontradas)</h3>
+        <h3>${esc(topTitle)} (${top.length} LINHAS)</h3>
         <div class="prod-controls">
           <button class="btn-export-pdf" id="${btnPdfId}">🖨️ Cara-Crachá (PDF)</button>
-          <input type="text" id="${inputId}" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:260px" />
+          <input type="text" id="${inputId}" placeholder="🔍 Buscar código / GTIN / produto..." value="${esc(currentSearch)}" style="width:240px" />
           <select id="${selectId}">
-            <option value="critico" ${currentSort==='critico'?'selected':''}>Ordenar por Mais Crítico</option>
-            <option value="endereco" ${currentSort==='endereco'?'selected':''}>Ordenar por Endereço (Corredor)</option>
-            <option value="valor" ${currentSort==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
-            <option value="qtd" ${currentSort==='qtd'?'selected':''}>Ordenar por Maior Qtd Endereçada</option>
+            <option value="critico" ${currentSort==='critico'?'selected':''}>Mais Crítico</option>
+            <option value="endereco" ${currentSort==='endereco'?'selected':''}>Endereço</option>
+            <option value="valor" ${currentSort==='valor'?'selected':''}>Maior Valor (R$)</option>
+            <option value="qtd" ${currentSort==='qtd'?'selected':''}>Maior Qtd</option>
           </select>
         </div>
       </div>
@@ -1824,52 +1356,30 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     document.querySelectorAll('[data-filter-faixa]').forEach(el => {
       el.addEventListener('click', () => {
         const targetFaixa = el.getAttribute('data-filter-faixa');
-        if (tabType === 'shelf') {
-          filterShelfFaixa = (filterShelfFaixa === targetFaixa) ? 'todos' : targetFaixa;
-          secShelf();
-        } else {
-          filterAgingFaixa = (filterAgingFaixa === targetFaixa) ? 'todos' : targetFaixa;
-          secAging();
-        }
+        if (tabType === 'shelf') filterShelfFaixa = (filterShelfFaixa === targetFaixa) ? 'todos' : targetFaixa;
+        else filterAgingFaixa = (filterAgingFaixa === targetFaixa) ? 'todos' : targetFaixa;
+        if (tabType === 'shelf') secShelf(); else secAging();
       });
     });
 
     const btnPdf = $('#' + btnPdfId);
-    if (btnPdf) {
-      btnPdf.addEventListener('click', () => {
-        printChecklist(top, title + (hasActiveFaixa ? ` - ${activeLabel}` : ' - Crítico e Atenção'));
-      });
-    }
+    if (btnPdf) btnPdf.addEventListener('click', () => printChecklist(top, title + (hasActiveFaixa ? ` - ${activeLabel}` : ' - Crítico e Atenção')));
 
     const sInput = $('#' + inputId);
-    if (sInput) {
-      sInput.addEventListener('input', (e) => {
-        if (tabType === 'shelf') shelfSearch = e.target.value;
-        else agingSearch = e.target.value;
-        if (tabType === 'shelf') secShelf(); else secAging();
-        const el = $('#' + inputId);
-        if (el) { 
-          const valLen = (tabType === 'shelf' ? shelfSearch : agingSearch).length;
-          el.focus(); 
-          el.setSelectionRange(valLen, valLen); 
-        }
-      });
-    }
+    if (sInput) sInput.addEventListener('input', (e) => {
+      if (tabType === 'shelf') shelfSearch = e.target.value; else agingSearch = e.target.value;
+      if (tabType === 'shelf') secShelf(); else secAging();
+    });
 
     const sSort = $('#' + selectId);
-    if (sSort) {
-      sSort.addEventListener('change', (e) => {
-        if (tabType === 'shelf') shelfSortOrder = e.target.value;
-        else agingSortOrder = e.target.value;
-        if (tabType === 'shelf') secShelf(); else secAging();
-      });
-    }
+    if (sSort) sSort.addEventListener('change', (e) => {
+      if (tabType === 'shelf') shelfSortOrder = e.target.value; else agingSortOrder = e.target.value;
+      if (tabType === 'shelf') secShelf(); else secAging();
+    });
 
     attachTooltipEvents();
   } catch (err) {
     console.error(`Erro em faixaSection (${tabType}):`, err);
-    const elTarget = $(id);
-    if (elTarget) elTarget.innerHTML = `<div class="card"><h3>Erro de renderização</h3><p>Ocorreu um erro ao carregar os dados desta seção.</p></div>`;
   }
 }
 
@@ -1882,38 +1392,23 @@ function occData(){
     D.addr.forEach(a=>{
       const area = String(a.area);
       const end = String(a.end);
-      
       const isG1 = area === '1' || end.includes("205.1041.1.");
       const isG2 = area === '7' || end.includes("205.1041.7.");
       const isBlocado = area === '5' || end.includes("205.1066.");
-      
       let rua = a.rua;
-      if (!rua) {
-        const p = end.split('.');
-        rua = p.length >= 4 ? +p[3] : 0;
-      }
+      if (!rua) { const p = end.split('.'); rua = p.length >= 4 ? +p[3] : 0; }
       
       if (isG1) {
-        g1.total++;
-        if (a.occ) g1.ocup++;
-        if (rua > 0) {
-          const r = (g1.ruas[rua] = g1.ruas[rua] || {t:0, o:0});
-          r.t++; if (a.occ) r.o++;
-        }
+        g1.total++; if (a.occ) g1.ocup++;
+        if (rua > 0) { const r = (g1.ruas[rua] = g1.ruas[rua] || {t:0, o:0}); r.t++; if (a.occ) r.o++; }
       } else if (isG2) {
-        g2.total++;
-        if (a.occ) g2.ocup++;
-        if (rua > 0) {
-          const r = (g2.ruas[rua] = g2.ruas[rua] || {t:0, o:0});
-          r.t++; if (a.occ) r.o++;
-        }
+        g2.total++; if (a.occ) g2.ocup++;
+        if (rua > 0) { const r = (g2.ruas[rua] = g2.ruas[rua] || {t:0, o:0}); r.t++; if (a.occ) r.o++; }
       } else if (isBlocado) {
-        bl.total++;
-        if (a.occ) bl.ocup++;
+        bl.total++; if (a.occ) bl.ocup++;
       }
     });
   }
-
   const total = g1.total + g2.total;
   const ocup = g1.ocup + g2.ocup;
   return {g1, g2, bl, total, ocup, pct: total ? (ocup/total)*100 : 0};
@@ -1922,7 +1417,8 @@ function occData(){
 function ruaBars(g,livreCor){
   const ruas = Object.entries(g.ruas).filter(([,r])=>r.t>=1).sort((a,b)=>+a[0]-+b[0]);
   if(!ruas.length) return '<p style="color:var(--mute)">Nenhuma rua mapeada para esta área.</p>';
-  return `<div class="lg"><span><i style="background:${livreCor}"></i>Livre</span><span><i style="background:var(--cream)"></i>Ocupado</span></div>
+  return `
+  <div class="lg"><span><i style="background:${livreCor}"></i>Livre</span><span><i style="background:var(--cream)"></i>Ocupado</span></div>
   <div class="rua-container"><div class="rua">${ruas.map(([n,r])=>{
     const o=r.o/r.t*100,l=100-o;
     const ttData = [{prod: `Rua ${n}`, sub: `Ocupados: ${fmtN.format(r.o)} / Total: ${fmtN.format(r.t)} (${fmtP(o)})`}];
@@ -1938,16 +1434,16 @@ function secOcup(){
   const all = {total:O.total,ocup:O.ocup};
   
   const donutItems = [
-    { rawKey: 'Livre', n: 'Livre', v: O.total - O.ocup, c: '#4285f4' },
+    { rawKey: 'Livre', n: 'Livre', v: O.total - O.ocup, c: '#3b82f6' },
     { rawKey: 'Ocupado', n: 'Ocupado', v: O.ocup, c: '#ffc400' }
   ];
 
-  const prev = basis; 
-  basis = 'qtd';
-  const dn = donut(donutItems, fmtP(O.pct, 2), 'ocupação CD'); 
-  basis = prev;
+  const prev = basis; basis = 'qtd';
+  const dn = donut(donutItems, fmtP(O.pct, 2), 'ocupação CD'); basis = prev;
 
-  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos processados da chave ocupacao.</p>
+  $('#s-ocup').innerHTML = `
+  <h2>Ocupação · Porta-palete e blocado</h2>
+  <p class="sub">Endereços ativos processados da chave ocupacao.</p>
   <div class="occ">
     ${box('g1','Galpão 1',O.g1)}
     ${box('g2','Galpão 2',O.g2)}
@@ -1962,12 +1458,11 @@ function secOcup(){
         <div class="b"><small>% Galpão 1</small><strong>${fmtP(O.g1.total?O.g1.ocup/O.g1.total*100:0,2)}</strong></div>
         <div class="b"><small>% Galpão 2</small><strong>${fmtP(O.g2.total?O.g2.ocup/O.g2.total*100:0,2)}</strong></div>
       </div>
-      <div class="b big"><small>% Ocupação total CD</small><strong>${fmtP(O.pct,2)}</strong></div>
+      <div class="b big" style="margin-top:10px;"><small>% Ocupação total CD</small><strong style="font-size:32px;color:var(--accent);">${fmtP(O.pct,2)}</strong></div>
     </div>
   </div>
-  <div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'#4285f4')}</div>
-  <div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'#3a5db0')}</div>
-  <p class="foot">Todas as ruas ativas são exibidas nos gráficos e contam nos totais.</p>`;
+  <div class="card" style="margin-top:18px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'#3b82f6')}</div>
+  <div class="card" style="margin-top:18px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'#2563eb')}</div>`;
 
   attachTooltipEvents();
 }
@@ -1975,7 +1470,7 @@ function secOcup(){
 function secCarteira(){
   let C = (D && D.cart) ? D.cart : [];
   if (!C.length) {
-    $('#s-carteira').innerHTML = `<h2>Carteira de Pedido</h2><p class="sub">Nenhum dado encontrado na chave 'carteira' do JSON.</p>`;
+    $('#s-carteira').innerHTML = `<h2>Carteira de Pedido</h2><p class="sub">Nenhum dado encontrado.</p>`;
     return;
   }
 
@@ -1985,19 +1480,10 @@ function secCarteira(){
   const deptsDisponiveis = Array.from(new Set(C.map(r => r.dept))).filter(Boolean).sort((a,b) => String(a).localeCompare(String(b)));
 
   let filteredC = C;
-
-  if (dateReservaFilter !== 'todos') {
-    filteredC = filteredC.filter(r => r.gerReserva === dateReservaFilter);
-  }
-  if (sepFilter !== 'todos') {
-    filteredC = filteredC.filter(r => r.tipoSep.toLowerCase().trim() === sepFilter.toLowerCase().trim());
-  }
-  if (targetDestFilter !== 'todos') {
-    filteredC = filteredC.filter(r => String(r.dest) === String(targetDestFilter));
-  }
-  if (deptFilter !== 'todos') {
-    filteredC = filteredC.filter(r => r.dept.toLowerCase().trim() === deptFilter.toLowerCase().trim());
-  }
+  if (dateReservaFilter !== 'todos') filteredC = filteredC.filter(r => r.gerReserva === dateReservaFilter);
+  if (sepFilter !== 'todos') filteredC = filteredC.filter(r => r.tipoSep.toLowerCase().trim() === sepFilter.toLowerCase().trim());
+  if (targetDestFilter !== 'todos') filteredC = filteredC.filter(r => String(r.dest) === String(targetDestFilter));
+  if (deptFilter !== 'todos') filteredC = filteredC.filter(r => r.dept.toLowerCase().trim() === deptFilter.toLowerCase().trim());
 
   const totPedida = filteredC.reduce((s,r) => s + r.qtdPedida, 0);
   const totSeparada = filteredC.reduce((s,r) => s + r.qtdSeparada, 0);
@@ -2005,40 +1491,23 @@ function secCarteira(){
   const pctAtendimento = totPedida ? (totSeparada / totPedida) * 100 : 0;
 
   const datasPendentesSet = new Set();
-  filteredC.forEach(r => {
-    if (r.tipoSep !== 'Separado') {
-      if (r.gerReserva && r.gerReserva !== 'Sem data') {
-        datasPendentesSet.add(r.gerReserva);
-      }
-    }
-  });
+  filteredC.forEach(r => { if (r.tipoSep !== 'Separado' && r.gerReserva && r.gerReserva !== 'Sem data') datasPendentesSet.add(r.gerReserva); });
 
   const qtdDatasPendentes = datasPendentesSet.size;
-  const diasAtraso = qtdDatasPendentes; 
-  const isCritico = diasAtraso >= 2;
-  const atrasoStr = `D-${diasAtraso}`;
+  const isCritico = qtdDatasPendentes >= 2;
   const atrasoSub = isCritico ? `🚨 CRÍTICO (${qtdDatasPendentes} datas pendentes)` : `Dentro da Meta (${qtdDatasPendentes} datas pendentes)`;
-  const kpiClassAtraso = isCritico ? 'hl' : '';
-
-  const topPedentesCrit = filteredC.filter(r => r.qtdPedida > r.qtdSeparada).sort((a,b) => b.valorTotal - a.valorTotal).slice(0, 3).map(r => ({
-    prod: r.prod,
-    sub: `Destino: ${r.dest} | Valor: ${brlShort(r.valorTotal)}`
-  }));
 
   const bySep = {};
   filteredC.forEach(r => {
     const k = r.tipoSep || 'Não informado';
     bySep[k] = bySep[k] || {pedida:0, separada:0, valor:0};
-    bySep[k].pedida += r.qtdPedida;
-    bySep[k].separada += r.qtdSeparada;
-    bySep[k].valor += r.valorTotal;
+    bySep[k].pedida += r.qtdPedida; bySep[k].separada += r.qtdSeparada; bySep[k].valor += r.valorTotal;
   });
 
   const prodDer = bySep["Produção Derrubada"] || {pedida:0, separada:0};
   const prodSor = bySep["Produção Sorter"] || {pedida:0, separada:0};
   const pendDer = bySep["Pendente Derrubada"] || {pedida:0, separada:0};
   const pendSor = bySep["Pendente Sorter"] || {pedida:0, separada:0};
-  
   const crossDock = bySep["Cross Docking"] || bySep["CROSS DOCKING"] || {pedida:0, separada:0};
   const fullSep = bySep["Full"] || bySep["FULL"] || {pedida:0, separada:0};
 
@@ -2071,113 +1540,58 @@ function secCarteira(){
   baseDept.forEach(r => {
     const k = r.dept || 'Outros';
     byDept[k] = byDept[k] || {qtd:0, valor:0};
-    byDept[k].qtd += r.qtdPedida;
-    byDept[k].valor += r.valorTotal;
+    byDept[k].qtd += r.qtdPedida; byDept[k].valor += r.valorTotal;
   });
   const deptRows = Object.entries(byDept).sort((a,b) => (basis==='custo' ? b[1].valor - a[1].valor : b[1].qtd - a[1].qtd));
-  const deptItems = deptRows.map(([n,o],i) => {
-    const topD = baseDept.filter(r => r.dept === n).sort((a,b) => b.valorTotal - a.valorTotal)[0];
-    return {
-      rawKey: n,
-      n: n,
-      v: basis==='custo' ? o.valor : o.qtd,
-      c: DEFAULT_COLORS[i % DEFAULT_COLORS.length],
-      topProd: topD ? `Líder: ${topD.prod}` : ''
-    };
-  });
+  const deptItems = deptRows.map(([n,o],i) => ({ rawKey: n, n: n, v: basis==='custo' ? o.valor : o.qtd, c: DEFAULT_COLORS[i % DEFAULT_COLORS.length] }));
   const centerDept = basis==='custo' ? brlShort(totValor).replace('R$ ','') : fmtN.format(totPedida);
 
   const byRes = {};
   filteredC.forEach(r => {
     const k = r.gerReserva || 'Sem data';
     byRes[k] = byRes[k] || {qtd:0, valor:0, qtdSep:0, pendentes:0, separados:0};
-    byRes[k].qtd += r.qtdPedida;
-    byRes[k].valor += r.valorTotal;
-    byRes[k].qtdSep += r.qtdSeparada;
-    if (r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada)) {
-      byRes[k].separados++;
-    } else {
-      byRes[k].pendentes++;
-    }
+    byRes[k].qtd += r.qtdPedida; byRes[k].valor += r.valorTotal; byRes[k].qtdSep += r.qtdSeparada;
+    if (r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada)) byRes[k].separados++;
+    else byRes[k].pendentes++;
   });
   let resRows = Object.entries(byRes).sort((a,b) => a[0].localeCompare(b[0]));
-  if (resFilter === 'pendente') {
-    resRows = resRows.filter(([, o]) => o.pendentes > 0);
-  } else if (resFilter === 'separado') {
-    resRows = resRows.filter(([, o]) => o.pendentes === 0);
-  }
 
   const byDest = {};
   filteredC.forEach(r => {
     const k = r.dest || "Sem Destino";
     byDest[k] = byDest[k] || {pedida:0, separada:0, valor:0};
-    byDest[k].pedida += r.qtdPedida;
-    byDest[k].separada += r.qtdSeparada;
-    byDest[k].valor += r.valorTotal;
+    byDest[k].pedida += r.qtdPedida; byDest[k].separada += r.qtdSeparada; byDest[k].valor += r.valorTotal;
   });
   let destRows = Object.entries(byDest).sort((a,b) => b[1].pedida - a[1].pedida);
-  if (destSearch) {
-    destRows = destRows.filter(([k]) => k.toLowerCase().includes(destSearch.toLowerCase()));
-  }
+  if (destSearch) destRows = destRows.filter(([k]) => k.toLowerCase().includes(destSearch.toLowerCase()));
 
   const prodAggMap = {};
   filteredC.forEach(r => {
     const pendQtd = r.qtdPedida - r.qtdSeparada;
     const isSeparado = r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada);
-    
     if (statusFilter === 'pendente' && pendQtd <= 0) return;
     if (statusFilter === 'separado' && !isSeparado) return;
 
     const key = (r.codProd && r.codProd !== '-') ? r.codProd : r.prod;
     if (!prodAggMap[key]) {
-      prodAggMap[key] = {
-        codProd: r.codProd || '-',
-        gtin: r.gtin || '-',
-        prod: r.prod || 'Sem Descrição',
-        tiposSet: new Set(),
-        qtdPedida: 0,
-        qtdSeparada: 0,
-        qtdPend: 0,
-        valorPend: 0
-      };
+      prodAggMap[key] = { codProd: r.codProd || '-', gtin: r.gtin || '-', prod: r.prod || 'Sem Descrição', tiposSet: new Set(), qtdPedida: 0, qtdSeparada: 0, qtdPend: 0, valorPend: 0 };
     }
-
     prodAggMap[key].qtdPedida += r.qtdPedida;
     prodAggMap[key].qtdSeparada += r.qtdSeparada;
     prodAggMap[key].qtdPend += Math.max(0, pendQtd);
-    
     const pendVal = r.qtdPedida ? (r.valorTotal * (Math.max(0, pendQtd) / r.qtdPedida)) : 0;
     prodAggMap[key].valorPend += pendVal;
-
     if (r.tipoSep) prodAggMap[key].tiposSet.add(r.tipoSep);
-    if (r.gtin && r.gtin !== '-') prodAggMap[key].gtin = r.gtin;
   });
 
-  let prodsList = Object.values(prodAggMap).map(p => ({
-    ...p,
-    tipoSep: Array.from(p.tiposSet).join(', ') || '-'
-  }));
-
+  let prodsList = Object.values(prodAggMap).map(p => ({ ...p, tipoSep: Array.from(p.tiposSet).join(', ') || '-' }));
   if (prodSearch) {
     const q = prodSearch.toLowerCase();
-    prodsList = prodsList.filter(p => 
-      p.prod.toLowerCase().includes(q) || 
-      p.codProd.toLowerCase().includes(q) || 
-      p.gtin.toLowerCase().includes(q)
-    );
+    prodsList = prodsList.filter(p => p.prod.toLowerCase().includes(q) || p.codProd.toLowerCase().includes(q) || p.gtin.toLowerCase().includes(q));
   }
-
-  if (prodSortOrder === 'valor') {
-    prodsList.sort((a,b) => b.valorPend - a.valorPend);
-  } else if (prodSortOrder === 'qtd') {
-    prodsList.sort((a,b) => b.qtdPend - a.qtdPend);
-  } else if (prodSortOrder === 'pedida') {
-    prodsList.sort((a,b) => b.qtdPedida - a.qtdPedida);
-  }
-
-  const statusTitleText = statusFilter === 'pendente' 
-    ? 'PRODUTOS PENDENTES DE SEPARAÇÃO' 
-    : (statusFilter === 'separado' ? 'PRODUTOS SEPARADOS' : 'TODOS OS PRODUTOS DA CARTEIRA');
+  if (prodSortOrder === 'valor') prodsList.sort((a,b) => b.valorPend - a.valorPend);
+  else if (prodSortOrder === 'qtd') prodsList.sort((a,b) => b.qtdPend - a.qtdPend);
+  else if (prodSortOrder === 'pedida') prodsList.sort((a,b) => b.qtdPedida - a.qtdPedida);
 
   const hasActiveCartFilter = dateReservaFilter !== 'todos' || sepFilter !== 'todos' || targetDestFilter !== 'todos' || deptFilter !== 'todos';
 
@@ -2186,341 +1600,147 @@ function secCarteira(){
   <p class="sub">Acompanhamento e status das reservas e solicitações do CD.</p>
 
   <div class="active-filters-bar ${hasActiveCartFilter ? 'visible' : ''}">
-    <span>🔍 <b>Filtro Ativo: ${dateReservaFilter !== 'todos' ? `Data Reserva = ${dateReservaFilter}` : ''} ${sepFilter !== 'todos' ? `| Tipo = ${sepFilter}` : ''} ${targetDestFilter !== 'todos' ? `| Destino = ${targetDestFilter}` : ''} ${deptFilter !== 'todos' ? `| Depto = ${deptFilter}` : ''}</b></span>
-    <button onclick="clearAllFilters()">✕ Limpar Filtros da Carteira</button>
+    <span>🔍 <b>Filtros da Carteira Ativos</b></span>
+    <button onclick="clearAllFilters()">✕ Limpar Filtros</button>
   </div>
   
   <div class="filter-bar">
-    <label>📅 Data de Geração:
-      <select id="dateReservaFilterSelect" style="font-weight:700;color:var(--accent)">
-        <option value="todos" ${dateReservaFilter==='todos'?'selected':''}>-- Todas as Datas --</option>
-        ${datasReservaDisponiveis.map(d => `<option value="${esc(d)}" ${dateReservaFilter===d?'selected':''}>Data ${esc(d)}</option>`).join('')}
+    <label>📅 Data:
+      <select id="dateReservaFilterSelect">
+        <option value="todos" ${dateReservaFilter==='todos'?'selected':''}>-- Todas --</option>
+        ${datasReservaDisponiveis.map(d => `<option value="${esc(d)}" ${dateReservaFilter===d?'selected':''}>${esc(d)}</option>`).join('')}
       </select>
     </label>
-
-    <label>⚡ Tipo de Separação:
+    <label>⚡ Tipo:
       <select id="sepFilterSelect">
-        <option value="todos" ${sepFilter==='todos'?'selected':''}>-- Todos os Tipos (${C.length} itens) --</option>
+        <option value="todos" ${sepFilter==='todos'?'selected':''}>-- Todos --</option>
         ${tiposSepDisponiveis.map(t => `<option value="${esc(t)}" ${sepFilter===t?'selected':''}>${esc(t)}</option>`).join('')}
       </select>
     </label>
-
-    <label>🏢 Destino / Loja:
-      <select id="targetDestFilterSelect" style="font-weight:700;">
-        <option value="todos" ${targetDestFilter==='todos'?'selected':''}>-- Todos os Destinos --</option>
+    <label>🏢 Destino:
+      <select id="targetDestFilterSelect">
+        <option value="todos" ${targetDestFilter==='todos'?'selected':''}>-- Todos --</option>
         ${destinosDisponiveis.map(d => `<option value="${esc(d)}" ${targetDestFilter===String(d)?'selected':''}>${esc(d)}</option>`).join('')}
       </select>
     </label>
-
-    <label>🏷️ Departamento CD:
-      <select id="deptFilterSelect" style="font-weight:700;color:var(--ok)">
-        <option value="todos" ${deptFilter==='todos'?'selected':''}>-- Todos os Departamentos --</option>
+    <label>🏷️ Depto:
+      <select id="deptFilterSelect">
+        <option value="todos" ${deptFilter==='todos'?'selected':''}>-- Todos --</option>
         ${deptsDisponiveis.map(dp => `<option value="${esc(dp)}" ${deptFilter===dp?'selected':''}>${esc(dp)}</option>`).join('')}
       </select>
     </label>
   </div>
 
   <div class="grid kpis">
-    ${kpi('Total Pedido', fmtN.format(totPedida), brlShort(totValor))}
-    ${kpi('Total Separado', fmtN.format(totSeparada), fmtP(pctAtendimento) + ' atendido')}
-    ${kpi('Pendente de Separação', fmtN.format(totPedida - totSeparada), brlShort(filteredC.reduce((s,r) => s + (r.tipoSep !== 'Separado' ? r.valorTotal : 0), 0)), '', 'Maiores Pedidos Pendentes', topPedentesCrit, 'var(--warn)')}
-    ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso, 'Datas em Atraso Crítico', Array.from(datasPendentesSet).map(d => ({prod: `Data Reserva: ${d}`, sub: 'Pendente de liberação'})), isCritico ? 'var(--crit)' : 'var(--warn)')}
+    ${kpi('Total Pedido', fmtN.format(totPedida), brlShort(totValor), 'hl', '', [], '', '', 100)}
+    ${kpi('Total Separado', fmtN.format(totSeparada), fmtP(pctAtendimento) + ' atendido', 'ok', '', [], '', '', pctAtendimento)}
+    ${kpi('Pendente', fmtN.format(totPedida - totSeparada), brlShort(filteredC.reduce((s,r) => s + (r.tipoSep !== 'Separado' ? r.valorTotal : 0), 0)), 'warn', '', [], '', '', (totPedida ? (totPedida - totSeparada)/totPedida*100 : 0))}
+    ${kpi('Atraso', `D-${qtdDatasPendentes}`, atrasoSub, isCritico ? 'crit' : 'warn', '', [], '', '', isCritico ? 100 : 50)}
   </div>
 
-  <div class="grid two" style="margin-top:16px">
+  <div class="grid two" style="margin-top:18px">
     <div class="card">
-      <h3>Progresso da Separação (Clique para filtrar)</h3>
+      <h3>Progresso da Separação</h3>
       <div class="sep-progress">
         <div class="sep-item" data-filter-carteira-sep="Produção Derrubada">
-          <div class="sep-header">
-            <span>Derrubada (Total: ${fmtN.format(derTotQtd)})</span>
-            <span>Prod: ${fmtP(derPctProd)} | Pend: ${fmtP(derPctPend)}</span>
-          </div>
+          <div class="sep-header"><span>Derrubada (${fmtN.format(derTotQtd)})</span><span>Prod: ${fmtP(derPctProd)}</span></div>
           <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${derPctProd}%;background:var(--ok);" title="Produção: ${fmtN.format(prodDer.pedida)}"></div>
-            <div class="sep-bar-fill" style="width:${derPctPend}%;background:var(--warn);" title="Pendente: ${fmtN.format(pendDer.pedida)}"></div>
+            <div class="sep-bar-fill" style="width:${derPctProd}%;background:var(--ok);"></div>
+            <div class="sep-bar-fill" style="width:${derPctPend}%;background:var(--warn);"></div>
           </div>
         </div>
-
-        <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Produção Sorter">
-          <div class="sep-header">
-            <span>Sorter (Total: ${fmtN.format(sorTotQtd)})</span>
-            <span>Prod: ${fmtP(sorPctProd)} | Pend: ${fmtP(sorPctPend)}</span>
-          </div>
+        <div class="sep-item" data-filter-carteira-sep="Produção Sorter">
+          <div class="sep-header"><span>Sorter (${fmtN.format(sorTotQtd)})</span><span>Prod: ${fmtP(sorPctProd)}</span></div>
           <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${sorPctProd}%;background:var(--blue);" title="Produção: ${fmtN.format(prodSor.pedida)}"></div>
-            <div class="sep-bar-fill" style="width:${sorPctPend}%;background:var(--crit);" title="Pendente: ${fmtN.format(pendSor.pedida)}"></div>
+            <div class="sep-bar-fill" style="width:${sorPctProd}%;background:var(--blue);"></div>
+            <div class="sep-bar-fill" style="width:${sorPctPend}%;background:var(--crit);"></div>
           </div>
         </div>
-
-        <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Cross Docking">
-          <div class="sep-header">
-            <span>Cross Docking (Total: ${fmtN.format(cdTotQtd)})</span>
-            <span>Sep: ${fmtP(cdPctSep)} | Pend: ${fmtP(cdPctPend)}</span>
-          </div>
+        <div class="sep-item" data-filter-carteira-sep="Cross Docking">
+          <div class="sep-header"><span>Cross Docking (${fmtN.format(cdTotQtd)})</span><span>Sep: ${fmtP(cdPctSep)}</span></div>
           <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${cdPctSep}%;background:var(--ok);" title="Separado: ${fmtN.format(crossDock.separada)}"></div>
-            <div class="sep-bar-fill" style="width:${cdPctPend}%;background:var(--accent);" title="Pendente: ${fmtN.format(cdPendQtd)}"></div>
+            <div class="sep-bar-fill" style="width:${cdPctSep}%;background:var(--ok);"></div>
+            <div class="sep-bar-fill" style="width:${cdPctPend}%;background:var(--accent);"></div>
           </div>
         </div>
-
-        <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Full">
-          <div class="sep-header">
-            <span>Full (Total: ${fmtN.format(fullTotQtd)})</span>
-            <span>Sep: ${fmtP(fullPctSep)} | Pend: ${fmtP(fullPctPend)}</span>
-          </div>
+        <div class="sep-item" data-filter-carteira-sep="Full">
+          <div class="sep-header"><span>Full (${fmtN.format(fullTotQtd)})</span><span>Sep: ${fmtP(fullPctSep)}</span></div>
           <div class="sep-bar-bg">
-            <div class="sep-bar-fill" style="width:${fullPctSep}%;background:var(--ok);" title="Separado: ${fmtN.format(fullSep.separada)}"></div>
-            <div class="sep-bar-fill" style="width:${fullPctPend}%;background:#c084fc;" title="Pendente: ${fmtN.format(fullPendQtd)}"></div>
+            <div class="sep-bar-fill" style="width:${fullPctSep}%;background:var(--ok);"></div>
+            <div class="sep-bar-fill" style="width:${fullPctPend}%;background:#c084fc;"></div>
           </div>
         </div>
       </div>
-
-      <div class="info-note">
-        💡 <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
-      </div>
+      <div class="info-note">💡 <b>Nota:</b> Fluxos <b>Cross Docking</b> e <b>Full</b> convertem direto para separado na conclusão.</div>
     </div>
 
     <div class="card">
-      <h3>Participação por Departamento CD (Clique para filtrar)</h3>
-      <div class="donutwrap">
-        ${donut(deptItems, centerDept, basis==='custo'?'valor total':'qtd pedida', 'data-filter-dept', deptFilter)}
-        ${legend(deptItems, 'data-filter-dept', deptFilter)}
-      </div>
+      <h3>Departamentos CD</h3>
+      <div class="donutwrap">${donut(deptItems, centerDept, 'departamentos', 'data-filter-dept', deptFilter)}${legend(deptItems, 'data-filter-dept', deptFilter)}</div>
     </div>
   </div>
 
-  <div class="card" style="margin-top:16px">
+  <div class="card" style="margin-top:18px">
     <div class="card-header-action">
-      <h3>📦 ${statusTitleText} (${prodsList.length} PRODUTOS ÚNICOS SOMADOS)</h3>
-      <button class="toggle-btn" id="btnToggleProds">
-        ${prodExpanded ? '▲ Ocultar Produtos' : '▼ Exibir Produtos (' + prodsList.length + ')'}
-      </button>
+      <h3>📦 PRODUTOS DA CARTEIRA (${prodsList.length})</h3>
+      <button class="toggle-btn" id="btnToggleProds">${prodExpanded ? '▲ Ocultar' : '▼ Exibir (' + prodsList.length + ')'}</button>
     </div>
-
     <div class="collapsible-content ${prodExpanded ? 'open' : ''}" id="boxProdutos">
-      <div class="prod-controls">
-        <select id="selectStatusFilter" style="font-weight:700;color:var(--accent)">
-          <option value="pendente" ${statusFilter==='pendente'?'selected':''}>Status: Apenas Pendentes</option>
-          <option value="separado" ${statusFilter==='separado'?'selected':''}>Status: Apenas Separados</option>
-          <option value="todos" ${statusFilter==='todos'?'selected':''}>Status: Todos os Status</option>
+      <div class="prod-controls" style="margin-bottom:12px;">
+        <select id="selectStatusFilter">
+          <option value="pendente" ${statusFilter==='pendente'?'selected':''}>Pendentes</option>
+          <option value="separado" ${statusFilter==='separado'?'selected':''}>Separados</option>
+          <option value="todos" ${statusFilter==='todos'?'selected':''}>Todos</option>
         </select>
-        <input type="text" id="inputProdSearch" placeholder="🔍 Buscar código / GTIN / produto..." value="${esc(prodSearch)}" style="width:240px" />
+        <input type="text" id="inputProdSearch" placeholder="🔍 Buscar produto..." value="${esc(prodSearch)}" style="width:200px" />
         <select id="selectProdSort">
-          <option value="qtd" ${prodSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Pendente</option>
-          <option value="pedida" ${prodSortOrder==='pedida'?'selected':''}>Ordenar por Maior Qtd Pedida Total</option>
-          <option value="valor" ${prodSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
+          <option value="qtd" ${prodSortOrder==='qtd'?'selected':''}>Qtd Pendente</option>
+          <option value="pedida" ${prodSortOrder==='pedida'?'selected':''}>Qtd Pedida</option>
+          <option value="valor" ${prodSortOrder==='valor'?'selected':''}>Valor (R$)</option>
         </select>
       </div>
       <div class="tw">
         <table>
           <thead>
-            <tr>
-              <th>Cód. Interno</th>
-              <th>GTIN (EAN)</th>
-              <th>Produto</th>
-              <th>Tipo Separação</th>
-              <th class="r">Qtd Pedida Total</th>
-              <th class="r">Qtd Separada</th>
-              <th class="r">Qtd Pendente Total</th>
-              <th class="r">Valor Pendente Estimado</th>
-            </tr>
+            <tr><th>Cód</th><th>GTIN</th><th>Produto</th><th>Tipo</th><th class="r">Pedida</th><th class="r">Separada</th><th class="r">Pendente</th><th class="r">Valor Est.</th></tr>
           </thead>
           <tbody>
-            ${prodsList.length ? prodsList.map(p => `
+            ${prodsList.length ? prodsList.slice(0, 100).map(p => `
               <tr>
                 <td><span class="num" style="color:var(--accent);font-weight:700">${esc(p.codProd)}</span></td>
                 <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
                 <td><b>${esc(p.prod)}</b></td>
-                <td><span class="dot" style="background:var(--accent)"></span>${esc(p.tipoSep)}</td>
-                <td class="r" style="font-weight:700">${fmtN.format(p.qtdPedida)}</td>
-                <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(p.qtdSeparada)}</td>
-                <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'};font-weight:700;font-size:15px">${fmtN.format(p.qtdPend)}</td>
-                <td class="r" style="font-weight:700;color:var(--text)">${brl(p.valorPend)}</td>
+                <td>${esc(p.tipoSep)}</td>
+                <td class="r">${fmtN.format(p.qtdPedida)}</td>
+                <td class="r" style="color:var(--ok)">${fmtN.format(p.qtdSeparada)}</td>
+                <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'}">${fmtN.format(p.qtdPend)}</td>
+                <td class="r">${brl(p.valorPend)}</td>
               </tr>
-            `).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
+            `).join('') : '<tr><td colspan="8">Nenhum produto encontrado.</td></tr>'}
           </tbody>
         </table>
       </div>
     </div>
-  </div>
-
-  <div class="card" style="margin-top:16px">
-    <h3>Status por Data de Geração da Reserva (Clique na linha para filtrar a data)</h3>
-    <div class="tw">
-      <table>
-        <thead>
-          <tr>
-            <th>Data Reserva</th>
-            <th class="r">Qtd Pedida</th>
-            <th class="r">Qtd Separada</th>
-            <th class="r">Valor Total</th>
-            <th class="r">Status Pendentes</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${resRows.map(([dt, o]) => {
-            const isSelectedDt = dateReservaFilter === dt;
-            return `
-            <tr class="clickable-row ${isSelectedDt ? 'active-row' : ''}" onclick="dateReservaFilter='${esc(dt)}'; secCarteira();">
-              <td><b>${esc(dt)}</b></td>
-              <td class="r">${fmtN.format(o.qtd)}</td>
-              <td class="r">${fmtN.format(o.qtdSep)}</td>
-              <td class="r">${brlShort(o.valor)}</td>
-              <td class="r">
-                ${o.pendentes > 0 
-                  ? `<span style="color:var(--crit);font-weight:700">🚨 ${o.pendentes} pendentes</span>` 
-                  : `<span style="color:var(--ok);font-weight:700">✔ Concluído</span>`}
-              </td>
-            </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:16px">
-    <div class="card-header-action">
-      <h3>RESUMO DE SEPARAÇÃO POR DESTINATÁRIO (DESTINO)</h3>
-      <button class="toggle-btn" id="btnToggleDest">
-        ${destExpanded ? '▲ Ocultar Lojas' : '▼ Exibir Lojas / Destinos (' + destRows.length + ')'}
-      </button>
-    </div>
-
-    <div class="collapsible-content ${destExpanded ? 'open' : ''}" id="boxDestinos">
-      <div style="margin-bottom: 12px;">
-        <input type="text" id="inputDestSearch" placeholder="🔍 Buscar loja / destino..." value="${esc(destSearch)}" style="width: 100%; max-width: 320px;" />
-      </div>
-      <div class="tw">
-        <table>
-          <thead>
-            <tr>
-              <th>Destinatário</th>
-              <th class="r">Qtd Pedida</th>
-              <th class="r">Qtd Separada</th>
-              <th class="r">Valor Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${destRows.length ? destRows.map(([k,o]) => `
-              <tr class="clickable-row" onclick="targetDestFilter='${esc(k)}'; secCarteira();">
-                <td><b>${esc(k)}</b></td>
-                <td class="r">${fmtN.format(o.pedida)}</td>
-                <td class="r" style="color:${o.separada > 0 ? 'var(--ok)' : 'var(--mute)'}">${fmtN.format(o.separada)}</td>
-                <td class="r">${brlShort(o.valor)}</td>
-              </tr>
-            `).join('') : '<tr><td colspan="4">Nenhuma loja encontrada.</td></tr>'}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-  `;
+  </div>`;
 
   const selectDateRes = $('#dateReservaFilterSelect');
-  if (selectDateRes) {
-    selectDateRes.addEventListener('change', (e) => {
-      dateReservaFilter = e.target.value;
-      secCarteira();
-    });
-  }
-
-  document.querySelectorAll('[data-filter-carteira-sep]').forEach(el => {
-    el.addEventListener('click', () => {
-      const targetSep = el.getAttribute('data-filter-carteira-sep');
-      sepFilter = (sepFilter === targetSep) ? 'todos' : targetSep;
-      secCarteira();
-    });
-  });
-
-  document.querySelectorAll('[data-filter-dept]').forEach(el => {
-    el.addEventListener('click', () => {
-      const targetDept = el.getAttribute('data-filter-dept');
-      deptFilter = (deptFilter === targetDept) ? 'todos' : targetDept;
-      secCarteira();
-    });
-  });
-
+  if (selectDateRes) selectDateRes.addEventListener('change', (e) => { dateReservaFilter = e.target.value; secCarteira(); });
   const selectSep = $('#sepFilterSelect');
-  if (selectSep) {
-    selectSep.addEventListener('change', (e) => {
-      sepFilter = e.target.value;
-      secCarteira();
-    });
-  }
-
+  if (selectSep) selectSep.addEventListener('change', (e) => { sepFilter = e.target.value; secCarteira(); });
   const selectTargetDest = $('#targetDestFilterSelect');
-  if (selectTargetDest) {
-    selectTargetDest.addEventListener('change', (e) => {
-      targetDestFilter = e.target.value;
-      secCarteira();
-    });
-  }
-
+  if (selectTargetDest) selectTargetDest.addEventListener('change', (e) => { targetDestFilter = e.target.value; secCarteira(); });
   const selectDept = $('#deptFilterSelect');
-  if (selectDept) {
-    selectDept.addEventListener('change', (e) => {
-      deptFilter = e.target.value;
-      secCarteira();
-    });
-  }
-
+  if (selectDept) selectDept.addEventListener('change', (e) => { deptFilter = e.target.value; secCarteira(); });
   const btnProds = $('#btnToggleProds');
-  if (btnProds) {
-    btnProds.addEventListener('click', () => {
-      prodExpanded = !prodExpanded;
-      secCarteira();
-    });
-  }
-
-  const selectStatus = $('#selectStatusFilter');
-  if (selectStatus) {
-    selectStatus.addEventListener('change', (e) => {
-      statusFilter = e.target.value;
-      secCarteira();
-    });
-  }
+  if (btnProds) btnProds.addEventListener('click', () => { prodExpanded = !prodExpanded; secCarteira(); });
 
   const pSearch = $('#inputProdSearch');
-  if (pSearch) {
-    pSearch.addEventListener('input', (e) => {
-      prodSearch = e.target.value;
-      secCarteira();
-      const el = $('#inputProdSearch');
-      if (el) { el.focus(); el.setSelectionRange(prodSearch.length, prodSearch.length); }
-    });
-  }
-
+  if (pSearch) pSearch.addEventListener('input', (e) => { prodSearch = e.target.value; secCarteira(); });
   const pSort = $('#selectProdSort');
-  if (pSort) {
-    pSort.addEventListener('change', (e) => {
-      prodSortOrder = e.target.value;
-      secCarteira();
-    });
-  }
-
-  const btnDest = $('#btnToggleDest');
-  if (btnDest) {
-    btnDest.addEventListener('click', () => {
-      destExpanded = !destExpanded;
-      secCarteira();
-    });
-  }
-
-  const dSearch = $('#inputDestSearch');
-  if (dSearch) {
-    dSearch.addEventListener('input', (e) => {
-      destSearch = e.target.value;
-      secCarteira();
-      const el = $('#inputDestSearch');
-      if (el) { el.focus(); el.setSelectionRange(destSearch.length, destSearch.length); }
-    });
-  }
+  if (pSort) pSort.addEventListener('change', (e) => { prodSortOrder = e.target.value; secCarteira(); });
 
   attachTooltipEvents();
 }
-
 
 let AdminD = null;
 let searchNotas = '';
@@ -2531,21 +1751,18 @@ async function loadAdminData(){
     const timestamp = new Date().getTime();
     const res = await fetch(`${CONFIG.ADMIN_URL}?v=${timestamp}`);
     if (res.ok) AdminD = await res.json();
-  } catch(e) {
-    console.error("Erro ao carregar administrativo.json:", e);
-  }
+  } catch(e) { console.error("Erro no administrativo.json:", e); }
 }
 
 function secAdmin(){
   if (!AdminD) {
     const elAdmin = $('#s-admin');
-    if (elAdmin) elAdmin.innerHTML = `<div class="card"><h3>Administrativo</h3><p>Carregando dados do administrativo.json...</p></div>`;
+    if (elAdmin) elAdmin.innerHTML = `<div class="card"><h3>Administrativo</h3><p>Carregando dados...</p></div>`;
     return;
   }
 
   const notas = AdminD.notas_transito || [];
   const pre = AdminD.pre_alerta || [];
-
   const totNotasVal = notas.reduce((s,n) => s + (n.valorNota || 0), 0);
   const notasAntigas = notas.filter(n => (n.dias || 0) > 30);
   const totAntigasVal = notasAntigas.reduce((s,n) => s + (n.valorNota || 0), 0);
@@ -2554,65 +1771,46 @@ function secAdmin(){
   const faltaVal = pre.filter(p => (p.tipo || '').toUpperCase() === 'FALTA').reduce((s,p) => s + (p.valorTotal || 0), 0);
 
   const listNotas = notas.filter(n => 
-    (n.nf || '').toLowerCase().includes(searchNotas.toLowerCase()) || 
-    (n.destino || '').toLowerCase().includes(searchNotas.toLowerCase()) || 
-    (n.prod || '').toLowerCase().includes(searchNotas.toLowerCase())
+    (n.nf || '').toLowerCase().includes(searchNotas.toLowerCase()) || (n.destino || '').toLowerCase().includes(searchNotas.toLowerCase()) || (n.prod || '').toLowerCase().includes(searchNotas.toLowerCase())
   );
 
   const listPre = pre.filter(p => 
-    (p.loja || '').toLowerCase().includes(searchPre.toLowerCase()) || 
-    (p.prod || '').toLowerCase().includes(searchPre.toLowerCase()) || 
-    (p.tipo || '').toLowerCase().includes(searchPre.toLowerCase())
+    (p.loja || '').toLowerCase().includes(searchPre.toLowerCase()) || (p.prod || '').toLowerCase().includes(searchPre.toLowerCase()) || (p.tipo || '').toLowerCase().includes(searchPre.toLowerCase())
   );
 
-  const el = $('#s-admin');
-  if (!el) return;
-
-  el.innerHTML = `
+  $('#s-admin').innerHTML = `
     <h2>Setor Administrativo</h2>
-    <p class="sub">Acompanhamento de Notas em Trânsito e Ocorrências de Pré-Alerta (Sobra e Falta).</p>
+    <p class="sub">Notas em Trânsito e Ocorrências de Pré-Alerta (Sobra e Falta).</p>
 
     <div class="grid kpis">
-      <div class="card kpi hl"><h3>Total Notas em Trânsito</h3><div class="v">${brlShort(totNotasVal)}</div><div class="s">${fmtN.format(notas.length)} notas registradas</div></div>
-      <div class="card kpi"><h3>Notas Antigas Pendentes (>30d)</h3><div class="v" style="color:var(--crit)">${brlShort(totAntigasVal)}</div><div class="s">${fmtN.format(notasAntigas.length)} notas críticas</div></div>
-      <div class="card kpi"><h3>Total Ocorrências de Sobra</h3><div class="v" style="color:var(--ok)">${brlShort(sobraVal)}</div><div class="s">Itens sobrando na recepção</div></div>
-      <div class="card kpi"><h3>Total Ocorrências de Falta</h3><div class="v" style="color:var(--warn)">${brlShort(faltaVal)}</div><div class="s">Itens faltantes na recepção</div></div>
+      ${kpi('Notas em Trânsito', brlShort(totNotasVal), fmtN.format(notas.length) + ' notas', 'hl', '', [], '', '', 100)}
+      ${kpi('Notas >30 dias', brlShort(totAntigasVal), fmtN.format(notasAntigas.length) + ' críticas', 'crit', '', [], '', '', 100)}
+      ${kpi('Ocorrências Sobra', brlShort(sobraVal), 'Sobras recepção', 'ok', '', [], '', '', 100)}
+      ${kpi('Ocorrências Falta', brlShort(faltaVal), 'Faltas recepção', 'warn', '', [], '', '', 100)}
     </div>
 
-    <div class="card" style="margin-top:20px">
+    <div class="card" style="margin-top:18px">
       <div class="card-header-action">
-        <h3>📋 NOTAS EM TRÂNSITO - DETALHAMENTO (${listNotas.length} LINHAS)</h3>
-        <div class="prod-controls">
-          <input type="text" id="inputSearchNotas" placeholder="🔍 Buscar NF, loja destino, produto..." value="${esc(searchNotas)}" style="width:280px">
-        </div>
+        <h3>📋 NOTAS EM TRÂNSITO (${listNotas.length})</h3>
+        <input type="text" id="inputSearchNotas" placeholder="🔍 Buscar NF, destino, produto..." value="${esc(searchNotas)}" style="width:240px">
       </div>
       <div class="tw">
         <table>
           <thead>
-            <tr>
-              <th>NF</th>
-              <th>Origem</th>
-              <th>Destino</th>
-              <th>Data Emissão</th>
-              <th class="r">Dias em Trânsito</th>
-              <th>Cód. Prod</th>
-              <th>Descrição Produto</th>
-              <th class="r">Qtd</th>
-              <th class="r">Valor Nota Total</th>
-            </tr>
+            <tr><th>NF</th><th>Origem</th><th>Destino</th><th>Emissão</th><th class="r">Dias</th><th>Cód</th><th>Produto</th><th class="r">Qtd</th><th class="r">Valor</th></tr>
           </thead>
           <tbody>
-            ${listNotas.length ? listNotas.slice(0, 150).map(n => `
+            ${listNotas.length ? listNotas.slice(0, 100).map(n => `
               <tr>
                 <td><b style="color:var(--accent)">${esc(n.nf)}</b></td>
                 <td>${esc(n.origem)}</td>
                 <td><b>${esc(n.destino)}</b></td>
                 <td>${esc(n.dataEmissao)}</td>
-                <td class="r" style="color:${n.dias > 30 ? 'var(--crit)' : 'var(--text)'};font-weight:700">${n.dias} dias</td>
+                <td class="r" style="color:${n.dias > 30 ? 'var(--crit)' : 'var(--text)'}">${n.dias}d</td>
                 <td>${esc(n.codProd)}</td>
                 <td>${esc(n.prod)}</td>
                 <td class="r">${fmtN.format(n.qtd)}</td>
-                <td class="r" style="font-weight:700">${brl(n.valorNota)}</td>
+                <td class="r">${brl(n.valorNota)}</td>
               </tr>
             `).join('') : '<tr><td colspan="9">Nenhuma nota encontrada.</td></tr>'}
           </tbody>
@@ -2620,32 +1818,18 @@ function secAdmin(){
       </div>
     </div>
 
-    <div class="card" style="margin-top:20px">
+    <div class="card" style="margin-top:18px">
       <div class="card-header-action">
-        <h3>⚠️ PRÉ-ALERTA / SOBRA E FALTA - DETALHAMENTO (${listPre.length} LINHAS)</h3>
-        <div class="prod-controls">
-          <input type="text" id="inputSearchPre" placeholder="🔍 Buscar loja, produto, SOBRA/FALTA..." value="${esc(searchPre)}" style="width:280px">
-        </div>
+        <h3>⚠️ PRÉ-ALERTA / SOBRA E FALTA (${listPre.length})</h3>
+        <input type="text" id="inputSearchPre" placeholder="🔍 Buscar loja, produto..." value="${esc(searchPre)}" style="width:240px">
       </div>
       <div class="tw">
         <table>
           <thead>
-            <tr>
-              <th>Loja</th>
-              <th>Data Reg.</th>
-              <th>Pedido</th>
-              <th>NF</th>
-              <th>Tipo</th>
-              <th>Cód. Prod</th>
-              <th>Descrição Produto</th>
-              <th class="r">Qtd</th>
-              <th class="r">Valor Total</th>
-              <th>Status CD</th>
-              <th>Status Loja</th>
-            </tr>
+            <tr><th>Loja</th><th>Data</th><th>Pedido</th><th>NF</th><th>Tipo</th><th>Cód</th><th>Produto</th><th class="r">Qtd</th><th class="r">Valor Total</th></tr>
           </thead>
           <tbody>
-            ${listPre.length ? listPre.slice(0, 150).map(p => `
+            ${listPre.length ? listPre.slice(0, 100).map(p => `
               <tr>
                 <td><b>${esc(p.loja)}</b></td>
                 <td>${esc(p.dataRegistro)}</td>
@@ -2655,53 +1839,38 @@ function secAdmin(){
                 <td>${esc(p.codProd)}</td>
                 <td>${esc(p.prod)}</td>
                 <td class="r">${fmtN.format(p.qtd)} ${esc(p.um)}</td>
-                <td class="r" style="font-weight:700">${brl(p.valorTotal)}</td>
-                <td>${esc(p.statusCd)}</td>
-                <td>${esc(p.statusLoja)}</td>
+                <td class="r">${brl(p.valorTotal)}</td>
               </tr>
-            `).join('') : '<tr><td colspan="11">Nenhuma ocorrência encontrada.</td></tr>'}
+            `).join('') : '<tr><td colspan="9">Nenhuma ocorrência registrada.</td></tr>'}
           </tbody>
         </table>
       </div>
-    </div>
-  `;
+    </div>`;
 
   const inNotas = $('#inputSearchNotas');
-  if (inNotas) {
-    inNotas.addEventListener('input', (e) => {
-      searchNotas = e.target.value;
-      secAdmin();
-      const el = $('#inputSearchNotas');
-      if (el) { el.focus(); el.setSelectionRange(searchNotas.length, searchNotas.length); }
-    });
-  }
-
+  if (inNotas) inNotas.addEventListener('input', (e) => { searchNotas = e.target.value; secAdmin(); });
   const inPre = $('#inputSearchPre');
-  if (inPre) {
-    inPre.addEventListener('input', (e) => {
-      searchPre = e.target.value;
-      secAdmin();
-      const el = $('#inputSearchPre');
-      if (el) { el.focus(); el.setSelectionRange(searchPre.length, searchPre.length); }
-    });
-  }
+  if (inPre) inPre.addEventListener('input', (e) => { searchPre = e.target.value; secAdmin(); });
 }
 
 const SECTIONS = [
-  {id:'geral', title:'Visão Geral', render:secGeral},
-  {id:'shelf', title:'Shelf Life', render:secShelf},
-  {id:'aging', title:'Aging', render:secAging},
-  {id:'ocup', title:'Ocupação', render:secOcup},
-  {id:'carteira', title:'Carteira', render:secCarteira},
-  {id:'admin', title:'Administrativo', render:secAdmin}
+  {id:'geral', title:'Visão Geral', icon:'📊', render:secGeral},
+  {id:'shelf', title:'Shelf Life', icon:'⏳', render:secShelf},
+  {id:'aging', title:'Aging', icon:'📉', render:secAging},
+  {id:'ocup', title:'Ocupação', icon:'🏢', render:secOcup},
+  {id:'carteira', title:'Carteira', icon:'📦', render:secCarteira},
+  {id:'admin', title:'Administrativo', icon:'📑', render:secAdmin}
 ];
-
-let activeTab = 'geral';
 
 function renderNav(){
   const nav = $('#tabs');
   if (!nav) return;
-  nav.innerHTML = SECTIONS.map(s => `<button data-tab="${s.id}" role="tab" aria-selected="${s.id===activeTab}">${s.title}</button>`).join('');
+  nav.innerHTML = SECTIONS.map(s => `
+    <button data-tab="${s.id}" role="tab" aria-selected="${s.id===activeTab}">
+      <span class="icon">${s.icon}</span>
+      <span>${s.title}</span>
+    </button>
+  `).join('');
   
   nav.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -2715,9 +1884,7 @@ function renderNav(){
 function render(){
   if (!D) return;
   const hash = window.location.hash.replace('#','');
-  if (hash && SECTIONS.some(s=>s.id===hash)) {
-    activeTab = hash;
-  }
+  if (hash && SECTIONS.some(s=>s.id===hash)) activeTab = hash;
   
   document.querySelectorAll('nav#tabs button').forEach(b => {
     b.setAttribute('aria-selected', b.getAttribute('data-tab') === activeTab);
@@ -2728,12 +1895,7 @@ function render(){
     if (el) {
       if (s.id === activeTab) {
         el.classList.add('on');
-        try {
-          s.render();
-        } catch(err) {
-          console.error('Erro ao renderizar seção ' + s.id, err);
-          el.innerHTML = '<div class="card"><h3>Erro de Exibição</h3><p>Ocorreu um erro ao carregar esta aba.</p></div>';
-        }
+        try { s.render(); } catch(err) { console.error('Erro na seção ' + s.id, err); }
       } else {
         el.classList.remove('on');
       }
@@ -2756,14 +1918,10 @@ function toggleTvMode() {
   if (btnTv) btnTv.setAttribute('aria-pressed', isTv);
 
   if (isTv) {
-    if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    }
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
     startTvRotation();
   } else {
-    if (document.exitFullscreen && document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
-    }
+    if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen().catch(() => {});
     stopTvRotation();
   }
 }
@@ -2780,24 +1938,24 @@ function startTvRotation() {
 }
 
 function stopTvRotation() {
-  if (tvTimer) {
-    clearInterval(tvTimer);
-    tvTimer = null;
-  }
+  if (tvTimer) { clearInterval(tvTimer); tvTimer = null; }
 }
 
-document.addEventListener('fullscreenchange', () => {
-  if (!document.fullscreenElement && document.body.classList.contains('tvmode')) {
-    document.body.classList.remove('tvmode');
-    const btnTv = $('#tv');
-    if (btnTv) btnTv.setAttribute('aria-pressed', 'false');
-    stopTvRotation();
-  }
-});
-
 const btnTv = $('#tv');
-if (btnTv) {
-  btnTv.addEventListener('click', toggleTvMode);
+if (btnTv) btnTv.addEventListener('click', toggleTvMode);
+
+const globalSearch = $('#globalSearchInput');
+if (globalSearch) {
+  globalSearch.addEventListener('input', (e) => {
+    const query = e.target.value;
+    estoqueProdSearch = query;
+    prodSearch = query;
+    shelfSearch = query;
+    agingSearch = query;
+    searchNotas = query;
+    searchPre = query;
+    render();
+  });
 }
 
 window.addEventListener('DOMContentLoaded', () => {
