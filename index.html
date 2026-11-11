@@ -17,7 +17,7 @@
   --ok:#35d49a; --warn:#ffb020; --crit:#ff5d62; --none:#5b6b8f;
   --f-body:'Montserrat', system-ui, sans-serif; 
   --f-num:'Barlow Semi Condensed', 'Montserrat', system-ui, sans-serif;
-  --radius:12px;
+  --radius:10px;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -28,7 +28,7 @@ button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 
-header{position:sticky;top:0;z-index:100;background:rgba(5, 12, 26, 0.94);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
 .brand-container { display: flex; align-items: center; gap: 16px; }
 
 .roldao-logo-wrap {
@@ -49,7 +49,14 @@ header{position:sticky;top:0;z-index:100;background:rgba(5, 12, 26, 0.94);backdr
   border-color: var(--accent);
   box-shadow: 0 0 20px rgba(255, 196, 0, 0.45), inset 0 0 12px rgba(255, 196, 0, 0.2);
 }
-.roldao-logo-img { height: 40px; width: auto; display: block; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+
+.roldao-logo-img {
+  height: 40px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
 
 .brand{display:flex;flex-direction:column;line-height:1.1}
 .brand b{font-family:var(--f-body);font-size:20px;font-weight:700;letter-spacing:-.01em;color:#fff}
@@ -122,7 +129,11 @@ nav button[aria-selected="true"]{
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.3s ease;
 }
-.tv:hover{ border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 0 16px rgba(255, 196, 0, 0.35); }
+.tv:hover{
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 0 16px rgba(255, 196, 0, 0.35);
+}
 .tv[aria-pressed="true"]{
   background: linear-gradient(135deg, #ffc400 0%, #e6a800 100%);
   color: #120e00;
@@ -134,12 +145,10 @@ nav button[aria-selected="true"]{
 #src i{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block}
 #src.live i{background:var(--ok)}
 #src.error i{background:var(--crit)}
-#bar{height:3px;background:var(--accent);width:0;position:fixed;left:0;top:0;z-index:999}
+#bar{height:3px;background:var(--accent);width:0;position:fixed;left:0;top:0;z-index:99}
 
-section{display:none;padding-top:20px;animation: fadeInSec 0.3s ease-in-out;}
+section{display:none;padding-top:20px}
 section.on{display:block}
-@keyframes fadeInSec { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
 h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;letter-spacing:-.01em}
 .sub{color:var(--mute);margin:0 0 18px;font-size:14px}
 .grid{display:grid;gap:16px}
@@ -163,8 +172,13 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   border-color: rgba(255, 196, 0, 0.35);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 0 15px rgba(255, 196, 0, 0.1);
 }
-.card.clickable-card { cursor: pointer; }
-.card.clickable-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+.card.clickable-card {
+  cursor: pointer;
+}
+.card.clickable-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+}
 
 .card h3{margin:0 0 14px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:700}
 .card-header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
@@ -174,68 +188,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-.admin-tab-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-.admin-tab-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--panel2);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 8px 12px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.admin-subtabs-pill {
-  display: flex;
-  gap: 8px;
-  background: #040c1d;
-  padding: 4px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 196, 0, 0.2);
-}
-.admin-subtabs-pill button {
-  background: transparent;
-  border: 0;
-  border-radius: 8px;
-  padding: 8px 18px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--mute);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.admin-subtabs-pill button:hover { color: #fff; background: rgba(255,255,255,0.05); }
-.admin-subtabs-pill button[aria-selected="true"] {
-  background: linear-gradient(135deg, #4285f4 0%, #1a3c7e 100%);
-  color: #fff;
-  font-weight: 800;
-  box-shadow: 0 0 15px rgba(66, 133, 244, 0.4);
-}
-
-.alert-banner {
-  background: rgba(255, 176, 32, 0.1);
-  border: 1px solid var(--warn);
-  border-radius: var(--radius);
-  padding: 14px 18px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 16px;
-  box-shadow: 0 4px 12px rgba(255, 176, 32, 0.1);
-}
-.alert-banner-icon { font-size: 26px; flex-shrink: 0; }
-.alert-banner-content h4 { margin: 0 0 4px; font-size: 14px; color: var(--accent); font-weight: 800; }
-.alert-banner-content p { margin: 0; font-size: 13px; color: var(--text); }
-
+/* DESIGN DO GRÁFICO COM ESPAÇAMENTO ADICIONAL PARA O VALOR / LIMITE */
 .bar-chart-container {
   display: flex;
   align-items: flex-end;
@@ -248,8 +201,25 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   border-radius: 8px;
   border: 1px solid rgba(26, 49, 99, 0.6);
 }
-.bar-chart-wrapper { display: flex; align-items: flex-end; gap: 16px; min-width: 100%; height: 100%; position: relative; }
-.bar-chart-col { flex: 1; min-width: 48px; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; position: relative; z-index: 3; }
+.bar-chart-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  min-width: 100%;
+  height: 100%;
+  position: relative;
+}
+.bar-chart-col {
+  flex: 1;
+  min-width: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  position: relative;
+  z-index: 3;
+}
 .bar-chart-bar {
   width: 100%;
   max-width: 44px;
@@ -288,14 +258,50 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   align-items: center;
   line-height: 1.15;
 }
-.bar-var-tag { font-size: 10px; font-weight: 700; padding: 1px 4px; border-radius: 3px; margin-top: 2px; }
+.bar-var-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-top: 2px;
+}
 .bar-var-tag.up { color: var(--ok); background: rgba(53, 212, 154, 0.15); }
 .bar-var-tag.down { color: var(--crit); background: rgba(255, 93, 98, 0.15); }
 .bar-var-tag.neutral { color: var(--mute); }
 
-.bar-date-label { margin-top: 10px; font-size: 11px; color: var(--mute); font-weight: 700; white-space: nowrap; font-family: var(--f-num); }
-.limit-line { position: absolute; left: 0; width: 100%; border-top: 2px dashed #ff5d62; z-index: 2; pointer-events: none; box-shadow: 0 0 8px rgba(255, 93, 98, 0.4); }
-.limit-line-label { position: absolute; right: 12px; top: -20px; font-size: 11px; font-weight: 800; color: #ff5d62; background: #081329; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(255, 93, 98, 0.4); }
+.bar-chart-bar:hover .bar-val-label {
+  color: #fff;
+  transform: translateX(-50%) scale(1.08);
+}
+.bar-date-label {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--mute);
+  font-weight: 700;
+  white-space: nowrap;
+  font-family: var(--f-num);
+}
+.limit-line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  border-top: 2px dashed #ff5d62;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow: 0 0 8px rgba(255, 93, 98, 0.4);
+}
+.limit-line-label {
+  position: absolute;
+  right: 12px;
+  top: -20px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #ff5d62;
+  background: #081329;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 93, 98, 0.4);
+}
 
 .active-filters-bar {
   display: none;
@@ -314,19 +320,56 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 }
 .active-filters-bar.visible { display: flex; }
 .active-filters-bar button {
-  background: var(--accent); color: #1a1400; border: 0; padding: 5px 14px; border-radius: 6px; font-weight: 800; font-size: 12px; transition: all 0.2s ease;
+  background: var(--accent);
+  color: #1a1400;
+  border: 0;
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 12px;
+  transition: all 0.2s ease;
 }
-.active-filters-bar button:hover { transform: scale(1.05); box-shadow: 0 0 12px rgba(255, 196, 0, 0.5); }
+.active-filters-bar button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(255, 196, 0, 0.5);
+}
 
 #floating-tooltip {
-  position: fixed; z-index: 9999; display: none; pointer-events: none;
-  background: rgba(8, 20, 48, 0.95); backdrop-filter: blur(12px); border: 1px solid var(--accent);
-  border-radius: 10px; padding: 12px 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 15px rgba(255, 196, 0, 0.25);
-  max-width: 320px; animation: tooltipFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: fixed;
+  z-index: 9999;
+  display: none;
+  pointer-events: none;
+  background: rgba(8, 20, 48, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 12px 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 15px rgba(255, 196, 0, 0.25);
+  max-width: 320px;
+  animation: tooltipFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-@keyframes tooltipFadeIn { from { opacity: 0; transform: scale(0.95) translateY(5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-#floating-tooltip .tt-title { font-size: 13px; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px solid rgba(255, 196, 0, 0.2); padding-bottom: 4px; }
-#floating-tooltip .tt-item { font-size: 12px; margin-top: 6px; line-height: 1.35; }
+
+@keyframes tooltipFadeIn {
+  from { opacity: 0; transform: scale(0.95) translateY(5px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+#floating-tooltip .tt-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 196, 0, 0.2);
+  padding-bottom: 4px;
+}
+
+#floating-tooltip .tt-item {
+  font-size: 12px;
+  margin-top: 6px;
+  line-height: 1.35;
+}
+
 #floating-tooltip .tt-item b { color: #fff; display: block; }
 #floating-tooltip .tt-item span { color: var(--mute); }
 
@@ -340,25 +383,68 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .prod-controls select:focus, .prod-controls input:focus { border-color: var(--accent); }
 
 .toggle-btn {
-  display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #0b1f44 0%, #122d63 100%);
-  border: 1px solid rgba(255, 196, 0, 0.35); color: var(--accent); padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: all .3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #0b1f44 0%, #122d63 100%);
+  border: 1px solid rgba(255, 196, 0, 0.35);
+  color: var(--accent);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: all .3s ease;
 }
-.toggle-btn:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 0 14px rgba(255, 196, 0, 0.35); color: #fff; }
+.toggle-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(255, 196, 0, 0.35);
+  color: #fff;
+}
 
 .btn-export-pdf {
-  display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #1b3d1f 0%, #2e6935 100%);
-  border: 1px solid var(--ok); color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 13px; transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #1b3d1f 0%, #2e6935 100%);
+  border: 1px solid var(--ok);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  transition: all 0.2s ease;
 }
-.btn-export-pdf:hover { background: linear-gradient(135deg, #25542b 0%, #3a8543 100%); transform: scale(1.03); box-shadow: 0 0 12px rgba(53, 212, 154, 0.4); }
+.btn-export-pdf:hover {
+  background: linear-gradient(135deg, #25542b 0%, #3a8543 100%);
+  transform: scale(1.03);
+  box-shadow: 0 0 12px rgba(53, 212, 154, 0.4);
+}
 
 .collapsible-content { display: none; margin-top: 14px; animation: fadeIn .25s ease-in-out; }
 .collapsible-content.open { display: block; }
+
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
 .sem-fisico-badge {
-  background: rgba(255, 93, 98, 0.15); border: 1px solid var(--crit); border-radius: 6px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #ff8b8f; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+  background: rgba(255, 93, 98, 0.15);
+  border: 1px solid var(--crit);
+  border-radius: 6px;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #ff8b8f;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
-.sem-fisico-badge:hover { background: rgba(255, 93, 98, 0.3); box-shadow: 0 0 10px rgba(255, 93, 98, 0.4); }
+.sem-fisico-badge:hover {
+  background: rgba(255, 93, 98, 0.3);
+  box-shadow: 0 0 10px rgba(255, 93, 98, 0.4);
+}
 .sem-fisico-badge b { color: var(--crit); font-family: var(--f-num); font-size: 16px; }
 
 .donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;margin:auto 0;padding:12px 0;width:100%}
@@ -392,7 +478,16 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .sep-bar-bg { height: 12px; background: var(--panel2); border-radius: 6px; overflow: hidden; display: flex; }
 .sep-bar-fill { height: 100%; transition: width 0.3s ease; }
 
-.info-note { background: rgba(66, 133, 244, 0.1); border: 1px solid rgba(66, 133, 244, 0.3); border-radius: 8px; padding: 12px 16px; margin-top: 16px; font-size: 13px; color: #b0cdff; line-height: 1.4; }
+.info-note {
+  background: rgba(66, 133, 244, 0.1);
+  border: 1px solid rgba(66, 133, 244, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #b0cdff;
+  line-height: 1.4;
+}
 .info-note b { color: var(--accent); }
 
 .occ { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; align-items: stretch; }
@@ -430,12 +525,13 @@ body.tvmode .card { padding: 24px; }
 body.tvmode h2 { font-size: 36px; }
 body.tvmode .kpi .v { font-size: 52px; }
 
-@media (max-width:820px){ .two{grid-template-columns:minmax(0,1fr)} .admin-tab-header{flex-direction:column;align-items:stretch;} }
+@media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:no-preference){#bar{transition:width .3s linear}}
 </style>
 </head>
 <body>
 <div id="bar"></div>
+
 <div id="floating-tooltip"></div>
 
 <header>
@@ -443,6 +539,7 @@ body.tvmode .kpi .v { font-size: 52px; }
     <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
       <img class="roldao-logo-img" src="./logo%20Roldao%20Painel.png" alt="Roldão Atacadista">
     </div>
+
     <div class="brand">
       <b>Painel de Estoque</b>
       <small>Centro de Distribuição</small>
@@ -450,7 +547,6 @@ body.tvmode .kpi .v { font-size: 52px; }
   </div>
 
   <nav id="tabs" role="tablist" aria-label="Seções"></nav>
-
   <div class="tools">
     <div class="seg" id="basis" role="group" aria-label="Medida">
       <button data-b="custo" aria-pressed="true">R$</button>
@@ -484,19 +580,45 @@ const MAPA_MESES = {
 };
 
 const MAPA_LOJAS = {
-  "2": "R002 - ROLDÃO FREGUESIA", "3": "R003 - ROLDÃO MOOCA", "4": "R004 - ROLDÃO BUTANTA",
-  "5": "R005 - ROLDÃO OSASCO", "6": "R006 - ROLDÃO CAMPO LIMPO", "7": "R007 - ROLDÃO SANTO ANDRE",
-  "8": "R008 - ROLDÃO JUNDIAI", "9": "R009 - ROLDÃO GUARULHOS", "10": "R010 - ROLDÃO IPIRANGA",
-  "11": "R011 - ROLDÃO M. TITO", "13": "R013 - ROLDÃO P. GRANDE", "15": "R015 - ROLDÃO GUARUJA",
-  "16": "R016 - ROLDÃO C. TIRADENTES", "17": "R017 - ROLDÃO F DA ROCHA", "18": "R018 - ROLDÃO SOROCABA",
-  "19": "R019 - ROLDÃO ATIBAIA", "20": "R020 - ROLDÃO N. UNIDAS", "22": "R022 - ROLDÃO CUPECE",
-  "24": "R024 - ROLDÃO JANDIRA", "26": "R026 - ROLDÃO TAIPAS", "27": "R027 - ROLDÃO SÃO JOSÉ",
-  "28": "R028 - ROLDÃO BRASILANDIA", "29": "R029 - ROLDÃO VILA MATHIAS", "30": "R030 - ROLDÃO CIDADE DUTRA",
-  "35": "R035 - ROLDÃO CAMPINAS", "36": "R036 - ROLDÃO BONSUCESO", "37": "R037 - ROLDÃO VILA EMA",
-  "39": "R039 - ROLDÃO OSASCO 2", "41": "R041 - ROLDÃO MAUA", "40": "R040 - ROLDÃO VALINHOS",
-  "42": "R042 - ROLDÃO S. ANDRE 2", "43": "R043 - ROLDÃO SANTANA", "44": "R044 - ROLDÃO ITANHAEM",
-  "46": "R046 - ROLDÃO SALTO", "47": "R047 - ROLDÃO ITU", "48": "R048 - ROLDÃO INDAIATUBA",
-  "50": "R050 - ROLDÃO JUNDIAI 3", "51": "R051 - ROLDÃO P. GRANDE 2", "52": "R052 - ROLDÃO PIRITUBA",
+  "2": "R002 - ROLDÃO FREGUESIA",
+  "3": "R003 - ROLDÃO MOOCA",
+  "4": "R004 - ROLDÃO BUTANTA",
+  "5": "R005 - ROLDÃO OSASCO",
+  "6": "R006 - ROLDÃO CAMPO LIMPO",
+  "7": "R007 - ROLDÃO SANTO ANDRE",
+  "8": "R008 - ROLDÃO JUNDIAI",
+  "9": "R009 - ROLDÃO GUARULHOS",
+  "10": "R010 - ROLDÃO IPIRANGA",
+  "11": "R011 - ROLDÃO M. TITO",
+  "13": "R013 - ROLDÃO P. GRANDE",
+  "15": "R015 - ROLDÃO GUARUJA",
+  "16": "R016 - ROLDÃO C. TIRADENTES",
+  "17": "R017 - ROLDÃO F DA ROCHA",
+  "18": "R018 - ROLDÃO SOROCABA",
+  "19": "R019 - ROLDÃO ATIBAIA",
+  "20": "R020 - ROLDÃO N. UNIDAS",
+  "22": "R022 - ROLDÃO CUPECE",
+  "24": "R024 - ROLDÃO JANDIRA",
+  "26": "R026 - ROLDÃO TAIPAS",
+  "27": "R027 - ROLDÃO SÃO JOSÉ",
+  "28": "R028 - ROLDÃO BRASILANDIA",
+  "29": "R029 - ROLDÃO VILA MATHIAS",
+  "30": "R030 - ROLDÃO CIDADE DUTRA",
+  "35": "R035 - ROLDÃO CAMPINAS",
+  "36": "R036 - ROLDÃO BONSUCESO",
+  "37": "R037 - ROLDÃO VILA EMA",
+  "39": "R039 - ROLDÃO OSASCO 2",
+  "41": "R041 - ROLDÃO MAUA",
+  "40": "R040 - ROLDÃO VALINHOS",
+  "42": "R042 - ROLDÃO S. ANDRE 2",
+  "43": "R043 - ROLDÃO SANTANA",
+  "44": "R044 - ROLDÃO ITANHAEM",
+  "46": "R046 - ROLDÃO SALTO",
+  "47": "R047 - ROLDÃO ITU",
+  "48": "R048 - ROLDÃO INDAIATUBA",
+  "50": "R050 - ROLDÃO JUNDIAI 3",
+  "51": "R051 - ROLDÃO P. GRANDE 2",
+  "52": "R052 - ROLDÃO PIRITUBA",
   "53": "R053 - ROLDÃO SÃO VICENTE"
 };
 
@@ -539,12 +661,15 @@ let filterRua = 'todos';
 let filterShelfFaixa = 'todos';
 let filterAgingFaixa = 'todos';
 
+/* FILTROS DO GRÁFICO DIÁRIO/MENSAL */
 let filterModoAcum = 'mes'; 
 let filterDiaEspec = 'todos';
 
 let geralProdExpanded = false; 
 
+/* FILTROS DA CARTEIRA */
 let dateReservaFilter = 'todos'; 
+let resFilter = 'todos';
 let sepFilter = 'todos';
 let targetDestFilter = 'todos';
 let deptFilter = 'todos';
@@ -584,7 +709,9 @@ function parseEnderecoInfo(endStr) {
   else if (str.includes("205.1041.7.")) area = '7';
   else if (parts.length >= 3) area = parts[2] || '0';
 
-  if (parts.length >= 4) { rua = +parts[3] || 0; }
+  if (parts.length >= 4) {
+    rua = +parts[3] || 0;
+  }
 
   return { area, rua };
 }
@@ -643,7 +770,11 @@ async function fromJsonFile(){
   
   const res = await fetch(url, {
     method: 'GET',
-    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' }
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    }
   });
 
   if (!res.ok) throw new Error('Status HTTP ' + res.status);
@@ -923,7 +1054,10 @@ function printChecklist(items, title) {
       tr:nth-child(even) { background: #f9f9f9; }
       .signature-space { margin-top: 25px; display: flex; justify-content: space-between; }
       .sig-line { width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 4px; font-size: 10px; }
-      @media print { body { margin: 0; } button { display: none; } }
+      @media print {
+        body { margin: 0; }
+        button { display: none; }
+      }
     </style>
   </head>
   <body>
@@ -931,11 +1065,13 @@ function printChecklist(items, title) {
       <span>ROLDÃO ATACADISTA CD - CONFERÊNCIA CARA-CRACHÁ</span>
       <button onclick="window.print()" style="padding:5px 12px; font-weight:bold; cursor:pointer;">🖨️ IMPRIMIR / SALVAR PDF</button>
     </div>
+    
     <div class="meta-info">
       <div><b>Relatório:</b> ${esc(title)}<br><b>Emissão:</b> ${nowStr}</div>
       <div><b>Linhas de Palete:</b> ${itemsSorted.length}<br><b>Sequência:</b> Menor para Maior Endereço</div>
       <div><b>Operador Auditor:</b> ___________________________</div>
     </div>
+
     <table>
       <thead>
         <tr>
@@ -949,31 +1085,50 @@ function printChecklist(items, title) {
           <th>Ajuste / Obs</th>
         </tr>
       </thead>
-      <tbody>${tableRows}</tbody>
+      <tbody>
+        ${tableRows}
+      </tbody>
     </table>
+
     <div class="signature-space">
       <div class="sig-line">Assinatura do Conferente de Rua</div>
       <div class="sig-line">Assinatura da Liderança de Estoque</div>
     </div>
-    <script>window.onload = function() { setTimeout(function() { window.print(); }, 400); }</script>
+
+    <script>
+      window.onload = function() {
+        setTimeout(function() { window.print(); }, 400);
+      }
+    <\/script>
   </body>
-  </html>`;
+  </html>
+  `;
 
   printWin.document.write(html);
   printWin.document.close();
 }
 
+/* VISÃO GERAL DA OPERAÇÃO */
 function secGeral(){
   const R_all = D.rows;
+
   let baseR = R_all;
-  if (filterArea !== 'todos') { baseR = baseR.filter(r => r.area === filterArea); }
+  if (filterArea !== 'todos') {
+    baseR = baseR.filter(r => r.area === filterArea);
+  }
 
   const ruasDisponiveis = Array.from(new Set(baseR.map(r => r.rua).filter(r => r > 0))).sort((a,b) => a - b);
   
   let R = baseR;
-  if (filterLocalEst !== 'todos') { R = R.filter(r => r.est.toLowerCase().trim() === filterLocalEst.toLowerCase().trim()); }
-  if (filterStatusEst !== 'todos') { R = R.filter(r => r.status.toLowerCase().trim() === filterStatusEst.toLowerCase().trim()); }
-  if (filterRua !== 'todos') { R = R.filter(r => r.rua === +filterRua); }
+  if (filterLocalEst !== 'todos') {
+    R = R.filter(r => r.est.toLowerCase().trim() === filterLocalEst.toLowerCase().trim());
+  }
+  if (filterStatusEst !== 'todos') {
+    R = R.filter(r => r.status.toLowerCase().trim() === filterStatusEst.toLowerCase().trim());
+  }
+  if (filterRua !== 'todos') {
+    R = R.filter(r => r.rua === +filterRua);
+  }
 
   const by = {};
   let semFisicoVal = 0;
@@ -993,7 +1148,9 @@ function secGeral(){
   const items = ests.map(([n,o],i) => {
     const key = n.toLowerCase().trim();
     const valItem = basis==='custo' ? o.custo : o.qtd;
-    if (key.includes('virtual') || key.includes('pre alerta') || key.includes('pré alerta')) { semFisicoVal += valItem; }
+    if (key.includes('virtual') || key.includes('pre alerta') || key.includes('pré alerta')) {
+      semFisicoVal += valItem;
+    }
     const topItem = R_all.filter(r => r.est === n).sort((a,b) => b.custo - a.custo)[0];
 
     return {
@@ -1018,6 +1175,7 @@ function secGeral(){
   const rc = rev.reduce((s,r)=>s+r.custo,0), rq = rev.reduce((s,r)=>s+r.qtd,0);
   const occ = occData();
   
+  // --- CÁLCULO DE RESUMO DE SHELF LIFE E AGING PARA OS KPIS DA VISÃO GERAL ---
   const revFisico = R_all.filter(r => r.est.trim() === CONFIG.ESTOQUE_FISICO);
   let shelfOkVal = 0, shelfCritVal = 0, shelfTot = 0;
   revFisico.forEach(r => {
@@ -1047,24 +1205,44 @@ function secGeral(){
   const semFisicoPct = totV ? (semFisicoVal / totV) * 100 : 0;
 
   let listEstoqueProds = R.map(r => ({
-    codProd: r.codProd, gtin: r.gtin, prod: r.prod, qtd: r.qtd, custo: r.custo, est: r.est, end: r.end, status: r.status, shelf: r.shelf, aging: r.aging, area: r.area, rua: r.rua
+    codProd: r.codProd,
+    gtin: r.gtin,
+    prod: r.prod,
+    qtd: r.qtd,
+    custo: r.custo,
+    est: r.est,
+    end: r.end,
+    status: r.status,
+    shelf: r.shelf,
+    aging: r.aging,
+    area: r.area,
+    rua: r.rua
   }));
 
   if (estoqueProdSearch) {
     const q = estoqueProdSearch.toLowerCase();
     listEstoqueProds = listEstoqueProds.filter(p => 
-      p.prod.toLowerCase().includes(q) || p.codProd.toLowerCase().includes(q) || p.gtin.toLowerCase().includes(q) || p.est.toLowerCase().includes(q) || (p.end && p.end.toLowerCase().includes(q))
+      p.prod.toLowerCase().includes(q) || 
+      p.codProd.toLowerCase().includes(q) || 
+      p.gtin.toLowerCase().includes(q) || 
+      p.est.toLowerCase().includes(q) ||
+      (p.end && p.end.toLowerCase().includes(q))
     );
   }
 
-  if (estoqueProdSortOrder === 'endereco') { listEstoqueProds.sort((a,b) => compareEnderecosNatural(a.end, b.end)); } 
-  else if (estoqueProdSortOrder === 'valor') { listEstoqueProds.sort((a,b) => b.custo - a.custo); } 
-  else if (estoqueProdSortOrder === 'qtd') { listEstoqueProds.sort((a,b) => b.qtd - a.qtd); }
+  if (estoqueProdSortOrder === 'endereco') {
+    listEstoqueProds.sort((a,b) => compareEnderecosNatural(a.end, b.end));
+  } else if (estoqueProdSortOrder === 'valor') {
+    listEstoqueProds.sort((a,b) => b.custo - a.custo);
+  } else if (estoqueProdSortOrder === 'qtd') {
+    listEstoqueProds.sort((a,b) => b.qtd - a.qtd);
+  }
 
   const hasActiveFilters = filterLocalEst !== 'todos' || filterStatusEst !== 'todos' || filterArea !== 'todos' || filterRua !== 'todos';
   const areaLabelStr = filterArea === '1' ? 'Galpão 1 (Área 1)' : (filterArea === '7' ? 'Galpão 2 (Área 7)' : 'Todas as Áreas');
   const activeFiltersText = `Filtros Ativos: ${filterArea !== 'todos' ? `Área = ${areaLabelStr}` : ''} ${filterRua !== 'todos' ? `| Rua = ${filterRua}` : ''} ${filterLocalEst !== 'todos' ? `| Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
 
+  // --- AGRUPAMENTO DE BARRAS HISTÓRICO ---
   const acumRawData = D.acum || [];
   let listaDiasUnicos = Array.from(new Set(acumRawData.map(a => a.data))).filter(d => d && d !== '-');
   
@@ -1075,6 +1253,7 @@ function secGeral(){
       if (!item.data || item.data === '-') return;
       const parts = item.data.split('/');
       const chaveMes = (parts.length === 3) ? `${parts[1]}/${parts[2]}` : item.data;
+      
       porMes[chaveMes] = porMes[chaveMes] || { mes: chaveMes, somaCustoTotal: 0, somaQtdContabil: 0, count: 0 };
       porMes[chaveMes].somaCustoTotal += (item.custoTotal || 0);
       porMes[chaveMes].somaQtdContabil += (item.qtdContabil || 0);
@@ -1082,16 +1261,30 @@ function secGeral(){
     });
 
     const arrMeses = Object.values(porMes);
+
     chartItems = arrMeses.map((m, idx) => {
       const mediaCusto = m.count ? (m.somaCustoTotal / m.count) : 0;
       const mediaQtd = m.count ? (m.somaQtdContabil / m.count) : 0;
+      
       let varPct = null;
       if (idx > 0) {
         const prevMedia = arrMeses[idx - 1].count ? (arrMeses[idx - 1].somaCustoTotal / arrMeses[idx - 1].count) : 0;
-        if (prevMedia > 0) { varPct = ((mediaCusto - prevMedia) / prevMedia) * 100; }
+        if (prevMedia > 0) {
+          varPct = ((mediaCusto - prevMedia) / prevMedia) * 100;
+        }
       }
+
       const nomeMesPorExtenso = getNomeMesAno(m.mes);
-      return { label: nomeMesPorExtenso, custoTotal: mediaCusto, subText: `Média Mensal (${m.count} dias no mês)`, qtd: mediaQtd, varPct: varPct, tooltipTitle: `Média de Estoque (${nomeMesPorExtenso})`, isProj: false };
+
+      return {
+        label: nomeMesPorExtenso,
+        custoTotal: mediaCusto,
+        subText: `Média Mensal (${m.count} dias no mês)`,
+        qtd: mediaQtd,
+        varPct: varPct,
+        tooltipTitle: `Média de Estoque (${nomeMesPorExtenso})`,
+        isProj: false
+      };
     });
 
     const possuiDezembro = chartItems.some(i => i.label.toLowerCase().includes('dezembro'));
@@ -1101,113 +1294,141 @@ function secGeral(){
       const projValorDezembro = mediaUltimos * 1.12; 
       const ultVal = chartItems[chartItems.length - 1].custoTotal;
       const projVarPct = ultVal ? ((projValorDezembro - ultVal) / ultVal) * 100 : 0;
-      chartItems.push({ label: "Dezembro/2026", custoTotal: projValorDezembro, subText: "Projeção de Estoque Estimada (Dezembro)", qtd: 0, varPct: projVarPct, tooltipTitle: "Projeção de Estoque (Dezembro/2026)", isProj: true });
+
+      chartItems.push({
+        label: "Dezembro/2026",
+        custoTotal: projValorDezembro,
+        subText: "Projeção de Estoque Estimada (Dezembro)",
+        qtd: 0,
+        varPct: projVarPct,
+        tooltipTitle: "Projeção de Estoque (Dezembro/2026)",
+        isProj: true
+      });
     }
+
   } else {
     let dadosFiltrados = acumRawData;
-    if (filterDiaEspec !== 'todos') { dadosFiltrados = dadosFiltrados.filter(a => a.data === filterDiaEspec); }
+    if (filterDiaEspec !== 'todos') {
+      dadosFiltrados = dadosFiltrados.filter(a => a.data === filterDiaEspec);
+    }
     chartItems = dadosFiltrados.map((item, idx) => {
       let varPct = null;
       if (idx > 0) {
         const prevVal = dadosFiltrados[idx - 1].custoTotal || 0;
-        if (prevVal > 0) { varPct = (((item.custoTotal || 0) - prevVal) / prevVal) * 100; }
+        if (prevVal > 0) {
+          varPct = (((item.custoTotal || 0) - prevVal) / prevVal) * 100;
+        }
       }
-      return { label: item.data.slice(0, 5), fullData: item.data, custoTotal: item.custoTotal, subText: `Fechamento do Dia (${item.data})`, qtd: item.qtdContabil, varPct: varPct, evolucao: item.evolucaoPct, tooltipTitle: `Fechamento (${item.data})`, isProj: false };
+      return {
+        label: item.data.slice(0, 5),
+        fullData: item.data,
+        custoTotal: item.custoTotal,
+        subText: `Fechamento do Dia (${item.data})`,
+        qtd: item.qtdContabil,
+        varPct: varPct,
+        evolucao: item.evolucaoPct,
+        tooltipTitle: `Fechamento (${item.data})`,
+        isProj: false
+      };
     });
   }
 
   const limitSeguro = 45000000; 
   const maxValAcum = Math.max(limitSeguro, ...chartItems.map(a => a.custoTotal || 0)) * 1.25;
 
-  let acumChartHtml = '';
-  if (chartItems.length > 0) {
-    const barsHtml = chartItems.map(item => {
-      const valBar = item.custoTotal || 0;
-      const pctHeight = (valBar / maxValAcum) * 100;
-      let tagVarHtml = '';
-      let strVarTooltip = 'Primeiro período';
-      if (item.varPct !== null && item.varPct !== undefined) {
-        const signal = item.varPct > 0 ? '+' : '';
-        const clsVar = item.varPct > 0 ? 'up' : (item.varPct < 0 ? 'down' : 'neutral');
-        const formattedVar = signal + fmtP(item.varPct, 1);
-        tagVarHtml = '<span class="bar-var-tag ' + clsVar + '">' + formattedVar + '</span>';
-        strVarTooltip = 'Variação: ' + formattedVar + ' em relação ao anterior';
-      }
-      const tooltipItems = [
-        { prod: item.subText, sub: 'Valor: ' + brl(valBar) },
-        { prod: item.isProj ? '⭐ Valor Projetado' : 'Qtd Contábil: ' + fmtN.format(item.qtd), sub: strVarTooltip }
-      ];
-      const ttAttr = JSON.stringify(tooltipItems).replace(/"/g, '&quot;');
-      const projClass = item.isProj ? ' is-proj' : '';
-      const projStar = item.isProj ? ' *' : '';
-      const projStyle = item.isProj ? 'color:var(--accent);font-weight:800' : '';
-      const projLabelExt = item.isProj ? ' (Proj)' : '';
+  let acumHtml = `
+  <div class="card" style="margin-top:16px;">
+    <div class="card-header-action">
+      <h3>📈 POSIÇÃO DE ESTOQUE HISTÓRICO E PROJEÇÃO (${filterModoAcum === 'mes' ? 'MÉDIA MENSAL R$' : 'FECHAMENTO DIÁRIO R$'})</h3>
+      
+      <div class="prod-controls">
+        <select id="selectModoAcum" style="font-weight:700;color:var(--accent)">
+          <option value="mes" ${filterModoAcum==='mes'?'selected':''}>📊 Média Agrupada por MÊS</option>
+          <option value="dia" ${filterModoAcum==='dia'?'selected':''}>📆 Detalhado por DIA</option>
+        </select>
 
-      return '<div class="bar-chart-col">' +
-        '<div class="bar-chart-bar' + projClass + '" style="height: ' + Math.max(pctHeight, 6) + '%;" ' +
-             'data-tooltip-title="' + esc(item.tooltipTitle) + '" ' +
-             'data-tooltip-color="' + (item.isProj ? 'var(--accent)' : 'var(--blue)') + '" ' +
-             'data-tooltip-items="' + ttAttr + '">' +
-          '<div class="bar-val-label">' +
-            '<span>' + brlShort(valBar) + projStar + '</span>' +
-            tagVarHtml +
-          '</div>' +
-        '</div>' +
-        '<div class="bar-date-label" style="' + projStyle + '">' + esc(item.label) + projLabelExt + '</div>' +
-      '</div>';
-    }).join('');
+        ${filterModoAcum === 'dia' ? `
+          <select id="selectDiaEspec" style="font-weight:700;color:var(--ok)">
+            <option value="todos" ${filterDiaEspec==='todos'?'selected':''}>-- Todos os Dias --</option>
+            ${listaDiasUnicos.map(d => `<option value="${d}" ${filterDiaEspec===d?'selected':''}>${d}</option>`).join('')}
+          </select>
+        ` : ''}
 
-    const limitTop = 100 - (limitSeguro / maxValAcum * 100);
-    acumChartHtml = '<div class="bar-chart-container">' +
-      '<div class="bar-chart-wrapper">' +
-        '<div class="limit-line" style="top: ' + limitTop + '%;">' +
-          '<span class="limit-line-label">LIMITE R$ 45 MI</span>' +
-        '</div>' +
-        barsHtml +
-      '</div>' +
-    '</div>';
-  } else {
-    acumChartHtml = '<p style="color:var(--mute); padding: 20px;">Nenhum dado histórico encontrado no filtro selecionado.</p>';
-  }
+        <span style="font-size:12px; font-weight:700; color:var(--accent); margin-left:8px;">Limite: <b>R$ 45,0 mi</b></span>
+      </div>
+    </div>
+    
+    ${chartItems.length > 0 ? `
+      <div class="bar-chart-container">
+        <div class="bar-chart-wrapper">
+          <div class="limit-line" style="top: ${100 - (limitSeguro / maxValAcum * 100)}%;">
+            <span class="limit-line-label">LIMITE R$ 45 MI</span>
+          </div>
+          ${chartItems.map(item => {
+            const valBar = item.custoTotal || 0;
+            const pctHeight = (valBar / maxValAcum) * 100;
+            
+            let tagVarHtml = '';
+            let strVarTooltip = 'Primeiro período';
+            if (item.varPct !== null && item.varPct !== undefined) {
+              const signal = item.varPct > 0 ? '+' : '';
+              const clsVar = item.varPct > 0 ? 'up' : (item.varPct < 0 ? 'down' : 'neutral');
+              const formattedVar = `${signal}${fmtP(item.varPct, 1)}`;
+              tagVarHtml = `<span class="bar-var-tag ${clsVar}">${formattedVar}</span>`;
+              strVarTooltip = `Variação: ${formattedVar} em relação ao anterior`;
+            }
 
-  let optDiaEspec = '';
-  if (filterModoAcum === 'dia') {
-    optDiaEspec = '<select id="selectDiaEspec" style="font-weight:700;color:var(--ok)"><option value="todos"' + (filterDiaEspec==='todos'?' selected':'') + '>-- Todos os Dias --</option>' +
-      listaDiasUnicos.map(d => '<option value="' + d + '"' + (filterDiaEspec===d?' selected':'') + '>' + d + '</option>').join('') +
-      '</select>';
-  }
+            const tooltipItems = [
+              { prod: item.subText, sub: `Valor: ${brl(valBar)}` },
+              { prod: item.isProj ? '⭐ Valor Projetado' : `Qtd Contábil: ${fmtN.format(item.qtd)}`, sub: strVarTooltip }
+            ];
 
-  let acumHtml = '<div class="card" style="margin-top:16px;">' +
-    '<div class="card-header-action">' +
-      '<h3>📈 POSIÇÃO DE ESTOQUE HISTÓRICO E PROJEÇÃO (' + (filterModoAcum === 'mes' ? 'MÉDIA MENSAL R$' : 'FECHAMENTO DIÁRIO R$') + ')</h3>' +
-      '<div class="prod-controls">' +
-        '<select id="selectModoAcum" style="font-weight:700;color:var(--accent)">' +
-          '<option value="mes"' + (filterModoAcum==='mes'?' selected':'') + '>📊 Média Agrupada por MÊS</option>' +
-          '<option value="dia"' + (filterModoAcum==='dia'?' selected':'') + '>📆 Detalhado por DIA</option>' +
-        '</select>' +
-        optDiaEspec +
-        '<span style="font-size:12px; font-weight:700; color:var(--accent); margin-left:8px;">Limite: <b>R$ 45,0 mi</b></span>' +
-      '</div>' +
-    '</div>' +
-    acumChartHtml +
-  '</div>';
+            return `
+            <div class="bar-chart-col">
+              <div class="bar-chart-bar ${item.isProj ? 'is-proj' : ''}" style="height: ${Math.max(pctHeight, 6)}%;" 
+                   data-tooltip-title="${esc(item.tooltipTitle)}" 
+                   data-tooltip-color="${item.isProj ? 'var(--accent)' : 'var(--blue)'}" 
+                   data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}">
+                <div class="bar-val-label">
+                  <span>${brlShort(valBar)}${item.isProj ? ' *' : ''}</span>
+                  ${tagVarHtml}
+                </div>
+              </div>
+              <div class="bar-date-label" style="${item.isProj ? 'color:var(--accent);font-weight:800' : ''}">
+                ${esc(item.label)}${item.isProj ? ' (Proj)' : ''}
+              </div>
+            </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    ` : '<p style="color:var(--mute); padding: 20px;">Nenhum dado histórico encontrado no filtro selecionado.</p>'}
+  </div>
+  `;
+
   $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque, saúde da operação e acompanhamento de fechamento.</p>
+
   <div class="active-filters-bar ${hasActiveFilters ? 'visible' : ''}">
     <span>🔍 <b>${esc(activeFiltersText)}</b></span>
     <button onclick="clearAllFilters()">✕ Limpar Filtros</button>
   </div>
+
   <div class="grid kpis">
     ${kpi('Custo bruto total',brlShort(totC),brl(totC),'hl')}
     ${kpi('Saúde Shelf Life', `<span class="good">${fmtP(pctShelfOk)}</span>`, 'Crítico: ' + fmtV(shelfCritVal) + ' (Clique p/ ver)', '', 'Detalhamento Shelf Life', [{prod: 'Clique para navegar', sub: 'Redireciona para a aba detalhada de Shelf Life'}], 'var(--ok)', 'shelf')}
     ${kpi('Saúde Aging (Giro)', `<span class="good">${fmtP(pctAgingOk)}</span>`, 'Crítico (>60d): ' + fmtV(agingCritVal) + ' (Clique p/ ver)', '', 'Detalhamento Aging', [{prod: 'Clique para navegar', sub: 'Redireciona para a aba detalhada de Aging'}], 'var(--accent)', 'aging')}
     ${kpi('Ocupação do CD',fmtP(occ.pct,2),fmtN.format(occ.ocup)+' de '+fmtN.format(occ.total)+' endereços (Clique p/ ver)', '', 'Detalhamento Ocupação', [{prod: 'Clique para navegar', sub: 'Redireciona para o detalhamento por rua e área'}], 'var(--blue)', 'ocup')}
   </div>
+
   ${acumHtml}
+
   <div class="grid two" style="margin-top:16px">
     <div class="card">
       <div class="card-header-action">
         <h3>${cardTitle}</h3>
-        <div class="sem-fisico-badge" title="Soma do estoque Virtual e Pré Alerta">🚨 Sem Físico: <b>${fmtV(semFisicoVal)} (${fmtP(semFisicoPct)})</b></div>
+        <div class="sem-fisico-badge" title="Soma do estoque Virtual e Pré Alerta">
+          🚨 Sem Físico: <b>${fmtV(semFisicoVal)} (${fmtP(semFisicoPct)})</b>
+        </div>
       </div>
       <div class="donutwrap">${donut(items, centerLabel, subLabel, 'data-filter-local', filterLocalEst)}${legend(items, 'data-filter-local', filterLocalEst)}</div>
     </div>
@@ -1221,6 +1442,7 @@ function secGeral(){
           <tbody>
             ${stRows.map(([n,o])=> {
               const isSelectedSt = filterStatusEst.toLowerCase() === n.toLowerCase();
+
               return `<tr class="clickable-row ${isSelectedSt ? 'active-row' : ''}" data-filter-status="${esc(n)}">
                 <td><b>${esc(n)}</b></td>
                 <td class="r">${fmtN.format(o.n)}</td>
@@ -1235,11 +1457,15 @@ function secGeral(){
       </div>
     </div>
   </div>
+
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
       <h3>📦 PRODUTOS EM ESTOQUE NO FILTRO (${listEstoqueProds.length} PALETES)</h3>
-      <button class="toggle-btn" id="btnToggleGeralProds">${geralProdExpanded ? '▲ Ocultar Produtos' : '▼ Exibir Produtos (' + listEstoqueProds.length + ')'}</button>
+      <button class="toggle-btn" id="btnToggleGeralProds">
+        ${geralProdExpanded ? '▲ Ocultar Produtos' : '▼ Exibir Produtos (' + listEstoqueProds.length + ')'}
+      </button>
     </div>
+
     <div class="collapsible-content ${geralProdExpanded ? 'open' : ''}" id="boxGeralProdutos">
       <div class="prod-controls" style="margin-bottom: 12px;">
         <select id="selectAreaFilter" style="font-weight:700;color:var(--ok)">
@@ -1247,23 +1473,35 @@ function secGeral(){
           <option value="1" ${filterArea==='1'?'selected':''}>Galpão 1 (Área 1)</option>
           <option value="7" ${filterArea==='7'?'selected':''}>Galpão 2 (Área 7)</option>
         </select>
+
         <select id="selectRuaFilter" style="font-weight:700;color:var(--accent)">
           <option value="todos" ${filterRua==='todos'?'selected':''}>-- Todas as Ruas --</option>
           ${ruasDisponiveis.map(r => `<option value="${r}" ${filterRua===String(r)?'selected':''}>Rua ${r}</option>`).join('')}
         </select>
+
         <input type="text" id="inputEstoqueProdSearch" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:240px" />
+        
         <select id="selectEstoqueProdSort">
           <option value="endereco" ${estoqueProdSortOrder==='endereco'?'selected':''}>Ordenar por Endereço (Corredor)</option>
           <option value="valor" ${estoqueProdSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
           <option value="qtd" ${estoqueProdSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd</option>
         </select>
+
         <button class="btn-export-pdf" id="btnExportCaraCrachaGeneral">🖨️ Cara-Crachá (PDF)</button>
       </div>
+
       <div class="tw">
         <table>
           <thead>
             <tr>
-              <th>Endereço Logístico</th><th>Cód. Interno</th><th>GTIN (EAN)</th><th>Produto</th><th>Local Estoque</th><th>Status</th><th class="r">Qtd. Endereçada</th><th class="r">Custo Bruto Total</th>
+              <th>Endereço Logístico</th>
+              <th>Cód. Interno</th>
+              <th>GTIN (EAN)</th>
+              <th>Produto</th>
+              <th>Local Estoque</th>
+              <th>Status</th>
+              <th class="r">Qtd. Endereçada</th>
+              <th class="r">Custo Bruto Total</th>
             </tr>
           </thead>
           <tbody>
@@ -1277,7 +1515,8 @@ function secGeral(){
                 <td>${esc(p.status)}</td>
                 <td class="r" style="font-weight:700;color:var(--ok)">${fmtN.format(p.qtd)}</td>
                 <td class="r" style="font-weight:700;color:var(--text)">${brl(p.custo)}</td>
-              </tr>`).join('') : '<tr><td colspan="8">Nenhum palete encontrado com os filtros aplicados.</td></tr>'}
+              </tr>
+            `).join('') : '<tr><td colspan="8">Nenhum palete encontrado com os filtros aplicados.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -1285,19 +1524,62 @@ function secGeral(){
   </div>`;
 
   const selModoAcum = $('#selectModoAcum');
-  if (selModoAcum) { selModoAcum.addEventListener('change', (e) => { filterModoAcum = e.target.value; filterDiaEspec = 'todos'; secGeral(); }); }
-  const selDiaEspec = $('#selectDiaEspec');
-  if (selDiaEspec) { selDiaEspec.addEventListener('change', (e) => { filterDiaEspec = e.target.value; secGeral(); }); }
+  if (selModoAcum) {
+    selModoAcum.addEventListener('change', (e) => {
+      filterModoAcum = e.target.value;
+      filterDiaEspec = 'todos';
+      secGeral();
+    });
+  }
 
-  document.querySelectorAll('[data-filter-local]').forEach(el => { el.addEventListener('click', () => { const t = el.getAttribute('data-filter-local'); filterLocalEst = (filterLocalEst === t) ? 'todos' : t; secGeral(); }); });
-  document.querySelectorAll('[data-filter-status]').forEach(el => { el.addEventListener('click', () => { const t = el.getAttribute('data-filter-status'); filterStatusEst = (filterStatusEst === t) ? 'todos' : t; secGeral(); }); });
+  const selDiaEspec = $('#selectDiaEspec');
+  if (selDiaEspec) {
+    selDiaEspec.addEventListener('change', (e) => {
+      filterDiaEspec = e.target.value;
+      secGeral();
+    });
+  }
+
+  document.querySelectorAll('[data-filter-local]').forEach(el => {
+    el.addEventListener('click', () => {
+      const targetLocal = el.getAttribute('data-filter-local');
+      filterLocalEst = (filterLocalEst === targetLocal) ? 'todos' : targetLocal;
+      secGeral();
+    });
+  });
+
+  document.querySelectorAll('[data-filter-status]').forEach(el => {
+    el.addEventListener('click', () => {
+      const targetStatus = el.getAttribute('data-filter-status');
+      filterStatusEst = (filterStatusEst === targetStatus) ? 'todos' : targetStatus;
+      secGeral();
+    });
+  });
 
   const btnGeralProds = $('#btnToggleGeralProds');
-  if (btnGeralProds) { btnGeralProds.addEventListener('click', () => { geralProdExpanded = !geralProdExpanded; secGeral(); }); }
+  if (btnGeralProds) {
+    btnGeralProds.addEventListener('click', () => {
+      geralProdExpanded = !geralProdExpanded;
+      secGeral();
+    });
+  }
+
   const selectArea = $('#selectAreaFilter');
-  if (selectArea) { selectArea.addEventListener('change', (e) => { filterArea = e.target.value; filterRua = 'todos'; secGeral(); }); }
+  if (selectArea) {
+    selectArea.addEventListener('change', (e) => {
+      filterArea = e.target.value;
+      filterRua = 'todos';
+      secGeral();
+    });
+  }
+
   const selectRua = $('#selectRuaFilter');
-  if (selectRua) { selectRua.addEventListener('change', (e) => { filterRua = e.target.value; secGeral(); }); }
+  if (selectRua) {
+    selectRua.addEventListener('change', (e) => {
+      filterRua = e.target.value;
+      secGeral();
+    });
+  }
 
   const btnCaraCracha = $('#btnExportCaraCrachaGeneral');
   if (btnCaraCracha) {
@@ -1305,205 +1587,335 @@ function secGeral(){
       let subTitle = [];
       if (filterArea !== 'todos') subTitle.push(filterArea === '1' ? 'Galpão 1' : 'Galpão 2');
       if (filterRua !== 'todos') subTitle.push(`Rua ${filterRua}`);
-      printChecklist(listEstoqueProds, subTitle.length ? `Auditoria ${subTitle.join(' - ')}` : 'Auditoria Geral de Endereços');
+      const tituloRel = subTitle.length ? `Auditoria ${subTitle.join(' - ')}` : 'Auditoria Geral de Endereços';
+      printChecklist(listEstoqueProds, tituloRel);
     });
   }
 
   const epSearch = $('#inputEstoqueProdSearch');
   if (epSearch) {
     epSearch.addEventListener('input', (e) => {
-      estoqueProdSearch = e.target.value; secGeral();
-      const el = $('#inputEstoqueProdSearch'); if (el) { el.focus(); el.setSelectionRange(estoqueProdSearch.length, estoqueProdSearch.length); }
+      estoqueProdSearch = e.target.value;
+      secGeral();
+      const el = $('#inputEstoqueProdSearch');
+      if (el) { el.focus(); el.setSelectionRange(estoqueProdSearch.length, estoqueProdSearch.length); }
     });
   }
+
   const epSort = $('#selectEstoqueProdSort');
-  if (epSort) { epSort.addEventListener('change', (e) => { estoqueProdSortOrder = e.target.value; secGeral(); }); }
+  if (epSort) {
+    epSort.addEventListener('change', (e) => {
+      estoqueProdSortOrder = e.target.value;
+      secGeral();
+    });
+  }
 
   attachTooltipEvents();
 }
 
 function secShelf(){
-  faixaSection('#s-shelf','Validade (Shelf Life)','Análise do prazo de validade do estoque revenda (Apenas status Disponível, Reservado e Pendente de Saída).','shelf',['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'],SHELF_CLASS,['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias'],'PRODUTOS EM CRÍTICO E ATENÇÃO',true,'shelf');
+  faixaSection(
+    '#s-shelf',
+    'Validade (Shelf Life)',
+    'Análise do prazo de validade do estoque revenda (Apenas status Disponível, Reservado e Pendente de Saída).',
+    'shelf',
+    ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'],
+    SHELF_CLASS,
+    ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias'],
+    'PRODUTOS EM CRÍTICO E ATENÇÃO',
+    true,
+    'shelf'
+  );
 }
 
 function secAging(){
-  faixaSection('#s-aging','Tempo de permanência (Aging)','Tempo em que o palete está no endereço (Apenas status Disponível, Reservado e Pendente de Saída).','aging',['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'],AGING_CLASS,['Acima de 60 dias','30 a 60 dias'],'PRODUTOS EM CRÍTICO E ATENÇÃO',true,'aging');
+  faixaSection(
+    '#s-aging',
+    'Tempo de permanência (Aging)',
+    'Tempo em que o palete está no endereço (Apenas status Disponível, Reservado e Pendente de Saída).',
+    'aging',
+    ['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'],
+    AGING_CLASS,
+    ['Acima de 60 dias','30 a 60 dias'],
+    'PRODUTOS EM CRÍTICO E ATENÇÃO',
+    true,
+    'aging'
+  );
 }
 
 function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisicoOnly = false, tabType = 'shelf'){
-  const allowedStatus = ['disponivel', 'disponível', 'reservado', 'pendente de saída', 'pendente de saida', 'pendente saída', 'pendente saida'];
-  let revAll = D.rows.filter(r => {
-    if (r.est.trim() !== CONFIG.ESTOQUE_FISICO) return false;
-    if (filterFisicoOnly) { return allowedStatus.includes(r.status.toLowerCase().trim()); }
-    return true;
-  });
-
-  const activeFaixa = (tabType === 'shelf') ? filterShelfFaixa : filterAgingFaixa;
-  let rev = revAll;
-
-  if (activeFaixa !== 'todos') {
-    const act = activeFaixa.toLowerCase().trim();
-    if (['ok', 'warn', 'crit', 'none'].includes(act)) { rev = revAll.filter(r => (cmap[r[field]] || 'none') === act); } 
-    else { rev = revAll.filter(r => r[field].toLowerCase().trim() === act); }
-  }
-
-  const g = {}; order.forEach(f=>g[f]={custo:0,qtd:0,n:0});
-  rev.forEach(r=>{const f=r[field]; (g[f]=g[f]||{custo:0,qtd:0,n:0}); g[f].custo+=r.custo; g[f].qtd+=r.qtd; g[f].n++;});
-  
-  const cls = {ok:0,warn:0,crit:0,none:0}; revAll.forEach(r=>cls[cmap[r[field]]||'none']+=val(r));
-  const tot = Object.values(cls).reduce((a,b)=>a+b,0)||1, comVal = tot-cls.none||1;
-  
-  const items = ['ok','warn','crit','none'].filter(k=>cls[k]>0).map(k=> {
-    const topItem = revAll.filter(r => cmap[r[field]] === k).sort((a,b) => b.custo - a.custo)[0];
-    return { rawKey: k, n: CLS[k].n, v: cls[k], c: CLS[k].c, topProd: topItem ? `Líder: ${topItem.prod}` : '' };
-  });
-  
-  const pctOk = cls.ok/comVal*100, totB = Object.values(g).reduce((s,o)=>s+(basis==='custo'?o.custo:o.qtd),0)||1;
-  let top = (activeFaixa !== 'todos') ? rev : rev.filter(r => topCls.includes(r[field]));
-
-  const currentSearch = tabType === 'shelf' ? shelfSearch : agingSearch;
-  const currentSort = tabType === 'shelf' ? shelfSortOrder : agingSortOrder;
-
-  if (currentSearch) {
-    const q = currentSearch.toLowerCase();
-    top = top.filter(r => r.prod.toLowerCase().includes(q) || r.codProd.toLowerCase().includes(q) || r.gtin.toLowerCase().includes(q) || (r.end && r.end.toLowerCase().includes(q)));
-  }
-
-  if (currentSort === 'critico') {
-    top.sort((a, b) => {
-      const idxA = topCls.indexOf(a[field]), idxB = topCls.indexOf(b[field]);
-      if (idxA !== idxB && idxA !== -1 && idxB !== -1) return idxA - idxB;
-      return compareEnderecosNatural(a.end, b.end);
+  try {
+    const allowedStatus = ['disponivel', 'disponível', 'reservado', 'pendente de saída', 'pendente de saida', 'pendente saída', 'pendente saida'];
+    
+    let revAll = D.rows.filter(r => {
+      if (r.est.trim() !== CONFIG.ESTOQUE_FISICO) return false;
+      if (filterFisicoOnly) {
+        const st = r.status.toLowerCase().trim();
+        return allowedStatus.includes(st);
+      }
+      return true;
     });
-  } else if (currentSort === 'endereco') { top.sort((a, b) => compareEnderecosNatural(a.end, b.end)); } 
-  else if (currentSort === 'valor') { top.sort((a, b) => b.custo - a.custo); } 
-  else if (currentSort === 'qtd') { top.sort((a, b) => b.qtd - a.qtd); }
 
-  const topCriticos = revAll.filter(r => cmap[r[field]] === 'crit').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({ prod: r.prod, sub: `${brl(r.custo)} | Faixa: ${r[field]}` }));
-  const topAtencao = revAll.filter(r => cmap[r[field]] === 'warn').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({ prod: r.prod, sub: `${brl(r.custo)} | Faixa: ${r[field]}` }));
+    const activeFaixa = (tabType === 'shelf') ? filterShelfFaixa : filterAgingFaixa;
+    let rev = revAll;
 
-  const inputId = tabType === 'shelf' ? 'inputShelfSearch' : 'inputAgingSearch';
-  const selectId = tabType === 'shelf' ? 'selectShelfSort' : 'selectAgingSort';
-  const btnPdfId = tabType === 'shelf' ? 'btnExportShelfPdf' : 'btnExportAgingPdf';
+    if (activeFaixa !== 'todos') {
+      const act = activeFaixa.toLowerCase().trim();
+      if (['ok', 'warn', 'crit', 'none'].includes(act)) {
+        rev = revAll.filter(r => (cmap[r[field]] || 'none') === act);
+      } else {
+        rev = revAll.filter(r => r[field].toLowerCase().trim() === act);
+      }
+    }
 
-  const critV = cls.crit, critN = revAll.filter(r=>cmap[r[field]]==='crit').length;
-  const hasActiveFaixa = activeFaixa !== 'todos';
-  const activeLabel = CLS[activeFaixa] ? CLS[activeFaixa].n : activeFaixa;
+    const g = {}; order.forEach(f=>g[f]={custo:0,qtd:0,n:0});
+    rev.forEach(r=>{const f=r[field]; (g[f]=g[f]||{custo:0,qtd:0,n:0}); g[f].custo+=r.custo; g[f].qtd+=r.qtd; g[f].n++;});
+    
+    const cls = {ok:0,warn:0,crit:0,none:0}; revAll.forEach(r=>cls[cmap[r[field]]||'none']+=val(r));
+    const tot = Object.values(cls).reduce((a,b)=>a+b,0)||1, comVal = tot-cls.none||1;
+    
+    const items = ['ok','warn','crit','none'].filter(k=>cls[k]>0).map(k=> {
+      const topItem = revAll.filter(r => cmap[r[field]] === k).sort((a,b) => b.custo - a.custo)[0];
+      return {
+        rawKey: k,
+        n: CLS[k].n,
+        v: cls[k],
+        c: CLS[k].c,
+        topProd: topItem ? `Líder: ${topItem.prod}` : ''
+      };
+    });
+    
+    const pctOk = cls.ok/comVal*100, totB = Object.values(g).reduce((s,o)=>s+(basis==='custo'?o.custo:o.qtd),0)||1;
+    
+    let top = (activeFaixa !== 'todos') ? rev : rev.filter(r => topCls.includes(r[field]));
 
-  $(id).innerHTML = `<h2>${title}</h2><p class="sub">${sub}</p>
-  <div class="active-filters-bar ${hasActiveFaixa ? 'visible' : ''}">
-    <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeLabel)}</b></span>
-    <button onclick="clearAllFilters()">✕ Limpar Filtro de Faixa</button>
-  </div>
-  <div class="grid kpis">
-    ${kpi('Estoque revenda',fmtV(rev.reduce((s,r)=>s+val(r),0)),fmtN.format(rev.length)+' linhas de palete')}
-    ${kpi('Saudável',`<span class="good">${fmtP(pctOk)}</span>`,fmtV(cls.ok)+(cls.none?' · sem validade fora da conta':''))}
-    ${kpi('Em atenção',`<span class="warnc">${fmtP(cls.warn/comVal*100)}</span>`,fmtV(cls.warn), '', 'Top 3 em Atenção', topAtencao, 'var(--warn)')}
-    ${kpi('Crítico',`<span class="critc">${fmtP(cls.crit/comVal*100)}</span>`,fmtV(critV)+' · '+fmtN.format(critN)+' linhas', '', 'Top 3 Críticos (Maior Valor)', topCriticos, 'var(--crit)')}
-  </div>
-  <div class="grid two" style="margin-top:16px">
-    <div class="card"><h3>Saúde do estoque revenda</h3><div class="donutwrap">${donut(items,fmtP(pctOk,0),'saudável', 'data-filter-faixa', activeFaixa)}${legend(items, 'data-filter-faixa', activeFaixa)}</div></div>
-    <div class="card"><h3>Por faixa (Clique para filtrar)</h3><div class="tw"><table>
-      <tr><th>Faixa</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th>Participação</th></tr>
-      ${order.map(f=>{
-        const o=g[f],c=CLS[cmap[f]||'none'].c,v=basis==='custo'?o.custo:o.qtd;
-        const topF = revAll.filter(r => r[field] === f).sort((a,b) => b.custo - a.custo)[0];
-        const topData = topF ? [{prod: topF.prod, sub: `Maior Valor: ${brl(topF.custo)}`}] : [];
-        const isSelectedFaixa = activeFaixa.toLowerCase() === f.toLowerCase();
-        return `<tr class="clickable-row ${isSelectedFaixa ? 'active-row' : ''}" data-filter-faixa="${esc(f)}" data-tooltip-title="${esc(f)}" data-tooltip-color="${c}" data-tooltip-items="${JSON.stringify(topData).replace(/"/g, '&quot;')}">
-          <td><span class="dot" style="background:${c}"></span><b>${esc(f)}</b></td>
-          <td class="r">${fmtN.format(o.n)}</td>
-          <td class="r">${fmtN.format(o.qtd)}</td>
-          <td class="r">${brl(o.custo)}</td>
-          <td><span class="num">${fmtP(totB ? v/totB*100 : 0)}</span><span class="bar"><b style="width:${totB ? v/totB*100 : 0}%;background:${c}"></b></span></td>
-        </tr>`;
-      }).join('')}
-    </table></div></div>
-  </div>
-  <div class="card" style="margin-top:16px">
-    <div class="card-header-action">
-      <h3>${topTitle} (${top.length} linhas encontradas)</h3>
-      <div class="prod-controls">
-        <button class="btn-export-pdf" id="${btnPdfId}">🖨️ Cara-Crachá (PDF)</button>
-        <input type="text" id="${inputId}" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:260px" />
-        <select id="${selectId}">
-          <option value="critico" ${currentSort==='critico'?'selected':''}>Ordenar por Mais Crítico</option>
-          <option value="endereco" ${currentSort==='endereco'?'selected':''}>Ordenar por Endereço (Corredor)</option>
-          <option value="valor" ${currentSort==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
-          <option value="qtd" ${currentSort==='qtd'?'selected':''}>Ordenar por Maior Qtd Endereçada</option>
-        </select>
+    const currentSearch = tabType === 'shelf' ? shelfSearch : agingSearch;
+    const currentSort = tabType === 'shelf' ? shelfSortOrder : agingSortOrder;
+
+    if (currentSearch) {
+      const q = currentSearch.toLowerCase();
+      top = top.filter(r => 
+        r.prod.toLowerCase().includes(q) || 
+        r.codProd.toLowerCase().includes(q) || 
+        r.gtin.toLowerCase().includes(q) || 
+        (r.end && r.end.toLowerCase().includes(q))
+      );
+    }
+
+    if (currentSort === 'critico') {
+      top.sort((a, b) => {
+        const idxA = topCls.indexOf(a[field]);
+        const idxB = topCls.indexOf(b[field]);
+        if (idxA !== idxB && idxA !== -1 && idxB !== -1) {
+          return idxA - idxB;
+        }
+        return compareEnderecosNatural(a.end, b.end);
+      });
+    } else if (currentSort === 'endereco') {
+      top.sort((a, b) => compareEnderecosNatural(a.end, b.end));
+    } else if (currentSort === 'valor') {
+      top.sort((a, b) => b.custo - a.custo);
+    } else if (currentSort === 'qtd') {
+      top.sort((a, b) => b.qtd - a.qtd);
+    }
+
+    const topCriticos = revAll.filter(r => cmap[r[field]] === 'crit').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({
+      prod: r.prod,
+      sub: `${brl(r.custo)} | Faixa: ${r[field]}`
+    }));
+
+    const topAtencao = revAll.filter(r => cmap[r[field]] === 'warn').sort((a,b) => b.custo - a.custo).slice(0, 3).map(r => ({
+      prod: r.prod,
+      sub: `${brl(r.custo)} | Faixa: ${r[field]}`
+    }));
+
+    const inputId = tabType === 'shelf' ? 'inputShelfSearch' : 'inputAgingSearch';
+    const selectId = tabType === 'shelf' ? 'selectShelfSort' : 'selectAgingSort';
+    const btnPdfId = tabType === 'shelf' ? 'btnExportShelfPdf' : 'btnExportAgingPdf';
+
+    const critV = cls.crit, critN = revAll.filter(r=>cmap[r[field]]==='crit').length;
+    const hasActiveFaixa = activeFaixa !== 'todos';
+    const activeLabel = CLS[activeFaixa] ? CLS[activeFaixa].n : activeFaixa;
+
+    const elTarget = $(id);
+    if (!elTarget) return;
+
+    elTarget.innerHTML = `<h2>${esc(title)}</h2><p class="sub">${esc(sub)}</p>
+
+    <div class="active-filters-bar ${hasActiveFaixa ? 'visible' : ''}">
+      <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeLabel)}</b></span>
+      <button onclick="clearAllFilters()">✕ Limpar Filtro de Faixa</button>
+    </div>
+
+    <div class="grid kpis">
+      ${kpi('Estoque revenda',fmtV(rev.reduce((s,r)=>s+val(r),0)),fmtN.format(rev.length)+' linhas de palete')}
+      ${kpi('Saudável',`<span class="good">${fmtP(pctOk)}</span>`,fmtV(cls.ok)+(cls.none?' · sem validade fora da conta':''))}
+      ${kpi('Em atenção',`<span class="warnc">${fmtP(cls.warn/comVal*100)}</span>`,fmtV(cls.warn), '', 'Top 3 em Atenção', topAtencao, 'var(--warn)')}
+      ${kpi('Crítico',`<span class="critc">${fmtP(cls.crit/comVal*100)}</span>`,fmtV(critV)+' · '+fmtN.format(critN)+' linhas', '', 'Top 3 Críticos (Maior Valor)', topCriticos, 'var(--crit)')}
+    </div>
+    <div class="grid two" style="margin-top:16px">
+      <div class="card"><h3>Saúde do estoque revenda</h3><div class="donutwrap">${donut(items,fmtP(pctOk,0),'saudável', 'data-filter-faixa', activeFaixa)}${legend(items, 'data-filter-faixa', activeFaixa)}</div></div>
+      <div class="card"><h3>Por faixa (Clique para filtrar)</h3><div class="tw"><table>
+        <tr><th>Faixa</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th>Participação</th></tr>
+        ${order.map(f=>{
+          const o=g[f],c=CLS[cmap[f]||'none'].c,v=basis==='custo'?o.custo:o.qtd;
+          const topF = revAll.filter(r => r[field] === f).sort((a,b) => b.custo - a.custo)[0];
+          const topData = topF ? [{prod: topF.prod, sub: `Maior Valor: ${brl(topF.custo)}`}] : [];
+          const isSelectedFaixa = activeFaixa.toLowerCase() === f.toLowerCase();
+
+          return `<tr class="clickable-row ${isSelectedFaixa ? 'active-row' : ''}" data-filter-faixa="${esc(f)}" data-tooltip-title="${esc(f)}" data-tooltip-color="${c}" data-tooltip-items="${JSON.stringify(topData).replace(/"/g, '&quot;')}">
+            <td><span class="dot" style="background:${c}"></span><b>${esc(f)}</b></td>
+            <td class="r">${fmtN.format(o.n)}</td>
+            <td class="r">${fmtN.format(o.qtd)}</td>
+            <td class="r">${brl(o.custo)}</td>
+            <td><span class="num">${fmtP(totB ? v/totB*100 : 0)}</span><span class="bar"><b style="width:${totB ? v/totB*100 : 0}%;background:${c}"></b></span></td>
+          </tr>`;
+        }).join('')}
+      </table></div></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-header-action">
+        <h3>${esc(topTitle)} (${top.length} linhas encontradas)</h3>
+        <div class="prod-controls">
+          <button class="btn-export-pdf" id="${btnPdfId}">🖨️ Cara-Crachá (PDF)</button>
+          <input type="text" id="${inputId}" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:260px" />
+          <select id="${selectId}">
+            <option value="critico" ${currentSort==='critico'?'selected':''}>Ordenar por Mais Crítico</option>
+            <option value="endereco" ${currentSort==='endereco'?'selected':''}>Ordenar por Endereço (Corredor)</option>
+            <option value="valor" ${currentSort==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
+            <option value="qtd" ${currentSort==='qtd'?'selected':''}>Ordenar por Maior Qtd Endereçada</option>
+          </select>
+        </div>
       </div>
-    </div>
-    <div class="tw">
-      <table>
-        <thead>
-          <tr>
-            <th>Cód. Interno</th><th>GTIN (EAN)</th><th>Produto</th><th>Endereço</th><th>Status</th><th>Faixa</th><th class="r">Qtd.</th><th class="r">Custo bruto</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${top.length ? top.map(r => {
-            const classKey = cmap[r[field]] || 'none';
-            return `<tr>
-              <td><span class="num" style="color:var(--accent);font-weight:700">${esc(r.codProd)}</span></td>
-              <td><span class="num" style="color:var(--mute);font-weight:600">${esc(r.gtin)}</span></td>
-              <td><b>${esc(r.prod)}</b></td>
-              <td><b style="color:var(--accent);font-family:var(--f-num)">${esc(r.end)}</b></td>
-              <td>${esc(r.status)}</td>
-              <td><span class="dot" style="background:${CLS[classKey].c}"></span><b>${esc(r[field])}</b></td>
-              <td class="r" style="font-weight:700">${fmtN.format(r.qtd)}</td>
-              <td class="r" style="font-weight:700">${brl(r.custo)}</td>
-            </tr>`;
-          }).join('') : '<tr><td colspan="8">Nenhum item encontrado nesta faixa.</td></tr>'}
-        </tbody>
-      </table>
-    </div>
-  </div>`;
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Cód. Interno</th>
+              <th>GTIN (EAN)</th>
+              <th>Produto</th>
+              <th>Endereço</th>
+              <th>Status</th>
+              <th>Faixa</th>
+              <th class="r">Qtd.</th>
+              <th class="r">Custo bruto</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${top.length ? top.map(r => {
+              const classKey = cmap[r[field]] || 'none';
+              const badgeColor = CLS[classKey].c;
+              return `<tr>
+                <td><span class="num" style="color:var(--accent);font-weight:700">${esc(r.codProd)}</span></td>
+                <td><span class="num" style="color:var(--mute);font-weight:600">${esc(r.gtin)}</span></td>
+                <td><b>${esc(r.prod)}</b></td>
+                <td><b style="color:var(--accent);font-family:var(--f-num)">${esc(r.end)}</b></td>
+                <td>${esc(r.status)}</td>
+                <td><span class="dot" style="background:${badgeColor}"></span><b>${esc(r[field])}</b></td>
+                <td class="r" style="font-weight:700">${fmtN.format(r.qtd)}</td>
+                <td class="r" style="font-weight:700">${brl(r.custo)}</td>
+              </tr>`;
+            }).join('') : '<tr><td colspan="8">Nenhum item encontrado nesta faixa.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
 
-  document.querySelectorAll('[data-filter-faixa]').forEach(el => {
-    el.addEventListener('click', () => {
-      const targetFaixa = el.getAttribute('data-filter-faixa');
-      if (tabType === 'shelf') { filterShelfFaixa = (filterShelfFaixa === targetFaixa) ? 'todos' : targetFaixa; secShelf(); } 
-      else { filterAgingFaixa = (filterAgingFaixa === targetFaixa) ? 'todos' : targetFaixa; secAging(); }
+    document.querySelectorAll('[data-filter-faixa]').forEach(el => {
+      el.addEventListener('click', () => {
+        const targetFaixa = el.getAttribute('data-filter-faixa');
+        if (tabType === 'shelf') {
+          filterShelfFaixa = (filterShelfFaixa === targetFaixa) ? 'todos' : targetFaixa;
+          secShelf();
+        } else {
+          filterAgingFaixa = (filterAgingFaixa === targetFaixa) ? 'todos' : targetFaixa;
+          secAging();
+        }
+      });
     });
-  });
 
-  const btnPdf = $('#' + btnPdfId);
-  if (btnPdf) { btnPdf.addEventListener('click', () => { printChecklist(top, title + (hasActiveFaixa ? ` - ${activeLabel}` : ' - Crítico e Atenção')); }); }
+    const btnPdf = $('#' + btnPdfId);
+    if (btnPdf) {
+      btnPdf.addEventListener('click', () => {
+        printChecklist(top, title + (hasActiveFaixa ? ` - ${activeLabel}` : ' - Crítico e Atenção'));
+      });
+    }
 
-  const sInput = $('#' + inputId);
-  if (sInput) {
-    sInput.addEventListener('input', (e) => {
-      if (tabType === 'shelf') shelfSearch = e.target.value; else agingSearch = e.target.value;
-      if (tabType === 'shelf') secShelf(); else secAging();
-      const el = $('#' + inputId); if (el) { const valLen = (tabType === 'shelf' ? shelfSearch : agingSearch).length; el.focus(); el.setSelectionRange(valLen, valLen); }
-    });
+    const sInput = $('#' + inputId);
+    if (sInput) {
+      sInput.addEventListener('input', (e) => {
+        if (tabType === 'shelf') shelfSearch = e.target.value;
+        else agingSearch = e.target.value;
+        if (tabType === 'shelf') secShelf(); else secAging();
+        const el = $('#' + inputId);
+        if (el) { 
+          const valLen = (tabType === 'shelf' ? shelfSearch : agingSearch).length;
+          el.focus(); 
+          el.setSelectionRange(valLen, valLen); 
+        }
+      });
+    }
+
+    const sSort = $('#' + selectId);
+    if (sSort) {
+      sSort.addEventListener('change', (e) => {
+        if (tabType === 'shelf') shelfSortOrder = e.target.value;
+        else agingSortOrder = e.target.value;
+        if (tabType === 'shelf') secShelf(); else secAging();
+      });
+    }
+
+    attachTooltipEvents();
+  } catch (err) {
+    console.error(`Erro em faixaSection (${tabType}):`, err);
+    const elTarget = $(id);
+    if (elTarget) elTarget.innerHTML = `<div class="card"><h3>Erro de renderização</h3><p>Ocorreu um erro ao carregar os dados desta seção.</p></div>`;
   }
-
-  const sSort = $('#' + selectId);
-  if (sSort) {
-    sSort.addEventListener('change', (e) => {
-      if (tabType === 'shelf') shelfSortOrder = e.target.value; else agingSortOrder = e.target.value;
-      if (tabType === 'shelf') secShelf(); else secAging();
-    });
-  }
-
-  attachTooltipEvents();
 }
 
 function occData(){
-  const g1 = {total:0, ocup:0, ruas:{}}, g2 = {total:0, ocup:0, ruas:{}}, bl = {total:0, ocup:0};
+  const g1 = {total:0, ocup:0, ruas:{}};
+  const g2 = {total:0, ocup:0, ruas:{}};
+  const bl = {total:0, ocup:0};
+  
   if (D && D.addr) {
     D.addr.forEach(a=>{
-      const area = String(a.area), end = String(a.end);
-      const isG1 = area === '1' || end.includes("205.1041.1."), isG2 = area === '7' || end.includes("205.1041.7."), isBlocado = area === '5' || end.includes("205.1066.");
-      let rua = a.rua; if (!rua) { const p = end.split('.'); rua = p.length >= 4 ? +p[3] : 0; }
-      if (isG1) { g1.total++; if (a.occ) g1.ocup++; if (rua > 0) { const r = (g1.ruas[rua] = g1.ruas[rua] || {t:0, o:0}); r.t++; if (a.occ) r.o++; } } 
-      else if (isG2) { g2.total++; if (a.occ) g2.ocup++; if (rua > 0) { const r = (g2.ruas[rua] = g2.ruas[rua] || {t:0, o:0}); r.t++; if (a.occ) r.o++; } } 
-      else if (isBlocado) { bl.total++; if (a.occ) bl.ocup++; }
+      const area = String(a.area);
+      const end = String(a.end);
+      
+      const isG1 = area === '1' || end.includes("205.1041.1.");
+      const isG2 = area === '7' || end.includes("205.1041.7.");
+      const isBlocado = area === '5' || end.includes("205.1066.");
+      
+      let rua = a.rua;
+      if (!rua) {
+        const p = end.split('.');
+        rua = p.length >= 4 ? +p[3] : 0;
+      }
+      
+      if (isG1) {
+        g1.total++;
+        if (a.occ) g1.ocup++;
+        if (rua > 0) {
+          const r = (g1.ruas[rua] = g1.ruas[rua] || {t:0, o:0});
+          r.t++; if (a.occ) r.o++;
+        }
+      } else if (isG2) {
+        g2.total++;
+        if (a.occ) g2.ocup++;
+        if (rua > 0) {
+          const r = (g2.ruas[rua] = g2.ruas[rua] || {t:0, o:0});
+          r.t++; if (a.occ) r.o++;
+        }
+      } else if (isBlocado) {
+        bl.total++;
+        if (a.occ) bl.ocup++;
+      }
     });
   }
-  const total = g1.total + g2.total, ocup = g1.ocup + g2.ocup;
+
+  const total = g1.total + g2.total;
+  const ocup = g1.ocup + g2.ocup;
   return {g1, g2, bl, total, ocup, pct: total ? (ocup/total)*100 : 0};
 }
 
@@ -1530,7 +1942,8 @@ function secOcup(){
     { rawKey: 'Ocupado', n: 'Ocupado', v: O.ocup, c: '#ffc400' }
   ];
 
-  const prev = basis; basis = 'qtd';
+  const prev = basis; 
+  basis = 'qtd';
   const dn = donut(donutItems, fmtP(O.pct, 2), 'ocupação CD'); 
   basis = prev;
 
@@ -1540,7 +1953,10 @@ function secOcup(){
     ${box('g2','Galpão 2',O.g2)}
     ${box('','Endereços Total',all)}
     ${box('','Blocados',O.bl)}
-    <div class="card donutcard"><h3>% de ocupação CD</h3><div class="donutwrap">${dn}</div></div>
+    <div class="card donutcard">
+      <h3>% de ocupação CD</h3>
+      <div class="donutwrap">${dn}</div>
+    </div>
     <div class="pcts">
       <div class="row">
         <div class="b"><small>% Galpão 1</small><strong>${fmtP(O.g1.total?O.g1.ocup/O.g1.total*100:0,2)}</strong></div>
@@ -1569,10 +1985,19 @@ function secCarteira(){
   const deptsDisponiveis = Array.from(new Set(C.map(r => r.dept))).filter(Boolean).sort((a,b) => String(a).localeCompare(String(b)));
 
   let filteredC = C;
-  if (dateReservaFilter !== 'todos') { filteredC = filteredC.filter(r => r.gerReserva === dateReservaFilter); }
-  if (sepFilter !== 'todos') { filteredC = filteredC.filter(r => r.tipoSep.toLowerCase().trim() === sepFilter.toLowerCase().trim()); }
-  if (targetDestFilter !== 'todos') { filteredC = filteredC.filter(r => String(r.dest) === String(targetDestFilter)); }
-  if (deptFilter !== 'todos') { filteredC = filteredC.filter(r => r.dept.toLowerCase().trim() === deptFilter.toLowerCase().trim()); }
+
+  if (dateReservaFilter !== 'todos') {
+    filteredC = filteredC.filter(r => r.gerReserva === dateReservaFilter);
+  }
+  if (sepFilter !== 'todos') {
+    filteredC = filteredC.filter(r => r.tipoSep.toLowerCase().trim() === sepFilter.toLowerCase().trim());
+  }
+  if (targetDestFilter !== 'todos') {
+    filteredC = filteredC.filter(r => String(r.dest) === String(targetDestFilter));
+  }
+  if (deptFilter !== 'todos') {
+    filteredC = filteredC.filter(r => r.dept.toLowerCase().trim() === deptFilter.toLowerCase().trim());
+  }
 
   const totPedida = filteredC.reduce((s,r) => s + r.qtdPedida, 0);
   const totSeparada = filteredC.reduce((s,r) => s + r.qtdSeparada, 0);
@@ -1582,7 +2007,9 @@ function secCarteira(){
   const datasPendentesSet = new Set();
   filteredC.forEach(r => {
     if (r.tipoSep !== 'Separado') {
-      if (r.gerReserva && r.gerReserva !== 'Sem data') { datasPendentesSet.add(r.gerReserva); }
+      if (r.gerReserva && r.gerReserva !== 'Sem data') {
+        datasPendentesSet.add(r.gerReserva);
+      }
     }
   });
 
@@ -1594,7 +2021,8 @@ function secCarteira(){
   const kpiClassAtraso = isCritico ? 'hl' : '';
 
   const topPedentesCrit = filteredC.filter(r => r.qtdPedida > r.qtdSeparada).sort((a,b) => b.valorTotal - a.valorTotal).slice(0, 3).map(r => ({
-    prod: r.prod, sub: `Destino: ${r.dest} | Valor: ${brlShort(r.valorTotal)}`
+    prod: r.prod,
+    sub: `Destino: ${r.dest} | Valor: ${brlShort(r.valorTotal)}`
   }));
 
   const bySep = {};
@@ -1649,7 +2077,13 @@ function secCarteira(){
   const deptRows = Object.entries(byDept).sort((a,b) => (basis==='custo' ? b[1].valor - a[1].valor : b[1].qtd - a[1].qtd));
   const deptItems = deptRows.map(([n,o],i) => {
     const topD = baseDept.filter(r => r.dept === n).sort((a,b) => b.valorTotal - a.valorTotal)[0];
-    return { rawKey: n, n: n, v: basis==='custo' ? o.valor : o.qtd, c: DEFAULT_COLORS[i % DEFAULT_COLORS.length], topProd: topD ? `Líder: ${topD.prod}` : '' };
+    return {
+      rawKey: n,
+      n: n,
+      v: basis==='custo' ? o.valor : o.qtd,
+      c: DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+      topProd: topD ? `Líder: ${topD.prod}` : ''
+    };
   });
   const centerDept = basis==='custo' ? brlShort(totValor).replace('R$ ','') : fmtN.format(totPedida);
 
@@ -1660,12 +2094,18 @@ function secCarteira(){
     byRes[k].qtd += r.qtdPedida;
     byRes[k].valor += r.valorTotal;
     byRes[k].qtdSep += r.qtdSeparada;
-    if (r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada)) { byRes[k].separados++; } 
-    else { byRes[k].pendentes++; }
+    if (r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada)) {
+      byRes[k].separados++;
+    } else {
+      byRes[k].pendentes++;
+    }
   });
   let resRows = Object.entries(byRes).sort((a,b) => a[0].localeCompare(b[0]));
-  if (resFilter === 'pendente') { resRows = resRows.filter(([, o]) => o.pendentes > 0); } 
-  else if (resFilter === 'separado') { resRows = resRows.filter(([, o]) => o.pendentes === 0); }
+  if (resFilter === 'pendente') {
+    resRows = resRows.filter(([, o]) => o.pendentes > 0);
+  } else if (resFilter === 'separado') {
+    resRows = resRows.filter(([, o]) => o.pendentes === 0);
+  }
 
   const byDest = {};
   filteredC.forEach(r => {
@@ -1676,22 +2116,36 @@ function secCarteira(){
     byDest[k].valor += r.valorTotal;
   });
   let destRows = Object.entries(byDest).sort((a,b) => b[1].pedida - a[1].pedida);
-  if (destSearch) { destRows = destRows.filter(([k]) => k.toLowerCase().includes(destSearch.toLowerCase())); }
+  if (destSearch) {
+    destRows = destRows.filter(([k]) => k.toLowerCase().includes(destSearch.toLowerCase()));
+  }
 
   const prodAggMap = {};
   filteredC.forEach(r => {
     const pendQtd = r.qtdPedida - r.qtdSeparada;
     const isSeparado = r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada);
+    
     if (statusFilter === 'pendente' && pendQtd <= 0) return;
     if (statusFilter === 'separado' && !isSeparado) return;
 
     const key = (r.codProd && r.codProd !== '-') ? r.codProd : r.prod;
     if (!prodAggMap[key]) {
-      prodAggMap[key] = { codProd: r.codProd || '-', gtin: r.gtin || '-', prod: r.prod || 'Sem Descrição', tiposSet: new Set(), qtdPedida: 0, qtdSeparada: 0, qtdPend: 0, valorPend: 0 };
+      prodAggMap[key] = {
+        codProd: r.codProd || '-',
+        gtin: r.gtin || '-',
+        prod: r.prod || 'Sem Descrição',
+        tiposSet: new Set(),
+        qtdPedida: 0,
+        qtdSeparada: 0,
+        qtdPend: 0,
+        valorPend: 0
+      };
     }
+
     prodAggMap[key].qtdPedida += r.qtdPedida;
     prodAggMap[key].qtdSeparada += r.qtdSeparada;
     prodAggMap[key].qtdPend += Math.max(0, pendQtd);
+    
     const pendVal = r.qtdPedida ? (r.valorTotal * (Math.max(0, pendQtd) / r.qtdPedida)) : 0;
     prodAggMap[key].valorPend += pendVal;
 
@@ -1699,23 +2153,38 @@ function secCarteira(){
     if (r.gtin && r.gtin !== '-') prodAggMap[key].gtin = r.gtin;
   });
 
-  let prodsList = Object.values(prodAggMap).map(p => ({ ...p, tipoSep: Array.from(p.tiposSet).join(', ') || '-' }));
+  let prodsList = Object.values(prodAggMap).map(p => ({
+    ...p,
+    tipoSep: Array.from(p.tiposSet).join(', ') || '-'
+  }));
 
   if (prodSearch) {
     const q = prodSearch.toLowerCase();
-    prodsList = prodsList.filter(p => p.prod.toLowerCase().includes(q) || p.codProd.toLowerCase().includes(q) || p.gtin.toLowerCase().includes(q));
+    prodsList = prodsList.filter(p => 
+      p.prod.toLowerCase().includes(q) || 
+      p.codProd.toLowerCase().includes(q) || 
+      p.gtin.toLowerCase().includes(q)
+    );
   }
 
-  if (prodSortOrder === 'valor') { prodsList.sort((a,b) => b.valorPend - a.valorPend); } 
-  else if (prodSortOrder === 'qtd') { prodsList.sort((a,b) => b.qtdPend - a.qtdPend); } 
-  else if (prodSortOrder === 'pedida') { prodsList.sort((a,b) => b.qtdPedida - a.qtdPedida); }
+  if (prodSortOrder === 'valor') {
+    prodsList.sort((a,b) => b.valorPend - a.valorPend);
+  } else if (prodSortOrder === 'qtd') {
+    prodsList.sort((a,b) => b.qtdPend - a.qtdPend);
+  } else if (prodSortOrder === 'pedida') {
+    prodsList.sort((a,b) => b.qtdPedida - a.qtdPedida);
+  }
 
-  const statusTitleText = statusFilter === 'pendente' ? 'PRODUTOS PENDENTES DE SEPARAÇÃO' : (statusFilter === 'separado' ? 'PRODUTOS SEPARADOS' : 'TODOS OS PRODUTOS DA CARTEIRA');
+  const statusTitleText = statusFilter === 'pendente' 
+    ? 'PRODUTOS PENDENTES DE SEPARAÇÃO' 
+    : (statusFilter === 'separado' ? 'PRODUTOS SEPARADOS' : 'TODOS OS PRODUTOS DA CARTEIRA');
+
   const hasActiveCartFilter = dateReservaFilter !== 'todos' || sepFilter !== 'todos' || targetDestFilter !== 'todos' || deptFilter !== 'todos';
 
   $('#s-carteira').innerHTML = `
   <h2>Carteira de Pedido</h2>
   <p class="sub">Acompanhamento e status das reservas e solicitações do CD.</p>
+
   <div class="active-filters-bar ${hasActiveCartFilter ? 'visible' : ''}">
     <span>🔍 <b>Filtro Ativo: ${dateReservaFilter !== 'todos' ? `Data Reserva = ${dateReservaFilter}` : ''} ${sepFilter !== 'todos' ? `| Tipo = ${sepFilter}` : ''} ${targetDestFilter !== 'todos' ? `| Destino = ${targetDestFilter}` : ''} ${deptFilter !== 'todos' ? `| Depto = ${deptFilter}` : ''}</b></span>
     <button onclick="clearAllFilters()">✕ Limpar Filtros da Carteira</button>
@@ -1728,18 +2197,21 @@ function secCarteira(){
         ${datasReservaDisponiveis.map(d => `<option value="${esc(d)}" ${dateReservaFilter===d?'selected':''}>Data ${esc(d)}</option>`).join('')}
       </select>
     </label>
+
     <label>⚡ Tipo de Separação:
       <select id="sepFilterSelect">
         <option value="todos" ${sepFilter==='todos'?'selected':''}>-- Todos os Tipos (${C.length} itens) --</option>
         ${tiposSepDisponiveis.map(t => `<option value="${esc(t)}" ${sepFilter===t?'selected':''}>${esc(t)}</option>`).join('')}
       </select>
     </label>
+
     <label>🏢 Destino / Loja:
       <select id="targetDestFilterSelect" style="font-weight:700;">
         <option value="todos" ${targetDestFilter==='todos'?'selected':''}>-- Todos os Destinos --</option>
         ${destinosDisponiveis.map(d => `<option value="${esc(d)}" ${targetDestFilter===String(d)?'selected':''}>${esc(d)}</option>`).join('')}
       </select>
     </label>
+
     <label>🏷️ Departamento CD:
       <select id="deptFilterSelect" style="font-weight:700;color:var(--ok)">
         <option value="todos" ${deptFilter==='todos'?'selected':''}>-- Todos os Departamentos --</option>
@@ -1760,47 +2232,72 @@ function secCarteira(){
       <h3>Progresso da Separação (Clique para filtrar)</h3>
       <div class="sep-progress">
         <div class="sep-item" data-filter-carteira-sep="Produção Derrubada">
-          <div class="sep-header"><span>Derrubada (Total: ${fmtN.format(derTotQtd)})</span><span>Prod: ${fmtP(derPctProd)} | Pend: ${fmtP(derPctPend)}</span></div>
+          <div class="sep-header">
+            <span>Derrubada (Total: ${fmtN.format(derTotQtd)})</span>
+            <span>Prod: ${fmtP(derPctProd)} | Pend: ${fmtP(derPctPend)}</span>
+          </div>
           <div class="sep-bar-bg">
             <div class="sep-bar-fill" style="width:${derPctProd}%;background:var(--ok);" title="Produção: ${fmtN.format(prodDer.pedida)}"></div>
             <div class="sep-bar-fill" style="width:${derPctPend}%;background:var(--warn);" title="Pendente: ${fmtN.format(pendDer.pedida)}"></div>
           </div>
         </div>
+
         <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Produção Sorter">
-          <div class="sep-header"><span>Sorter (Total: ${fmtN.format(sorTotQtd)})</span><span>Prod: ${fmtP(sorPctProd)} | Pend: ${fmtP(sorPctPend)}</span></div>
+          <div class="sep-header">
+            <span>Sorter (Total: ${fmtN.format(sorTotQtd)})</span>
+            <span>Prod: ${fmtP(sorPctProd)} | Pend: ${fmtP(sorPctPend)}</span>
+          </div>
           <div class="sep-bar-bg">
             <div class="sep-bar-fill" style="width:${sorPctProd}%;background:var(--blue);" title="Produção: ${fmtN.format(prodSor.pedida)}"></div>
             <div class="sep-bar-fill" style="width:${sorPctPend}%;background:var(--crit);" title="Pendente: ${fmtN.format(pendSor.pedida)}"></div>
           </div>
         </div>
+
         <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Cross Docking">
-          <div class="sep-header"><span>Cross Docking (Total: ${fmtN.format(cdTotQtd)})</span><span>Sep: ${fmtP(cdPctSep)} | Pend: ${fmtP(cdPctPend)}</span></div>
+          <div class="sep-header">
+            <span>Cross Docking (Total: ${fmtN.format(cdTotQtd)})</span>
+            <span>Sep: ${fmtP(cdPctSep)} | Pend: ${fmtP(cdPctPend)}</span>
+          </div>
           <div class="sep-bar-bg">
             <div class="sep-bar-fill" style="width:${cdPctSep}%;background:var(--ok);" title="Separado: ${fmtN.format(crossDock.separada)}"></div>
             <div class="sep-bar-fill" style="width:${cdPctPend}%;background:var(--accent);" title="Pendente: ${fmtN.format(cdPendQtd)}"></div>
           </div>
         </div>
+
         <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Full">
-          <div class="sep-header"><span>Full (Total: ${fmtN.format(fullTotQtd)})</span><span>Sep: ${fmtP(fullPctSep)} | Pend: ${fmtP(fullPctPend)}</span></div>
+          <div class="sep-header">
+            <span>Full (Total: ${fmtN.format(fullTotQtd)})</span>
+            <span>Sep: ${fmtP(fullPctSep)} | Pend: ${fmtP(fullPctPend)}</span>
+          </div>
           <div class="sep-bar-bg">
             <div class="sep-bar-fill" style="width:${fullPctSep}%;background:var(--ok);" title="Separado: ${fmtN.format(fullSep.separada)}"></div>
             <div class="sep-bar-fill" style="width:${fullPctPend}%;background:#c084fc;" title="Pendente: ${fmtN.format(fullPendQtd)}"></div>
           </div>
         </div>
       </div>
-      <div class="info-note">💡 <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa.</div>
+
+      <div class="info-note">
+        💡 <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
+      </div>
     </div>
+
     <div class="card">
       <h3>Participação por Departamento CD (Clique para filtrar)</h3>
-      <div class="donutwrap">${donut(deptItems, centerDept, basis==='custo'?'valor total':'qtd pedida', 'data-filter-dept', deptFilter)}${legend(deptItems, 'data-filter-dept', deptFilter)}</div>
+      <div class="donutwrap">
+        ${donut(deptItems, centerDept, basis==='custo'?'valor total':'qtd pedida', 'data-filter-dept', deptFilter)}
+        ${legend(deptItems, 'data-filter-dept', deptFilter)}
+      </div>
     </div>
   </div>
 
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
       <h3>📦 ${statusTitleText} (${prodsList.length} PRODUTOS ÚNICOS SOMADOS)</h3>
-      <button class="toggle-btn" id="btnToggleProds">${prodExpanded ? '▲ Ocultar Produtos' : '▼ Exibir Produtos (' + prodsList.length + ')'}</button>
+      <button class="toggle-btn" id="btnToggleProds">
+        ${prodExpanded ? '▲ Ocultar Produtos' : '▼ Exibir Produtos (' + prodsList.length + ')'}
+      </button>
     </div>
+
     <div class="collapsible-content ${prodExpanded ? 'open' : ''}" id="boxProdutos">
       <div class="prod-controls">
         <select id="selectStatusFilter" style="font-weight:700;color:var(--accent)">
@@ -1819,7 +2316,14 @@ function secCarteira(){
         <table>
           <thead>
             <tr>
-              <th>Cód. Interno</th><th>GTIN (EAN)</th><th>Produto</th><th>Tipo Separação</th><th class="r">Qtd Pedida Total</th><th class="r">Qtd Separada</th><th class="r">Qtd Pendente Total</th><th class="r">Valor Pendente Estimado</th>
+              <th>Cód. Interno</th>
+              <th>GTIN (EAN)</th>
+              <th>Produto</th>
+              <th>Tipo Separação</th>
+              <th class="r">Qtd Pedida Total</th>
+              <th class="r">Qtd Separada</th>
+              <th class="r">Qtd Pendente Total</th>
+              <th class="r">Valor Pendente Estimado</th>
             </tr>
           </thead>
           <tbody>
@@ -1833,7 +2337,8 @@ function secCarteira(){
                 <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(p.qtdSeparada)}</td>
                 <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'};font-weight:700;font-size:15px">${fmtN.format(p.qtdPend)}</td>
                 <td class="r" style="font-weight:700;color:var(--text)">${brl(p.valorPend)}</td>
-              </tr>`).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
+              </tr>
+            `).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -1845,7 +2350,13 @@ function secCarteira(){
     <div class="tw">
       <table>
         <thead>
-          <tr><th>Data Reserva</th><th class="r">Qtd Pedida</th><th class="r">Qtd Separada</th><th class="r">Valor Total</th><th class="r">Status Pendentes</th></tr>
+          <tr>
+            <th>Data Reserva</th>
+            <th class="r">Qtd Pedida</th>
+            <th class="r">Qtd Separada</th>
+            <th class="r">Valor Total</th>
+            <th class="r">Status Pendentes</th>
+          </tr>
         </thead>
         <tbody>
           ${resRows.map(([dt, o]) => {
@@ -1856,8 +2367,13 @@ function secCarteira(){
               <td class="r">${fmtN.format(o.qtd)}</td>
               <td class="r">${fmtN.format(o.qtdSep)}</td>
               <td class="r">${brlShort(o.valor)}</td>
-              <td class="r">${o.pendentes > 0 ? `<span style="color:var(--crit);font-weight:700">🚨 ${o.pendentes} pendentes</span>` : `<span style="color:var(--ok);font-weight:700">✔ Concluído</span>`}</td>
-            </tr>`;
+              <td class="r">
+                ${o.pendentes > 0 
+                  ? `<span style="color:var(--crit);font-weight:700">🚨 ${o.pendentes} pendentes</span>` 
+                  : `<span style="color:var(--ok);font-weight:700">✔ Concluído</span>`}
+              </td>
+            </tr>
+            `;
           }).join('')}
         </tbody>
       </table>
@@ -1867,8 +2383,11 @@ function secCarteira(){
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
       <h3>RESUMO DE SEPARAÇÃO POR DESTINATÁRIO (DESTINO)</h3>
-      <button class="toggle-btn" id="btnToggleDest">${destExpanded ? '▲ Ocultar Lojas' : '▼ Exibir Lojas / Destinos (' + destRows.length + ')'}</button>
+      <button class="toggle-btn" id="btnToggleDest">
+        ${destExpanded ? '▲ Ocultar Lojas' : '▼ Exibir Lojas / Destinos (' + destRows.length + ')'}
+      </button>
     </div>
+
     <div class="collapsible-content ${destExpanded ? 'open' : ''}" id="boxDestinos">
       <div style="margin-bottom: 12px;">
         <input type="text" id="inputDestSearch" placeholder="🔍 Buscar loja / destino..." value="${esc(destSearch)}" style="width: 100%; max-width: 320px;" />
@@ -1876,7 +2395,12 @@ function secCarteira(){
       <div class="tw">
         <table>
           <thead>
-            <tr><th>Destinatário</th><th class="r">Qtd Pedida</th><th class="r">Qtd Separada</th><th class="r">Valor Total</th></tr>
+            <tr>
+              <th>Destinatário</th>
+              <th class="r">Qtd Pedida</th>
+              <th class="r">Qtd Separada</th>
+              <th class="r">Valor Total</th>
+            </tr>
           </thead>
           <tbody>
             ${destRows.length ? destRows.map(([k,o]) => `
@@ -1885,57 +2409,122 @@ function secCarteira(){
                 <td class="r">${fmtN.format(o.pedida)}</td>
                 <td class="r" style="color:${o.separada > 0 ? 'var(--ok)' : 'var(--mute)'}">${fmtN.format(o.separada)}</td>
                 <td class="r">${brlShort(o.valor)}</td>
-              </tr>`).join('') : '<tr><td colspan="4">Nenhuma loja encontrada.</td></tr>'}
+              </tr>
+            `).join('') : '<tr><td colspan="4">Nenhuma loja encontrada.</td></tr>'}
           </tbody>
         </table>
       </div>
     </div>
-  </div>`;
+  </div>
+  `;
 
   const selectDateRes = $('#dateReservaFilterSelect');
-  if (selectDateRes) { selectDateRes.addEventListener('change', (e) => { dateReservaFilter = e.target.value; secCarteira(); }); }
-  document.querySelectorAll('[data-filter-carteira-sep]').forEach(el => { el.addEventListener('click', () => { const t = el.getAttribute('data-filter-carteira-sep'); sepFilter = (sepFilter === t) ? 'todos' : t; secCarteira(); }); });
-  document.querySelectorAll('[data-filter-dept]').forEach(el => { el.addEventListener('click', () => { const t = el.getAttribute('data-filter-dept'); deptFilter = (deptFilter === t) ? 'todos' : t; secCarteira(); }); });
+  if (selectDateRes) {
+    selectDateRes.addEventListener('change', (e) => {
+      dateReservaFilter = e.target.value;
+      secCarteira();
+    });
+  }
+
+  document.querySelectorAll('[data-filter-carteira-sep]').forEach(el => {
+    el.addEventListener('click', () => {
+      const targetSep = el.getAttribute('data-filter-carteira-sep');
+      sepFilter = (sepFilter === targetSep) ? 'todos' : targetSep;
+      secCarteira();
+    });
+  });
+
+  document.querySelectorAll('[data-filter-dept]').forEach(el => {
+    el.addEventListener('click', () => {
+      const targetDept = el.getAttribute('data-filter-dept');
+      deptFilter = (deptFilter === targetDept) ? 'todos' : targetDept;
+      secCarteira();
+    });
+  });
 
   const selectSep = $('#sepFilterSelect');
-  if (selectSep) { selectSep.addEventListener('change', (e) => { sepFilter = e.target.value; secCarteira(); }); }
+  if (selectSep) {
+    selectSep.addEventListener('change', (e) => {
+      sepFilter = e.target.value;
+      secCarteira();
+    });
+  }
+
   const selectTargetDest = $('#targetDestFilterSelect');
-  if (selectTargetDest) { selectTargetDest.addEventListener('change', (e) => { targetDestFilter = e.target.value; secCarteira(); }); }
+  if (selectTargetDest) {
+    selectTargetDest.addEventListener('change', (e) => {
+      targetDestFilter = e.target.value;
+      secCarteira();
+    });
+  }
+
   const selectDept = $('#deptFilterSelect');
-  if (selectDept) { selectDept.addEventListener('change', (e) => { deptFilter = e.target.value; secCarteira(); }); }
+  if (selectDept) {
+    selectDept.addEventListener('change', (e) => {
+      deptFilter = e.target.value;
+      secCarteira();
+    });
+  }
 
   const btnProds = $('#btnToggleProds');
-  if (btnProds) { btnProds.addEventListener('click', () => { prodExpanded = !prodExpanded; secCarteira(); }); }
+  if (btnProds) {
+    btnProds.addEventListener('click', () => {
+      prodExpanded = !prodExpanded;
+      secCarteira();
+    });
+  }
+
   const selectStatus = $('#selectStatusFilter');
-  if (selectStatus) { selectStatus.addEventListener('change', (e) => { statusFilter = e.target.value; secCarteira(); }); }
+  if (selectStatus) {
+    selectStatus.addEventListener('change', (e) => {
+      statusFilter = e.target.value;
+      secCarteira();
+    });
+  }
 
   const pSearch = $('#inputProdSearch');
   if (pSearch) {
     pSearch.addEventListener('input', (e) => {
-      prodSearch = e.target.value; secCarteira();
-      const el = $('#inputProdSearch'); if (el) { el.focus(); el.setSelectionRange(prodSearch.length, prodSearch.length); }
+      prodSearch = e.target.value;
+      secCarteira();
+      const el = $('#inputProdSearch');
+      if (el) { el.focus(); el.setSelectionRange(prodSearch.length, prodSearch.length); }
     });
   }
+
   const pSort = $('#selectProdSort');
-  if (pSort) { pSort.addEventListener('change', (e) => { prodSortOrder = e.target.value; secCarteira(); }); }
+  if (pSort) {
+    pSort.addEventListener('change', (e) => {
+      prodSortOrder = e.target.value;
+      secCarteira();
+    });
+  }
 
   const btnDest = $('#btnToggleDest');
-  if (btnDest) { btnDest.addEventListener('click', () => { destExpanded = !destExpanded; secCarteira(); }); }
+  if (btnDest) {
+    btnDest.addEventListener('click', () => {
+      destExpanded = !destExpanded;
+      secCarteira();
+    });
+  }
+
   const dSearch = $('#inputDestSearch');
   if (dSearch) {
     dSearch.addEventListener('input', (e) => {
-      destSearch = e.target.value; secCarteira();
-      const el = $('#inputDestSearch'); if (el) { el.focus(); el.setSelectionRange(destSearch.length, destSearch.length); }
+      destSearch = e.target.value;
+      secCarteira();
+      const el = $('#inputDestSearch');
+      if (el) { el.focus(); el.setSelectionRange(destSearch.length, destSearch.length); }
     });
   }
 
   attachTooltipEvents();
 }
 
+
 let AdminD = null;
 let searchNotas = '';
 let searchPre = '';
-let activeAdminSubTab = 'transito'; 
 
 async function loadAdminData(){
   try {
@@ -1948,11 +2537,9 @@ async function loadAdminData(){
 }
 
 function secAdmin(){
-  const el = $('#s-admin');
-  if (!el) return;
-
   if (!AdminD) {
-    el.innerHTML = `<div class="card"><h3>Administrativo</h3><p>Carregando dados do administrativo.json...</p></div>`;
+    const elAdmin = $('#s-admin');
+    if (elAdmin) elAdmin.innerHTML = `<div class="card"><h3>Administrativo</h3><p>Carregando dados do administrativo.json...</p></div>`;
     return;
   }
 
@@ -1965,7 +2552,6 @@ function secAdmin(){
 
   const sobraVal = pre.filter(p => (p.tipo || '').toUpperCase() === 'SOBRA').reduce((s,p) => s + (p.valorTotal || 0), 0);
   const faltaVal = pre.filter(p => (p.tipo || '').toUpperCase() === 'FALTA').reduce((s,p) => s + (p.valorTotal || 0), 0);
-  const totPreVal = sobraVal + faltaVal;
 
   const listNotas = notas.filter(n => 
     (n.nf || '').toLowerCase().includes(searchNotas.toLowerCase()) || 
@@ -1979,73 +2565,23 @@ function secAdmin(){
     (p.tipo || '').toLowerCase().includes(searchPre.toLowerCase())
   );
 
-  const htmlTransito = `
+  const el = $('#s-admin');
+  if (!el) return;
+
+  el.innerHTML = `
+    <h2>Setor Administrativo</h2>
+    <p class="sub">Acompanhamento de Notas em Trânsito e Ocorrências de Pré-Alerta (Sobra e Falta).</p>
+
     <div class="grid kpis">
       <div class="card kpi hl"><h3>Total Notas em Trânsito</h3><div class="v">${brlShort(totNotasVal)}</div><div class="s">${fmtN.format(notas.length)} notas registradas</div></div>
-      <div class="card kpi"><h3>Notas Antigas Pendentes (>30D)</h3><div class="v" style="color:var(--crit)">${brlShort(totAntigasVal)}</div><div class="s">${fmtN.format(notasAntigas.length)} notas críticas acumuladas</div></div>
-      <div class="card kpi"><h3>Lojas para CD 205 (Nov)</h3><div class="v" style="color:var(--ok)">R$ 58.746,92</div><div class="s">28 NFs | 1.574 caixas</div></div>
-      <div class="card kpi"><h3>CD 205 para Lojas (Jul a Nov)</h3><div class="v" style="color:var(--blue)">R$ 1.135.373,85</div><div class="s">37 NFs | 19.316 caixas</div></div>
-    </div>
-
-    <div class="grid two" style="margin-top:20px">
-      <div class="card">
-        <h3>Fluxo de Transferências (CD 205)</h3>
-        <div class="tw">
-          <table>
-            <thead>
-              <tr><th>Período</th><th class="r">QTD NF</th><th class="r">% QTD NF</th><th class="r">QTD SKU</th><th class="r">TT CX</th><th class="r">R$ Total</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><b>Lojas para CD (Nov)</b></td>
-                <td class="r">28</td><td class="r">100%</td><td class="r">64</td><td class="r">1.574</td><td class="r" style="color:var(--ok);font-weight:700">R$ 58.746,92</td>
-              </tr>
-              <tr>
-                <td><b>CD para Lojas (Jul/Nov)</b></td>
-                <td class="r">37</td><td class="r">100%</td><td class="r">1.228</td><td class="r">19.316</td><td class="r" style="color:var(--accent);font-weight:700">R$ 1.135.373,85</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Lojas com Notas Antigas Pendentes de Entrada (CD → Lojas)</h3>
-        <div class="tw">
-          <table>
-            <thead>
-              <tr><th>Nota Fiscal</th><th>Loja Destino</th><th>Data Emissão</th><th class="r">Valor da Nota</th></tr>
-            </thead>
-            <tbody>
-              ${notasAntigas.slice(0, 6).map(n => `
-                <tr>
-                  <td><b style="color:var(--accent)">${esc(n.nf)}</b></td>
-                  <td>${esc(n.destino)}</td>
-                  <td>${esc(n.dataEmissao)}</td>
-                  <td class="r" style="font-weight:700">${brl(n.valorNota)}</td>
-                </tr>
-              `).join('')}
-              <tr class="tot">
-                <td colspan="3"><b>Total Antigas Pendentes</b></td>
-                <td class="r" style="color:var(--crit)">${brl(totAntigasVal)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <div class="alert-banner">
-      <div class="alert-banner-icon">⚠️</div>
-      <div class="alert-banner-content">
-        <h4>Atenção Operacional - Notas Antigas Pendentes</h4>
-        <p>Identificamos <b>${brl(totAntigasVal)}</b> em notas fiscais antigas que ainda não tiveram entrada registrada pelas lojas. Solicitamos a regularização o quanto antes para garantir a acuracidade dos estoques.</p>
-      </div>
+      <div class="card kpi"><h3>Notas Antigas Pendentes (>30d)</h3><div class="v" style="color:var(--crit)">${brlShort(totAntigasVal)}</div><div class="s">${fmtN.format(notasAntigas.length)} notas críticas</div></div>
+      <div class="card kpi"><h3>Total Ocorrências de Sobra</h3><div class="v" style="color:var(--ok)">${brlShort(sobraVal)}</div><div class="s">Itens sobrando na recepção</div></div>
+      <div class="card kpi"><h3>Total Ocorrências de Falta</h3><div class="v" style="color:var(--warn)">${brlShort(faltaVal)}</div><div class="s">Itens faltantes na recepção</div></div>
     </div>
 
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>🚚 NOTAS EM TRÂNSITO - DETALHAMENTO ANALÍTICO (${listNotas.length} LINHAS)</h3>
+        <h3>📋 NOTAS EM TRÂNSITO - DETALHAMENTO (${listNotas.length} LINHAS)</h3>
         <div class="prod-controls">
           <input type="text" id="inputSearchNotas" placeholder="🔍 Buscar NF, loja destino, produto..." value="${esc(searchNotas)}" style="width:280px">
         </div>
@@ -2054,7 +2590,15 @@ function secAdmin(){
         <table>
           <thead>
             <tr>
-              <th>NF</th><th>Origem</th><th>Destino</th><th>Data Emissão</th><th class="r">Dias em Trânsito</th><th>Cód. Prod</th><th>Descrição Produto</th><th class="r">Qtd</th><th class="r">Valor Nota Total</th>
+              <th>NF</th>
+              <th>Origem</th>
+              <th>Destino</th>
+              <th>Data Emissão</th>
+              <th class="r">Dias em Trânsito</th>
+              <th>Cód. Prod</th>
+              <th>Descrição Produto</th>
+              <th class="r">Qtd</th>
+              <th class="r">Valor Nota Total</th>
             </tr>
           </thead>
           <tbody>
@@ -2075,52 +2619,10 @@ function secAdmin(){
         </table>
       </div>
     </div>
-  `;
-
-  const htmlPreAlerta = `
-    <div class="grid kpis">
-      <div class="card kpi"><h3>Total Ocorrências de Sobra</h3><div class="v" style="color:var(--ok)">${brlShort(sobraVal)}</div><div class="s">Itens sobrando na recepção</div></div>
-      <div class="card kpi"><h3>Total Ocorrências de Falta</h3><div class="v" style="color:var(--warn)">${brlShort(faltaVal)}</div><div class="s">Itens faltantes na recepção</div></div>
-      <div class="card kpi hl"><h3>Total Geral de Ocorrências</h3><div class="v">${brlShort(totPreVal)}</div><div class="s">${fmtN.format(pre.length)} registros de divergência auditados</div></div>
-    </div>
-
-    <div class="grid two" style="margin-top:20px">
-      <div class="card">
-        <h3>Total Ocorrências por Mês</h3>
-        <div class="tw">
-          <table>
-            <thead>
-              <tr><th>Data</th><th class="r">Total R$</th><th class="r">Qtd Loja</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><b>Outubro</b></td><td class="r">R$ 8.976,50</td><td class="r">5</td></tr>
-              <tr><td><b>Novembro</b></td><td class="r">R$ 32.249,39</td><td class="r">11</td></tr>
-              <tr class="tot"><td><b>Total Geral</b></td><td class="r" style="color:var(--accent)">R$ 41.225,89</td><td class="r">13</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Status de Processamento das Ocorrências</h3>
-        <div class="tw">
-          <table>
-            <thead>
-              <tr><th>Status Ocorrência</th><th class="r">Valor Total R$</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><b style="color:var(--warn)">AGUARDANDO GANHO INVENTÁRIO</b></td><td class="r" style="color:var(--warn);font-weight:700">R$ 2.680,26</td></tr>
-              <tr><td><b style="color:var(--ok)">FINALIZADO</b></td><td class="r" style="color:var(--ok);font-weight:700">R$ 38.545,63</td></tr>
-              <tr class="tot"><td><b>Total Geral Auditado</b></td><td class="r" style="color:var(--accent)">R$ 41.225,89</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
 
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>⚠️ OCORRÊNCIAS DE PRÉ-ALERTA DETALHADAS (${listPre.length} LINHAS)</h3>
+        <h3>⚠️ PRÉ-ALERTA / SOBRA E FALTA - DETALHAMENTO (${listPre.length} LINHAS)</h3>
         <div class="prod-controls">
           <input type="text" id="inputSearchPre" placeholder="🔍 Buscar loja, produto, SOBRA/FALTA..." value="${esc(searchPre)}" style="width:280px">
         </div>
@@ -2129,7 +2631,17 @@ function secAdmin(){
         <table>
           <thead>
             <tr>
-              <th>Loja</th><th>Data Reg.</th><th>Pedido</th><th>NF</th><th>Tipo</th><th>Cód. Prod</th><th>Descrição Produto</th><th class="r">Qtd</th><th class="r">Valor Total</th><th>Status CD</th><th>Status Loja</th>
+              <th>Loja</th>
+              <th>Data Reg.</th>
+              <th>Pedido</th>
+              <th>NF</th>
+              <th>Tipo</th>
+              <th>Cód. Prod</th>
+              <th>Descrição Produto</th>
+              <th class="r">Qtd</th>
+              <th class="r">Valor Total</th>
+              <th>Status CD</th>
+              <th>Status Loja</th>
             </tr>
           </thead>
           <tbody>
@@ -2153,42 +2665,6 @@ function secAdmin(){
       </div>
     </div>
   `;
-
-  el.innerHTML = `
-    <h2>Setor Administrativo</h2>
-    <p class="sub">Acompanhamento de Notas em Trânsito e Ocorrências de Pré-Alerta (Sobra e Falta).</p>
-
-    <div class="admin-tab-container">
-      <div class="admin-tab-header">
-        <div class="admin-subtabs-pill">
-          <button id="btnSubTransito" aria-selected="${activeAdminSubTab === 'transito'}">🚚 Notas em Trânsito</button>
-          <button id="btnSubPreAlerta" aria-selected="${activeAdminSubTab === 'prealerta'}">⚠️ Divergências Pré-Alerta (Sobra / Falta)</button>
-        </div>
-        <span style="font-size:12px;color:var(--mute);font-weight:600;">Modulo Conciliação Logística & Controladoria</span>
-      </div>
-
-      <div id="adminTabContent">
-        ${activeAdminSubTab === 'transito' ? htmlTransito : htmlPreAlerta}
-      </div>
-    </div>
-  `;
-
-  const btnSubTransito = $('#btnSubTransito');
-  const btnSubPreAlerta = $('#btnSubPreAlerta');
-
-  if (btnSubTransito) {
-    btnSubTransito.addEventListener('click', () => {
-      activeAdminSubTab = 'transito';
-      secAdmin();
-    });
-  }
-
-  if (btnSubPreAlerta) {
-    btnSubPreAlerta.addEventListener('click', () => {
-      activeAdminSubTab = 'prealerta';
-      secAdmin();
-    });
-  }
 
   const inNotas = $('#inputSearchNotas');
   if (inNotas) {
@@ -2239,7 +2715,9 @@ function renderNav(){
 function render(){
   if (!D) return;
   const hash = window.location.hash.replace('#','');
-  if (hash && SECTIONS.some(s=>s.id===hash)) { activeTab = hash; }
+  if (hash && SECTIONS.some(s=>s.id===hash)) {
+    activeTab = hash;
+  }
   
   document.querySelectorAll('nav#tabs button').forEach(b => {
     b.setAttribute('aria-selected', b.getAttribute('data-tab') === activeTab);
@@ -2250,11 +2728,15 @@ function render(){
     if (el) {
       if (s.id === activeTab) {
         el.classList.add('on');
-        try { s.render(); } catch(err) {
+        try {
+          s.render();
+        } catch(err) {
           console.error('Erro ao renderizar seção ' + s.id, err);
           el.innerHTML = '<div class="card"><h3>Erro de Exibição</h3><p>Ocorreu um erro ao carregar esta aba.</p></div>';
         }
-      } else { el.classList.remove('on'); }
+      } else {
+        el.classList.remove('on');
+      }
     }
   });
 }
@@ -2274,10 +2756,14 @@ function toggleTvMode() {
   if (btnTv) btnTv.setAttribute('aria-pressed', isTv);
 
   if (isTv) {
-    if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen().catch(() => {}); }
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
     startTvRotation();
   } else {
-    if (document.exitFullscreen && document.fullscreenElement) { document.exitFullscreen().catch(() => {}); }
+    if (document.exitFullscreen && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
     stopTvRotation();
   }
 }
@@ -2294,7 +2780,10 @@ function startTvRotation() {
 }
 
 function stopTvRotation() {
-  if (tvTimer) { clearInterval(tvTimer); tvTimer = null; }
+  if (tvTimer) {
+    clearInterval(tvTimer);
+    tvTimer = null;
+  }
 }
 
 document.addEventListener('fullscreenchange', () => {
@@ -2307,7 +2796,9 @@ document.addEventListener('fullscreenchange', () => {
 });
 
 const btnTv = $('#tv');
-if (btnTv) { btnTv.addEventListener('click', toggleTvMode); }
+if (btnTv) {
+  btnTv.addEventListener('click', toggleTvMode);
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   renderNav();
