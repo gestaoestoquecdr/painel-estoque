@@ -1119,65 +1119,78 @@ function secGeral(){
   const limitSeguro = 45000000; 
   const maxValAcum = Math.max(limitSeguro, ...chartItems.map(a => a.custoTotal || 0)) * 1.25;
 
-  let acumHtml = `
-  <div class="card" style="margin-top:16px;">
-    <div class="card-header-action">
-      <h3>📈 POSIÇÃO DE ESTOQUE HISTÓRICO E PROJEÇÃO (${filterModoAcum === 'mes' ? 'MÉDIA MENSAL R$' : 'FECHAMENTO DIÁRIO R$'})</h3>
-      <div class="prod-controls">
-        <select id="selectModoAcum" style="font-weight:700;color:var(--accent)">
-          <option value="mes" ${filterModoAcum==='mes'?'selected':''}>📊 Média Agrupada por MÊS</option>
-          <option value="dia" ${filterModoAcum==='dia'?'selected':''}>📆 Detalhado por DIA</option>
-        </select>
-        ${filterModoAcum === 'dia' ? `
-          <select id="selectDiaEspec" style="font-weight:700;color:var(--ok)">
-            <option value="todos" ${filterDiaEspec==='todos'?'selected':''}>-- Todos os Dias --</option>
-            ${listaDiasUnicos.map(d => `<option value="${d}" ${filterDiaEspec===d?'selected':''}>${d}</option>`).join('')}
-          </select>
-        ` : ''}
-        <span style="font-size:12px; font-weight:700; color:var(--accent); margin-left:8px;">Limite: <b>R$ 45,0 mi</b></span>
-      </div>
-    </div>
-    ${chartItems.length > 0 ? `
-      <div class="bar-chart-container">
-        <div class="bar-chart-wrapper">
-          <div class="limit-line" style="top: ${100 - (limitSeguro / maxValAcum * 100)}%;">
-            <span class="limit-line-label">LIMITE R$ 45 MI</span>
-          </div>
-          ${chartItems.map(item => {
-            const valBar = item.custoTotal || 0;
-            const pctHeight = (valBar / maxValAcum) * 100;
-            let tagVarHtml = '';
-            let strVarTooltip = 'Primeiro período';
-            if (item.varPct !== null && item.varPct !== undefined) {
-              const signal = item.varPct > 0 ? '+' : '';
-              const clsVar = item.varPct > 0 ? 'up' : (item.varPct < 0 ? 'down' : 'neutral');
-              const formattedVar = `${signal}${fmtP(item.varPct, 1)}`;
-              tagVarHtml = `<span class="bar-var-tag ${clsVar}">${formattedVar}</span>`;
-              strVarTooltip = `Variação: ${formattedVar} em relação ao anterior`;
-            }
-            const tooltipItems = [
-              { prod: item.subText, sub: `Valor: ${brl(valBar)}` },
-              { prod: item.isProj ? '⭐ Valor Projetado' : `Qtd Contábil: ${fmtN.format(item.qtd)}`, sub: strVarTooltip }
-            ];
-            return `
-            <div class="bar-chart-col">
-              <div class="bar-chart-bar ${item.isProj ? 'is-proj' : ''}" style="height: ${Math.max(pctHeight, 6)}%;" 
-                   data-tooltip-title="${esc(item.tooltipTitle)}" 
-                   data-tooltip-color="${item.isProj ? 'var(--accent)' : 'var(--blue)'}" 
-                   data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}">
-                <div class="bar-val-label">
-                  <span>${brlShort(valBar)}${item.isProj ? ' *' : ''}</span>
-                  ${tagVarHtml}
-                </div>
-              </div>
-              <div class="bar-date-label" style="${item.isProj ? 'color:var(--accent);font-weight:800' : ''}">${esc(item.label)}${item.isProj ? ' (Proj)' : ''}</div>
-            </div>`;
-          }).join('')}
-        </div>
-      </div>
-    ` : '<p style="color:var(--mute); padding: 20px;">Nenhum dado histórico encontrado no filtro selecionado.</p>'}
-  </div>`;
+  let acumChartHtml = '';
+  if (chartItems.length > 0) {
+    const barsHtml = chartItems.map(item => {
+      const valBar = item.custoTotal || 0;
+      const pctHeight = (valBar / maxValAcum) * 100;
+      let tagVarHtml = '';
+      let strVarTooltip = 'Primeiro período';
+      if (item.varPct !== null && item.varPct !== undefined) {
+        const signal = item.varPct > 0 ? '+' : '';
+        const clsVar = item.varPct > 0 ? 'up' : (item.varPct < 0 ? 'down' : 'neutral');
+        const formattedVar = signal + fmtP(item.varPct, 1);
+        tagVarHtml = '<span class="bar-var-tag ' + clsVar + '">' + formattedVar + '</span>';
+        strVarTooltip = 'Variação: ' + formattedVar + ' em relação ao anterior';
+      }
+      const tooltipItems = [
+        { prod: item.subText, sub: 'Valor: ' + brl(valBar) },
+        { prod: item.isProj ? '⭐ Valor Projetado' : 'Qtd Contábil: ' + fmtN.format(item.qtd), sub: strVarTooltip }
+      ];
+      const ttAttr = JSON.stringify(tooltipItems).replace(/"/g, '&quot;');
+      const projClass = item.isProj ? ' is-proj' : '';
+      const projStar = item.isProj ? ' *' : '';
+      const projStyle = item.isProj ? 'color:var(--accent);font-weight:800' : '';
+      const projLabelExt = item.isProj ? ' (Proj)' : '';
 
+      return '<div class="bar-chart-col">' +
+        '<div class="bar-chart-bar' + projClass + '" style="height: ' + Math.max(pctHeight, 6) + '%;" ' +
+             'data-tooltip-title="' + esc(item.tooltipTitle) + '" ' +
+             'data-tooltip-color="' + (item.isProj ? 'var(--accent)' : 'var(--blue)') + '" ' +
+             'data-tooltip-items="' + ttAttr + '">' +
+          '<div class="bar-val-label">' +
+            '<span>' + brlShort(valBar) + projStar + '</span>' +
+            tagVarHtml +
+          '</div>' +
+        '</div>' +
+        '<div class="bar-date-label" style="' + projStyle + '">' + esc(item.label) + projLabelExt + '</div>' +
+      '</div>';
+    }).join('');
+
+    const limitTop = 100 - (limitSeguro / maxValAcum * 100);
+    acumChartHtml = '<div class="bar-chart-container">' +
+      '<div class="bar-chart-wrapper">' +
+        '<div class="limit-line" style="top: ' + limitTop + '%;">' +
+          '<span class="limit-line-label">LIMITE R$ 45 MI</span>' +
+        '</div>' +
+        barsHtml +
+      '</div>' +
+    '</div>';
+  } else {
+    acumChartHtml = '<p style="color:var(--mute); padding: 20px;">Nenhum dado histórico encontrado no filtro selecionado.</p>';
+  }
+
+  let optDiaEspec = '';
+  if (filterModoAcum === 'dia') {
+    optDiaEspec = '<select id="selectDiaEspec" style="font-weight:700;color:var(--ok)"><option value="todos"' + (filterDiaEspec==='todos'?' selected':'') + '>-- Todos os Dias --</option>' +
+      listaDiasUnicos.map(d => '<option value="' + d + '"' + (filterDiaEspec===d?' selected':'') + '>' + d + '</option>').join('') +
+      '</select>';
+  }
+
+  let acumHtml = '<div class="card" style="margin-top:16px;">' +
+    '<div class="card-header-action">' +
+      '<h3>📈 POSIÇÃO DE ESTOQUE HISTÓRICO E PROJEÇÃO (' + (filterModoAcum === 'mes' ? 'MÉDIA MENSAL R$' : 'FECHAMENTO DIÁRIO R$') + ')</h3>' +
+      '<div class="prod-controls">' +
+        '<select id="selectModoAcum" style="font-weight:700;color:var(--accent)">' +
+          '<option value="mes"' + (filterModoAcum==='mes'?' selected':'') + '>📊 Média Agrupada por MÊS</option>' +
+          '<option value="dia"' + (filterModoAcum==='dia'?' selected':'') + '>📆 Detalhado por DIA</option>' +
+        '</select>' +
+        optDiaEspec +
+        '<span style="font-size:12px; font-weight:700; color:var(--accent); margin-left:8px;">Limite: <b>R$ 45,0 mi</b></span>' +
+      '</div>' +
+    '</div>' +
+    acumChartHtml +
+  '</div>';
   $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque, saúde da operação e acompanhamento de fechamento.</p>
   <div class="active-filters-bar ${hasActiveFilters ? 'visible' : ''}">
     <span>🔍 <b>${esc(activeFiltersText)}</b></span>
