@@ -519,6 +519,55 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .lg i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
 .foot { color: var(--mute); font-size: 13px; margin-top: 18px; }
 
+/* ESTILOS ESPECÍFICOS DAS SUB-ABAS DO ADMINISTRATIVO */
+.admin-subnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+}
+.admin-subtabs {
+  display: flex;
+  gap: 8px;
+}
+.admin-subtabs button {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mute);
+  transition: all 0.2s ease;
+}
+.admin-subtabs button:hover {
+  color: #fff;
+  border-color: var(--accent);
+}
+.admin-subtabs button[aria-selected="true"] {
+  background: var(--blue);
+  color: #fff;
+  border-color: #64b5f6;
+  box-shadow: 0 0 10px rgba(66, 133, 244, 0.4);
+}
+.alert-banner {
+  background: rgba(255, 176, 32, 0.1);
+  border: 1px solid var(--warn);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+}
+.alert-banner-icon { font-size: 26px; flex-shrink: 0; }
+.alert-banner-content h4 { margin: 0 0 4px; font-size: 14px; color: var(--accent); font-weight: 800; }
+.alert-banner-content p { margin: 0; font-size: 13px; color: var(--text); }
+
 body.tvmode header nav, body.tvmode .seg, body.tvmode #src { display: none !important; }
 body.tvmode header { border-bottom: 0; padding: 10px 0; }
 body.tvmode .card { padding: 24px; }
@@ -1175,7 +1224,6 @@ function secGeral(){
   const rc = rev.reduce((s,r)=>s+r.custo,0), rq = rev.reduce((s,r)=>s+r.qtd,0);
   const occ = occData();
   
-  // --- CÁLCULO DE RESUMO DE SHELF LIFE E AGING PARA OS KPIS DA VISÃO GERAL ---
   const revFisico = R_all.filter(r => r.est.trim() === CONFIG.ESTOQUE_FISICO);
   let shelfOkVal = 0, shelfCritVal = 0, shelfTot = 0;
   revFisico.forEach(r => {
@@ -1242,7 +1290,6 @@ function secGeral(){
   const areaLabelStr = filterArea === '1' ? 'Galpão 1 (Área 1)' : (filterArea === '7' ? 'Galpão 2 (Área 7)' : 'Todas as Áreas');
   const activeFiltersText = `Filtros Ativos: ${filterArea !== 'todos' ? `Área = ${areaLabelStr}` : ''} ${filterRua !== 'todos' ? `| Rua = ${filterRua}` : ''} ${filterLocalEst !== 'todos' ? `| Local = ${nice(filterLocalEst)}` : ''} ${filterStatusEst !== 'todos' ? `| Status = ${filterStatusEst}` : ''}`;
 
-  // --- AGRUPAMENTO DE BARRAS HISTÓRICO ---
   const acumRawData = D.acum || [];
   let listaDiasUnicos = Array.from(new Set(acumRawData.map(a => a.data))).filter(d => d && d !== '-');
   
@@ -1736,7 +1783,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   const hasActiveFaixa = activeFaixa !== 'todos';
   const activeLabel = CLS[activeFaixa] ? CLS[activeFaixa].n : activeFaixa;
 
-  $(id).innerHTML = `h2>${title}</h2><p class="sub">${sub}</p>
+  $(id).innerHTML = `<h2>${title}</h2><p class="sub">${sub}</p>
 
   <div class="active-filters-bar ${hasActiveFaixa ? 'visible' : ''}">
     <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeLabel)}</b></span>
@@ -2329,7 +2376,7 @@ function secCarteira(){
                 <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'};font-weight:700;font-size:15px">${fmtN.format(p.qtdPend)}</td>
                 <td class="r" style="font-weight:700;color:var(--text)">${brl(p.valorPend)}</td>
               </tr>
-            `).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
+            `).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros applied.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -2512,10 +2559,11 @@ function secCarteira(){
   attachTooltipEvents();
 }
 
-
+/* SETOR ADMINISTRATIVO COM SUB-ABAS (NOTAS EM TRÂNSITO x PRÉ-ALERTA) */
 let AdminD = null;
 let searchNotas = '';
 let searchPre = '';
+let activeAdminSubTab = 'transito'; 
 
 async function loadAdminData(){
   try {
@@ -2528,9 +2576,11 @@ async function loadAdminData(){
 }
 
 function secAdmin(){
+  const el = $('#s-admin');
+  if (!el) return;
+
   if (!AdminD) {
-    const elAdmin = $('#s-admin');
-    if (elAdmin) elAdmin.innerHTML = `<div class="card"><h3>Administrativo</h3><p>Carregando dados do administrativo.json...</p></div>`;
+    el.innerHTML = `<div class="card"><h3>Administrativo</h3><p>Carregando dados do administrativo.json...</p></div>`;
     return;
   }
 
@@ -2543,6 +2593,7 @@ function secAdmin(){
 
   const sobraVal = pre.filter(p => (p.tipo || '').toUpperCase() === 'SOBRA').reduce((s,p) => s + (p.valorTotal || 0), 0);
   const faltaVal = pre.filter(p => (p.tipo || '').toUpperCase() === 'FALTA').reduce((s,p) => s + (p.valorTotal || 0), 0);
+  const totPreVal = sobraVal + faltaVal;
 
   const listNotas = notas.filter(n => 
     (n.nf || '').toLowerCase().includes(searchNotas.toLowerCase()) || 
@@ -2556,23 +2607,82 @@ function secAdmin(){
     (p.tipo || '').toLowerCase().includes(searchPre.toLowerCase())
   );
 
-  const el = $('#s-admin');
-  if (!el) return;
-
-  el.innerHTML = `
-    <h2>Setor Administrativo</h2>
-    <p class="sub">Acompanhamento de Notas em Trânsito e Ocorrências de Pré-Alerta (Sobra e Falta).</p>
-
+  // CONTEÚDO SUB-ABA 1: NOTAS EM TRÂNSITO
+  const htmlTransito = `
     <div class="grid kpis">
       <div class="card kpi hl"><h3>Total Notas em Trânsito</h3><div class="v">${brlShort(totNotasVal)}</div><div class="s">${fmtN.format(notas.length)} notas registradas</div></div>
-      <div class="card kpi"><h3>Notas Antigas Pendentes (>30d)</h3><div class="v" style="color:var(--crit)">${brlShort(totAntigasVal)}</div><div class="s">${fmtN.format(notasAntigas.length)} notas críticas</div></div>
-      <div class="card kpi"><h3>Total Ocorrências de Sobra</h3><div class="v" style="color:var(--ok)">${brlShort(sobraVal)}</div><div class="s">Itens sobrando na recepção</div></div>
-      <div class="card kpi"><h3>Total Ocorrências de Falta</h3><div class="v" style="color:var(--warn)">${brlShort(faltaVal)}</div><div class="s">Itens faltantes na recepção</div></div>
+      <div class="card kpi"><h3>Notas Antigas Pendentes (>30D)</h3><div class="v" style="color:var(--crit)">${brlShort(totAntigasVal)}</div><div class="s">${fmtN.format(notasAntigas.length)} notas críticas acumuladas</div></div>
+      <div class="card kpi"><h3>Lojas para CD 205 (Nov)</h3><div class="v" style="color:var(--ok)">R$ 58.746,92</div><div class="s">28 NFs | 1.574 caixas</div></div>
+      <div class="card kpi"><h3>CD 205 para Lojas (Jul a Nov)</h3><div class="v" style="color:var(--blue)">R$ 1.135.373,85</div><div class="s">37 NFs | 19.316 caixas</div></div>
+    </div>
+
+    <div class="grid two" style="margin-top:20px">
+      <div class="card">
+        <h3>Fluxo de Transferências (CD 205)</h3>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr><th>Período</th><th class="r">QTD NF</th><th class="r">% QTD NF</th><th class="r">QTD SKU</th><th class="r">TT CX</th><th class="r">R$ Total</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>Lojas para CD (Nov)</b></td>
+                <td class="r">28</td>
+                <td class="r">100%</td>
+                <td class="r">64</td>
+                <td class="r">1.574</td>
+                <td class="r" style="color:var(--ok);font-weight:700">R$ 58.746,92</td>
+              </tr>
+              <tr>
+                <td><b>CD para Lojas (Jul/Nov)</b></td>
+                <td class="r">37</td>
+                <td class="r">100%</td>
+                <td class="r">1.228</td>
+                <td class="r">19.316</td>
+                <td class="r" style="color:var(--accent);font-weight:700">R$ 1.135.373,85</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Lojas com Notas Antigas Pendentes de Entrada (CD → Lojas)</h3>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr><th>Nota Fiscal</th><th>Loja Destino</th><th>Data Emissão</th><th class="r">Valor da Nota</th></tr>
+            </thead>
+            <tbody>
+              ${notasAntigas.slice(0, 6).map(n => `
+                <tr>
+                  <td><b style="color:var(--accent)">${esc(n.nf)}</b></td>
+                  <td>${esc(n.destino)}</td>
+                  <td>${esc(n.dataEmissao)}</td>
+                  <td class="r" style="font-weight:700">${brl(n.valorNota)}</td>
+                </tr>
+              `).join('')}
+              <tr class="tot">
+                <td colspan="3"><b>Total Antigas Pendentes</b></td>
+                <td class="r" style="color:var(--crit)">${brl(totAntigasVal)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert-banner">
+      <div class="alert-banner-icon">⚠️</div>
+      <div class="alert-banner-content">
+        <h4>Atenção Operacional - Notas Antigas Pendentes</h4>
+        <p>Identificamos <b>${brl(totAntigasVal)}</b> em notas fiscais antigas que ainda não tiveram entrada registrada pelas lojas. Solicitamos a regularização o quanto antes para garantir a acuracidade dos estoques.</p>
+      </div>
     </div>
 
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>📋 NOTAS EM TRÂNSITO - DETALHAMENTO (${listNotas.length} LINHAS)</h3>
+        <h3>🚚 NOTAS EM TRÂNSITO - DETALHAMENTO ANALÍTICO (${listNotas.length} LINHAS)</h3>
         <div class="prod-controls">
           <input type="text" id="inputSearchNotas" placeholder="🔍 Buscar NF, loja destino, produto..." value="${esc(searchNotas)}" style="width:280px">
         </div>
@@ -2610,10 +2720,53 @@ function secAdmin(){
         </table>
       </div>
     </div>
+  `;
+
+  // CONTEÚDO SUB-ABA 2: PRÉ-ALERTA (SOBRA E FALTA)
+  const htmlPreAlerta = `
+    <div class="grid kpis">
+      <div class="card kpi"><h3>Total Ocorrências de Sobra</h3><div class="v" style="color:var(--ok)">${brlShort(sobraVal)}</div><div class="s">Itens sobrando na recepção</div></div>
+      <div class="card kpi"><h3>Total Ocorrências de Falta</h3><div class="v" style="color:var(--warn)">${brlShort(faltaVal)}</div><div class="s">Itens faltantes na recepção</div></div>
+      <div class="card kpi hl"><h3>Total Geral de Ocorrências</h3><div class="v">${brlShort(totPreVal)}</div><div class="s">${fmtN.format(pre.length)} registros de divergência auditados</div></div>
+    </div>
+
+    <div class="grid two" style="margin-top:20px">
+      <div class="card">
+        <h3>Total Ocorrências por Mês</h3>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr><th>Data</th><th class="r">Total R$</th><th class="r">Qtd Loja</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><b>Outubro</b></td><td class="r">R$ 8.976,50</td><td class="r">5</td></tr>
+              <tr><td><b>Novembro</b></td><td class="r">R$ 32.249,39</td><td class="r">11</td></tr>
+              <tr class="tot"><td><b>Total Geral</b></td><td class="r" style="color:var(--accent)">R$ 41.225,89</td><td class="r">13</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Status de Processamento das Ocorrências</h3>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr><th>Status Ocorrência</th><th class="r">Valor Total R$</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><b style="color:var(--warn)">AGUARDANDO GANHO INVENTÁRIO</b></td><td class="r" style="color:var(--warn);font-weight:700">R$ 2.680,26</td></tr>
+              <tr><td><b style="color:var(--ok)">FINALIZADO</b></td><td class="r" style="color:var(--ok);font-weight:700">R$ 38.545,63</td></tr>
+              <tr class="tot"><td><b>Total Geral Auditado</b></td><td class="r" style="color:var(--accent)">R$ 41.225,89</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>⚠️ PRÉ-ALERTA / SOBRA E FALTA - DETALHAMENTO (${listPre.length} LINHAS)</h3>
+        <h3>⚠️ OCORRÊNCIAS DE PRÉ-ALERTA DETALHADAS (${listPre.length} LINHAS)</h3>
         <div class="prod-controls">
           <input type="text" id="inputSearchPre" placeholder="🔍 Buscar loja, produto, SOBRA/FALTA..." value="${esc(searchPre)}" style="width:280px">
         </div>
@@ -2657,6 +2810,44 @@ function secAdmin(){
     </div>
   `;
 
+  el.innerHTML = `
+    <h2>Setor Administrativo</h2>
+    <p class="sub">Acompanhamento de Notas em Trânsito e Ocorrências de Pré-Alerta (Sobra e Falta).</p>
+
+    <!-- Navegação de Sub-Abas -->
+    <div class="admin-subnav">
+      <div class="admin-subtabs">
+        <button id="btnSubTransito" aria-selected="${activeAdminSubTab === 'transito'}">🚚 Notas em Trânsito</button>
+        <button id="btnSubPreAlerta" aria-selected="${activeAdminSubTab === 'prealerta'}">⚠️ Ocorrência Sobra e Falta (Pré-Alerta)</button>
+      </div>
+      <span style="font-size:12px;color:var(--mute)">Conciliação Logística & Controladoria</span>
+    </div>
+
+    <!-- Container Dinâmico -->
+    <div id="adminTabContent">
+      ${activeAdminSubTab === 'transito' ? htmlTransito : htmlPreAlerta}
+    </div>
+  `;
+
+  // Listeners das Sub-Abas
+  const btnSubTransito = $('#btnSubTransito');
+  const btnSubPreAlerta = $('#btnSubPreAlerta');
+
+  if (btnSubTransito) {
+    btnSubTransito.addEventListener('click', () => {
+      activeAdminSubTab = 'transito';
+      secAdmin();
+    });
+  }
+
+  if (btnSubPreAlerta) {
+    btnSubPreAlerta.addEventListener('click', () => {
+      activeAdminSubTab = 'prealerta';
+      secAdmin();
+    });
+  }
+
+  // Listeners de busca
   const inNotas = $('#inputSearchNotas');
   if (inNotas) {
     inNotas.addEventListener('input', (e) => {
