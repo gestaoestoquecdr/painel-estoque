@@ -174,7 +174,6 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
-/* ESTILIZAÇÃO DO SETOR ADMINISTRATIVO - NAVEGAÇÃO INTERATIVA */
 .admin-tab-container {
   display: flex;
   flex-direction: column;
@@ -237,7 +236,6 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .alert-banner-content h4 { margin: 0 0 4px; font-size: 14px; color: var(--accent); font-weight: 800; }
 .alert-banner-content p { margin: 0; font-size: 13px; color: var(--text); }
 
-/* GRÁFICOS E COMPONENTES ANALÍTICOS */
 .bar-chart-container {
   display: flex;
   align-items: flex-end;
@@ -965,7 +963,6 @@ function printChecklist(items, title) {
   printWin.document.close();
 }
 
-/* VISÃO GERAL DA OPERAÇÃO */
 function secGeral(){
   const R_all = D.rows;
   let baseR = R_all;
@@ -1922,7 +1919,6 @@ function secCarteira(){
   attachTooltipEvents();
 }
 
-/* SETOR ADMINISTRATIVO COM SUB-ABAS (NOTAS EM TRÂNSITO x PRÉ-ALERTA) */
 let AdminD = null;
 let searchNotas = '';
 let searchPre = '';
@@ -1970,7 +1966,6 @@ function secAdmin(){
     (p.tipo || '').toLowerCase().includes(searchPre.toLowerCase())
   );
 
-  // CONTEÚDO SUB-ABA 1: NOTAS EM TRÂNSITO
   const htmlTransito = `
     <div class="grid kpis">
       <div class="card kpi hl"><h3>Total Notas em Trânsito</h3><div class="v">${brlShort(totNotasVal)}</div><div class="s">${fmtN.format(notas.length)} notas registradas</div></div>
@@ -2069,7 +2064,6 @@ function secAdmin(){
     </div>
   `;
 
-  // CONTEÚDO SUB-ABA 2: PRÉ-ALERTA (SOBRA E FALTA)
   const htmlPreAlerta = `
     <div class="grid kpis">
       <div class="card kpi"><h3>Total Ocorrências de Sobra</h3><div class="v" style="color:var(--ok)">${brlShort(sobraVal)}</div><div class="s">Itens sobrando na recepção</div></div>
@@ -2151,7 +2145,6 @@ function secAdmin(){
     <h2>Setor Administrativo</h2>
     <p class="sub">Acompanhamento de Notas em Trânsito e Ocorrências de Pré-Alerta (Sobra e Falta).</p>
 
-    <!-- Navegação por Sub-Abas Otimizada -->
     <div class="admin-tab-container">
       <div class="admin-tab-header">
         <div class="admin-subtabs-pill">
