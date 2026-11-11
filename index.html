@@ -578,10 +578,22 @@ body.tvmode .kpi .v { font-size: 52px; }
 @media (prefers-reduced-motion:no-preference){#bar{transition:width .3s linear}}
 
 /* ===== SETORES + BARRA DE FILTROS ===== */
-.setores{display:inline-flex;gap:4px;padding:3px;border-radius:12px;background:#040d21;border:1px solid rgba(255,196,0,.3);box-shadow:0 4px 12px rgba(0,0,0,.3)}
-.setores button{background:transparent;border:1px solid transparent;border-radius:9px;padding:8px 16px;font-size:14px;font-weight:800;color:var(--mute);transition:all .25s ease;white-space:nowrap}
-.setores button:hover{color:#fff}
-.setores button[aria-pressed="true"]{background:linear-gradient(135deg,#102958 0%,#1a3c7e 100%);color:var(--accent);border-color:rgba(255,196,0,.5);box-shadow:0 0 12px rgba(255,196,0,.3)}
+.side{--side-w:216px;position:fixed;left:0;top:0;bottom:0;width:var(--side-w);z-index:20;display:flex;flex-direction:column;background:linear-gradient(180deg,#0b1b3d 0%,#07122b 100%);border-right:1px solid var(--line);padding:14px 10px;transition:width .25s ease}
+body{--side-w:216px}
+body.side-collapsed{--side-w:64px}
+.side{width:var(--side-w)}
+body{padding-left:calc(var(--side-w) + 16px) !important;transition:padding-left .25s ease}
+.side-label{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--mute);text-transform:uppercase;padding:6px 10px 10px;white-space:nowrap;overflow:hidden}
+.setores{display:flex;flex-direction:column;gap:4px}
+.setores button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border:0;border-left:3px solid transparent;border-radius:8px;padding:11px 10px;font-size:14px;font-weight:700;color:var(--mute);transition:all .2s ease;white-space:nowrap;overflow:hidden}
+.setores button .si{font-size:19px;flex:0 0 24px;text-align:center}
+.setores button:hover{color:#fff;background:rgba(255,255,255,.05)}
+.setores button[aria-pressed="true"]{background:rgba(255,196,0,.12);color:var(--accent);border-left-color:var(--accent)}
+.side-toggle{margin-top:auto;align-self:flex-start;width:34px;height:34px;border-radius:6px;background:transparent;border:1px solid var(--line);color:var(--mute);font-size:16px;font-weight:800;line-height:1}
+.side-toggle:hover{color:#fff;border-color:var(--accent)}
+body.side-collapsed .side-toggle{transform:rotate(180deg)}
+body.side-collapsed .side-label,body.side-collapsed .setores button .st{display:none}
+body.side-collapsed .setores button{justify-content:center;padding:11px 0;gap:0}
 body[data-setor="admin"] #basis{display:none}
 
 .gfbar{display:none;margin-top:14px;background:var(--panel2);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px}
@@ -606,14 +618,21 @@ body[data-setor="admin"] #basis{display:none}
 /* os filtros da Carteira agora ficam na barra do topo */
 #s-carteira .filter-bar{display:none}
 
-body.tvmode .setores, body.tvmode .gfbar{display:none !important}
-@media (max-width:820px){.gf{flex:1 1 140px}.gf-clear{margin-left:0}.setores button{padding:7px 10px;font-size:13px}}
+body.tvmode .side, body.tvmode .gfbar{display:none !important}
+body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
+@media (max-width:820px){.gf{flex:1 1 140px}.gf-clear{margin-left:0}.side-label{display:none}}
 </style>
 </head>
 <body>
 <div id="bar"></div>
 
 <div id="floating-tooltip"></div>
+
+<aside class="side" id="side" aria-label="Setores">
+  <div class="side-label">Setores</div>
+  <div class="setores" id="setores" role="group" aria-label="Setor"></div>
+  <button class="side-toggle" id="sideToggle" title="Recolher/expandir menu" aria-label="Recolher menu">‹</button>
+</aside>
 
 <header>
   <div class="brand-container">
@@ -627,7 +646,6 @@ body.tvmode .setores, body.tvmode .gfbar{display:none !important}
     </div>
   </div>
 
-  <div class="setores" id="setores" role="group" aria-label="Setor"></div>
   <nav id="tabs" role="tablist" aria-label="Seções"></nav>
   <div class="tools">
     <div class="seg" id="basis" role="group" aria-label="Medida">
@@ -2606,7 +2624,7 @@ let admVisao = 'itens';
 let admOrdem = 'dias';
 let admLimite = 150;
 
-let preFiltro = {loja:'todos', situacao:'todos', tipo:'todos'};
+let preFiltro = {loja:'todos', situacao:'todos', tipo:'todos', mes:'todos', stCd:'todos', stLoja:'todos'};
 let preOrdem = 'valor';
 let preLimite = 150;
 
@@ -2890,45 +2908,54 @@ function secTransito(){
 
 /* ---------- PRÉ-ALERTA (SOBRA E FALTA) ---------- */
 const isMoney = v => /^R\$/i.test(String(v == null ? '' : v).trim());
+const toBR = v => {
+  const t = String(v || '').trim().split(' ')[0].split('T')[0];
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) { const [y,m,d] = t.split('-'); return `${d}/${m}/${y}`; }
+  return /^\d{2}\/\d{2}\/\d{4}$/.test(t) ? t : '';
+};
+const stTxt = v => String(v == null ? '' : v).trim().toUpperCase();
 
-/* Aceita o layout esperado e também a planilha com colunas deslocadas
-   (pedido=loja, dataRegistro=pedido, qtd=cód. produto, um=descrição, tipo=qtd, statusCd=custo unit., statusLoja=valor total) */
+/* Layout atual: carimboDataHora, diasSemRetorno, loja, pedido, dataEmissao, nf, codProd, prod, qtd, um,
+   ocorrencia (SOBRA/FALTA), valorUnitario, valorTotal, origem, statusCd, statusLoja, observacao.
+   Mantém compatibilidade com os layouts antigos do JSON. */
 function normPre(p){
-  const shifted = isMoney(p.statusCd) && isMoney(p.statusLoja) && !(+p.valorTotal);
+  const novo = ('ocorrencia' in p) || ('carimboDataHora' in p);
+  const antigoDesloc = !novo && isMoney(p.statusCd) && isMoney(p.statusLoja) && !(+p.valorTotal);
   let r;
-  if (shifted) {
+  if (novo) {
+    const qtd = parseNum(p.qtd), vu = parseNum(p.valorUnitario);
+    let vt = parseNum(p.valorTotal);
+    if (!vt && qtd && vu) vt = qtd * vu;
+    const t = stTxt(p.ocorrencia);
     r = {
-      loja: String(p.pedido || '').trim(),
-      pedido: String(p.dataRegistro || '').trim(),
-      nf: String(p.nf || '').trim(),
-      obs: String(p.prod || '').trim(),
-      codProd: String(p.qtd || '').trim(),
-      prod: String(p.um || '').trim(),
-      qtd: parseNum(p.tipo),
-      un: '',
-      tipo: '',
-      valor: parseNum(p.statusLoja),
-      statusCd: '', statusLoja: '', shifted: true
-    };
-  } else {
-    const t = String(p.tipo || '').trim().toUpperCase();
-    const rawLoja = String(p.loja || '').trim();
-    r = {
-      loja: /^\d+$/.test(rawLoja) ? getNomeLoja(rawLoja) : rawLoja,
+      data: toBR(p.carimboDataHora),
+      dias: +p.diasSemRetorno || 0,
+      loja: String(p.loja || '').trim(),
       pedido: String(p.pedido || '').trim(),
+      dataEmissao: toBR(p.dataEmissao),
       nf: String(p.nf || '').trim(),
-      obs: '',
       codProd: String(p.codProd || '').trim(),
       prod: String(p.prod || '').trim(),
-      qtd: parseNum(p.qtd),
-      un: String(p.um || '').trim(),
+      qtd, un: String(p.um || '').trim(),
       tipo: (t === 'SOBRA' || t === 'FALTA') ? t : '',
-      valor: parseNum(p.valorTotal),
-      statusCd: String(p.statusCd || '').trim(), statusLoja: String(p.statusLoja || '').trim(), shifted: false
+      valorUnit: vu, valor: vt,
+      origem: String(p.origem || '').trim(),
+      statusCd: stTxt(p.statusCd), statusLoja: stTxt(p.statusLoja),
+      obs: String(p.observacao || '').trim()
     };
+  } else if (antigoDesloc) {
+    r = {data:'', dias:0, loja:String(p.pedido || '').trim(), pedido:String(p.dataRegistro || '').trim(), dataEmissao:'', nf:String(p.nf || '').trim(),
+      codProd:String(p.qtd || '').trim(), prod:String(p.um || '').trim(), qtd:parseNum(p.tipo), un:'', tipo:'', valorUnit:parseNum(p.statusCd), valor:parseNum(p.statusLoja),
+      origem:'', statusCd:'', statusLoja:'', obs:String(p.prod || '').trim()};
+  } else {
+    const t = stTxt(p.tipo), rawLoja = String(p.loja || '').trim();
+    r = {data:toBR(p.dataRegistro), dias:0, loja:/^\d+$/.test(rawLoja) ? getNomeLoja(rawLoja) : rawLoja, pedido:String(p.pedido || '').trim(), dataEmissao:'', nf:String(p.nf || '').trim(),
+      codProd:String(p.codProd || '').trim(), prod:String(p.prod || '').trim(), qtd:parseNum(p.qtd), un:String(p.um || '').trim(), tipo:(t === 'SOBRA' || t === 'FALTA') ? t : '',
+      valorUnit:0, valor:parseNum(p.valorTotal), origem:'', statusCd:stTxt(p.statusCd), statusLoja:stTxt(p.statusLoja), obs:''};
   }
   r.loja = r.loja || 'Sem loja';
-  const txt = `${r.obs} ${r.nf} ${r.pedido}`.toUpperCase();
+  r.mes = r.data ? nfMes(r.data) : 'Sem data';
+  const txt = `${r.nf} ${r.pedido} ${antigoDesloc ? r.obs : ''}`.toUpperCase();
   if (txt.includes('SEM NOTA')) r.situacao = 'Sem nota fiscal';
   else if (txt.includes('SEM PEDIDO')) r.situacao = 'Sem pedido';
   else if (!r.nf || r.nf === '*') r.situacao = 'NF não informada';
@@ -2938,10 +2965,14 @@ function normPre(p){
 
 function preTodas(){ return ((AdminD && AdminD.pre_alerta) || []).map(normPre); }
 function preFiltradas(){
+  const f = preFiltro;
   return preTodas().filter(r =>
-    (preFiltro.loja === 'todos' || r.loja === preFiltro.loja) &&
-    (preFiltro.situacao === 'todos' || r.situacao === preFiltro.situacao) &&
-    (preFiltro.tipo === 'todos' || r.tipo === preFiltro.tipo)
+    (f.loja === 'todos' || r.loja === f.loja) &&
+    (f.situacao === 'todos' || r.situacao === f.situacao) &&
+    (f.tipo === 'todos' || r.tipo === f.tipo) &&
+    (f.mes === 'todos' || r.mes === f.mes) &&
+    (f.stCd === 'todos' || r.statusCd === f.stCd) &&
+    (f.stLoja === 'todos' || r.statusLoja === f.stLoja)
   );
 }
 
@@ -2962,37 +2993,48 @@ function secPreAlerta(){
   const faltaVal = rows.filter(r => r.tipo === 'FALTA').reduce((s,r) => s + r.valor, 0);
   const semDoc = rows.filter(r => r.situacao === 'Sem nota fiscal' || r.situacao === 'Sem pedido');
   const semDocVal = semDoc.reduce((s,r) => s + r.valor, 0);
+  const pend = rows.filter(r => (r.statusCd && r.statusCd !== 'FINALIZADO') || (r.statusLoja && r.statusLoja !== 'FINALIZADO'));
+  const pendVal = pend.reduce((s,r) => s + r.valor, 0);
   const lojasSet = new Set(rows.map(r => r.loja));
 
   const agrup = (keyFn) => {
     const m = {};
-    rows.forEach(r => { const k = keyFn(r); const o = (m[k] = m[k] || {n:0, qtd:0, valor:0}); o.n++; o.qtd += r.qtd; o.valor += r.valor; });
-    return Object.entries(m).sort((a,b) => b[1].valor - a[1].valor);
+    rows.forEach(r => { const k = keyFn(r); const o = (m[k] = m[k] || {n:0, qtd:0, valor:0, lojas:new Set()}); o.n++; o.qtd += r.qtd; o.valor += r.valor; o.lojas.add(r.loja); });
+    return Object.entries(m);
   };
-  const porLoja = agrup(r => r.loja);
-  const porSit = agrup(r => r.situacao);
+  const porLoja = agrup(r => r.loja).sort((a,b) => b[1].valor - a[1].valor);
+  const porSit = agrup(r => r.situacao).sort((a,b) => b[1].valor - a[1].valor);
+  const porMes = agrup(r => r.mes).sort((a,b) => mesOrdem(a[0]).localeCompare(mesOrdem(b[0])));
+  const porSt = agrup(r => r.statusCd || 'SEM STATUS').sort((a,b) => b[1].valor - a[1].valor);
   const SIT_COR = {'Sem nota fiscal':'var(--crit)', 'Sem pedido':'var(--warn)', 'NF não informada':'var(--mute)', 'Com NF informada':'var(--ok)'};
+  const stCor = k => k === 'FINALIZADO' ? 'var(--ok)' : (k === 'SEM STATUS' ? 'var(--mute)' : 'var(--warn)');
 
   const q = searchPre.trim().toLowerCase();
-  const busca = q ? rows.filter(r => [r.loja, r.pedido, r.nf, r.codProd, r.prod, r.situacao, r.tipo, r.obs].some(x => String(x || '').toLowerCase().includes(q))) : rows;
+  const busca = q ? rows.filter(r => [r.loja, r.pedido, r.nf, r.codProd, r.prod, r.situacao, r.tipo, r.obs, r.origem, r.statusCd, r.statusLoja].some(x => String(x || '').toLowerCase().includes(q))) : rows;
   const ordem = {
     valor: (a,b) => b.valor - a.valor,
     qtd:   (a,b) => b.qtd - a.qtd,
+    dias:  (a,b) => b.dias - a.dias || b.valor - a.valor,
     loja:  (a,b) => a.loja.localeCompare(b.loja) || b.valor - a.valor
   }[preOrdem] || (() => 0);
   const lista = busca.slice().sort(ordem);
   const mostradas = lista.slice(0, preLimite);
   const restam = lista.length - mostradas.length;
-  const temStatus = rows.some(r => !r.shifted && (r.statusCd || r.statusLoja));
+  const temStatus = rows.some(r => r.statusCd || r.statusLoja);
+  const temExtra = rows.some(r => r.origem || r.obs || r.dias);
+  const nCols = 9 + (hasTipo ? 1 : 0) + (temStatus ? 2 : 0) + (temExtra ? 3 : 0);
 
   const kpis = hasTipo ? `
       <div class="card kpi"><h3>Total Ocorrências de Sobra</h3><div class="v" style="color:var(--ok)">${brlShort(sobraVal)}</div><div class="s">Itens sobrando na recepção</div></div>
       <div class="card kpi"><h3>Total Ocorrências de Falta</h3><div class="v" style="color:var(--warn)">${brlShort(faltaVal)}</div><div class="s">Itens faltantes na recepção</div></div>
-      <div class="card kpi hl"><h3>Total Geral de Ocorrências</h3><div class="v">${brlShort(tot)}</div><div class="s">${fmtN.format(rows.length)} registros de divergência auditados</div></div>`
+      <div class="card kpi hl"><h3>Total Geral de Ocorrências</h3><div class="v">${brlShort(tot)}</div><div class="s">${fmtN.format(rows.length)} registros em ${fmtN.format(lojasSet.size)} lojas</div></div>
+      ${temStatus ? `<div class="card kpi"><h3>Ainda em Tratativa</h3><div class="v" style="color:var(--crit)">${brlShort(pendVal)}</div><div class="s">${fmtN.format(pend.length)} ocorrências não finalizadas</div></div>` : ''}`
     : `
       <div class="card kpi hl"><h3>Total Geral de Ocorrências</h3><div class="v">${brlShort(tot)}</div><div class="s">${fmtN.format(rows.length)} registros de divergência auditados</div></div>
       <div class="card kpi"><h3>Lojas com Ocorrência</h3><div class="v" style="color:var(--blue)">${fmtN.format(lojasSet.size)}</div><div class="s">${fmtN.format(unid)} unidades divergentes</div></div>
       <div class="card kpi"><h3>Sem Nota / Sem Pedido</h3><div class="v" style="color:var(--crit)">${brlShort(semDocVal)}</div><div class="s">${fmtN.format(semDoc.length)} ocorrências sem documento</div></div>`;
+
+  const dica = '<span style="color:var(--mute);font-weight:500;font-size:12px">(clique para filtrar)</span>';
 
   el.innerHTML = `
     <h2>Pré-Alerta · Sobra e Falta</h2>
@@ -3005,13 +3047,47 @@ function secPreAlerta(){
       <div class="alert-banner-icon">ℹ️</div>
       <div class="alert-banner-content">
         <h4>Classificação Sobra/Falta indisponível na base atual</h4>
-        <p>O administrativo.json não traz a coluna que diferencia SOBRA de FALTA. Assim que ela vier preenchida, os cards e o filtro "Tipo" passam a funcionar sozinhos.</p>
+        <p>O administrativo.json não traz a coluna "ocorrencia" preenchida com SOBRA ou FALTA. Assim que ela vier, os cards e o filtro "Tipo" passam a funcionar sozinhos.</p>
       </div>
     </div>` : ''}
 
     <div class="grid two" style="margin-top:20px">
       <div class="card">
-        <h3>Ocorrências por Loja <span style="color:var(--mute);font-weight:500;font-size:12px">(clique para filtrar)</span></h3>
+        <h3>Total Ocorrências por Mês ${dica}</h3>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Data</th><th class="r">Total R$</th><th class="r">Qtd Loja</th></tr></thead>
+            <tbody>
+              ${porMes.map(([k,o]) => `
+                <tr class="clickable-row ${preFiltro.mes === k ? 'active-row' : ''}" data-pre-mes="${esc(k)}">
+                  <td><b>${esc(mesLabel(k))}</b></td><td class="r" style="font-weight:700">${brl(o.valor)}</td><td class="r">${fmtN.format(o.lojas.size)}</td>
+                </tr>`).join('') || '<tr><td colspan="3">Sem ocorrências com os filtros aplicados.</td></tr>'}
+              <tr class="tot"><td><b>Total Geral</b></td><td class="r" style="color:var(--accent)">${brl(tot)}</td><td class="r">${fmtN.format(lojasSet.size)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Status de Processamento das Ocorrências ${dica}</h3>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Status Ocorrência (CD)</th><th class="r">Ocorr.</th><th class="r">Valor Total R$</th></tr></thead>
+            <tbody>
+              ${porSt.map(([k,o]) => `
+                <tr class="clickable-row ${stTxt(preFiltro.stCd) === k ? 'active-row' : ''}" data-pre-st="${esc(k)}">
+                  <td><b style="color:${stCor(k)}">${esc(k)}</b></td><td class="r">${fmtN.format(o.n)}</td><td class="r" style="color:${stCor(k)};font-weight:700">${brl(o.valor)}</td>
+                </tr>`).join('') || '<tr><td colspan="3">Sem ocorrências com os filtros aplicados.</td></tr>'}
+              <tr class="tot"><td><b>Total Geral Auditado</b></td><td class="r">${fmtN.format(rows.length)}</td><td class="r" style="color:var(--accent)">${brl(tot)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid two" style="margin-top:20px">
+      <div class="card">
+        <h3>Ocorrências por Loja ${dica}</h3>
         <div class="tw">
           <table>
             <thead><tr><th>Loja</th><th class="r">Ocorr.</th><th class="r">Unid.</th><th class="r">Total R$</th></tr></thead>
@@ -3027,7 +3103,7 @@ function secPreAlerta(){
       </div>
 
       <div class="card">
-        <h3>Situação do Documento <span style="color:var(--mute);font-weight:500;font-size:12px">(clique para filtrar)</span></h3>
+        <h3>Situação do Documento ${dica}</h3>
         <div class="tw">
           <table>
             <thead><tr><th>Situação</th><th class="r">Ocorr.</th><th class="r">Valor Total R$</th><th class="r">%</th></tr></thead>
@@ -3050,24 +3126,27 @@ function secPreAlerta(){
           <select id="selPreOrdem" title="Ordenação">
             <option value="valor" ${preOrdem === 'valor' ? 'selected' : ''}>Ordem: maior valor</option>
             <option value="qtd" ${preOrdem === 'qtd' ? 'selected' : ''}>Ordem: maior quantidade</option>
+            <option value="dias" ${preOrdem === 'dias' ? 'selected' : ''}>Ordem: mais dias sem retorno</option>
             <option value="loja" ${preOrdem === 'loja' ? 'selected' : ''}>Ordem: loja (A-Z)</option>
           </select>
-          <input type="text" id="inputSearchPre" placeholder="🔍 Buscar loja, produto, NF..." value="${esc(searchPre)}" style="width:240px">
+          <input type="text" id="inputSearchPre" placeholder="🔍 Buscar loja, produto, NF, obs..." value="${esc(searchPre)}" style="width:240px">
         </div>
       </div>
       <div class="tw">
         <table>
           <thead>
             <tr>
-              <th>Loja</th><th>Pedido / Ref.</th><th>NF</th><th>Situação</th>${hasTipo ? '<th>Tipo</th>' : ''}
+              <th>Loja</th>${temExtra ? '<th>Data Reg.</th>' : ''}<th>Pedido</th><th>NF</th><th>Situação</th>${hasTipo ? '<th>Tipo</th>' : ''}
               <th>Cód. Prod</th><th>Descrição Produto</th><th class="r">Qtd</th><th class="r">Valor Total</th>
               ${temStatus ? '<th>Status CD</th><th>Status Loja</th>' : ''}
+              ${temExtra ? '<th>Origem</th><th class="r">Dias s/ retorno</th><th>Observação</th>' : ''}
             </tr>
           </thead>
           <tbody>
             ${mostradas.length ? mostradas.map(r => `
               <tr>
                 <td><b>${esc(r.loja)}</b></td>
+                ${temExtra ? `<td>${esc(r.data)}</td>` : ''}
                 <td>${esc(r.pedido)}</td>
                 <td>${esc(r.nf)}</td>
                 <td><b style="color:${SIT_COR[r.situacao] || 'var(--text)'}">${esc(r.situacao)}</b></td>
@@ -3076,8 +3155,9 @@ function secPreAlerta(){
                 <td>${esc(r.prod)}</td>
                 <td class="r">${fmtN.format(r.qtd)} ${esc(r.un)}</td>
                 <td class="r" style="font-weight:700">${brl(r.valor)}</td>
-                ${temStatus ? `<td>${esc(r.statusCd)}</td><td>${esc(r.statusLoja)}</td>` : ''}
-              </tr>`).join('') : `<tr><td colspan="${9 + (hasTipo ? 1 : 0) + (temStatus ? 2 : 0)}">Nenhuma ocorrência encontrada.</td></tr>`}
+                ${temStatus ? `<td><b style="color:${stCor(r.statusCd || 'SEM STATUS')}">${esc(r.statusCd)}</b></td><td><b style="color:${stCor(r.statusLoja || 'SEM STATUS')}">${esc(r.statusLoja)}</b></td>` : ''}
+                ${temExtra ? `<td>${esc(r.origem)}</td><td class="r" style="color:${r.dias > 7 ? 'var(--crit)' : 'var(--text)'};font-weight:700">${r.dias}</td><td>${esc(r.obs)}</td>` : ''}
+              </tr>`).join('') : `<tr><td colspan="${nCols}">Nenhuma ocorrência encontrada.</td></tr>`}
           </tbody>
         </table>
       </div>
@@ -3085,14 +3165,15 @@ function secPreAlerta(){
     </div>
   `;
 
-  document.querySelectorAll('[data-pre-loja]').forEach(tr => tr.addEventListener('click', () => {
-    const k = tr.getAttribute('data-pre-loja');
-    preFiltro.loja = preFiltro.loja === k ? 'todos' : k; preLimite = 150; secPreAlerta();
+  const toggle = (attr, key) => document.querySelectorAll(`[${attr}]`).forEach(tr => tr.addEventListener('click', () => {
+    const k = tr.getAttribute(attr);
+    preFiltro[key] = stTxt(preFiltro[key]) === stTxt(k) ? 'todos' : k;
+    preLimite = 150; secPreAlerta();
   }));
-  document.querySelectorAll('[data-pre-sit]').forEach(tr => tr.addEventListener('click', () => {
-    const k = tr.getAttribute('data-pre-sit');
-    preFiltro.situacao = preFiltro.situacao === k ? 'todos' : k; preLimite = 150; secPreAlerta();
-  }));
+  toggle('data-pre-loja', 'loja');
+  toggle('data-pre-sit', 'situacao');
+  toggle('data-pre-mes', 'mes');
+  toggle('data-pre-st', 'stCd');
   const selO = $('#selPreOrdem');
   if (selO) selO.addEventListener('change', e => { preOrdem = e.target.value; preLimite = 150; secPreAlerta(); });
   const inP = $('#inputSearchPre');
@@ -3104,7 +3185,6 @@ function secPreAlerta(){
   const bm = $('#btnMorePre');
   if (bm) bm.addEventListener('click', () => { preLimite += 150; secPreAlerta(); });
 }
-
 
 /* ================= SETORES, ABAS E BARRA DE FILTROS ================= */
 const SETORES = {
@@ -3141,7 +3221,7 @@ function renderNav(){
   const box = $('#setores');
   if (box) {
     box.innerHTML = Object.entries(SETORES).map(([k,s]) =>
-      `<button data-setor="${k}" aria-pressed="${k === setor}"><span>${s.icon}</span> ${s.title}</button>`).join('');
+      `<button data-setor="${k}" aria-pressed="${k === setor}" title="${s.title}"><span class="si">${s.icon}</span><span class="st">${s.title}</span></button>`).join('');
     box.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
       const k = btn.getAttribute('data-setor');
       if (k !== setorDe(activeTab)) setActiveTab(lastTab[k] || SETORES[k].tabs[0]);
@@ -3238,15 +3318,16 @@ function fbDefs(tab){
   }
   if (tab === 'prealerta' && AdminD) {
     const todas = preTodas();
-    const lojas = Array.from(new Set(todas.map(r => r.loja))).sort((a,b) => a.localeCompare(b));
-    const sits = Array.from(new Set(todas.map(r => r.situacao))).sort();
+    const uq = f => Array.from(new Set(todas.map(f))).filter(Boolean);
+    const reset = () => { preLimite = 150; };
     const defs = [
-      {label:'Loja', value:preFiltro.loja, options:[optF('todos','Todas'), ...lojas.map(l => optF(l, l))], set:v => { preFiltro.loja = v; preLimite = 150; }},
-      {label:'Situação do documento', value:preFiltro.situacao, options:[optF('todos','Todas'), ...sits.map(s => optF(s, s))], set:v => { preFiltro.situacao = v; preLimite = 150; }}
+      {label:'Loja', value:preFiltro.loja, options:[optF('todos','Todas'), ...uq(r => r.loja).sort((a,b) => a.localeCompare(b)).map(l => optF(l, l))], set:v => { preFiltro.loja = v; reset(); }},
+      {label:'Mês', value:preFiltro.mes, options:[optF('todos','Todos'), ...uq(r => r.mes).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(m => optF(m, mesLabel(m)))], set:v => { preFiltro.mes = v; reset(); }}
     ];
-    if (todas.some(r => r.tipo)) {
-      defs.push({label:'Tipo', value:preFiltro.tipo, options:[optF('todos','Todos'), optF('SOBRA','Sobra'), optF('FALTA','Falta')], set:v => { preFiltro.tipo = v; preLimite = 150; }});
-    }
+    if (todas.some(r => r.tipo)) defs.push({label:'Tipo', value:preFiltro.tipo, options:[optF('todos','Todos'), optF('SOBRA','Sobra'), optF('FALTA','Falta')], set:v => { preFiltro.tipo = v; reset(); }});
+    if (todas.some(r => r.statusCd)) defs.push({label:'Status CD', value:preFiltro.stCd, options:[optF('todos','Todos'), ...uq(r => r.statusCd).sort().map(s => optF(s, s))], set:v => { preFiltro.stCd = v; reset(); }});
+    if (todas.some(r => r.statusLoja)) defs.push({label:'Status Loja', value:preFiltro.stLoja, options:[optF('todos','Todos'), ...uq(r => r.statusLoja).sort().map(s => optF(s, s))], set:v => { preFiltro.stLoja = v; reset(); }});
+    defs.push({label:'Documento', value:preFiltro.situacao, options:[optF('todos','Todos'), ...uq(r => r.situacao).sort().map(s => optF(s, s))], set:v => { preFiltro.situacao = v; reset(); }});
     return defs;
   }
   return [];
@@ -3301,6 +3382,20 @@ function renderFilterBar(){
   window[n] = function(){ const r = orig.apply(this, arguments); renderFilterBar(); return r; };
 });
 
+
+/* barra lateral recolhível (começa recolhida em telas estreitas) */
+(function(){
+  let col = window.innerWidth < 820;
+  try { const v = localStorage.getItem('sideCollapsed'); if (v !== null) col = v === '1'; } catch(e) {}
+  document.body.classList.toggle('side-collapsed', col);
+  window.addEventListener('DOMContentLoaded', () => {
+    const b = document.getElementById('sideToggle');
+    if (b) b.addEventListener('click', () => {
+      const c = document.body.classList.toggle('side-collapsed');
+      try { localStorage.setItem('sideCollapsed', c ? '1' : '0'); } catch(e) {}
+    });
+  });
+})();
 
 document.querySelectorAll('#basis button').forEach(btn => {
   btn.addEventListener('click', () => {
