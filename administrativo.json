@@ -22016,7 +22016,7 @@
       "valorTotal": 497.88,
       "origem": "CD BARUERI",
       "statusCd": "FINALIZADO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusLoja": "FINALIZADO",
       "observacao": "aguardando saldo cd 05.11"
     },
     {
@@ -22623,8 +22623,8 @@
       "valorUnitario": 154.16,
       "valorTotal": 154.16,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -22680,8 +22680,8 @@
       "valorUnitario": 4.69,
       "valorTotal": 56.28,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "aguardando saldo do cd"
     },
     {
@@ -22699,8 +22699,8 @@
       "valorUnitario": 3.26,
       "valorTotal": 3.26,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "aguardando saldo do cd"
     },
     {
@@ -22718,8 +22718,8 @@
       "valorUnitario": 67.9,
       "valorTotal": 67.9,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -22756,8 +22756,8 @@
       "valorUnitario": 61.9,
       "valorTotal": 61.9,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -22775,8 +22775,8 @@
       "valorUnitario": 53.04,
       "valorTotal": 53.04,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -22794,8 +22794,8 @@
       "valorUnitario": 185.8,
       "valorTotal": 185.8,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -22832,8 +22832,8 @@
       "valorUnitario": 77.64,
       "valorTotal": 77.64,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "AGUARDANDO SALDO CD"
     },
     {
@@ -22851,8 +22851,8 @@
       "valorUnitario": 195.53,
       "valorTotal": 195.53,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -22870,8 +22870,8 @@
       "valorUnitario": 378.74,
       "valorTotal": 378.74,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -22889,8 +22889,8 @@
       "valorUnitario": 276.12,
       "valorTotal": 276.12,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -22908,8 +22908,8 @@
       "valorUnitario": 7.73,
       "valorTotal": 7.73,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -22927,8 +22927,8 @@
       "valorUnitario": 1.99,
       "valorTotal": 39.8,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "AGUARDANDO SALDO CD"
     },
     {
@@ -22946,8 +22946,8 @@
       "valorUnitario": 87.26,
       "valorTotal": 87.26,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -22965,8 +22965,8 @@
       "valorUnitario": 197.34,
       "valorTotal": 197.34,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -22984,8 +22984,8 @@
       "valorUnitario": 198,
       "valorTotal": 198,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -23003,8 +23003,8 @@
       "valorUnitario": 198,
       "valorTotal": 198,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -23022,8 +23022,8 @@
       "valorUnitario": 114.16,
       "valorTotal": 114.16,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -23041,8 +23041,8 @@
       "valorUnitario": 217.92,
       "valorTotal": 217.92,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -23079,8 +23079,8 @@
       "valorUnitario": 94.43,
       "valorTotal": 94.43,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -23098,8 +23098,8 @@
       "valorUnitario": 15.25,
       "valorTotal": 15.25,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "INSUMO"
     },
     {
@@ -23250,10 +23250,143 @@
       "valorUnitario": 107.4,
       "valorTotal": 537,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
+      "observacao": ""
+    },
+    {
+      "carimboDataHora": "11/11/2026 00:00:00",
+      "diasSemRetorno": 1,
+      "loja": "GUARUJÁ",
+      "pedido": "1110159",
+      "dataEmissao": "100501-1",
+      "nf": "",
+      "codProd": "244080001",
+      "prod": "BISC RECH GLUB SAGRA 100G, CHOC",
+      "qtd": 2,
+      "um": "CAIXA",
+      "ocorrencia": "FALTA",
+      "valorUnitario": 46.44,
+      "valorTotal": 92.88,
+      "origem": "CD BARUERI",
+      "statusCd": "AGUARDANDO RETORNO DA LOJA",
+      "statusLoja": "PROCEDE",
+      "observacao": "LOJA ENVIOU OCORRENCIA AS 16:56"
+    },
+    {
+      "carimboDataHora": "11/11/2026 00:00:00",
+      "diasSemRetorno": 1,
+      "loja": "SANTOS",
+      "pedido": "100490",
+      "dataEmissao": "17896000000000",
+      "nf": "",
+      "codProd": "17900000000000",
+      "prod": "GELATINA EM PO SOL 20G, FRAMBOESA",
+      "qtd": 1,
+      "um": "CAIXA",
+      "ocorrencia": "FALTA",
+      "valorUnitario": 35.37,
+      "valorTotal": 35.37,
+      "origem": "CD BARUERI",
+      "statusCd": "AGUARDANDO RETORNO DA LOJA",
       "statusLoja": "AGUARDANDO CD",
+      "observacao": "LOJA NÃO ENVIO A NF ATE O MOMENTO"
+    },
+    {
+      "carimboDataHora": "11/11/2026 00:00:00",
+      "diasSemRetorno": 1,
+      "loja": "SANTOS",
+      "pedido": "100490",
+      "dataEmissao": "7897660000000",
+      "nf": "",
+      "codProd": "7898000000000",
+      "prod": "SH OX 400ML, FIBERS LISO ABSOLUTO",
+      "qtd": 1,
+      "um": "CAIXA",
+      "ocorrencia": "FALTA",
+      "valorUnitario": 188.32,
+      "valorTotal": 188.32,
+      "origem": "CD BARUERI",
+      "statusCd": "AGUARDANDO RETORNO DA LOJA",
+      "statusLoja": "AGUARDANDO CD",
+      "observacao": "LOJA NÃO ENVIO A NF ATE O MOMENTO"
+    },
+    {
+      "carimboDataHora": "11/11/2026 00:00:00",
+      "diasSemRetorno": 1,
+      "loja": "SANTOS",
+      "pedido": "100490",
+      "dataEmissao": "17896000000000",
+      "nf": "",
+      "codProd": "203725",
+      "prod": "MIST BOLO D.BENTA 450g, CENOURA",
+      "qtd": 1,
+      "um": "CAIXA",
+      "ocorrencia": "FALTA",
+      "valorUnitario": 71.64,
+      "valorTotal": 71.64,
+      "origem": "CD BARUERI",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
+      "observacao": ""
+    },
+    {
+      "carimboDataHora": "11/11/2026 00:00:00",
+      "diasSemRetorno": 1,
+      "loja": "PRAIA GRANDE II",
+      "pedido": "*",
+      "dataEmissao": "100491",
+      "nf": "",
+      "codProd": "245693861",
+      "prod": "SAB LIQ SOFTFIX 500ML, ERVA DOCE CX 12",
+      "qtd": 24,
+      "um": "UNIDADE",
+      "ocorrencia": "FALTA",
+      "valorUnitario": 8.99,
+      "valorTotal": 215.76,
+      "origem": "CD BARUERI",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
+      "observacao": "7172"
+    },
+    {
+      "carimboDataHora": "11/11/2026 00:00:00",
+      "diasSemRetorno": 1,
+      "loja": "PRAIA GRANDE II",
+      "pedido": "*",
+      "dataEmissao": "100491",
+      "nf": "",
+      "codProd": "245314002",
+      "prod": "PANETTONE DI SANTO 400G, GOTAS CHOC",
+      "qtd": 18,
+      "um": "UNIDADE",
+      "ocorrencia": "FALTA",
+      "valorUnitario": 11.49,
+      "valorTotal": 206.82,
+      "origem": "CD BARUERI",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
+      "observacao": "7172"
+    },
+    {
+      "carimboDataHora": "12/11/2026 00:00:00",
+      "diasSemRetorno": 0,
+      "loja": "SALTO",
+      "pedido": "",
+      "dataEmissao": "100514",
+      "nf": "",
+      "codProd": "200122",
+      "prod": "ARROZ TP1 PRATO FINO 5KG",
+      "qtd": 3,
+      "um": "CAIXA",
+      "ocorrencia": "FALTA",
+      "valorUnitario": 92.49,
+      "valorTotal": 277.47,
+      "origem": "CD BARUERI",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     }
   ],
-  "ultimaAtualizacao": "2026-11-12T13:05:53.876Z"
+  "ultimaAtualizacao": "2026-11-12T14:05:50.757Z"
 }
