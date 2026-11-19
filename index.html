@@ -38,24 +38,35 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
   position: relative;
   overflow: hidden;
   border-radius: 10px;
-  padding: 6px 14px;
+  padding: 6px 10px;
+  margin-bottom: 12px;
   background: linear-gradient(135deg, #02122b 0%, #0a224a 100%);
   border: 1px solid rgba(255, 196, 0, 0.4);
   box-shadow: 0 0 12px rgba(255, 196, 0, 0.15), inset 0 0 8px rgba(255, 196, 0, 0.1);
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .roldao-logo-wrap:hover {
-  transform: translateY(-2px) scale(1.03);
+  transform: translateY(-2px) scale(1.02);
   border-color: var(--accent);
   box-shadow: 0 0 20px rgba(255, 196, 0, 0.45), inset 0 0 12px rgba(255, 196, 0, 0.2);
 }
 
 .roldao-logo-img {
-  height: 40px;
-  width: auto;
+  height: 36px;
+  width: 100%;
+  max-width: 160px;
   display: block;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  transition: all 0.25s ease;
+}
+
+body.side-collapsed .roldao-logo-wrap {
+  padding: 6px 4px;
+}
+body.side-collapsed .roldao-logo-img {
+  height: 22px;
+  max-width: 44px;
 }
 
 .brand{display:flex;flex-direction:column;line-height:1.1}
@@ -632,6 +643,9 @@ body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
 <div id="floating-tooltip"></div>
 
 <aside class="side" id="side" aria-label="Setores">
+  <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
+    <img class="roldao-logo-img" src="./logo%20Roldao%20Painel.png" alt="Roldão Atacadista">
+  </div>
   <div class="side-label">Setores</div>
   <div class="setores" id="setores" role="group" aria-label="Setor"></div>
   <button class="side-toggle" id="sideToggle" title="Recolher/expandir menu" aria-label="Recolher ou expandir menu">‹</button>
@@ -639,10 +653,6 @@ body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
 
 <header>
   <div class="brand-container">
-    <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
-      <img class="roldao-logo-img" src="./logo%20Roldao%20Painel.png" alt="Roldão Atacadista">
-    </div>
-
     <div class="brand">
       <b>Painel CDR</b>
       <small>Centro de Distribuição</small>
@@ -2254,6 +2264,7 @@ function secCarteira(){
         gtin: r.gtin || '-',
         prod: r.prod || 'Sem Descrição',
         tiposSet: new Set(),
+        linhas: 0,
         qtdPedida: 0,
         qtdSeparada: 0,
         qtdPend: 0,
@@ -2261,6 +2272,7 @@ function secCarteira(){
       };
     }
 
+    prodAggMap[key].linhas += 1;
     prodAggMap[key].qtdPedida += r.qtdPedida;
     prodAggMap[key].qtdSeparada += r.qtdSeparada;
     prodAggMap[key].qtdPend += Math.max(0, pendQtd);
@@ -2292,6 +2304,8 @@ function secCarteira(){
     prodsList.sort((a,b) => b.qtdPend - a.qtdPend);
   } else if (prodSortOrder === 'pedida') {
     prodsList.sort((a,b) => b.qtdPedida - a.qtdPedida);
+  } else if (prodSortOrder === 'linhas') {
+    prodsList.sort((a,b) => b.linhas - a.linhas);
   }
 
   const statusTitleText = statusFilter === 'pendente' 
@@ -2427,6 +2441,7 @@ function secCarteira(){
         <input type="text" id="inputProdSearch" placeholder="🔍 Buscar código / GTIN / produto..." value="${esc(prodSearch)}" style="width:240px" />
         <select id="selectProdSort">
           <option value="qtd" ${prodSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Pendente</option>
+          <option value="linhas" ${prodSortOrder==='linhas'?'selected':''}>Ordenar por Maior Qtd Linhas / Paletes</option>
           <option value="pedida" ${prodSortOrder==='pedida'?'selected':''}>Ordenar por Maior Qtd Pedida Total</option>
           <option value="valor" ${prodSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
         </select>
@@ -2439,6 +2454,7 @@ function secCarteira(){
               <th>GTIN (EAN)</th>
               <th>Produto</th>
               <th>Tipo Separação</th>
+              <th class="r">Linhas (Paletes)</th>
               <th class="r">Qtd Pedida Total</th>
               <th class="r">Qtd Separada</th>
               <th class="r">Qtd Pendente Total</th>
@@ -2452,12 +2468,13 @@ function secCarteira(){
                 <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
                 <td><b>${esc(p.prod)}</b></td>
                 <td><span class="dot" style="background:var(--accent)"></span>${esc(p.tipoSep)}</td>
+                <td class="r"><span style="background:rgba(66,133,244,0.18);border:1px solid rgba(66,133,244,0.45);color:#7cb3ff;padding:2px 8px;border-radius:6px;font-weight:800">${fmtN.format(p.linhas)}</span></td>
                 <td class="r" style="font-weight:700">${fmtN.format(p.qtdPedida)}</td>
                 <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(p.qtdSeparada)}</td>
                 <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'};font-weight:700;font-size:15px">${fmtN.format(p.qtdPend)}</td>
                 <td class="r" style="font-weight:700;color:var(--text)">${brl(p.valorPend)}</td>
               </tr>
-            `).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros applied.</td></tr>'}
+            `).join('') : '<tr><td colspan="9">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -2770,7 +2787,7 @@ function secTransito(){
   ['saida','entrada','outros'].forEach(k => {
     const ls = linhas.filter(n => sentidoNota(n) === k);
     const g = agruparNFs(ls);
-    porSent[k] = {k, nfs:g.length, skus:new Set(ls.map(n => n.codProd)).size, cx:ls.reduce((s,n) => s + (n.qtd || 0), 0), valor:g.reduce((s,x) => s + x.valor, 0), periodo:periodoTexto(ls)};
+    porSent[k] = {k, nfs:g.length, skus:new Set(ls.map(n => n.codProd)).size, cx:ls.reduce((s,n) => s + (n.qtd || 0), 0), valor:g.reduce((s,x) => x + x.valor, 0), periodo:periodoTexto(ls)};
   });
 
   // Busca (afeta só a tabela detalhada, não os KPIs)
