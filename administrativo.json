@@ -29737,8 +29737,8 @@
       "valorUnitario": 45.58,
       "valorTotal": 3691.98,
       "origem": "CD BARUERI",
-      "statusCd": "",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -29756,8 +29756,8 @@
       "valorUnitario": 45.58,
       "valorTotal": 3691.98,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANÁLISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "AGUARDANDO SALDO CD 17.11"
     },
     {
@@ -29775,8 +29775,8 @@
       "valorUnitario": 13.2,
       "valorTotal": 2.64,
       "origem": "CD BARUERI",
-      "statusCd": "",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -29791,8 +29791,8 @@
       "qtd": 132,
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
-      "valorUnitario": 306.24,
-      "valorTotal": 0,
+      "valorUnitario": 2.57,
+      "valorTotal": 339.23999999999995,
       "origem": "CD BARUERI",
       "statusCd": "RECUSADO",
       "statusLoja": "AGUARDANDO CD",
@@ -29810,11 +29810,11 @@
       "qtd": 48,
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
-      "valorUnitario": 243.84,
+      "valorUnitario": 7.67,
       "valorTotal": 0,
       "origem": "CD BARUERI",
-      "statusCd": "PROCEDE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -29829,11 +29829,11 @@
       "qtd": 240,
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
-      "valorUnitario": 403.2,
+      "valorUnitario": 1.99,
       "valorTotal": 0,
       "origem": "CD BARUERI",
-      "statusCd": "PROCEDE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -29849,10 +29849,10 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 259.25,
-      "valorTotal": 0,
+      "valorTotal": 259.25,
       "origem": "CD BARUERI",
-      "statusCd": "PROCEDE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -29867,7 +29867,7 @@
       "qtd": 24,
       "um": "UNIDADE",
       "ocorrencia": "SOBRA",
-      "valorUnitario": 155.28,
+      "valorUnitario": 9.9,
       "valorTotal": 0,
       "origem": "CD BARUERI",
       "statusCd": "EM ANÁLISE",
@@ -29885,12 +29885,12 @@
       "prod": "FRALDA GERIAT",
       "qtd": 6,
       "um": "UNIDADE",
-      "ocorrencia": "SEM NOTA",
+      "ocorrencia": "SOBRA",
       "valorUnitario": 152.94,
       "valorTotal": 0,
       "origem": "CD BARUERI",
-      "statusCd": "PROCEDE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "101.054 NOTA FATURADA 18.11"
     },
     {
@@ -29904,7 +29904,7 @@
       "prod": "ABS GERIAT GERIAMAX C/20, ALOE VERA",
       "qtd": 60,
       "um": "UNIDADE",
-      "ocorrencia": "SEM NOTA",
+      "ocorrencia": "SOBRA",
       "valorUnitario": 700.2,
       "valorTotal": 0,
       "origem": "CD BARUERI",
@@ -29980,7 +29980,7 @@
       "prod": "ABS INT INTIMUS SUPER C/16",
       "qtd": 24,
       "um": "UNIDADE",
-      "ocorrencia": "SEM NOTA",
+      "ocorrencia": "SOBRA",
       "valorUnitario": 278.88,
       "valorTotal": 0,
       "origem": "CD BARUERI",
@@ -30003,9 +30003,9 @@
       "valorUnitario": 1562.4,
       "valorTotal": 0,
       "origem": "CD BARUERI",
-      "statusCd": "",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "statusCd": "AGUARDANDO RETORNO LOJA",
+      "statusLoja": "AGUARDANDO RETORNO LOJA",
+      "observacao": "LOJA NÃO CONSEGUI FATURA"
     },
     {
       "carimboDataHora": "18/11/2026 00:00:00",
@@ -30022,9 +30022,9 @@
       "valorUnitario": 198.72,
       "valorTotal": 0,
       "origem": "CD BARUERI",
-      "statusCd": "",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "statusCd": "AGUARDANDO RETORNO LOJA",
+      "statusLoja": "AGUARDANDO RETORNO LOJA",
+      "observacao": "LOJA NÃO CONSEGUI FATURA"
     },
     {
       "carimboDataHora": "18/11/2026 00:00:00",
@@ -30041,9 +30041,9 @@
       "valorUnitario": 16.9,
       "valorTotal": 0,
       "origem": "CD BARUERI",
-      "statusCd": "",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "statusCd": "AGUARDANDO RETORNO LOJA",
+      "statusLoja": "AGUARDANDO RETORNO LOJA",
+      "observacao": "LOJA NÃO CONSEGUI FATURA"
     },
     {
       "carimboDataHora": "18/11/2026 00:00:00",
@@ -30060,9 +30060,9 @@
       "valorUnitario": 71.28,
       "valorTotal": 0,
       "origem": "CD BARUERI",
-      "statusCd": "",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "statusCd": "AGUARDANDO RETORNO LOJA",
+      "statusLoja": "AGUARDANDO RETORNO LOJA",
+      "observacao": "LOJA NÃO CONSEGUI FATURA"
     },
     {
       "carimboDataHora": "18/11/2026 00:00:00",
@@ -30132,7 +30132,7 @@
       "prod": "CR DENTAL COLGATE MPA 180g",
       "qtd": 72,
       "um": "UNIDADE",
-      "ocorrencia": "SEM NOTA",
+      "ocorrencia": "SOBRA",
       "valorUnitario": 473.76,
       "valorTotal": 0,
       "origem": "CD BARUERI",
@@ -30231,8 +30231,8 @@
       "valorUnitario": 123.72,
       "valorTotal": 0,
       "origem": "CD BARUERI",
-      "statusCd": "PROCEDE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "101.057 NOTA FATURADA DIA 18.11"
     },
     {
@@ -30250,10 +30250,10 @@
       "valorUnitario": 289,
       "valorTotal": 0,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANÁLISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "AGUARDANDO GANHO INVENTARIO",
+      "statusLoja": "PENDENTE",
       "observacao": "AGUARDANDO SALDO CD"
     }
   ],
-  "ultimaAtualizacao": "2026-11-19T12:43:04.026Z"
+  "ultimaAtualizacao": "2026-11-19T13:42:26.254Z"
 }
