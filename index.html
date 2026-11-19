@@ -163,7 +163,7 @@ section.on{display:block}
 h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;letter-spacing:-.01em}
 .sub{color:var(--mute);margin:0 0 18px;font-size:14px}
 .grid{display:grid;gap:16px}
-.kpis{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 .two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:stretch}
 
 .card{
@@ -2133,6 +2133,11 @@ function secCarteira(){
   const totValor = filteredC.reduce((s,r) => s + r.valorTotal, 0);
   const pctAtendimento = totPedida ? (totSeparada / totPedida) * 100 : 0;
 
+  // Contagem de linhas/paletes da separação Full dentro dos filtros ativos (exceto tipo de separação, se quiser ver mesmo filtrado, ou respeitando o filtro ativo)
+  const fullLinhasAll = filteredC.filter(r => r.tipoSep.toLowerCase().trim() === 'full');
+  const fullLinhasPend = fullLinhasAll.filter(r => (r.qtdPedida - r.qtdSeparada) > 0 && r.tipoSep !== 'Separado').length;
+  const fullLinhasSep = fullLinhasAll.length - fullLinhasPend;
+
   const datasPendentesSet = new Set();
   filteredC.forEach(r => {
     if (r.tipoSep !== 'Separado') {
@@ -2157,10 +2162,11 @@ function secCarteira(){
   const bySep = {};
   filteredC.forEach(r => {
     const k = r.tipoSep || 'Não informado';
-    bySep[k] = bySep[k] || {pedida:0, separada:0, valor:0};
+    bySep[k] = bySep[k] || {pedida:0, separada:0, valor:0, linhas:0};
     bySep[k].pedida += r.qtdPedida;
     bySep[k].separada += r.qtdSeparada;
     bySep[k].valor += r.valorTotal;
+    bySep[k].linhas += 1;
   });
 
   const prodDer = bySep["Produção Derrubada"] || {pedida:0, separada:0};
@@ -2357,6 +2363,7 @@ function secCarteira(){
     ${kpi('Total Pedido', fmtN.format(totPedida), brlShort(totValor))}
     ${kpi('Total Separado', fmtN.format(totSeparada), fmtP(pctAtendimento) + ' atendido')}
     ${kpi('Pendente de Separação', fmtN.format(totPedida - totSeparada), brlShort(filteredC.reduce((s,r) => s + (r.tipoSep !== 'Separado' ? r.valorTotal : 0), 0)), '', 'Maiores Pedidos Pendentes', topPedentesCrit, 'var(--warn)')}
+    ${kpi('Linhas / Paletes Full', `<span style="color:#7cb3ff">${fmtN.format(fullLinhasAll.length)}</span>`, `Pend: ${fmtN.format(fullLinhasPend)} | Sep: ${fmtN.format(fullLinhasSep)}`, '', 'Separação Full (Paletes Fechados)', [{prod: `Total de Linhas Full: ${fmtN.format(fullLinhasAll.length)}`, sub: `Pendentes: ${fmtN.format(fullLinhasPend)} paletes | Separados: ${fmtN.format(fullLinhasSep)} paletes`}], '#7cb3ff')}
     ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso, 'Datas em Atraso Crítico', Array.from(datasPendentesSet).map(d => ({prod: `Data Reserva: ${d}`, sub: 'Pendente de liberação'})), isCritico ? 'var(--crit)' : 'var(--warn)')}
   </div>
 
@@ -2399,7 +2406,7 @@ function secCarteira(){
 
         <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Full">
           <div class="sep-header">
-            <span>Full (Total: ${fmtN.format(fullTotQtd)})</span>
+            <span>Full (Total: ${fmtN.format(fullTotQtd)} · ${fmtN.format(fullLinhasAll.length)} linhas)</span>
             <span>Sep: ${fmtP(fullPctSep)} | Pend: ${fmtP(fullPctPend)}</span>
           </div>
           <div class="sep-bar-bg">
