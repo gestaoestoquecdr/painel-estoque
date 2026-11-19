@@ -29718,8 +29718,8 @@
       "valorUnitario": 25.47,
       "valorTotal": 1069.74,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -29794,9 +29794,9 @@
       "valorUnitario": 2.57,
       "valorTotal": 339.23999999999995,
       "origem": "CD BARUERI",
-      "statusCd": "RECUSADO",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "statusCd": "AGUARDANDO RETORNO LOJA",
+      "statusLoja": "PENDENTE",
+      "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
       "carimboDataHora": "18/11/2026 00:00:00",
@@ -29811,7 +29811,7 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 7.67,
-      "valorTotal": 0,
+      "valorTotal": 368.15999999999997,
       "origem": "CD BARUERI",
       "statusCd": "FINALIZADO",
       "statusLoja": "FINALIZADO",
@@ -29830,7 +29830,7 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 1.99,
-      "valorTotal": 0,
+      "valorTotal": 477.6,
       "origem": "CD BARUERI",
       "statusCd": "FINALIZADO",
       "statusLoja": "FINALIZADO",
@@ -29868,10 +29868,10 @@
       "um": "UNIDADE",
       "ocorrencia": "SOBRA",
       "valorUnitario": 9.9,
-      "valorTotal": 0,
+      "valorTotal": 237.60000000000002,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANÁLISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "AGUARDANDO GANHO INVENTARIO",
+      "statusLoja": "PENDENTE",
       "observacao": "AGUARDANDO SALDO CD"
     },
     {
@@ -29886,8 +29886,8 @@
       "qtd": 6,
       "um": "UNIDADE",
       "ocorrencia": "SOBRA",
-      "valorUnitario": 152.94,
-      "valorTotal": 0,
+      "valorUnitario": 34.9,
+      "valorTotal": 209.39999999999998,
       "origem": "CD BARUERI",
       "statusCd": "FINALIZADO",
       "statusLoja": "FINALIZADO",
@@ -29905,11 +29905,11 @@
       "qtd": 60,
       "um": "UNIDADE",
       "ocorrencia": "SOBRA",
-      "valorUnitario": 700.2,
-      "valorTotal": 0,
+      "valorUnitario": 17.9,
+      "valorTotal": 1074,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANÁLISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "AGUARDANDO GANHO INVENTARIO",
+      "statusLoja": "PENDENTE",
       "observacao": "AGUARDANDO SALDO CD"
     },
     {
@@ -29925,10 +29925,10 @@
       "um": "CAIXA",
       "ocorrencia": "SOBRA",
       "valorUnitario": 180.62,
-      "valorTotal": 0,
+      "valorTotal": 180.62,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANÁLISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "AGUARDANDO GANHO INVENTARIO",
+      "statusLoja": "PENDENTE",
       "observacao": "AGUARDANDO SALDO CD"
     },
     {
@@ -29944,9 +29944,9 @@
       "um": "CAIXA",
       "ocorrencia": "FALTA",
       "valorUnitario": 66.99,
-      "valorTotal": 0,
+      "valorTotal": 66.99,
       "origem": "CD BARUERI",
-      "statusCd": "",
+      "statusCd": "EM ANÁLISE",
       "statusLoja": "AGUARDANDO CD",
       "observacao": ""
     },
@@ -29963,9 +29963,9 @@
       "um": "CAIXA",
       "ocorrencia": "FALTA",
       "valorUnitario": 131.48,
-      "valorTotal": 0,
+      "valorTotal": 131.48,
       "origem": "CD BARUERI",
-      "statusCd": "",
+      "statusCd": "EM ANÁLISE",
       "statusLoja": "AGUARDANDO CD",
       "observacao": ""
     },
@@ -29981,11 +29981,11 @@
       "qtd": 24,
       "um": "UNIDADE",
       "ocorrencia": "SOBRA",
-      "valorUnitario": 278.88,
-      "valorTotal": 0,
+      "valorUnitario": 19.99,
+      "valorTotal": 479.76,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANÁLISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "AGUARDANDO GANHO INVENTARIO",
+      "statusLoja": "PENDENTE",
       "observacao": "AGUARDANDO SALDO CD"
     },
     {
@@ -30000,8 +30000,8 @@
       "qtd": 40,
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
-      "valorUnitario": 1562.4,
-      "valorTotal": 0,
+      "valorUnitario": 69.49,
+      "valorTotal": 2779.6,
       "origem": "CD BARUERI",
       "statusCd": "AGUARDANDO RETORNO LOJA",
       "statusLoja": "AGUARDANDO RETORNO LOJA",
@@ -30020,7 +30020,7 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 198.72,
-      "valorTotal": 0,
+      "valorTotal": 198.72,
       "origem": "CD BARUERI",
       "statusCd": "AGUARDANDO RETORNO LOJA",
       "statusLoja": "AGUARDANDO RETORNO LOJA",
@@ -30039,7 +30039,7 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 16.9,
-      "valorTotal": 0,
+      "valorTotal": 16.9,
       "origem": "CD BARUERI",
       "statusCd": "AGUARDANDO RETORNO LOJA",
       "statusLoja": "AGUARDANDO RETORNO LOJA",
@@ -30058,7 +30058,7 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 71.28,
-      "valorTotal": 0,
+      "valorTotal": 71.28,
       "origem": "CD BARUERI",
       "statusCd": "AGUARDANDO RETORNO LOJA",
       "statusLoja": "AGUARDANDO RETORNO LOJA",
@@ -30077,11 +30077,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 129.22,
-      "valorTotal": 0,
+      "valorTotal": 129.22,
       "origem": "CD BARUERI",
-      "statusCd": "RECUSADO",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "statusCd": "AGUARDANDO RETORNO LOJA",
+      "statusLoja": "PENDENTE",
+      "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
       "carimboDataHora": "18/11/2026 00:00:00",
@@ -30096,11 +30096,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 542.5,
-      "valorTotal": 0,
+      "valorTotal": 542.5,
       "origem": "CD BARUERI",
-      "statusCd": "RECUSADO",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "statusCd": "AGUARDANDO RETORNO LOJA",
+      "statusLoja": "PENDENTE",
+      "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
       "carimboDataHora": "18/11/2026 00:00:00",
@@ -30115,11 +30115,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 500,
-      "valorTotal": 0,
+      "valorTotal": 500,
       "origem": "CD BARUERI",
-      "statusCd": "RECUSADO",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "statusCd": "AGUARDANDO RETORNO LOJA",
+      "statusLoja": "PENDENTE",
+      "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
       "carimboDataHora": "18/11/2026 00:00:00",
@@ -30134,10 +30134,10 @@
       "um": "UNIDADE",
       "ocorrencia": "SOBRA",
       "valorUnitario": 473.76,
-      "valorTotal": 0,
+      "valorTotal": 473.76,
       "origem": "CD BARUERI",
-      "statusCd": "PROCEDE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "100984"
     },
     {
@@ -30153,11 +30153,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 349.92,
-      "valorTotal": 0,
+      "valorTotal": 349.92,
       "origem": "CD BARUERI",
-      "statusCd": "RECUSADO",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "statusCd": "AGUARDANDO RETORNO LOJA",
+      "statusLoja": "PENDENTE",
+      "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
       "carimboDataHora": "18/11/2026 00:00:00",
@@ -30172,11 +30172,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 126,
-      "valorTotal": 0,
+      "valorTotal": 126,
       "origem": "CD BARUERI",
-      "statusCd": "RECUSADO",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "statusCd": "AGUARDANDO RETORNO LOJA",
+      "statusLoja": "PENDENTE",
+      "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
       "carimboDataHora": "18/11/2026 00:00:00",
@@ -30191,11 +30191,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 372.96,
-      "valorTotal": 0,
+      "valorTotal": 372.96,
       "origem": "CD BARUERI",
-      "statusCd": "RECUSADO",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "statusCd": "AGUARDANDO RETORNO LOJA",
+      "statusLoja": "PENDENTE",
+      "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
       "carimboDataHora": "18/11/2026 00:00:00",
@@ -30210,11 +30210,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 145.2,
-      "valorTotal": 0,
+      "valorTotal": 145.2,
       "origem": "CD BARUERI",
-      "statusCd": "RECUSADO",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "statusCd": "AGUARDANDO RETORNO LOJA",
+      "statusLoja": "PENDENTE",
+      "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
       "carimboDataHora": "18/11/2026 00:00:00",
@@ -30229,7 +30229,7 @@
       "um": "UNIDADE",
       "ocorrencia": "SOBRA",
       "valorUnitario": 123.72,
-      "valorTotal": 0,
+      "valorTotal": 123.72,
       "origem": "CD BARUERI",
       "statusCd": "FINALIZADO",
       "statusLoja": "FINALIZADO",
@@ -30248,12 +30248,12 @@
       "um": "UNIDADE",
       "ocorrencia": "SOBRA",
       "valorUnitario": 289,
-      "valorTotal": 0,
+      "valorTotal": 289,
       "origem": "CD BARUERI",
       "statusCd": "AGUARDANDO GANHO INVENTARIO",
       "statusLoja": "PENDENTE",
       "observacao": "AGUARDANDO SALDO CD"
     }
   ],
-  "ultimaAtualizacao": "2026-11-19T13:42:26.254Z"
+  "ultimaAtualizacao": "2026-11-19T14:43:20.841Z"
 }
