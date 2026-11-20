@@ -38,24 +38,35 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
   position: relative;
   overflow: hidden;
   border-radius: 10px;
-  padding: 6px 14px;
+  padding: 6px 10px;
+  margin-bottom: 12px;
   background: linear-gradient(135deg, #02122b 0%, #0a224a 100%);
   border: 1px solid rgba(255, 196, 0, 0.4);
   box-shadow: 0 0 12px rgba(255, 196, 0, 0.15), inset 0 0 8px rgba(255, 196, 0, 0.1);
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .roldao-logo-wrap:hover {
-  transform: translateY(-2px) scale(1.03);
+  transform: translateY(-2px) scale(1.02);
   border-color: var(--accent);
   box-shadow: 0 0 20px rgba(255, 196, 0, 0.45), inset 0 0 12px rgba(255, 196, 0, 0.2);
 }
 
 .roldao-logo-img {
-  height: 40px;
-  width: auto;
+  height: 36px;
+  width: 100%;
+  max-width: 160px;
   display: block;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  transition: all 0.25s ease;
+}
+
+body.side-collapsed .roldao-logo-wrap {
+  padding: 6px 4px;
+}
+body.side-collapsed .roldao-logo-img {
+  height: 22px;
+  max-width: 44px;
 }
 
 .brand{display:flex;flex-direction:column;line-height:1.1}
@@ -152,7 +163,7 @@ section.on{display:block}
 h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;letter-spacing:-.01em}
 .sub{color:var(--mute);margin:0 0 18px;font-size:14px}
 .grid{display:grid;gap:16px}
-.kpis{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 .two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:stretch}
 
 .card{
@@ -600,39 +611,48 @@ body[data-setor="admin"] #basis{display:none}
 .gfbar.on{display:block}
 .gf-row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end}
 .gf-title{font-weight:800;font-size:13px;color:var(--accent);align-self:center;letter-spacing:.04em;text-transform:uppercase}
-.gf{display:flex;flex-direction:column;gap:3px;min-width:155px;flex:0 1 215px;position:relative}
-.gf > span{font-size:11px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+.gf{display:flex;flex-direction:column;gap:3px;min-width:140px;flex:0 1 190px;position:relative}
+.gf span.gf-lbl{font-size:11px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
 .gf select{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:7px 10px;border-radius:6px;font-size:14px;outline:none;width:100%;transition:border-color .2s ease}
 .gf select:focus{border-color:var(--accent)}
 .gf.on select{border-color:var(--accent);color:var(--accent);font-weight:700}
 
-/* Multi-select custom dropdown */
-.ms{position:relative;width:100%}
-.ms-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--panel);border:1px solid var(--line);color:var(--text);padding:7px 10px;border-radius:6px;font-size:13.5px;text-align:left;transition:border-color .2s ease,box-shadow .2s ease}
-.ms-btn:hover,.ms.open .ms-btn{border-color:var(--accent)}
-.gf.on .ms-btn{border-color:var(--accent);color:var(--accent);font-weight:700;box-shadow:0 0 10px rgba(255,196,0,.15)}
+/* MULTISELECT DROPDOWN */
+.ms-wrap{position:relative;width:100%}
+.ms-btn{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
+  background:var(--panel);border:1px solid var(--line);color:var(--text);
+  padding:7px 10px;border-radius:6px;font-size:14px;text-align:left;transition:border-color .2s ease;
+}
+.ms-btn:hover, .ms-wrap.open .ms-btn{border-color:var(--accent)}
+.gf.on .ms-btn{border-color:var(--accent);color:var(--accent);font-weight:700}
 .ms-btn-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.ms-btn-badge{background:var(--accent);color:#120e00;font-family:var(--f-num);font-size:11px;font-weight:800;padding:1px 6px;border-radius:999px;flex:none}
-.ms-btn-arr{font-size:10px;color:var(--mute);flex:none;transition:transform .2s ease}
-.ms.open .ms-btn-arr{transform:rotate(180deg);color:var(--accent)}
-.ms-menu{display:none;position:absolute;top:calc(100% + 5px);left:0;min-width:265px;max-width:350px;width:max-content;background:#08152f;border:1px solid var(--accent);border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.75),0 0 18px rgba(255,196,0,.18);z-index:120;padding:8px}
-.ms.open .ms-menu{display:block;animation:fadeIn .15s ease-out}
-.ms-search{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:6px 9px;border-radius:6px;font-size:13px;outline:none;margin-bottom:6px}
+.ms-badge{background:var(--accent);color:#120e00;font-weight:800;font-size:11px;border-radius:999px;padding:1px 7px;line-height:1.3;flex:none}
+.ms-arrow{font-size:10px;color:var(--mute);flex:none}
+.ms-menu{
+  display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:270px;max-width:340px;
+  background:#07122b;border:1px solid var(--accent);border-radius:10px;padding:10px;z-index:100;
+  box-shadow:0 14px 36px rgba(0,0,0,0.75), 0 0 18px rgba(255,196,0,0.2);
+}
+.ms-wrap.open .ms-menu{display:block;animation:fadeIn .15s ease-out}
+.ms-search{
+  width:100%;background:var(--panel);border:1px solid var(--line);color:var(--text);
+  padding:6px 10px;border-radius:6px;font-size:13px;outline:none;margin-bottom:8px;
+}
 .ms-search:focus{border-color:var(--accent)}
-.ms-actions{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:2px 2px 6px;border-bottom:1px solid var(--line);margin-bottom:4px;font-size:11px}
-.ms-actions button{background:transparent;border:0;color:var(--accent);font-weight:700;padding:2px 4px;border-radius:4px}
-.ms-actions button:hover{background:rgba(255,196,0,.12)}
-.ms-actions span{color:var(--mute);font-weight:600}
-.ms-list{max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;padding-right:2px}
-.ms-list::-webkit-scrollbar{width:6px}
-.ms-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
-.ms-grp{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);padding:6px 6px 2px}
-.ms-opt{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:5px;font-size:13px;cursor:pointer;user-select:none;transition:background .15s}
-.ms-opt:hover{background:rgba(255,255,255,.06)}
-.ms-opt.checked{background:rgba(255,196,0,.12);color:#fff;font-weight:600}
-.ms-opt input[type="checkbox"]{accent-color:var(--accent);width:15px;height:15px;margin:0;cursor:pointer;flex:none}
-.ms-opt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ms-empty{padding:10px;text-align:center;color:var(--mute);font-size:12px}
+.ms-actions{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--mute);padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.ms-actions-btns{display:flex;gap:8px}
+.ms-actions button{background:transparent;border:0;color:var(--accent);font-weight:700;font-size:11px;padding:2px 4px}
+.ms-actions button:hover{text-decoration:underline}
+.ms-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;padding-right:2px}
+.ms-item{
+  display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;font-size:13px;
+  cursor:pointer;user-select:none;transition:background .15s ease;color:var(--text);
+}
+.ms-item:hover{background:rgba(255,255,255,0.06)}
+.ms-item.checked{background:rgba(255,196,0,0.14);color:#fff;font-weight:700}
+.ms-item input[type="checkbox"]{accent-color:var(--accent);width:15px;height:15px;cursor:pointer;flex:none;margin:0}
+.ms-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .gf-clear{margin-left:auto;background:transparent;border:1px solid var(--line);color:var(--mute);border-radius:6px;padding:7px 12px;font-size:13px;font-weight:700;transition:all .2s ease}
 .gf-clear:not(:disabled):hover{color:#fff;border-color:var(--crit)}
@@ -661,6 +681,9 @@ body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
 <div id="floating-tooltip"></div>
 
 <aside class="side" id="side" aria-label="Setores">
+  <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
+    <img class="roldao-logo-img" src="./logo%20Roldao%20Painel.png" alt="Roldão Atacadista">
+  </div>
   <div class="side-label">Setores</div>
   <div class="setores" id="setores" role="group" aria-label="Setor"></div>
   <button class="side-toggle" id="sideToggle" title="Recolher/expandir menu" aria-label="Recolher ou expandir menu">‹</button>
@@ -668,10 +691,6 @@ body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
 
 <header>
   <div class="brand-container">
-    <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
-      <img class="roldao-logo-img" src="./logo%20Roldao%20Painel.png" alt="Roldão Atacadista">
-    </div>
-
     <div class="brand">
       <b>Painel CDR</b>
       <small>Centro de Distribuição</small>
@@ -789,6 +808,24 @@ function brlShort(v){
 const esc = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nice = s => String(s).replace(/^ESTOQUE\s+/i,'').toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase());
 
+/* Helpers para seleção múltipla (arrays de valores selecionados; array vazio = todos) */
+function toggleArr(arr, val) {
+  const s = String(val);
+  const idx = arr.findIndex(x => String(x).toLowerCase() === s.toLowerCase());
+  if (idx >= 0) arr.splice(idx, 1);
+  else arr.push(s);
+}
+function hasArr(arr, val) {
+  if (!arr || !arr.length) return true;
+  const s = String(val).toLowerCase().trim();
+  return arr.some(x => String(x).toLowerCase().trim() === s);
+}
+function isSelectedArr(arr, val) {
+  if (!arr || !arr.length) return false;
+  const s = String(val).toLowerCase().trim();
+  return arr.some(x => String(x).toLowerCase().trim() === s);
+}
+
 let D = null;
 let basis = 'custo';
 
@@ -805,27 +842,13 @@ let filterDiaEspec = 'todos';
 
 let geralProdExpanded = false; 
 
-/* FILTROS DA CARTEIRA */
+/* FILTROS DA CARTEIRA (MÚLTIPLOS) */
 let dateReservaFilter = []; 
 let resFilter = 'todos';
 let sepFilter = [];
 let targetDestFilter = [];
 let deptFilter = [];
-let statusFilter = ['pendente'];
-
-/* HELPERS DE MULTI-SELEÇÃO */
-const normKey = v => String(v == null ? '' : v).trim().toLowerCase();
-const asArr = v => Array.isArray(v) ? v : (v === undefined || v === null || v === '' || normKey(v) === 'todos' ? [] : [String(v)]);
-const hasVal = (arr, v) => { const list = asArr(arr); return list.length > 0 && list.some(x => normKey(x) === normKey(v)); };
-const matchArr = (arr, v) => { const list = asArr(arr); return !list.length || list.some(x => normKey(x) === normKey(v)); };
-function toggleArr(arr, v) {
-  const list = asArr(arr).slice();
-  const s = String(v);
-  const idx = list.findIndex(x => normKey(x) === normKey(s));
-  if (idx >= 0) list.splice(idx, 1);
-  else list.push(s);
-  return list;
-} 
+let statusFilter = 'pendente'; 
 let destExpanded = false;
 let prodExpanded = false; 
 let destSearch = '';
@@ -1124,14 +1147,14 @@ function attachTooltipEvents() {
   });
 }
 
-function donut(items,center,sub, filterAttr = 'data-filter-local', activeValue = []){
+function donut(items,center,sub, filterAttr = 'data-filter-local', activeArr = []){
   if (!items || !items.length) return '<p style="color:var(--mute)">Sem dados para gráfico</p>';
   const tot = items.reduce((s,i)=>s+i.v,0)||1, R=75, C=2*Math.PI*R; let off=0, segs='';
   items.forEach(i=>{ 
     const L=C*i.v/tot; 
     const topProd = i.topProd ? [{prod: i.topProd, sub: `${brlShort(i.v)} (${fmtP(i.v/tot*100)})`}] : [];
     const tooltipData = JSON.stringify(topProd).replace(/"/g, '&quot;');
-    const isSelected = hasVal(activeValue, i.rawKey);
+    const isSelected = isSelectedArr(activeArr, i.rawKey);
     
     if(L>0) {
       segs+=`<circle class="${isSelected ? 'active-slice' : ''}" r="${R}" cx="100" cy="100" fill="none" stroke="${i.c}" stroke-width="26" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)" ${filterAttr}="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"></circle>`; 
@@ -1142,13 +1165,13 @@ function donut(items,center,sub, filterAttr = 'data-filter-local', activeValue =
     <text x="100" y="${sub?98:106}" text-anchor="middle" font-size="${String(center).length>5?24:30}" font-weight="700">${center}</text>${sub?`<text x="100" y="122" text-anchor="middle" font-size="13" style="fill:var(--mute)">${sub}</text>`:''}</svg>`;
 }
 
-function legend(items, filterAttr = 'data-filter-local', activeValue = []){
+function legend(items, filterAttr = 'data-filter-local', activeArr = []){
   if (!items || !items.length) return '';
   const tot = items.reduce((s,i)=>s+i.v,0)||1;
   return `<div class="legend">${items.map(i=> {
     const topProd = i.topProd ? [{prod: i.topProd, sub: `${brlShort(i.v)} (${fmtP(i.v/tot*100)})`}] : [];
     const tooltipData = JSON.stringify(topProd).replace(/"/g, '&quot;');
-    const isSelected = hasVal(activeValue, i.rawKey);
+    const isSelected = isSelectedArr(activeArr, i.rawKey);
     return `<div class="${isSelected ? 'active-item' : ''}" ${filterAttr}="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"><i style="background:${i.c}"></i><span>${esc(i.n)}</span><span>${fmtV(i.v)} · ${fmtP(i.v/tot*100)}</span></div>`;
   }).join('')}</div>`;
 }
@@ -1286,21 +1309,21 @@ function secGeral(){
   const R_all = D.rows;
 
   let baseR = R_all;
-  if (filterArea.length) {
-    baseR = baseR.filter(r => matchArr(filterArea, r.area));
+  if (filterArea.length > 0) {
+    baseR = baseR.filter(r => hasArr(filterArea, r.area));
   }
 
   const ruasDisponiveis = Array.from(new Set(baseR.map(r => r.rua).filter(r => r > 0))).sort((a,b) => a - b);
   
   let R = baseR;
-  if (filterLocalEst.length) {
-    R = R.filter(r => matchArr(filterLocalEst, r.est));
+  if (filterLocalEst.length > 0) {
+    R = R.filter(r => hasArr(filterLocalEst, r.est));
   }
-  if (filterStatusEst.length) {
-    R = R.filter(r => matchArr(filterStatusEst, r.status));
+  if (filterStatusEst.length > 0) {
+    R = R.filter(r => hasArr(filterStatusEst, r.status));
   }
-  if (filterRua.length) {
-    R = R.filter(r => matchArr(filterRua, r.rua));
+  if (filterRua.length > 0) {
+    R = R.filter(r => hasArr(filterRua, r.rua));
   }
 
   const by = {};
@@ -1409,10 +1432,6 @@ function secGeral(){
   } else if (estoqueProdSortOrder === 'qtd') {
     listEstoqueProds.sort((a,b) => b.qtd - a.qtd);
   }
-
-  const hasActiveFilters = filterLocalEst.length > 0 || filterStatusEst.length > 0 || filterArea.length > 0 || filterRua.length > 0;
-  const areaLabelStr = filterArea.map(a => a === '1' ? 'Galpão 1' : (a === '7' ? 'Galpão 2' : a)).join(', ');
-  const activeFiltersText = `Filtros Ativos: ${filterArea.length ? `Área = ${areaLabelStr}` : ''} ${filterRua.length ? `| Rua = ${filterRua.join(', ')}` : ''} ${filterLocalEst.length ? `| Local = ${filterLocalEst.map(nice).join(', ')}` : ''} ${filterStatusEst.length ? `| Status = ${filterStatusEst.join(', ')}` : ''}`;
 
   const acumRawData = D.acum || [];
   let listaDiasUnicos = Array.from(new Set(acumRawData.map(a => a.data))).filter(d => d && d !== '-');
@@ -1579,11 +1598,6 @@ function secGeral(){
 
   $('#s-geral').innerHTML = `<h2>Visão geral</h2><p class="sub">Estoque endereçado nos locais de estoque, saúde da operação e acompanhamento de fechamento.</p>
 
-  <div class="active-filters-bar ${hasActiveFilters ? 'visible' : ''}">
-    <span>🔍 <b>${esc(activeFiltersText)}</b></span>
-    <button onclick="clearAllFilters()">✕ Limpar Filtros</button>
-  </div>
-
   <div class="grid kpis">
     ${kpi('Custo bruto total',brlShort(totC),brl(totC),'hl')}
     ${kpi('Saúde Shelf Life', `<span class="good">${fmtP(pctShelfOk)}</span>`, 'Crítico: ' + fmtV(shelfCritVal) + ' (Clique p/ ver)', '', 'Detalhamento Shelf Life', [{prod: 'Clique para navegar', sub: 'Redireciona para a aba detalhada de Shelf Life'}], 'var(--ok)', 'shelf')}
@@ -1612,7 +1626,7 @@ function secGeral(){
           </thead>
           <tbody>
             ${stRows.map(([n,o])=> {
-              const isSelectedSt = hasVal(filterStatusEst, n);
+              const isSelectedSt = isSelectedArr(filterStatusEst, n);
 
               return `<tr class="clickable-row ${isSelectedSt ? 'active-row' : ''}" data-filter-status="${esc(n)}">
                 <td><b>${esc(n)}</b></td>
@@ -1640,13 +1654,13 @@ function secGeral(){
     <div class="collapsible-content ${geralProdExpanded ? 'open' : ''}" id="boxGeralProdutos">
       <div class="prod-controls" style="margin-bottom: 12px;">
         <select id="selectAreaFilter" style="font-weight:700;color:var(--ok)">
-          <option value="todos" ${!filterArea.length?'selected':''}>-- Todos os Galpões --</option>
+          <option value="todos" ${filterArea.length===0?'selected':''}>-- Todos os Galpões --</option>
           <option value="1" ${filterArea.length===1 && filterArea[0]==='1'?'selected':''}>Galpão 1 (Área 1)</option>
           <option value="7" ${filterArea.length===1 && filterArea[0]==='7'?'selected':''}>Galpão 2 (Área 7)</option>
         </select>
 
         <select id="selectRuaFilter" style="font-weight:700;color:var(--accent)">
-          <option value="todos" ${!filterRua.length?'selected':''}>-- Todas as Ruas --</option>
+          <option value="todos" ${filterRua.length===0?'selected':''}>-- Todas as Ruas --</option>
           ${ruasDisponiveis.map(r => `<option value="${r}" ${filterRua.length===1 && filterRua[0]===String(r)?'selected':''}>Rua ${r}</option>`).join('')}
         </select>
 
@@ -1714,7 +1728,7 @@ function secGeral(){
   document.querySelectorAll('[data-filter-local]').forEach(el => {
     el.addEventListener('click', () => {
       const targetLocal = el.getAttribute('data-filter-local');
-      filterLocalEst = toggleArr(filterLocalEst, targetLocal);
+      toggleArr(filterLocalEst, targetLocal);
       secGeral();
     });
   });
@@ -1722,7 +1736,7 @@ function secGeral(){
   document.querySelectorAll('[data-filter-status]').forEach(el => {
     el.addEventListener('click', () => {
       const targetStatus = el.getAttribute('data-filter-status');
-      filterStatusEst = toggleArr(filterStatusEst, targetStatus);
+      toggleArr(filterStatusEst, targetStatus);
       secGeral();
     });
   });
@@ -1756,8 +1770,8 @@ function secGeral(){
   if (btnCaraCracha) {
     btnCaraCracha.addEventListener('click', () => {
       let subTitle = [];
-      if (filterArea.length) subTitle.push(filterArea.map(a => a === '1' ? 'Galpão 1' : 'Galpão 2').join('+'));
-      if (filterRua.length) subTitle.push(`Rua ${filterRua.join(',')}`);
+      if (filterArea.length) subTitle.push(filterArea.map(a => a === '1' ? 'Galpão 1' : 'Galpão 2').join(', '));
+      if (filterRua.length) subTitle.push(`Rua ${filterRua.join(', ')}`);
       const tituloRel = subTitle.length ? `Auditoria ${subTitle.join(' - ')}` : 'Auditoria Geral de Endereços';
       printChecklist(listEstoqueProds, tituloRel);
     });
@@ -1826,15 +1840,18 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     return true;
   });
 
-  const activeFaixa = (tabType === 'shelf') ? filterShelfFaixa : filterAgingFaixa;
+  const activeFaixaArr = (tabType === 'shelf') ? filterShelfFaixa : filterAgingFaixa;
   let rev = revAll;
 
-  if (activeFaixa.length) {
-    rev = revAll.filter(r => activeFaixa.some(f => {
-      const act = normKey(f);
-      if (['ok', 'warn', 'crit', 'none'].includes(act)) return (cmap[r[field]] || 'none') === act;
-      return normKey(r[field]) === act;
-    }));
+  if (activeFaixaArr.length > 0) {
+    rev = revAll.filter(r => {
+      const fVal = r[field].toLowerCase().trim();
+      const clsVal = (cmap[r[field]] || 'none').toLowerCase();
+      return activeFaixaArr.some(sel => {
+        const s = sel.toLowerCase().trim();
+        return ['ok', 'warn', 'crit', 'none'].includes(s) ? clsVal === s : fVal === s;
+      });
+    });
   }
 
   const g = {}; order.forEach(f=>g[f]={custo:0,qtd:0,n:0});
@@ -1856,7 +1873,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   
   const pctOk = cls.ok/comVal*100, totB = Object.values(g).reduce((s,o)=>s+(basis==='custo'?o.custo:o.qtd),0)||1;
   
-  let top = activeFaixa.length ? rev : rev.filter(r => topCls.includes(r[field]));
+  let top = (activeFaixaArr.length > 0) ? rev : rev.filter(r => topCls.includes(r[field]));
 
   const currentSearch = tabType === 'shelf' ? shelfSearch : agingSearch;
   const currentSort = tabType === 'shelf' ? shelfSortOrder : agingSortOrder;
@@ -1903,15 +1920,10 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
   const btnPdfId = tabType === 'shelf' ? 'btnExportShelfPdf' : 'btnExportAgingPdf';
 
   const critV = cls.crit, critN = revAll.filter(r=>cmap[r[field]]==='crit').length;
-  const hasActiveFaixa = activeFaixa.length > 0;
-  const activeLabel = activeFaixa.map(f => CLS[f] ? CLS[f].n : f).join(', ');
+  const hasActiveFaixa = activeFaixaArr.length > 0;
+  const activeLabel = activeFaixaArr.map(k => CLS[k] ? CLS[k].n : k).join(', ');
 
   $(id).innerHTML = `<h2>${title}</h2><p class="sub">${sub}</p>
-
-  <div class="active-filters-bar ${hasActiveFaixa ? 'visible' : ''}">
-    <span>🔍 <b>Filtro Ativo na Faixa: ${esc(activeLabel)}</b></span>
-    <button onclick="clearAllFilters()">✕ Limpar Filtro de Faixa</button>
-  </div>
 
   <div class="grid kpis">
     ${kpi('Estoque revenda',fmtV(rev.reduce((s,r)=>s+val(r),0)),fmtN.format(rev.length)+' linhas de palete')}
@@ -1920,14 +1932,14 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     ${kpi('Crítico',`<span class="critc">${fmtP(cls.crit/comVal*100)}</span>`,fmtV(critV)+' · '+fmtN.format(critN)+' linhas', '', 'Top 3 Críticos (Maior Valor)', topCriticos, 'var(--crit)')}
   </div>
   <div class="grid two" style="margin-top:16px">
-    <div class="card"><h3>Saúde do estoque revenda</h3><div class="donutwrap">${donut(items,fmtP(pctOk,0),'saudável', 'data-filter-faixa', activeFaixa)}${legend(items, 'data-filter-faixa', activeFaixa)}</div></div>
+    <div class="card"><h3>Saúde do estoque revenda</h3><div class="donutwrap">${donut(items,fmtP(pctOk,0),'saudável', 'data-filter-faixa', activeFaixaArr)}${legend(items, 'data-filter-faixa', activeFaixaArr)}</div></div>
     <div class="card"><h3>Por faixa (Clique para filtrar)</h3><div class="tw"><table>
       <tr><th>Faixa</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th>Participação</th></tr>
       ${order.map(f=>{
         const o=g[f],c=CLS[cmap[f]||'none'].c,v=basis==='custo'?o.custo:o.qtd;
         const topF = revAll.filter(r => r[field] === f).sort((a,b) => b.custo - a.custo)[0];
         const topData = topF ? [{prod: topF.prod, sub: `Maior Valor: ${brl(topF.custo)}`}] : [];
-        const isSelectedFaixa = hasVal(activeFaixa, f);
+        const isSelectedFaixa = isSelectedArr(activeFaixaArr, f);
 
         return `<tr class="clickable-row ${isSelectedFaixa ? 'active-row' : ''}" data-filter-faixa="${esc(f)}" data-tooltip-title="${esc(f)}" data-tooltip-color="${c}" data-tooltip-items="${JSON.stringify(topData).replace(/"/g, '&quot;')}">
           <td><span class="dot" style="background:${c}"></span><b>${esc(f)}</b></td>
@@ -1991,10 +2003,10 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     el.addEventListener('click', () => {
       const targetFaixa = el.getAttribute('data-filter-faixa');
       if (tabType === 'shelf') {
-        filterShelfFaixa = toggleArr(filterShelfFaixa, targetFaixa);
+        toggleArr(filterShelfFaixa, targetFaixa);
         secShelf();
       } else {
-        filterAgingFaixa = toggleArr(filterAgingFaixa, targetFaixa);
+        toggleArr(filterAgingFaixa, targetFaixa);
         secAging();
       }
     });
@@ -2108,6 +2120,9 @@ function secOcup(){
   const dn = donut(donutItems, fmtP(O.pct, 2), 'ocupação CD'); 
   basis = prev;
 
+  const showG1 = hasArr(filterOcupGalpao, 'g1');
+  const showG2 = hasArr(filterOcupGalpao, 'g2');
+
   $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos processados da chave ocupacao.</p>
   <div class="occ">
     ${box('g1','Galpão 1',O.g1)}
@@ -2126,8 +2141,8 @@ function secOcup(){
       <div class="b big"><small>% Ocupação total CD</small><strong>${fmtP(O.pct,2)}</strong></div>
     </div>
   </div>
-  ${(!filterOcupGalpao.length || hasVal(filterOcupGalpao, 'g1')) ? `<div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'#4285f4')}</div>` : ''}
-  ${(!filterOcupGalpao.length || hasVal(filterOcupGalpao, 'g2')) ? `<div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'#3a5db0')}</div>` : ''}
+  ${showG1 ? `<div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'#4285f4')}</div>` : ''}
+  ${showG2 ? `<div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'#3a5db0')}</div>` : ''}
   <p class="foot">Todas as ruas ativas são exibidas nos gráficos e contam nos totais.</p>`;
 
   attachTooltipEvents();
@@ -2140,30 +2155,30 @@ function secCarteira(){
     return;
   }
 
-  const datasReservaDisponiveis = Array.from(new Set(C.map(r => r.gerReserva))).filter(Boolean).sort((a,b) => a.localeCompare(b));
-  const tiposSepDisponiveis = Array.from(new Set(C.map(r => r.tipoSep))).filter(Boolean);
-  const destinosDisponiveis = Array.from(new Set(C.map(r => r.dest))).filter(Boolean).sort((a,b) => String(a).localeCompare(String(b), undefined, {numeric: true}));
-  const deptsDisponiveis = Array.from(new Set(C.map(r => r.dept))).filter(Boolean).sort((a,b) => String(a).localeCompare(String(b)));
-
   let filteredC = C;
 
-  if (dateReservaFilter.length) {
-    filteredC = filteredC.filter(r => matchArr(dateReservaFilter, r.gerReserva));
+  if (dateReservaFilter.length > 0) {
+    filteredC = filteredC.filter(r => hasArr(dateReservaFilter, r.gerReserva));
   }
-  if (sepFilter.length) {
-    filteredC = filteredC.filter(r => matchArr(sepFilter, r.tipoSep));
+  if (sepFilter.length > 0) {
+    filteredC = filteredC.filter(r => hasArr(sepFilter, r.tipoSep));
   }
-  if (targetDestFilter.length) {
-    filteredC = filteredC.filter(r => matchArr(targetDestFilter, r.dest));
+  if (targetDestFilter.length > 0) {
+    filteredC = filteredC.filter(r => hasArr(targetDestFilter, r.dest));
   }
-  if (deptFilter.length) {
-    filteredC = filteredC.filter(r => matchArr(deptFilter, r.dept));
+  if (deptFilter.length > 0) {
+    filteredC = filteredC.filter(r => hasArr(deptFilter, r.dept));
   }
 
   const totPedida = filteredC.reduce((s,r) => s + r.qtdPedida, 0);
   const totSeparada = filteredC.reduce((s,r) => s + r.qtdSeparada, 0);
   const totValor = filteredC.reduce((s,r) => s + r.valorTotal, 0);
   const pctAtendimento = totPedida ? (totSeparada / totPedida) * 100 : 0;
+
+  // Contagem de linhas/paletes da separação Full dentro dos filtros ativos
+  const fullLinhasAll = filteredC.filter(r => r.tipoSep.toLowerCase().trim() === 'full');
+  const fullLinhasPend = fullLinhasAll.filter(r => (r.qtdPedida - r.qtdSeparada) > 0 && r.tipoSep !== 'Separado').length;
+  const fullLinhasSep = fullLinhasAll.length - fullLinhasPend;
 
   const datasPendentesSet = new Set();
   filteredC.forEach(r => {
@@ -2189,10 +2204,11 @@ function secCarteira(){
   const bySep = {};
   filteredC.forEach(r => {
     const k = r.tipoSep || 'Não informado';
-    bySep[k] = bySep[k] || {pedida:0, separada:0, valor:0};
+    bySep[k] = bySep[k] || {pedida:0, separada:0, valor:0, linhas:0};
     bySep[k].pedida += r.qtdPedida;
     bySep[k].separada += r.qtdSeparada;
     bySep[k].valor += r.valorTotal;
+    bySep[k].linhas += 1;
   });
 
   const prodDer = bySep["Produção Derrubada"] || {pedida:0, separada:0};
@@ -2222,9 +2238,9 @@ function secCarteira(){
   const fullPctSep = fullTotQtd ? (fullSep.separada / fullTotQtd) * 100 : 0;
 
   const baseDept = C.filter(r => {
-    if (!matchArr(dateReservaFilter, r.gerReserva)) return false;
-    if (!matchArr(sepFilter, r.tipoSep)) return false;
-    if (!matchArr(targetDestFilter, r.dest)) return false;
+    if (dateReservaFilter.length > 0 && !hasArr(dateReservaFilter, r.gerReserva)) return false;
+    if (sepFilter.length > 0 && !hasArr(sepFilter, r.tipoSep)) return false;
+    if (targetDestFilter.length > 0 && !hasArr(targetDestFilter, r.dest)) return false;
     return true;
   });
 
@@ -2286,13 +2302,8 @@ function secCarteira(){
     const pendQtd = r.qtdPedida - r.qtdSeparada;
     const isSeparado = r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida === r.qtdSeparada);
     
-    if (statusFilter.length) {
-      const wantPend = hasVal(statusFilter, 'pendente');
-      const wantSep = hasVal(statusFilter, 'separado');
-      if (wantPend && !wantSep && pendQtd <= 0) return;
-      if (wantSep && !wantPend && !isSeparado) return;
-      if (!wantPend && !wantSep) return;
-    }
+    if (statusFilter === 'pendente' && pendQtd <= 0) return;
+    if (statusFilter === 'separado' && !isSeparado) return;
 
     const key = (r.codProd && r.codProd !== '-') ? r.codProd : r.prod;
     if (!prodAggMap[key]) {
@@ -2301,6 +2312,7 @@ function secCarteira(){
         gtin: r.gtin || '-',
         prod: r.prod || 'Sem Descrição',
         tiposSet: new Set(),
+        linhas: 0,
         qtdPedida: 0,
         qtdSeparada: 0,
         qtdPend: 0,
@@ -2308,6 +2320,7 @@ function secCarteira(){
       };
     }
 
+    prodAggMap[key].linhas += 1;
     prodAggMap[key].qtdPedida += r.qtdPedida;
     prodAggMap[key].qtdSeparada += r.qtdSeparada;
     prodAggMap[key].qtdPend += Math.max(0, pendQtd);
@@ -2339,57 +2352,23 @@ function secCarteira(){
     prodsList.sort((a,b) => b.qtdPend - a.qtdPend);
   } else if (prodSortOrder === 'pedida') {
     prodsList.sort((a,b) => b.qtdPedida - a.qtdPedida);
+  } else if (prodSortOrder === 'linhas') {
+    prodsList.sort((a,b) => b.linhas - a.linhas);
   }
 
-  const statusTitleText = (statusFilter.length === 1 && hasVal(statusFilter, 'pendente'))
+  const statusTitleText = statusFilter === 'pendente' 
     ? 'PRODUTOS PENDENTES DE SEPARAÇÃO' 
-    : ((statusFilter.length === 1 && hasVal(statusFilter, 'separado')) ? 'PRODUTOS SEPARADOS' : 'TODOS OS PRODUTOS DA CARTEIRA');
-
-  const hasActiveCartFilter = dateReservaFilter.length > 0 || sepFilter.length > 0 || targetDestFilter.length > 0 || deptFilter.length > 0;
+    : (statusFilter === 'separado' ? 'PRODUTOS SEPARADOS' : 'TODOS OS PRODUTOS DA CARTEIRA');
 
   $('#s-carteira').innerHTML = `
   <h2>Carteira de Pedido</h2>
   <p class="sub">Acompanhamento e status das reservas e solicitações do CD.</p>
 
-  <div class="active-filters-bar ${hasActiveCartFilter ? 'visible' : ''}">
-    <span>🔍 <b>Filtro Ativo: ${dateReservaFilter !== 'todos' ? `Data Reserva = ${dateReservaFilter}` : ''} ${sepFilter !== 'todos' ? `| Tipo = ${sepFilter}` : ''} ${targetDestFilter !== 'todos' ? `| Destino = ${targetDestFilter}` : ''} ${deptFilter !== 'todos' ? `| Depto = ${deptFilter}` : ''}</b></span>
-    <button onclick="clearAllFilters()">✕ Limpar Filtros da Carteira</button>
-  </div>
-  
-  <div class="filter-bar">
-    <label>📅 Data de Geração:
-      <select id="dateReservaFilterSelect" style="font-weight:700;color:var(--accent)">
-        <option value="todos" ${dateReservaFilter==='todos'?'selected':''}>-- Todas as Datas --</option>
-        ${datasReservaDisponiveis.map(d => `<option value="${esc(d)}" ${dateReservaFilter===d?'selected':''}>Data ${esc(d)}</option>`).join('')}
-      </select>
-    </label>
-
-    <label>⚡ Tipo de Separação:
-      <select id="sepFilterSelect">
-        <option value="todos" ${sepFilter==='todos'?'selected':''}>-- Todos os Tipos (${C.length} itens) --</option>
-        ${tiposSepDisponiveis.map(t => `<option value="${esc(t)}" ${sepFilter===t?'selected':''}>${esc(t)}</option>`).join('')}
-      </select>
-    </label>
-
-    <label>🏢 Destino / Loja:
-      <select id="targetDestFilterSelect" style="font-weight:700;">
-        <option value="todos" ${targetDestFilter==='todos'?'selected':''}>-- Todos os Destinos --</option>
-        ${destinosDisponiveis.map(d => `<option value="${esc(d)}" ${targetDestFilter===String(d)?'selected':''}>${esc(d)}</option>`).join('')}
-      </select>
-    </label>
-
-    <label>🏷️ Departamento CD:
-      <select id="deptFilterSelect" style="font-weight:700;color:var(--ok)">
-        <option value="todos" ${deptFilter==='todos'?'selected':''}>-- Todos os Departamentos --</option>
-        ${deptsDisponiveis.map(dp => `<option value="${esc(dp)}" ${deptFilter===dp?'selected':''}>${esc(dp)}</option>`).join('')}
-      </select>
-    </label>
-  </div>
-
   <div class="grid kpis">
     ${kpi('Total Pedido', fmtN.format(totPedida), brlShort(totValor))}
     ${kpi('Total Separado', fmtN.format(totSeparada), fmtP(pctAtendimento) + ' atendido')}
     ${kpi('Pendente de Separação', fmtN.format(totPedida - totSeparada), brlShort(filteredC.reduce((s,r) => s + (r.tipoSep !== 'Separado' ? r.valorTotal : 0), 0)), '', 'Maiores Pedidos Pendentes', topPedentesCrit, 'var(--warn)')}
+    ${kpi('Linhas / Paletes Full', `<span style="color:#7cb3ff">${fmtN.format(fullLinhasAll.length)}</span>`, `Pend: ${fmtN.format(fullLinhasPend)} | Sep: ${fmtN.format(fullLinhasSep)}`, '', 'Separação Full (Paletes Fechados)', [{prod: `Total de Linhas Full: ${fmtN.format(fullLinhasAll.length)}`, sub: `Pendentes: ${fmtN.format(fullLinhasPend)} paletes | Separados: ${fmtN.format(fullLinhasSep)} paletes`}], '#7cb3ff')}
     ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso, 'Datas em Atraso Crítico', Array.from(datasPendentesSet).map(d => ({prod: `Data Reserva: ${d}`, sub: 'Pendente de liberação'})), isCritico ? 'var(--crit)' : 'var(--warn)')}
   </div>
 
@@ -2432,7 +2411,7 @@ function secCarteira(){
 
         <div class="sep-item" style="margin-top: 8px;" data-filter-carteira-sep="Full">
           <div class="sep-header">
-            <span>Full (Total: ${fmtN.format(fullTotQtd)})</span>
+            <span>Full (Total: ${fmtN.format(fullTotQtd)} · ${fmtN.format(fullLinhasAll.length)} linhas)</span>
             <span>Sep: ${fmtP(fullPctSep)} | Pend: ${fmtP(fullPctPend)}</span>
           </div>
           <div class="sep-bar-bg">
@@ -2467,13 +2446,14 @@ function secCarteira(){
     <div class="collapsible-content ${prodExpanded ? 'open' : ''}" id="boxProdutos">
       <div class="prod-controls">
         <select id="selectStatusFilter" style="font-weight:700;color:var(--accent)">
-          <option value="pendente" ${statusFilter.length===1 && hasVal(statusFilter,'pendente')?'selected':''}>Status: Apenas Pendentes</option>
-          <option value="separado" ${statusFilter.length===1 && hasVal(statusFilter,'separado')?'selected':''}>Status: Apenas Separados</option>
-          <option value="todos" ${!statusFilter.length || statusFilter.length>=2?'selected':''}>Status: Todos os Status</option>
+          <option value="pendente" ${statusFilter==='pendente'?'selected':''}>Status: Apenas Pendentes</option>
+          <option value="separado" ${statusFilter==='separado'?'selected':''}>Status: Apenas Separados</option>
+          <option value="todos" ${statusFilter==='todos'?'selected':''}>Status: Todos os Status</option>
         </select>
         <input type="text" id="inputProdSearch" placeholder="🔍 Buscar código / GTIN / produto..." value="${esc(prodSearch)}" style="width:240px" />
         <select id="selectProdSort">
           <option value="qtd" ${prodSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Pendente</option>
+          <option value="linhas" ${prodSortOrder==='linhas'?'selected':''}>Ordenar por Maior Qtd Linhas / Paletes</option>
           <option value="pedida" ${prodSortOrder==='pedida'?'selected':''}>Ordenar por Maior Qtd Pedida Total</option>
           <option value="valor" ${prodSortOrder==='valor'?'selected':''}>Ordenar por Maior Valor (R$)</option>
         </select>
@@ -2486,6 +2466,7 @@ function secCarteira(){
               <th>GTIN (EAN)</th>
               <th>Produto</th>
               <th>Tipo Separação</th>
+              <th class="r">Linhas (Paletes)</th>
               <th class="r">Qtd Pedida Total</th>
               <th class="r">Qtd Separada</th>
               <th class="r">Qtd Pendente Total</th>
@@ -2499,12 +2480,13 @@ function secCarteira(){
                 <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
                 <td><b>${esc(p.prod)}</b></td>
                 <td><span class="dot" style="background:var(--accent)"></span>${esc(p.tipoSep)}</td>
+                <td class="r"><span style="background:rgba(66,133,244,0.18);border:1px solid rgba(66,133,244,0.45);color:#7cb3ff;padding:2px 8px;border-radius:6px;font-weight:800">${fmtN.format(p.linhas)}</span></td>
                 <td class="r" style="font-weight:700">${fmtN.format(p.qtdPedida)}</td>
                 <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(p.qtdSeparada)}</td>
                 <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'};font-weight:700;font-size:15px">${fmtN.format(p.qtdPend)}</td>
                 <td class="r" style="font-weight:700;color:var(--text)">${brl(p.valorPend)}</td>
               </tr>
-            `).join('') : '<tr><td colspan="8">Nenhum produto encontrado com os filtros applied.</td></tr>'}
+            `).join('') : '<tr><td colspan="9">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -2526,9 +2508,9 @@ function secCarteira(){
         </thead>
         <tbody>
           ${resRows.map(([dt, o]) => {
-            const isSelectedDt = hasVal(dateReservaFilter, dt);
+            const isSelectedDt = isSelectedArr(dateReservaFilter, dt);
             return `
-            <tr class="clickable-row ${isSelectedDt ? 'active-row' : ''}" onclick="dateReservaFilter=toggleArr(dateReservaFilter,'${esc(dt)}'); secCarteira();">
+            <tr class="clickable-row ${isSelectedDt ? 'active-row' : ''}" data-filter-res-dt="${esc(dt)}">
               <td><b>${esc(dt)}</b></td>
               <td class="r">${fmtN.format(o.qtd)}</td>
               <td class="r">${fmtN.format(o.qtdSep)}</td>
@@ -2569,14 +2551,16 @@ function secCarteira(){
             </tr>
           </thead>
           <tbody>
-            ${destRows.length ? destRows.map(([k,o]) => `
-              <tr class="clickable-row ${hasVal(targetDestFilter, k) ? 'active-row' : ''}" onclick="targetDestFilter=toggleArr(targetDestFilter,'${esc(k)}'); secCarteira();">
+            ${destRows.length ? destRows.map(([k,o]) => {
+              const isSelDest = isSelectedArr(targetDestFilter, k);
+              return `
+              <tr class="clickable-row ${isSelDest ? 'active-row' : ''}" data-filter-dest-row="${esc(k)}">
                 <td><b>${esc(k)}</b></td>
                 <td class="r">${fmtN.format(o.pedida)}</td>
                 <td class="r" style="color:${o.separada > 0 ? 'var(--ok)' : 'var(--mute)'}">${fmtN.format(o.separada)}</td>
                 <td class="r">${brlShort(o.valor)}</td>
-              </tr>
-            `).join('') : '<tr><td colspan="4">Nenhuma loja encontrada.</td></tr>'}
+              </tr>`;
+            }).join('') : '<tr><td colspan="4">Nenhuma loja encontrada.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -2584,18 +2568,24 @@ function secCarteira(){
   </div>
   `;
 
-  const selectDateRes = $('#dateReservaFilterSelect');
-  if (selectDateRes) {
-    selectDateRes.addEventListener('change', (e) => {
-      dateReservaFilter = e.target.value;
+  document.querySelectorAll('[data-filter-res-dt]').forEach(el => {
+    el.addEventListener('click', () => {
+      toggleArr(dateReservaFilter, el.getAttribute('data-filter-res-dt'));
       secCarteira();
     });
-  }
+  });
+
+  document.querySelectorAll('[data-filter-dest-row]').forEach(el => {
+    el.addEventListener('click', () => {
+      toggleArr(targetDestFilter, el.getAttribute('data-filter-dest-row'));
+      secCarteira();
+    });
+  });
 
   document.querySelectorAll('[data-filter-carteira-sep]').forEach(el => {
     el.addEventListener('click', () => {
       const targetSep = el.getAttribute('data-filter-carteira-sep');
-      sepFilter = toggleArr(sepFilter, targetSep);
+      toggleArr(sepFilter, targetSep);
       secCarteira();
     });
   });
@@ -2603,34 +2593,10 @@ function secCarteira(){
   document.querySelectorAll('[data-filter-dept]').forEach(el => {
     el.addEventListener('click', () => {
       const targetDept = el.getAttribute('data-filter-dept');
-      deptFilter = toggleArr(deptFilter, targetDept);
+      toggleArr(deptFilter, targetDept);
       secCarteira();
     });
   });
-
-  const selectSep = $('#sepFilterSelect');
-  if (selectSep) {
-    selectSep.addEventListener('change', (e) => {
-      sepFilter = e.target.value;
-      secCarteira();
-    });
-  }
-
-  const selectTargetDest = $('#targetDestFilterSelect');
-  if (selectTargetDest) {
-    selectTargetDest.addEventListener('change', (e) => {
-      targetDestFilter = e.target.value;
-      secCarteira();
-    });
-  }
-
-  const selectDept = $('#deptFilterSelect');
-  if (selectDept) {
-    selectDept.addEventListener('change', (e) => {
-      deptFilter = e.target.value;
-      secCarteira();
-    });
-  }
 
   const btnProds = $('#btnToggleProds');
   if (btnProds) {
@@ -2643,7 +2609,7 @@ function secCarteira(){
   const selectStatus = $('#selectStatusFilter');
   if (selectStatus) {
     selectStatus.addEventListener('change', (e) => {
-      statusFilter = e.target.value === 'todos' ? [] : [e.target.value];
+      statusFilter = e.target.value;
       secCarteira();
     });
   }
@@ -2687,7 +2653,6 @@ function secCarteira(){
   attachTooltipEvents();
 }
 
-/* SETOR ADMINISTRATIVO COM SUB-ABAS (NOTAS EM TRÂNSITO x PRÉ-ALERTA) */
 /* ================= SETOR ADMINISTRATIVO ================= */
 let AdminD = null;
 let searchNotas = '';
@@ -2746,15 +2711,14 @@ function admNotasTodas(){ return (AdminD && AdminD.notas_transito) || []; }
 
 function admNotasFiltradas(){
   return admNotasTodas().filter(n => {
-    if (admFiltro.sentido.length && !matchArr(admFiltro.sentido, sentidoNota(n))) return false;
-    if (admFiltro.mes.length && !matchArr(admFiltro.mes, nfMes(n.dataEmissao))) return false;
-    if (admFiltro.faixa.length && !matchArr(admFiltro.faixa, faixaDias(n.dias))) return false;
-    if (admFiltro.loja.length && !admFiltro.loja.some(c => [sCod(n.origem), sCod(n.destino)].includes(c))) return false;
+    if (admFiltro.sentido.length > 0 && !hasArr(admFiltro.sentido, sentidoNota(n))) return false;
+    if (admFiltro.mes.length > 0 && !hasArr(admFiltro.mes, nfMes(n.dataEmissao))) return false;
+    if (admFiltro.faixa.length > 0 && !hasArr(admFiltro.faixa, faixaDias(n.dias))) return false;
+    if (admFiltro.loja.length > 0 && !admFiltro.loja.some(l => [sCod(n.origem), sCod(n.destino)].includes(l))) return false;
     return true;
   });
 }
 
-/* O valorNota vem repetido em cada item da mesma NF: o total correto soma 1 vez por NF */
 function agruparNFs(linhas){
   const m = new Map();
   linhas.forEach(n => {
@@ -2817,10 +2781,9 @@ function secTransito(){
   ['saida','entrada','outros'].forEach(k => {
     const ls = linhas.filter(n => sentidoNota(n) === k);
     const g = agruparNFs(ls);
-    porSent[k] = {k, nfs:g.length, skus:new Set(ls.map(n => n.codProd)).size, cx:ls.reduce((s,n) => s + (n.qtd || 0), 0), valor:g.reduce((s,x) => s + x.valor, 0), periodo:periodoTexto(ls)};
+    porSent[k] = {k, nfs:g.length, skus:new Set(ls.map(n => n.codProd)).size, cx:ls.reduce((s,n) => s + (n.qtd || 0), 0), valor:g.reduce((s,x) => x + x.valor, 0), periodo:periodoTexto(ls)};
   });
 
-  // Busca (afeta só a tabela detalhada, não os KPIs)
   const q = searchNotas.trim().toLowerCase();
   const linhasBusca = q ? linhas.filter(n =>
     String(n.nf || '').toLowerCase().includes(q) ||
@@ -2990,9 +2953,6 @@ const toBR = v => {
 };
 const stTxt = v => String(v == null ? '' : v).trim().toUpperCase();
 
-/* Layout atual: carimboDataHora, diasSemRetorno, loja, pedido, dataEmissao, nf, codProd, prod, qtd, um,
-   ocorrencia (SOBRA/FALTA), valorUnitario, valorTotal, origem, statusCd, statusLoja, observacao.
-   Mantém compatibilidade com os layouts antigos do JSON. */
 function normPre(p){
   const novo = ('ocorrencia' in p) || ('carimboDataHora' in p);
   const antigoDesloc = !novo && isMoney(p.statusCd) && isMoney(p.statusLoja) && !(+p.valorTotal);
@@ -3042,12 +3002,12 @@ function preTodas(){ return ((AdminD && AdminD.pre_alerta) || []).map(normPre); 
 function preFiltradas(){
   const f = preFiltro;
   return preTodas().filter(r =>
-    matchArr(f.loja, r.loja) &&
-    matchArr(f.situacao, r.situacao) &&
-    matchArr(f.tipo, r.tipo) &&
-    matchArr(f.mes, r.mes) &&
-    matchArr(f.stCd, r.statusCd) &&
-    matchArr(f.stLoja, r.statusLoja)
+    hasArr(f.loja, r.loja) &&
+    hasArr(f.situacao, r.situacao) &&
+    hasArr(f.tipo, r.tipo) &&
+    hasArr(f.mes, r.mes) &&
+    hasArr(f.stCd, r.statusCd) &&
+    hasArr(f.stLoja, r.statusLoja)
   );
 }
 
@@ -3134,7 +3094,7 @@ function secPreAlerta(){
             <thead><tr><th>Data</th><th class="r">Total R$</th><th class="r">Qtd Loja</th></tr></thead>
             <tbody>
               ${porMes.map(([k,o]) => `
-                <tr class="clickable-row ${hasVal(preFiltro.mes, k) ? 'active-row' : ''}" data-pre-mes="${esc(k)}">
+                <tr class="clickable-row ${isSelectedArr(preFiltro.mes, k) ? 'active-row' : ''}" data-pre-mes="${esc(k)}">
                   <td><b>${esc(mesLabel(k))}</b></td><td class="r" style="font-weight:700">${brl(o.valor)}</td><td class="r">${fmtN.format(o.lojas.size)}</td>
                 </tr>`).join('') || '<tr><td colspan="3">Sem ocorrências com os filtros aplicados.</td></tr>'}
               <tr class="tot"><td><b>Total Geral</b></td><td class="r" style="color:var(--accent)">${brl(tot)}</td><td class="r">${fmtN.format(lojasSet.size)}</td></tr>
@@ -3150,7 +3110,7 @@ function secPreAlerta(){
             <thead><tr><th>Status Ocorrência (CD)</th><th class="r">Ocorr.</th><th class="r">Valor Total R$</th></tr></thead>
             <tbody>
               ${porSt.map(([k,o]) => `
-                <tr class="clickable-row ${hasVal(preFiltro.stCd, k) ? 'active-row' : ''}" data-pre-st="${esc(k)}">
+                <tr class="clickable-row ${isSelectedArr(preFiltro.stCd, k) ? 'active-row' : ''}" data-pre-st="${esc(k)}">
                   <td><b style="color:${stCor(k)}">${esc(k)}</b></td><td class="r">${fmtN.format(o.n)}</td><td class="r" style="color:${stCor(k)};font-weight:700">${brl(o.valor)}</td>
                 </tr>`).join('') || '<tr><td colspan="3">Sem ocorrências com os filtros aplicados.</td></tr>'}
               <tr class="tot"><td><b>Total Geral Auditado</b></td><td class="r">${fmtN.format(rows.length)}</td><td class="r" style="color:var(--accent)">${brl(tot)}</td></tr>
@@ -3168,7 +3128,7 @@ function secPreAlerta(){
             <thead><tr><th>Loja</th><th class="r">Ocorr.</th><th class="r">Unid.</th><th class="r">Total R$</th></tr></thead>
             <tbody>
               ${porLoja.map(([k,o]) => `
-                <tr class="clickable-row ${hasVal(preFiltro.loja, k) ? 'active-row' : ''}" data-pre-loja="${esc(k)}">
+                <tr class="clickable-row ${isSelectedArr(preFiltro.loja, k) ? 'active-row' : ''}" data-pre-loja="${esc(k)}">
                   <td><b>${esc(k)}</b></td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r" style="font-weight:700">${brl(o.valor)}</td>
                 </tr>`).join('') || '<tr><td colspan="4">Sem ocorrências com os filtros aplicados.</td></tr>'}
               <tr class="tot"><td><b>Total Geral</b></td><td class="r">${fmtN.format(rows.length)}</td><td class="r">${fmtN.format(unid)}</td><td class="r" style="color:var(--accent)">${brl(tot)}</td></tr>
@@ -3184,7 +3144,7 @@ function secPreAlerta(){
             <thead><tr><th>Situação</th><th class="r">Ocorr.</th><th class="r">Valor Total R$</th><th class="r">%</th></tr></thead>
             <tbody>
               ${porSit.map(([k,o]) => `
-                <tr class="clickable-row ${hasVal(preFiltro.situacao, k) ? 'active-row' : ''}" data-pre-sit="${esc(k)}">
+                <tr class="clickable-row ${isSelectedArr(preFiltro.situacao, k) ? 'active-row' : ''}" data-pre-sit="${esc(k)}">
                   <td><b style="color:${SIT_COR[k] || 'var(--text)'}">${esc(k)}</b></td><td class="r">${fmtN.format(o.n)}</td><td class="r" style="color:${SIT_COR[k] || 'var(--text)'};font-weight:700">${brl(o.valor)}</td><td class="r">${fmtP(tot ? o.valor / tot * 100 : 0, 0)}</td>
                 </tr>`).join('') || '<tr><td colspan="4">Sem ocorrências com os filtros aplicados.</td></tr>'}
               <tr class="tot"><td><b>Total Geral Auditado</b></td><td class="r">${fmtN.format(rows.length)}</td><td class="r" style="color:var(--accent)">${brl(tot)}</td><td class="r">100%</td></tr>
@@ -3242,7 +3202,7 @@ function secPreAlerta(){
 
   const toggle = (attr, key) => document.querySelectorAll(`[${attr}]`).forEach(tr => tr.addEventListener('click', () => {
     const k = tr.getAttribute(attr);
-    preFiltro[key] = toggleArr(preFiltro[key], k);
+    toggleArr(preFiltro[key], k);
     preLimite = 150; secPreAlerta();
   }));
   toggle('data-pre-loja', 'loja');
@@ -3337,49 +3297,51 @@ function render(){
   renderFilterBar();
 }
 
-/* ---------- barra de filtros multi-seleção (fica fixa no topo de cada aba) ---------- */
+/* ---------- barra de filtros com suporte a seleção múltipla ---------- */
 const optF = (v, l, g) => ({v:String(v), l, g});
-let openFilterIdx = null;
-let openFilterSearch = '';
+let openDropdownIdx = null;
+let dropdownSearchTerm = '';
 
 function fbDefs(tab){
   if (tab === 'geral' && D) {
     const rows = D.rows;
-    const baseA = !filterArea.length ? rows : rows.filter(r => matchArr(filterArea, r.area));
+    const baseA = filterArea.length === 0 ? rows : rows.filter(r => hasArr(filterArea, r.area));
     const ruas = Array.from(new Set(baseA.map(r => r.rua).filter(r => r > 0))).sort((a,b) => a - b);
     const locais = Array.from(new Set(rows.map(r => r.est).filter(Boolean)));
     const status = Array.from(new Set(rows.map(r => r.status).filter(Boolean))).sort();
     return [
-      {label:'Galpão', allLabel:'Todos', values:filterArea, options:[optF('1','Galpão 1'), optF('7','Galpão 2')], set:v => { filterArea = v; filterRua = []; }},
-      {label:'Rua', allLabel:'Todas', values:filterRua, options:ruas.map(r => optF(r, 'Rua ' + r)), set:v => { filterRua = v; }},
-      {label:'Local de estoque', allLabel:'Todos', values:filterLocalEst, options:locais.map(l => optF(l, nice(l))), set:v => { filterLocalEst = v; }},
-      {label:'Status', allLabel:'Todos', values:filterStatusEst, options:status.map(s => optF(s, s)), set:v => { filterStatusEst = v; }}
+      {label:'Galpão', multi:true, allLabel:'Todos', values:filterArea, options:[optF('1','Galpão 1'), optF('7','Galpão 2')], change:vals => { filterArea = vals; filterRua = []; }},
+      {label:'Rua', multi:true, allLabel:'Todas', values:filterRua, options:ruas.map(r => optF(r, 'Rua ' + r)), change:vals => { filterRua = vals; }},
+      {label:'Local de estoque', multi:true, allLabel:'Todos', values:filterLocalEst, options:locais.map(l => optF(l, nice(l))), change:vals => { filterLocalEst = vals; }},
+      {label:'Status', multi:true, allLabel:'Todos', values:filterStatusEst, options:status.map(s => optF(s, s)), change:vals => { filterStatusEst = vals; }}
     ];
   }
   if (tab === 'shelf' || tab === 'aging') {
     const isShelf = tab === 'shelf';
     return [{
       label:isShelf ? 'Validade' : 'Aging',
+      multi:true,
       allLabel:'Todas',
       values:isShelf ? filterShelfFaixa : filterAgingFaixa,
       options:[
         ...['ok','warn','crit','none'].filter(k => isShelf || k !== 'none').map(k => optF(k, CLS[k].n, 'Classe')),
-        ...(isShelf ? SHELF_ORDER : AGING_ORDER).map(f => optF(f, f, 'Faixa'))],
-      set:v => { if (isShelf) filterShelfFaixa = v; else filterAgingFaixa = v; }
+        ...(isShelf ? SHELF_ORDER : AGING_ORDER).map(f => optF(f, f, 'Faixa'))
+      ],
+      change:vals => { if (isShelf) filterShelfFaixa = vals; else filterAgingFaixa = vals; }
     }];
   }
   if (tab === 'ocup') {
-    return [{label:'Galpão', allLabel:'Todos', values:filterOcupGalpao, options:[optF('g1','Galpão 1'), optF('g2','Galpão 2')], set:v => { filterOcupGalpao = v; }}];
+    return [{label:'Galpão', multi:true, allLabel:'Todos', values:filterOcupGalpao, options:[optF('g1','Galpão 1'), optF('g2','Galpão 2')], change:vals => { filterOcupGalpao = vals; }}];
   }
   if (tab === 'carteira' && D) {
     const C = D.cart || [];
     const uniq = f => Array.from(new Set(C.map(f))).filter(Boolean);
     return [
-      {label:'Data de geração', allLabel:'Todas', values:dateReservaFilter, options:uniq(r => r.gerReserva).sort((a,b) => a.localeCompare(b)).map(d => optF(d, 'Data ' + d)), set:v => { dateReservaFilter = v; }},
-      {label:'Tipo de separação', allLabel:'Todos', values:sepFilter, options:uniq(r => r.tipoSep).map(t => optF(t, t)), set:v => { sepFilter = v; }},
-      {label:'Destino', allLabel:'Todos', values:targetDestFilter, options:uniq(r => r.dest).sort((a,b) => String(a).localeCompare(String(b), undefined, {numeric:true})).map(d => optF(d, d)), set:v => { targetDestFilter = v; }},
-      {label:'Departamento', allLabel:'Todos', values:deptFilter, options:uniq(r => r.dept).sort().map(d => optF(d, d)), set:v => { deptFilter = v; }},
-      {label:'Itens', allLabel:'Todos', values:statusFilter, def:['pendente'], options:[optF('pendente','Pendentes'), optF('separado','Separados')], set:v => { statusFilter = v; }}
+      {label:'Data de geração', multi:true, allLabel:'Todas', values:dateReservaFilter, options:uniq(r => r.gerReserva).sort((a,b) => a.localeCompare(b)).map(d => optF(d, 'Data ' + d)), change:vals => { dateReservaFilter = vals; }},
+      {label:'Tipo de separação', multi:true, allLabel:'Todos', values:sepFilter, options:uniq(r => r.tipoSep).map(t => optF(t, t)), change:vals => { sepFilter = vals; }},
+      {label:'Destino', multi:true, allLabel:'Todos', values:targetDestFilter, options:uniq(r => r.dest).sort((a,b) => String(a).localeCompare(String(b), undefined, {numeric:true})).map(d => optF(d, d)), change:vals => { targetDestFilter = vals; }},
+      {label:'Departamento', multi:true, allLabel:'Todos', values:deptFilter, options:uniq(r => r.dept).sort().map(d => optF(d, d)), change:vals => { deptFilter = vals; }},
+      {label:'Itens', multi:false, value:statusFilter, def:'pendente', options:[optF('pendente','Pendentes'), optF('separado','Separados'), optF('todos','Todos')], set:v => { statusFilter = v; }}
     ];
   }
   if (tab === 'transito' && AdminD) {
@@ -3388,10 +3350,10 @@ function fbDefs(tab){
     const lojas = Array.from(new Set(notas.flatMap(n => [sCod(n.origem), sCod(n.destino)]).filter(c => c && c !== CD_COD)))
       .sort((a,b) => a.localeCompare(b, undefined, {numeric:true}));
     return [
-      {label:'Sentido', allLabel:'Todos', values:admFiltro.sentido, options:Object.entries(SENT_LABEL).map(([k,l]) => optF(k, l)), set:v => { admFiltro.sentido = v; admLimite = 150; }},
-      {label:'Mês de emissão', allLabel:'Todos', values:admFiltro.mes, options:meses.map(m => optF(m, mesLabel(m))), set:v => { admFiltro.mes = v; admLimite = 150; }},
-      {label:'Tempo em trânsito', allLabel:'Todos', values:admFiltro.faixa, options:Object.entries(FAIXA_DIAS_LABEL).map(([k,l]) => optF(k, l)), set:v => { admFiltro.faixa = v; admLimite = 150; }},
-      {label:'Loja', allLabel:'Todas', values:admFiltro.loja, options:lojas.map(c => optF(c, getNomeLoja(c))), set:v => { admFiltro.loja = v; admLimite = 150; }}
+      {label:'Sentido', multi:true, allLabel:'Todos', values:admFiltro.sentido, options:Object.entries(SENT_LABEL).map(([k,l]) => optF(k, l)), change:vals => { admFiltro.sentido = vals; admLimite = 150; }},
+      {label:'Mês de emissão', multi:true, allLabel:'Todos', values:admFiltro.mes, options:meses.map(m => optF(m, mesLabel(m))), change:vals => { admFiltro.mes = vals; admLimite = 150; }},
+      {label:'Tempo em trânsito', multi:true, allLabel:'Todos', values:admFiltro.faixa, options:Object.entries(FAIXA_DIAS_LABEL).map(([k,l]) => optF(k, l)), change:vals => { admFiltro.faixa = vals; admLimite = 150; }},
+      {label:'Loja', multi:true, allLabel:'Todas', values:admFiltro.loja, options:lojas.map(c => optF(c, getNomeLoja(c))), change:vals => { admFiltro.loja = vals; admLimite = 150; }}
     ];
   }
   if (tab === 'prealerta' && AdminD) {
@@ -3399,13 +3361,13 @@ function fbDefs(tab){
     const uq = f => Array.from(new Set(todas.map(f))).filter(Boolean);
     const reset = () => { preLimite = 150; };
     const defs = [
-      {label:'Loja', allLabel:'Todas', values:preFiltro.loja, options:uq(r => r.loja).sort((a,b) => a.localeCompare(b)).map(l => optF(l, l)), set:v => { preFiltro.loja = v; reset(); }},
-      {label:'Mês', allLabel:'Todos', values:preFiltro.mes, options:uq(r => r.mes).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(m => optF(m, mesLabel(m))), set:v => { preFiltro.mes = v; reset(); }}
+      {label:'Loja', multi:true, allLabel:'Todas', values:preFiltro.loja, options:uq(r => r.loja).sort((a,b) => a.localeCompare(b)).map(l => optF(l, l)), change:vals => { preFiltro.loja = vals; reset(); }},
+      {label:'Mês', multi:true, allLabel:'Todos', values:preFiltro.mes, options:uq(r => r.mes).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(m => optF(m, mesLabel(m))), change:vals => { preFiltro.mes = vals; reset(); }}
     ];
-    if (todas.some(r => r.tipo)) defs.push({label:'Tipo', allLabel:'Todos', values:preFiltro.tipo, options:[optF('SOBRA','Sobra'), optF('FALTA','Falta')], set:v => { preFiltro.tipo = v; reset(); }});
-    if (todas.some(r => r.statusCd)) defs.push({label:'Status CD', allLabel:'Todos', values:preFiltro.stCd, options:uq(r => r.statusCd).sort().map(s => optF(s, s)), set:v => { preFiltro.stCd = v; reset(); }});
-    if (todas.some(r => r.statusLoja)) defs.push({label:'Status Loja', allLabel:'Todos', values:preFiltro.stLoja, options:uq(r => r.statusLoja).sort().map(s => optF(s, s)), set:v => { preFiltro.stLoja = v; reset(); }});
-    defs.push({label:'Documento', allLabel:'Todos', values:preFiltro.situacao, options:uq(r => r.situacao).sort().map(s => optF(s, s)), set:v => { preFiltro.situacao = v; reset(); }});
+    if (todas.some(r => r.tipo)) defs.push({label:'Tipo', multi:true, allLabel:'Todos', values:preFiltro.tipo, options:[optF('SOBRA','Sobra'), optF('FALTA','Falta')], change:vals => { preFiltro.tipo = vals; reset(); }});
+    if (todas.some(r => r.statusCd)) defs.push({label:'Status CD', multi:true, allLabel:'Todos', values:preFiltro.stCd, options:uq(r => r.statusCd).sort().map(s => optF(s, s)), change:vals => { preFiltro.stCd = vals; reset(); }});
+    if (todas.some(r => r.statusLoja)) defs.push({label:'Status Loja', multi:true, allLabel:'Todos', values:preFiltro.stLoja, options:uq(r => r.statusLoja).sort().map(s => optF(s, s)), change:vals => { preFiltro.stLoja = vals; reset(); }});
+    defs.push({label:'Documento', multi:true, allLabel:'Todos', values:preFiltro.situacao, options:uq(r => r.situacao).sort().map(s => optF(s, s)), change:vals => { preFiltro.situacao = vals; reset(); }});
     return defs;
   }
   return [];
@@ -3417,157 +3379,198 @@ function renderFilterBar(){
   const defs = fbDefs(activeTab);
   if (!defs.length) { el.innerHTML = ''; el.classList.remove('on'); return; }
 
-  const same = (a, b) => normKey(a) === normKey(b);
-  const sameSet = (a, b) => a.length === b.length && a.every(x => b.some(y => same(x, y)));
-  const defOf = d => asArr(d.def || []);
-  const valsOf = d => asArr(d.values);
-  const optLabel = (d, v) => { const o = d.options.find(o => same(o.v, v)); return o ? o.l : v; };
+  const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
 
-  const isModified = d => !sameSet(valsOf(d), defOf(d));
-  const hasAnyActive = defs.some(isModified);
-
+  // Coletar chips ativos (cada item marcado vira um chip individual)
   const chips = [];
   defs.forEach((d, i) => {
-    const vs = valsOf(d);
-    if (!vs.length) {
-      if (isModified(d)) {
-        chips.push(`<button class="chip" data-chip-all="${i}" title="Restaurar padrão">${esc(d.label)}: <b>${esc(d.allLabel || 'Todos')}</b> ✕</button>`);
+    if (d.multi) {
+      (d.values || []).forEach(v => {
+        const opt = d.options.find(o => same(o.v, v));
+        chips.push({ defIdx: i, val: v, label: d.label, text: opt ? opt.l : v });
+      });
+    } else {
+      const defV = d.def || 'todos';
+      if (!same(d.value, defV)) {
+        const opt = d.options.find(o => same(o.v, d.value));
+        chips.push({ defIdx: i, val: d.value, label: d.label, text: opt ? opt.l : d.value });
       }
-      return;
     }
-    vs.forEach(v => {
-      chips.push(`<button class="chip" data-chip="${i}" data-chip-val="${esc(v)}" title="Remover ${esc(optLabel(d, v))}">${esc(d.label)}: <b>${esc(optLabel(d, v))}</b> ✕</button>`);
-    });
   });
 
-  const msHtml = (d, i) => {
-    const vs = valsOf(d);
-    const isOpen = openFilterIdx === i;
-    const mod = isModified(d);
-    let btnTxt = d.allLabel || 'Todos';
-    if (vs.length === 1) btnTxt = optLabel(d, vs[0]);
-    else if (vs.length > 1) btnTxt = `${vs.length} selecionados`;
+  const renderControl = (d, i) => {
+    if (!d.multi) {
+      const defV = d.def || 'todos';
+      let html = '';
+      d.options.forEach(o => {
+        html += `<option value="${esc(o.v)}" ${same(o.v, d.value) ? 'selected' : ''}>${esc(o.l)}</option>`;
+      });
+      return `<div class="gf ${same(d.value, defV) ? '' : 'on'}"><span class="gf-lbl">${esc(d.label)}</span><select data-gf="${i}">${html}</select></div>`;
+    }
 
-    const q = isOpen ? openFilterSearch.trim().toLowerCase() : '';
+    const vals = d.values || [];
+    const isOn = vals.length > 0;
+    const isOpen = openDropdownIdx === i;
+    let btnTxt = d.allLabel || 'Todos';
+    if (vals.length === 1) {
+      const found = d.options.find(o => same(o.v, vals[0]));
+      btnTxt = found ? found.l : vals[0];
+    } else if (vals.length > 1) {
+      btnTxt = `${vals.length} selecionados`;
+    }
+
+    const q = isOpen ? dropdownSearchTerm.toLowerCase().trim() : '';
     const filteredOpts = q ? d.options.filter(o => o.l.toLowerCase().includes(q) || o.v.toLowerCase().includes(q)) : d.options;
 
-    let listHtml = '', grp = null;
-    filteredOpts.forEach(o => {
-      if (o.g !== grp) {
-        if (o.g) listHtml += `<div class="ms-grp">${esc(o.g)}</div>`;
-        grp = o.g;
-      }
-      const checked = vs.some(x => same(x, o.v));
-      listHtml += `<label class="ms-opt ${checked ? 'checked' : ''}"><input type="checkbox" data-ms-opt="${i}" value="${esc(o.v)}" ${checked ? 'checked' : ''}><span title="${esc(o.l)}">${esc(o.l)}</span></label>`;
-    });
-    if (!filteredOpts.length) listHtml = `<div class="ms-empty">Nenhuma opção encontrada.</div>`;
-
-    const showSearch = d.options.length > 6;
     return `
-      <div class="gf ${mod ? 'on' : ''}">
-        <span>${esc(d.label)}</span>
-        <div class="ms ${isOpen ? 'open' : ''}" data-ms-box="${i}">
-          <button type="button" class="ms-btn" data-ms-toggle="${i}" aria-expanded="${isOpen}">
-            <span class="ms-btn-txt" title="${esc(vs.map(v => optLabel(d, v)).join(', ') || btnTxt)}">${esc(btnTxt)}</span>
-            ${vs.length > 1 ? `<span class="ms-btn-badge">${vs.length}</span>` : ''}
-            <span class="ms-btn-arr">▼</span>
-          </button>
-          <div class="ms-menu" data-ms-menu="${i}">
-            ${showSearch ? `<input type="text" class="ms-search" data-ms-search="${i}" placeholder="🔍 Filtrar ${esc(d.label.toLowerCase())}..." value="${esc(isOpen ? openFilterSearch : '')}">` : ''}
-            <div class="ms-actions">
-              <span>${vs.length ? `${vs.length} de ${d.options.length}` : `${d.allLabel || 'Todos'} (${d.options.length})`}</span>
-              <div>
-                <button type="button" data-ms-all="${i}">Marcar todos</button>
-                <button type="button" data-ms-none="${i}">Limpar</button>
-              </div>
+    <div class="gf ${isOn ? 'on' : ''}" data-ms-idx="${i}">
+      <span class="gf-lbl">${esc(d.label)}</span>
+      <div class="ms-wrap ${isOpen ? 'open' : ''}">
+        <button type="button" class="ms-btn" data-ms-toggle="${i}" title="${esc(btnTxt)}">
+          <span class="ms-btn-txt">${esc(btnTxt)}</span>
+          ${vals.length > 0 ? `<span class="ms-badge">${vals.length}</span>` : ''}
+          <span class="ms-arrow">${isOpen ? '▲' : '▼'}</span>
+        </button>
+        <div class="ms-menu" data-ms-menu="${i}">
+          <input type="text" class="ms-search" data-ms-search="${i}" placeholder="🔍 Filtrar ${esc(d.label.toLowerCase())}..." value="${isOpen ? esc(dropdownSearchTerm) : ''}" />
+          <div class="ms-actions">
+            <span>${vals.length} de ${d.options.length}</span>
+            <div class="ms-actions-btns">
+              <button type="button" data-ms-all="${i}">Marcar todos</button>
+              <button type="button" data-ms-none="${i}">Limpar</button>
             </div>
-            <div class="ms-list">${listHtml}</div>
+          </div>
+          <div class="ms-list">
+            ${filteredOpts.length ? filteredOpts.map(o => {
+              const checked = vals.some(x => same(x, o.v));
+              return `<label class="ms-item ${checked ? 'checked' : ''}">
+                <input type="checkbox" data-ms-chk="${i}" value="${esc(o.v)}" ${checked ? 'checked' : ''} />
+                <span>${esc(o.l)}</span>
+              </label>`;
+            }).join('') : '<div style="padding:8px;color:var(--mute);font-size:12px">Nenhuma opção encontrada.</div>'}
           </div>
         </div>
-      </div>`;
+      </div>
+    </div>`;
   };
 
   el.classList.add('on');
   el.innerHTML = `
     <div class="gf-row">
       <span class="gf-title">🔎 Filtros</span>
-      ${defs.map(msHtml).join('')}
-      <button class="gf-clear" id="gfClear" ${hasAnyActive ? '' : 'disabled'}>✕ Limpar filtros</button>
+      ${defs.map(renderControl).join('')}
+      <button class="gf-clear" id="gfClear" ${chips.length ? '' : 'disabled'}>✕ Limpar filtros</button>
     </div>
-    ${chips.length ? `<div class="gf-chips">${chips.join('')}</div>` : ''}`;
+    ${chips.length ? `<div class="gf-chips">${chips.map((c, ci) => `<button class="chip" data-chip-idx="${ci}" title="Remover filtro">${esc(c.label)}: <b>${esc(c.text)}</b> ✕</button>`).join('')}</div>` : ''}`;
 
-  el.querySelectorAll('[data-ms-toggle]').forEach(btn => btn.addEventListener('click', (e) => {
+  // Eventos selects simples
+  el.querySelectorAll('select[data-gf]').forEach(s => s.addEventListener('change', e => {
+    defs[+s.getAttribute('data-gf')].set(e.target.value);
+    render();
+  }));
+
+  // Abrir/fechar dropdown multiselect
+  el.querySelectorAll('[data-ms-toggle]').forEach(btn => btn.addEventListener('click', e => {
     e.stopPropagation();
     const idx = +btn.getAttribute('data-ms-toggle');
-    if (openFilterIdx === idx) {
-      openFilterIdx = null;
-      openFilterSearch = '';
+    if (openDropdownIdx === idx) {
+      openDropdownIdx = null;
+      dropdownSearchTerm = '';
     } else {
-      openFilterIdx = idx;
-      openFilterSearch = '';
+      openDropdownIdx = idx;
+      dropdownSearchTerm = '';
     }
     renderFilterBar();
-    if (openFilterIdx !== null) {
-      const inp = el.querySelector(`[data-ms-search="${openFilterIdx}"]`);
+    if (openDropdownIdx !== null) {
+      const inp = el.querySelector(`[data-ms-search="${openDropdownIdx}"]`);
       if (inp) inp.focus();
     }
   }));
 
-  el.querySelectorAll('[data-ms-menu]').forEach(menu => menu.addEventListener('click', e => e.stopPropagation()));
+  // Impedir que cliques dentro do menu fechem o dropdown
+  el.querySelectorAll('[data-ms-menu]').forEach(menu => menu.addEventListener('click', e => {
+    e.stopPropagation();
+  }));
 
+  // Busca dentro do dropdown
   el.querySelectorAll('[data-ms-search]').forEach(inp => inp.addEventListener('input', e => {
-    openFilterSearch = e.target.value;
+    dropdownSearchTerm = e.target.value;
     renderFilterBar();
-    const cur = el.querySelector(`[data-ms-search="${openFilterIdx}"]`);
-    if (cur) { cur.focus(); cur.setSelectionRange(openFilterSearch.length, openFilterSearch.length); }
+    const nextInp = $('#filterbar').querySelector(`[data-ms-search="${openDropdownIdx}"]`);
+    if (nextInp) {
+      nextInp.focus();
+      nextInp.setSelectionRange(dropdownSearchTerm.length, dropdownSearchTerm.length);
+    }
   }));
 
-  el.querySelectorAll('[data-ms-opt]').forEach(chk => chk.addEventListener('change', () => {
-    const idx = +chk.getAttribute('data-ms-opt');
+  // Marcar / desmarcar checkbox individual
+  el.querySelectorAll('[data-ms-chk]').forEach(chk => chk.addEventListener('change', e => {
+    const idx = +chk.getAttribute('data-ms-chk');
+    const val = chk.value;
     const d = defs[idx];
-    d.set(toggleArr(valsOf(d), chk.value));
+    const nextVals = [...(d.values || [])];
+    const pos = nextVals.findIndex(x => same(x, val));
+    if (e.target.checked && pos === -1) nextVals.push(val);
+    else if (!e.target.checked && pos !== -1) nextVals.splice(pos, 1);
+    d.change(nextVals);
     render();
+    if (openDropdownIdx !== null) {
+      const nextInp = $('#filterbar').querySelector(`[data-ms-search="${openDropdownIdx}"]`);
+      if (nextInp) nextInp.focus();
+    }
   }));
 
+  // Marcar todos (respeitando a busca atual se houver)
   el.querySelectorAll('[data-ms-all]').forEach(btn => btn.addEventListener('click', () => {
     const idx = +btn.getAttribute('data-ms-all');
     const d = defs[idx];
-    d.set(d.options.map(o => o.v));
+    const q = dropdownSearchTerm.toLowerCase().trim();
+    const visibleOpts = q ? d.options.filter(o => o.l.toLowerCase().includes(q) || o.v.toLowerCase().includes(q)) : d.options;
+    const nextVals = [...(d.values || [])];
+    visibleOpts.forEach(o => {
+      if (!nextVals.some(x => same(x, o.v))) nextVals.push(o.v);
+    });
+    d.change(nextVals);
     render();
   }));
 
+  // Limpar apenas aquele dropdown
   el.querySelectorAll('[data-ms-none]').forEach(btn => btn.addEventListener('click', () => {
     const idx = +btn.getAttribute('data-ms-none');
-    const d = defs[idx];
-    d.set([]);
+    defs[idx].change([]);
     render();
   }));
 
-  el.querySelectorAll('[data-chip]').forEach(b => b.addEventListener('click', () => {
-    const d = defs[+b.getAttribute('data-chip')];
-    d.set(toggleArr(valsOf(d), b.getAttribute('data-chip-val')));
+  // Remover chip individual
+  el.querySelectorAll('[data-chip-idx]').forEach(btn => btn.addEventListener('click', () => {
+    const c = chips[+btn.getAttribute('data-chip-idx')];
+    const d = defs[c.defIdx];
+    if (d.multi) {
+      d.change((d.values || []).filter(x => !same(x, c.val)));
+    } else {
+      d.set(d.def || 'todos');
+    }
     render();
   }));
 
-  el.querySelectorAll('[data-chip-all]').forEach(b => b.addEventListener('click', () => {
-    const d = defs[+b.getAttribute('data-chip-all')];
-    d.set(defOf(d));
-    render();
-  }));
-
+  // Limpar todos os filtros da aba
   const clr = $('#gfClear');
   if (clr) clr.addEventListener('click', () => {
-    openFilterIdx = null;
-    openFilterSearch = '';
-    defs.forEach(d => d.set(defOf(d)));
+    openDropdownIdx = null;
+    dropdownSearchTerm = '';
+    defs.forEach(d => {
+      if (d.multi) d.change([]);
+      else d.set(d.def || 'todos');
+    });
     render();
   });
 }
 
-document.addEventListener('click', (e) => {
-  if (openFilterIdx !== null && !e.target.closest('.ms')) {
-    openFilterIdx = null;
-    openFilterSearch = '';
+// Fechar dropdown ao clicar fora
+document.addEventListener('click', () => {
+  if (openDropdownIdx !== null) {
+    openDropdownIdx = null;
+    dropdownSearchTerm = '';
     renderFilterBar();
   }
 });
