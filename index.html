@@ -700,6 +700,45 @@ body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
 .badge-verba-nao { background: rgba(255, 93, 98, 0.18); border: 1px solid rgba(255, 93, 98, 0.5); color: #ff9ea1; }
 .badge-lote { background: rgba(255, 196, 0, 0.16); border: 1px solid rgba(255, 196, 0, 0.4); color: var(--accent); }
 
+
+/* Ícones SVG Lucide alinhados ao texto */
+.ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.ico svg {
+  display: block;
+}
+nav button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tv {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.gf-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-header-action h3, .card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.setores button .si {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+}
+
 /* o aviso de filtro ativo agora é só o da barra do topo (chips) */
 .active-filters-bar{display:none !important}
 </style>
@@ -732,7 +771,7 @@ body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
       <button data-b="custo" aria-pressed="true">R$</button>
       <button data-b="qtd" aria-pressed="false">Qtd. endereçada</button>
     </div>
-    <button class="tv" id="tv" aria-pressed="false">📺 Modo TV</button>
+    <button class="tv" id="tv" aria-pressed="false"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg></span> Modo TV</button>
   </div>
   <div id="src"><i></i><span id="srctxt">Carregando…</span></div>
 </header>
@@ -750,6 +789,27 @@ body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
 <section id="s-recebverba"></section>
 
 <script>
+
+const ICONS = {
+  box: `<span class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></span>`,
+  admin: `<span class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>`,
+  inbox: `<span class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></span>`,
+  truck: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></span>`,
+  alert: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span>`,
+  doc: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>`,
+  dollar: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>`,
+  filter: `<span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span>`,
+  tv: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg></span>`,
+  chart: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>`,
+  calendar: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>`,
+  sliders: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>`,
+  store: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg></span>`,
+  printer: `<span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span>`,
+  info: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>`,
+  pie: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>`,
+  trophy: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span>`
+};
+
 const CONFIG = {
   DATA_1926_URL: "./dados_1926.json",
   DATA_OCUPACAO_URL: "./dados_ocupacao.json",
@@ -1562,12 +1622,12 @@ function secGeral(){
   let acumHtml = `
   <div class="card" style="margin-top:16px;">
     <div class="card-header-action">
-      <h3>📈 POSIÇÃO DE ESTOQUE HISTÓRICO E PROJEÇÃO (${filterModoAcum === 'mes' ? 'MÉDIA MENSAL R$' : 'FECHAMENTO DIÁRIO R$'})</h3>
+      <h3>${ICONS.chart} POSIÇÃO DE ESTOQUE HISTÓRICO E PROJEÇÃO (${filterModoAcum === 'mes' ? 'MÉDIA MENSAL R$' : 'FECHAMENTO DIÁRIO R$'})</h3>
       
       <div class="prod-controls">
         <select id="selectModoAcum" style="font-weight:700;color:var(--accent)">
-          <option value="mes" ${filterModoAcum==='mes'?'selected':''}>📊 Média Agrupada por MÊS</option>
-          <option value="dia" ${filterModoAcum==='dia'?'selected':''}>📆 Detalhado por DIA</option>
+          <option value="mes" ${filterModoAcum==='mes'?'selected':''}>Média Agrupada por MÊS</option>
+          <option value="dia" ${filterModoAcum==='dia'?'selected':''}>Detalhado por DIA</option>
         </select>
 
         ${filterModoAcum === 'dia' ? `
@@ -1645,7 +1705,7 @@ function secGeral(){
       <div class="card-header-action">
         <h3>${cardTitle}</h3>
         <div class="sem-fisico-badge" title="Soma do estoque Virtual e Pré Alerta">
-          🚨 Sem Físico: <b>${fmtV(semFisicoVal)} (${fmtP(semFisicoPct)})</b>
+          ${ICONS.alert} Sem Físico: <b>${fmtV(semFisicoVal)} (${fmtP(semFisicoPct)})</b>
         </div>
       </div>
       <div class="donutwrap">${donut(items, centerLabel, subLabel, 'data-filter-local', filterLocalEst)}${legend(items, 'data-filter-local', filterLocalEst)}</div>
@@ -1678,7 +1738,7 @@ function secGeral(){
 
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
-      <h3>📦 PRODUTOS EM ESTOQUE NO FILTRO (${listEstoqueProds.length} PALETES)</h3>
+      <h3>${ICONS.box} PRODUTOS EM ESTOQUE NO FILTRO (${listEstoqueProds.length} PALETES)</h3>
       <button class="toggle-btn" id="btnToggleGeralProds">
         ${geralProdExpanded ? '▲ Ocultar Produtos' : '▼ Exibir Produtos (' + listEstoqueProds.length + ')'}
       </button>
@@ -1697,7 +1757,7 @@ function secGeral(){
           ${ruasDisponiveis.map(r => `<option value="${r}" ${filterRua.length===1 && filterRua[0]===String(r)?'selected':''}>Rua ${r}</option>`).join('')}
         </select>
 
-        <input type="text" id="inputEstoqueProdSearch" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:240px" />
+        <input type="text" id="inputEstoqueProdSearch" placeholder="Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:240px" />
         
         <select id="selectEstoqueProdSort">
           <option value="endereco" ${estoqueProdSortOrder==='endereco'?'selected':''}>Ordenar por Endereço (Corredor)</option>
@@ -1705,7 +1765,7 @@ function secGeral(){
           <option value="qtd" ${estoqueProdSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd</option>
         </select>
 
-        <button class="btn-export-pdf" id="btnExportCaraCrachaGeneral">🖨️ Cara-Crachá (PDF)</button>
+        <button class="btn-export-pdf" id="btnExportCaraCrachaGeneral">${ICONS.printer} Cara-Crachá (PDF)</button>
       </div>
 
       <div class="tw">
@@ -1988,8 +2048,8 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     <div class="card-header-action">
       <h3>${topTitle} (${top.length} linhas encontradas)</h3>
       <div class="prod-controls">
-        <button class="btn-export-pdf" id="${btnPdfId}">🖨️ Cara-Crachá (PDF)</button>
-        <input type="text" id="${inputId}" placeholder="🔍 Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:260px" />
+        <button class="btn-export-pdf" id="${btnPdfId}">${ICONS.printer} Cara-Crachá (PDF)</button>
+        <input type="text" id="${inputId}" placeholder="Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:260px" />
         <select id="${selectId}">
           <option value="critico" ${currentSort==='critico'?'selected':''}>Ordenar por Mais Crítico</option>
           <option value="endereco" ${currentSort==='endereco'?'selected':''}>Ordenar por Endereço (Corredor)</option>
@@ -2413,7 +2473,7 @@ function secCarteira(){
       <!-- 1. GERAÇÃO RESERVA COM LINHAS / PALETES FULL -->
       <div class="card">
         <div class="card-header-action">
-          <h3>📅 GERAÇÃO RESERVA (${resRows.length} DATAS) · CLIQUE P/ FILTRAR</h3>
+          <h3>${ICONS.calendar} GERAÇÃO RESERVA (${resRows.length} DATAS) · CLIQUE P/ FILTRAR</h3>
           <span style="font-size:12px;color:var(--mute);font-weight:700">Paletes Full: <b style="color:#7cb3ff">${fmtN.format(totFullLinhasRes)}</b></span>
         </div>
         <div class="tw">
@@ -2464,7 +2524,7 @@ function secCarteira(){
       <!-- 2. TIPO DE SEPARAÇÃO (VISÃO CLÁSSICA COM Nº DO LOTE / LINHAS) -->
       <div class="card">
         <div class="card-header-action">
-          <h3>⚙️ TIPO DE SEPARAÇÃO · CLIQUE P/ FILTRAR</h3>
+          <h3>${ICONS.sliders} TIPO DE SEPARAÇÃO · CLIQUE P/ FILTRAR</h3>
           <span style="font-size:12px;color:var(--mute);font-weight:700">Lotes/Linhas: <b style="color:var(--accent)">${fmtN.format(totLinhasSep)}</b></span>
         </div>
         <div class="tw">
@@ -2504,7 +2564,7 @@ function secCarteira(){
           </table>
         </div>
         <div class="info-note">
-          💡 <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
+          ${ICONS.info} <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
         </div>
       </div>
 
@@ -2513,7 +2573,7 @@ function secCarteira(){
     <!-- 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (BARRAS HORIZONTAIS ESTILO VISÃO ANTIGA) -->
     <div class="card">
       <div class="card-header-action">
-        <h3>📊 PARTICIPAÇÃO POR DEPARTAMENTO CD (${basis === 'custo' ? 'VALOR R$' : 'QTD PEDIDA'})</h3>
+        <h3>${ICONS.chart} PARTICIPAÇÃO POR DEPARTAMENTO CD (${basis === 'custo' ? 'VALOR R$' : 'QTD PEDIDA'})</h3>
         <span style="font-size:11px;color:var(--mute);font-weight:600">Clique p/ filtrar</span>
       </div>
       <div class="dept-hbar-list">
@@ -2542,7 +2602,7 @@ function secCarteira(){
   <!-- 4. RESUMO POR LOJA / DESTINATÁRIO (MANTIDO E APRIMORADO COM PALETES FULL) -->
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
-      <h3>🏪 RESUMO DE SEPARAÇÃO POR LOJA / DESTINATÁRIO (${destRows.length} LOJAS)</h3>
+      <h3>${ICONS.store} RESUMO DE SEPARAÇÃO POR LOJA / DESTINATÁRIO (${destRows.length} LOJAS)</h3>
       <button class="toggle-btn" id="btnToggleDest">
         ${destExpanded ? '▲ Ocultar Lojas' : '▼ Exibir Lojas / Destinos (' + destRows.length + ')'}
       </button>
@@ -2550,7 +2610,7 @@ function secCarteira(){
 
     <div class="collapsible-content ${destExpanded ? 'open' : ''}" id="boxDestinos">
       <div style="margin-bottom: 12px;">
-        <input type="text" id="inputDestSearch" placeholder="🔍 Buscar loja / destino..." value="${esc(destSearch)}" style="width: 100%; max-width: 340px;" />
+        <input type="text" id="inputDestSearch" placeholder="Buscar loja / destino..." value="${esc(destSearch)}" style="width: 100%; max-width: 340px;" />
       </div>
       <div class="tw">
         <table>
@@ -2590,7 +2650,7 @@ function secCarteira(){
   <!-- 5. PRODUTOS DA CARTEIRA (MANTIDO COM BUSCA E ORDENAÇÃO) -->
   <div class="card" style="margin-top:16px">
     <div class="card-header-action">
-      <h3>📦 ${statusTitleText} (${prodsList.length} PRODUTOS ÚNICOS SOMADOS)</h3>
+      <h3>${ICONS.box} ${statusTitleText} (${prodsList.length} PRODUTOS ÚNICOS SOMADOS)</h3>
       <button class="toggle-btn" id="btnToggleProds">
         ${prodExpanded ? '▲ Ocultar Produtos' : '▼ Exibir Produtos (' + prodsList.length + ')'}
       </button>
@@ -2603,7 +2663,7 @@ function secCarteira(){
           <option value="separado" ${statusFilter==='separado'?'selected':''}>Status: Apenas Separados</option>
           <option value="todos" ${statusFilter==='todos'?'selected':''}>Status: Todos os Status</option>
         </select>
-        <input type="text" id="inputProdSearch" placeholder="🔍 Buscar código / GTIN / produto..." value="${esc(prodSearch)}" style="width:240px" />
+        <input type="text" id="inputProdSearch" placeholder="Buscar código / GTIN / produto..." value="${esc(prodSearch)}" style="width:240px" />
         <select id="selectProdSort">
           <option value="qtd" ${prodSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Pendente</option>
           <option value="linhas" ${prodSortOrder==='linhas'?'selected':''}>Ordenar por Maior Qtd Linhas / Paletes</option>
@@ -2949,7 +3009,7 @@ function secTransito(){
 
     ${totAntigas > 0 ? `
     <div class="alert-banner">
-      <div class="alert-banner-icon">⚠️</div>
+      <div class="alert-banner-icon" style="color:var(--warn);display:flex">${ICONS.alert}</div>
       <div class="alert-banner-content">
         <h4>Atenção Operacional - Notas Antigas Pendentes</h4>
         <p>Identificamos <b>${brl(totAntigas)}</b> em ${fmtN.format(antigas.length)} notas fiscais antigas que ainda não tiveram entrada registrada. Solicitamos a regularização o quanto antes para garantir a acuracidade dos estoques.</p>
@@ -2958,7 +3018,7 @@ function secTransito(){
 
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>🚚 NOTAS EM TRÂNSITO - DETALHAMENTO ANALÍTICO (${fmtN.format(listaDet.length)} ${porNF ? 'NFs' : 'LINHAS'})</h3>
+        <h3>${ICONS.truck} NOTAS EM TRÂNSITO - DETALHAMENTO ANALÍTICO (${fmtN.format(listaDet.length)} ${porNF ? 'NFs' : 'LINHAS'})</h3>
         <div class="prod-controls">
           <select id="selAdmVisao" title="Visão">
             <option value="itens" ${!porNF ? 'selected' : ''}>Visão: por item</option>
@@ -2969,7 +3029,7 @@ function secTransito(){
             <option value="valor" ${admOrdem === 'valor' ? 'selected' : ''}>Ordem: maior valor</option>
             <option value="nf" ${admOrdem === 'nf' ? 'selected' : ''}>Ordem: nº da NF</option>
           </select>
-          <input type="text" id="inputSearchNotas" placeholder="🔍 Buscar NF, loja, produto..." value="${esc(searchNotas)}" style="width:240px">
+          <input type="text" id="inputSearchNotas" placeholder="Buscar NF, loja, produto..." value="${esc(searchNotas)}" style="width:240px">
         </div>
       </div>
       <div class="tw">
@@ -3158,7 +3218,7 @@ function secPreAlerta(){
 
     ${!hasTipo && todas.length ? `
     <div class="alert-banner" style="margin-bottom:0">
-      <div class="alert-banner-icon">ℹ️</div>
+      <div class="alert-banner-icon" style="color:var(--blue);display:flex">${ICONS.info}</div>
       <div class="alert-banner-content">
         <h4>Classificação Sobra/Falta indisponível na base atual</h4>
         <p>O administrativo.json não traz a coluna "ocorrencia" preenchida com SOBRA ou FALTA. Assim que ela vier, os cards e o filtro "Tipo" passam a funcionar sozinhos.</p>
@@ -3235,7 +3295,7 @@ function secPreAlerta(){
 
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>⚠️ OCORRÊNCIAS DE PRÉ-ALERTA DETALHADAS (${fmtN.format(lista.length)} LINHAS)</h3>
+        <h3>${ICONS.alert} OCORRÊNCIAS DE PRÉ-ALERTA DETALHADAS (${fmtN.format(lista.length)} LINHAS)</h3>
         <div class="prod-controls">
           <select id="selPreOrdem" title="Ordenação">
             <option value="valor" ${preOrdem === 'valor' ? 'selected' : ''}>Ordem: maior valor</option>
@@ -3243,7 +3303,7 @@ function secPreAlerta(){
             <option value="dias" ${preOrdem === 'dias' ? 'selected' : ''}>Ordem: mais dias sem retorno</option>
             <option value="loja" ${preOrdem === 'loja' ? 'selected' : ''}>Ordem: loja (A-Z)</option>
           </select>
-          <input type="text" id="inputSearchPre" placeholder="🔍 Buscar loja, produto, NF, obs..." value="${esc(searchPre)}" style="width:240px">
+          <input type="text" id="inputSearchPre" placeholder="Buscar loja, produto, NF, obs..." value="${esc(searchPre)}" style="width:240px">
         </div>
       </div>
       <div class="tw">
@@ -3509,7 +3569,7 @@ function secRecebNotas(){
     <!-- GRÁFICOS DO DASHBOARD -->
     <div class="grid two" style="margin-top:20px">
       <div class="card">
-        <h3>📊 Evolução Mensal do Recebimento (R$) ${dica}</h3>
+        <h3>${ICONS.chart} Evolução Mensal do Recebimento (R$) ${dica}</h3>
         ${porMes.length ? `
           <div class="bar-chart-container" style="height:260px;padding-top:52px">
             <div class="bar-chart-wrapper">
@@ -3546,7 +3606,7 @@ function secRecebNotas(){
       </div>
 
       <div class="card">
-        <h3>🍩 Recebimento: Com Verba vs Sem Verba ${dica}</h3>
+        <h3>${ICONS.pie} Recebimento: Com Verba vs Sem Verba ${dica}</h3>
         <div class="donutwrap">
           ${donut(donutVerbaItems, fmtP(pctComVerbaVal, 0), 'c/ verba', 'data-rec-pagaverba', recFiltro.pagaVerba !== 'todos' ? [recFiltro.pagaVerba] : [])}
           ${legend(donutVerbaItems, 'data-rec-pagaverba', recFiltro.pagaVerba !== 'todos' ? [recFiltro.pagaVerba] : [])}
@@ -3627,7 +3687,7 @@ function secRecebNotas(){
     <!-- LISTAGEM DE NOTAS -->
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>📄 NOTAS FISCAIS DE RECEBIMENTO (${fmtN.format(lista.length)} NFs)</h3>
+        <h3>${ICONS.doc} NOTAS FISCAIS DE RECEBIMENTO (${fmtN.format(lista.length)} NFs)</h3>
         <div class="prod-controls">
           <select id="selRecOrdem">
             <option value="valor" ${recOrdem === 'valor' ? 'selected' : ''}>Ordem: maior valor recebido</option>
@@ -3635,7 +3695,7 @@ function secRecebNotas(){
             <option value="data" ${recOrdem === 'data' ? 'selected' : ''}>Ordem: recebimento mais recente</option>
             <option value="nf" ${recOrdem === 'nf' ? 'selected' : ''}>Ordem: nº da NF</option>
           </select>
-          <input type="text" id="inputSearchRecNotas" placeholder="🔍 Buscar NF, fornecedor, loja, operação..." value="${esc(searchRecNotas)}" style="width:260px">
+          <input type="text" id="inputSearchRecNotas" placeholder="Buscar NF, fornecedor, loja, operação..." value="${esc(searchRecNotas)}" style="width:260px">
         </div>
       </div>
       <div class="tw">
@@ -3832,7 +3892,7 @@ function secRecebVerba(){
     <!-- DASHBOARD VISUAL: EVOLUÇÃO MENSAL DA VERBA + TOP FORNECEDORES -->
     <div class="grid two" style="margin-top:20px">
       <div class="card">
-        <h3>📈 Evolução Mensal da Verba Logística (R$) ${dica}</h3>
+        <h3>${ICONS.chart} Evolução Mensal da Verba Logística (R$) ${dica}</h3>
         ${porMes.length ? `
           <div class="bar-chart-container" style="height:285px;padding-top:55px">
             <div class="bar-chart-wrapper">
@@ -3869,7 +3929,7 @@ function secRecebVerba(){
       </div>
 
       <div class="card">
-        <h3>🏆 Top 12 Fornecedores por Verba Arrecadada ${dica}</h3>
+        <h3>${ICONS.trophy} Top 12 Fornecedores por Verba Arrecadada ${dica}</h3>
         <div class="dept-hbar-list">
           ${topFornChart.length ? topFornChart.map((f, idx) => {
             const barW = maxFornVerba ? (f.verba / maxFornVerba) * 100 : 0;
@@ -3895,7 +3955,7 @@ function secRecebVerba(){
     <!-- SEÇÃO DESTACADA: TODOS OS FORNECEDORES QUE NÃO PAGAM VERBA LOGÍSTICA -->
     <div class="card" style="margin-top:20px;border-left:4px solid var(--crit)">
       <div class="card-header-action">
-        <h3>🚨 FORNECEDORES QUE NÃO PAGAM VERBA LOGÍSTICA (${fmtN.format(fornNaoPagam.length)} FORNECEDORES · ${brlShort(totValFornNaoPagam)})</h3>
+        <h3>${ICONS.alert} FORNECEDORES QUE NÃO PAGAM VERBA LOGÍSTICA (${fmtN.format(fornNaoPagam.length)} FORNECEDORES · ${brlShort(totValFornNaoPagam)})</h3>
         <button class="toggle-btn" id="btnToggleSemVerba">
           ${semVerbaExpanded ? '▲ Ocultar Lista' : '▼ Exibir Fornecedores (' + fornNaoPagam.length + ')'}
         </button>
@@ -3910,7 +3970,7 @@ function secRecebVerba(){
               <option value="nfs" ${semVerbaOrdem === 'nfs' ? 'selected' : ''}>Ordem: maior qtd de NFs</option>
               <option value="nome" ${semVerbaOrdem === 'nome' ? 'selected' : ''}>Ordem: ordem alfabética (A-Z)</option>
             </select>
-            <input type="text" id="inputSearchSemVerba" placeholder="🔍 Buscar fornecedor ou CNPJ sem verba..." value="${esc(searchSemVerba)}" style="width:270px">
+            <input type="text" id="inputSearchSemVerba" placeholder="Buscar fornecedor ou CNPJ sem verba..." value="${esc(searchSemVerba)}" style="width:270px">
           </div>
         </div>
         <div class="tw">
@@ -3964,14 +4024,14 @@ function secRecebVerba(){
     <!-- DETALHAMENTO POR NOTA FISCAL COM VERBA -->
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>💰 DETALHAMENTO DE VERBA POR NOTA FISCAL (${fmtN.format(lista.length)} NFs)</h3>
+        <h3>${ICONS.dollar} DETALHAMENTO DE VERBA POR NOTA FISCAL (${fmtN.format(lista.length)} NFs)</h3>
         <div class="prod-controls">
           <select id="selVerbaOrdem">
             <option value="verba" ${verbaOrdem === 'verba' ? 'selected' : ''}>Ordem: maior verba R$</option>
             <option value="pct" ${verbaOrdem === 'pct' ? 'selected' : ''}>Ordem: maior % verba</option>
             <option value="valor" ${verbaOrdem === 'valor' ? 'selected' : ''}>Ordem: maior valor recebido</option>
           </select>
-          <input type="text" id="inputSearchRecVerba" placeholder="🔍 Buscar fornecedor, NF, loja..." value="${esc(searchRecVerba)}" style="width:260px">
+          <input type="text" id="inputSearchRecVerba" placeholder="Buscar fornecedor, NF, loja..." value="${esc(searchRecVerba)}" style="width:260px">
         </div>
       </div>
       <div class="tw">
@@ -4047,9 +4107,9 @@ function secRecebVerba(){
 
 /* ================= SETORES, ABAS E BARRA DE FILTROS ================= */
 const SETORES = {
-  gestao:      {title:'Gestão de Estoque', icon:'📦', tabs:['geral','shelf','aging','ocup','carteira']},
-  admin:       {title:'Administrativo',    icon:'🗂️', tabs:['transito','prealerta']},
-  recebimento: {title:'Recebimento',       icon:'📥', tabs:['recebnotas','recebverba']}
+  gestao:      {title:'Gestão de Estoque', icon: ICONS.box, tabs:['geral','shelf','aging','ocup','carteira']},
+  admin:       {title:'Administrativo',    icon: ICONS.admin, tabs:['transito','prealerta']},
+  recebimento: {title:'Recebimento',       icon: ICONS.inbox, tabs:['recebnotas','recebverba']}
 };
 
 const SECTIONS = [
@@ -4058,10 +4118,10 @@ const SECTIONS = [
   {id:'aging',      setor:'gestao',      title:'Aging',                          render:() => secAging()},
   {id:'ocup',       setor:'gestao',      title:'Ocupação',                       render:() => secOcup()},
   {id:'carteira',   setor:'gestao',      title:'Carteira',                       render:() => secCarteira()},
-  {id:'transito',   setor:'admin',       title:'🚚 Notas em Trânsito',           render:() => secTransito()},
-  {id:'prealerta',  setor:'admin',       title:'⚠️ Pré-Alerta (Sobra e Falta)',  render:() => secPreAlerta()},
-  {id:'recebnotas', setor:'recebimento', title:'📄 Notas de Recebimento',        render:() => secRecebNotas()},
-  {id:'recebverba', setor:'recebimento', title:'💰 Verba Logística',             render:() => secRecebVerba()}
+  {id:'transito',   setor:'admin',       title: `${ICONS.truck} Notas em Trânsito`,           render:() => secTransito()},
+  {id:'prealerta',  setor:'admin',       title: `${ICONS.alert} Pré-Alerta (Sobra e Falta)`,  render:() => secPreAlerta()},
+  {id:'recebnotas', setor:'recebimento', title: `${ICONS.doc} Notas de Recebimento`,        render:() => secRecebNotas()},
+  {id:'recebverba', setor:'recebimento', title: `${ICONS.dollar} Verba Logística`,             render:() => secRecebVerba()}
 ];
 
 let activeTab = 'geral';
@@ -4272,7 +4332,7 @@ function renderFilterBar(){
           <span class="ms-arrow">${isOpen ? '▲' : '▼'}</span>
         </button>
         <div class="ms-menu" data-ms-menu="${i}">
-          <input type="text" class="ms-search" data-ms-search="${i}" placeholder="🔍 Filtrar ${esc(d.label.toLowerCase())}..." value="${isOpen ? esc(dropdownSearchTerm) : ''}" />
+          <input type="text" class="ms-search" data-ms-search="${i}" placeholder="Filtrar ${esc(d.label.toLowerCase())}..." value="${isOpen ? esc(dropdownSearchTerm) : ''}" />
           <div class="ms-actions">
             <span>${vals.length} de ${d.options.length}</span>
             <div class="ms-actions-btns">
@@ -4297,7 +4357,7 @@ function renderFilterBar(){
   el.classList.add('on');
   el.innerHTML = `
     <div class="gf-row">
-      <span class="gf-title">🔎 Filtros</span>
+      <span class="gf-title">${ICONS.filter} Filtros</span>
       ${defs.map(renderControl).join('')}
       <button class="gf-clear" id="gfClear" ${chips.length ? '' : 'disabled'}>✕ Limpar filtros</button>
     </div>
