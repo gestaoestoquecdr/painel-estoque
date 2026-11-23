@@ -165,6 +165,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .grid{display:grid;gap:16px}
 .kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 .two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:stretch}
+.two-equal{grid-template-columns:repeat(2, minmax(0,1fr));align-items:stretch}
 
 .card{
   background:var(--panel);
@@ -585,7 +586,7 @@ body.tvmode .card { padding: 24px; }
 body.tvmode h2 { font-size: 36px; }
 body.tvmode .kpi .v { font-size: 52px; }
 
-@media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:820px){.two, .two-equal{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:no-preference){#bar{transition:width .3s linear}}
 
 /* ===== SETORES + BARRA DE FILTROS ===== */
@@ -683,16 +684,19 @@ body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
 
 .dept-hbar-list { display: flex; flex-direction: column; gap: 9px; margin-top: 4px; }
 .dept-hbar-row {
-  display: grid; grid-template-columns: 155px 1fr 125px; align-items: center; gap: 10px;
-  padding: 5px 8px; border-radius: 7px; cursor: pointer; transition: all 0.2s ease;
+  display: grid; grid-template-columns: 230px 1fr 190px; align-items: center; gap: 14px;
+  padding: 6px 10px; border-radius: 7px; cursor: pointer; transition: all 0.2s ease;
   border: 1px solid transparent;
 }
 .dept-hbar-row:hover { background: rgba(255, 255, 255, 0.05); }
 .dept-hbar-row.active-dept { background: rgba(255, 196, 0, 0.14); border-color: rgba(255, 196, 0, 0.45); }
-.dept-hbar-name { font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dept-hbar-track { height: 14px; background: #07132b; border-radius: 5px; overflow: hidden; position: relative; border: 1px solid rgba(26,49,99,0.7); }
+.dept-hbar-name { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dept-hbar-track { height: 15px; background: #07132b; border-radius: 5px; overflow: hidden; position: relative; border: 1px solid rgba(26,49,99,0.7); }
 .dept-hbar-fill { height: 100%; border-radius: 4px; transition: width 0.35s ease; }
-.dept-hbar-val { font-family: var(--f-num); font-size: 13px; font-weight: 700; text-align: right; white-space: nowrap; }
+.dept-hbar-val { font-family: var(--f-num); font-size: 14px; font-weight: 700; text-align: right; white-space: nowrap; }
+@media (max-width:720px){
+  .dept-hbar-row { grid-template-columns: 140px 1fr 125px; gap: 8px; }
+}
 .badge-pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 800; font-family: var(--f-num); }
 .badge-full { background: rgba(66, 133, 244, 0.2); border: 1px solid rgba(66, 133, 244, 0.5); color: #7cb3ff; }
 .badge-lote { background: rgba(255, 196, 0, 0.16); border: 1px solid rgba(255, 196, 0, 0.4); color: var(--accent); }
@@ -2283,7 +2287,7 @@ function secCarteira(){
   const sepRows = Object.entries(bySep).sort((a,b) => (basis === 'custo' ? b[1].valor - a[1].valor : b[1].pedida - a[1].pedida));
   const totLinhasSep = sepRows.reduce((s, [, o]) => s + o.linhas, 0);
 
-  // 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (Barras Horizontais ordenadas estilo visão antiga + clique para filtrar)
+  // 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (Barras Horizontais ordenadas + clique para filtrar)
   const baseDept = C.filter(r => {
     if (dateReservaFilter.length > 0 && !hasArr(dateReservaFilter, r.gerReserva)) return false;
     if (sepFilter.length > 0 && !hasArr(sepFilter, r.tipoSep)) return false;
@@ -2399,136 +2403,133 @@ function secCarteira(){
     ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso, 'Datas em Atraso Crítico', Array.from(datasPendentesSet).map(d => ({prod: `Data Reserva: ${d}`, sub: 'Pendente de liberação'})), isCritico ? 'var(--crit)' : 'var(--warn)')}
   </div>
 
-  <!-- BLOCO PRINCIPAL ESTILO VISÃO EXECUTIVA: ESQUERDA (DATA RESERVA + TIPO SEPARAÇÃO) | DIREITA (DEPARTAMENTOS) -->
-  <div class="grid two" style="margin-top:16px">
-    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
-      
-      <!-- 1. GERAÇÃO RESERVA COM LINHAS / PALETES FULL -->
-      <div class="card">
-        <div class="card-header-action">
-          <h3>📅 GERAÇÃO RESERVA (${resRows.length} DATAS) · CLIQUE P/ FILTRAR</h3>
-          <span style="font-size:12px;color:var(--mute);font-weight:700">Paletes Full: <b style="color:#7cb3ff">${fmtN.format(totFullLinhasRes)}</b></span>
-        </div>
-        <div class="tw">
-          <table class="cart-matrix">
-            <thead>
-              <tr>
-                <th>Geração Reserva</th>
-                <th class="r">Qtd Pedida</th>
-                <th class="r">Valor Total</th>
-                <th class="r">% Repr.</th>
-                <th class="r" title="Quantidade de linhas / paletes do fluxo Full nesta data">Linhas / Paletes Full</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${resRows.length ? resRows.map(([dt, o]) => {
-                const isSelectedDt = isSelectedArr(dateReservaFilter, dt);
-                const valMetric = basis === 'custo' ? o.valor : o.qtd;
-                const pctRep = totResBase ? (valMetric / totResBase) * 100 : 0;
-                const pctStr = pctRep > 0 && pctRep < 0.01 ? '+0%' : fmtP(pctRep, pctRep >= 10 ? 1 : 2);
-                return `
-                <tr class="clickable-row ${isSelectedDt ? 'active-row' : ''}" data-filter-res-dt="${esc(dt)}">
-                  <td>
-                    <b>${esc(dt)}</b>
-                    ${o.pendentes === 0 ? '<span style="color:var(--ok);font-size:11px;margin-left:6px">✔</span>' : ''}
-                  </td>
-                  <td class="r" style="font-weight:700">${fmtN.format(o.qtd)}</td>
-                  <td class="r">${brlShort(o.valor)}</td>
-                  <td class="r"><span class="hm-cell ${hmClass(pctRep)}">${pctStr}</span></td>
-                  <td class="r">
-                    ${o.fullLinhas > 0 
-                      ? `<span class="badge-pill badge-full" title="${fmtN.format(o.fullQtd)} unidades em ${o.fullLinhas} paletes Full">${fmtN.format(o.fullLinhas)}</span>` 
-                      : `<span style="color:var(--mute)">0</span>`}
-                  </td>
-                </tr>`;
-              }).join('') : '<tr><td colspan="5">Nenhuma data encontrada no filtro.</td></tr>'}
-              <tr class="tot">
-                <td>Total Geral</td>
-                <td class="r">${fmtN.format(totPedida)}</td>
-                <td class="r">${brlShort(totValor)}</td>
-                <td class="r" style="color:var(--accent)">100,0%</td>
-                <td class="r" style="color:#7cb3ff">${fmtN.format(totFullLinhasRes)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- 2. TIPO DE SEPARAÇÃO (VISÃO CLÁSSICA COM Nº DO LOTE / LINHAS) -->
-      <div class="card">
-        <div class="card-header-action">
-          <h3>⚙️ TIPO DE SEPARAÇÃO · CLIQUE P/ FILTRAR</h3>
-          <span style="font-size:12px;color:var(--mute);font-weight:700">Lotes/Linhas: <b style="color:var(--accent)">${fmtN.format(totLinhasSep)}</b></span>
-        </div>
-        <div class="tw">
-          <table class="cart-matrix">
-            <thead>
-              <tr>
-                <th>Tipo de Separação</th>
-                <th class="r">Qtd Pedida</th>
-                <th class="r">Valor Total</th>
-                <th class="r">% Repr.</th>
-                <th class="r">Nº do Lote / Linhas</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${sepRows.length ? sepRows.map(([tp, o]) => {
-                const isSelectedSep = isSelectedArr(sepFilter, tp);
-                const valMetric = basis === 'custo' ? o.valor : o.pedida;
-                const pctRep = totResBase ? (valMetric / totResBase) * 100 : 0;
-                const pctStr = pctRep > 0 && pctRep < 1 ? '+0%' : fmtP(pctRep, 0);
-                return `
-                <tr class="clickable-row ${isSelectedSep ? 'active-row' : ''}" data-filter-carteira-sep="${esc(tp)}">
-                  <td><b>${esc(tp)}</b></td>
-                  <td class="r" style="font-weight:700">${fmtN.format(o.pedida)}</td>
-                  <td class="r">${brlShort(o.valor)}</td>
-                  <td class="r"><span class="hm-cell ${hmClass(pctRep)}">${pctStr}</span></td>
-                  <td class="r"><span class="badge-pill badge-lote">${fmtN.format(o.linhas)}</span></td>
-                </tr>`;
-              }).join('') : '<tr><td colspan="5">Nenhum tipo encontrado.</td></tr>'}
-              <tr class="tot">
-                <td>Total</td>
-                <td class="r">${fmtN.format(totPedida)}</td>
-                <td class="r">${brlShort(totValor)}</td>
-                <td class="r" style="color:var(--accent)">100%</td>
-                <td class="r" style="color:var(--accent)">${fmtN.format(totLinhasSep)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="info-note">
-          💡 <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
-        </div>
-      </div>
-
-    </div>
-
-    <!-- 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (BARRAS HORIZONTAIS ESTILO VISÃO ANTIGA) -->
+  <!-- BLOCO SUPERIOR LADO A LADO: ESQUERDA (GERAÇÃO RESERVA) | DIREITA (TIPO DE SEPARAÇÃO) -->
+  <div class="grid two-equal" style="margin-top:16px">
+    <!-- 1. GERAÇÃO RESERVA COM LINHAS / PALETES FULL -->
     <div class="card">
       <div class="card-header-action">
-        <h3>📊 PARTICIPAÇÃO POR DEPARTAMENTO CD (${basis === 'custo' ? 'VALOR R$' : 'QTD PEDIDA'})</h3>
-        <span style="font-size:11px;color:var(--mute);font-weight:600">Clique p/ filtrar</span>
+        <h3>📅 GERAÇÃO RESERVA (${resRows.length} DATAS) · CLIQUE P/ FILTRAR</h3>
+        <span style="font-size:12px;color:var(--mute);font-weight:700">Paletes Full: <b style="color:#7cb3ff">${fmtN.format(totFullLinhasRes)}</b></span>
       </div>
-      <div class="dept-hbar-list">
-        ${deptRows.length ? deptRows.map(([deptName, o], idx) => {
-          const valMetric = basis === 'custo' ? o.valor : o.qtd;
-          const pct = (valMetric / totDeptVal) * 100;
-          const barW = maxDeptVal ? (valMetric / maxDeptVal) * 100 : 0;
-          const isSel = isSelectedArr(deptFilter, deptName);
-          const barColor = isSel ? 'var(--accent)' : (idx < 2 ? 'var(--blue)' : '#3a5db0');
-          return `
-          <div class="dept-hbar-row ${isSel ? 'active-dept' : ''}" data-filter-dept="${esc(deptName)}" title="${esc(deptName)}: ${brl(o.valor)} | ${fmtN.format(o.qtd)} un. (${fmtP(pct, 2)})">
-            <div class="dept-hbar-name">${esc(deptName)}</div>
-            <div class="dept-hbar-track">
-              <div class="dept-hbar-fill" style="width:${Math.max(barW, 2)}%;background:${barColor}"></div>
-            </div>
-            <div class="dept-hbar-val">
-              <span style="color:var(--accent)">${fmtP(pct, 2)}</span>
-              <span style="color:var(--mute);font-size:11px;margin-left:4px">${basis === 'custo' ? brlShort(o.valor).replace('R$ ','') : fmtN.format(o.qtd)}</span>
-            </div>
-          </div>`;
-        }).join('') : '<p style="color:var(--mute)">Nenhum departamento encontrado.</p>'}
+      <div class="tw">
+        <table class="cart-matrix">
+          <thead>
+            <tr>
+              <th>Geração Reserva</th>
+              <th class="r">Qtd Pedida</th>
+              <th class="r">Valor Total</th>
+              <th class="r">% Repr.</th>
+              <th class="r" title="Quantidade de linhas / paletes do fluxo Full nesta data">Linhas / Paletes Full</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${resRows.length ? resRows.map(([dt, o]) => {
+              const isSelectedDt = isSelectedArr(dateReservaFilter, dt);
+              const valMetric = basis === 'custo' ? o.valor : o.qtd;
+              const pctRep = totResBase ? (valMetric / totResBase) * 100 : 0;
+              const pctStr = pctRep > 0 && pctRep < 0.01 ? '+0%' : fmtP(pctRep, pctRep >= 10 ? 1 : 2);
+              return `
+              <tr class="clickable-row ${isSelectedDt ? 'active-row' : ''}" data-filter-res-dt="${esc(dt)}">
+                <td>
+                  <b>${esc(dt)}</b>
+                  ${o.pendentes === 0 ? '<span style="color:var(--ok);font-size:11px;margin-left:6px">✔</span>' : ''}
+                </td>
+                <td class="r" style="font-weight:700">${fmtN.format(o.qtd)}</td>
+                <td class="r">${brlShort(o.valor)}</td>
+                <td class="r"><span class="hm-cell ${hmClass(pctRep)}">${pctStr}</span></td>
+                <td class="r">
+                  ${o.fullLinhas > 0 
+                    ? `<span class="badge-pill badge-full" title="${fmtN.format(o.fullQtd)} unidades em ${o.fullLinhas} paletes Full">${fmtN.format(o.fullLinhas)}</span>` 
+                    : `<span style="color:var(--mute)">0</span>`}
+                </td>
+              </tr>`;
+            }).join('') : '<tr><td colspan="5">Nenhuma data encontrada no filtro.</td></tr>'}
+            <tr class="tot">
+              <td>Total Geral</td>
+              <td class="r">${fmtN.format(totPedida)}</td>
+              <td class="r">${brlShort(totValor)}</td>
+              <td class="r" style="color:var(--accent)">100,0%</td>
+              <td class="r" style="color:#7cb3ff">${fmtN.format(totFullLinhasRes)}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+    </div>
+
+    <!-- 2. TIPO DE SEPARAÇÃO (NO TOPO AO LADO DE GERAÇÃO RESERVA) -->
+    <div class="card">
+      <div class="card-header-action">
+        <h3>⚙️ TIPO DE SEPARAÇÃO · CLIQUE P/ FILTRAR</h3>
+        <span style="font-size:12px;color:var(--mute);font-weight:700">Lotes/Linhas: <b style="color:var(--accent)">${fmtN.format(totLinhasSep)}</b></span>
+      </div>
+      <div class="tw">
+        <table class="cart-matrix">
+          <thead>
+            <tr>
+              <th>Tipo de Separação</th>
+              <th class="r">Qtd Pedida</th>
+              <th class="r">Valor Total</th>
+              <th class="r">% Repr.</th>
+              <th class="r">Nº do Lote / Linhas</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sepRows.length ? sepRows.map(([tp, o]) => {
+              const isSelectedSep = isSelectedArr(sepFilter, tp);
+              const valMetric = basis === 'custo' ? o.valor : o.pedida;
+              const pctRep = totResBase ? (valMetric / totResBase) * 100 : 0;
+              const pctStr = pctRep > 0 && pctRep < 1 ? '+0%' : fmtP(pctRep, 0);
+              return `
+              <tr class="clickable-row ${isSelectedSep ? 'active-row' : ''}" data-filter-carteira-sep="${esc(tp)}">
+                <td><b>${esc(tp)}</b></td>
+                <td class="r" style="font-weight:700">${fmtN.format(o.pedida)}</td>
+                <td class="r">${brlShort(o.valor)}</td>
+                <td class="r"><span class="hm-cell ${hmClass(pctRep)}">${pctStr}</span></td>
+                <td class="r"><span class="badge-pill badge-lote">${fmtN.format(o.linhas)}</span></td>
+              </tr>`;
+            }).join('') : '<tr><td colspan="5">Nenhum tipo encontrado.</td></tr>'}
+            <tr class="tot">
+              <td>Total</td>
+              <td class="r">${fmtN.format(totPedida)}</td>
+              <td class="r">${brlShort(totValor)}</td>
+              <td class="r" style="color:var(--accent)">100%</td>
+              <td class="r" style="color:var(--accent)">${fmtN.format(totLinhasSep)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="info-note" style="margin-top:auto">
+        💡 <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (EMBAIXO EM LARGURA TOTAL COM NOMES COMPLETOS E MÉTRICAS) -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-header-action">
+      <h3>📊 PARTICIPAÇÃO POR DEPARTAMENTO CD (${basis === 'custo' ? 'VALOR R$' : 'QTD PEDIDA'})</h3>
+      <span style="font-size:11px;color:var(--mute);font-weight:600">Clique na barra para filtrar o departamento</span>
+    </div>
+    <div class="dept-hbar-list">
+      ${deptRows.length ? deptRows.map(([deptName, o], idx) => {
+        const valMetric = basis === 'custo' ? o.valor : o.qtd;
+        const pct = (valMetric / totDeptVal) * 100;
+        const barW = maxDeptVal ? (valMetric / maxDeptVal) * 100 : 0;
+        const isSel = isSelectedArr(deptFilter, deptName);
+        const barColor = isSel ? 'var(--accent)' : (idx < 2 ? 'var(--blue)' : '#3a5db0');
+        return `
+        <div class="dept-hbar-row ${isSel ? 'active-dept' : ''}" data-filter-dept="${esc(deptName)}" title="${esc(deptName)}: ${brl(o.valor)} | ${fmtN.format(o.qtd)} un. (${fmtP(pct, 2)})">
+          <div class="dept-hbar-name">${esc(deptName)}</div>
+          <div class="dept-hbar-track">
+            <div class="dept-hbar-fill" style="width:${Math.max(barW, 2)}%;background:${barColor}"></div>
+          </div>
+          <div class="dept-hbar-val">
+            <span style="color:var(--accent)">${fmtP(pct, 2)}</span>
+            <span style="color:var(--text);font-size:12px;margin-left:8px">${basis === 'custo' ? brlShort(o.valor) : fmtN.format(o.qtd) + ' un.'}</span>
+            <span style="color:var(--mute);font-size:11px;margin-left:6px">(${basis === 'custo' ? fmtN.format(o.qtd) + ' un.' : brlShort(o.valor)})</span>
+          </div>
+        </div>`;
+      }).join('') : '<p style="color:var(--mute)">Nenhum departamento encontrado.</p>'}
     </div>
   </div>
 
