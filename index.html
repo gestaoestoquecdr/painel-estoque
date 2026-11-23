@@ -695,6 +695,9 @@ body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
 .dept-hbar-val { font-family: var(--f-num); font-size: 13px; font-weight: 700; text-align: right; white-space: nowrap; }
 .badge-pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 800; font-family: var(--f-num); }
 .badge-full { background: rgba(66, 133, 244, 0.2); border: 1px solid rgba(66, 133, 244, 0.5); color: #7cb3ff; }
+
+.badge-verba-sim { background: rgba(53, 212, 154, 0.18); border: 1px solid rgba(53, 212, 154, 0.5); color: var(--ok); }
+.badge-verba-nao { background: rgba(255, 93, 98, 0.18); border: 1px solid rgba(255, 93, 98, 0.5); color: #ff9ea1; }
 .badge-lote { background: rgba(255, 196, 0, 0.16); border: 1px solid rgba(255, 196, 0, 0.4); color: var(--accent); }
 
 /* o aviso de filtro ativo agora é só o da barra do topo (chips) */
@@ -964,18 +967,6 @@ function extractList(source) {
     if (Array.isArray(source.items)) return source.items;
     const vals = Object.values(source).filter(v => v && typeof v === 'object');
     if (vals.length > 0) return vals;
-  }
-  if ((tab === 'recebnotas' || tab === 'recebverba') && RecebD) {
-    const notas = recNotasTodas();
-    const uq = f => Array.from(new Set(notas.map(f))).filter(Boolean);
-    const reset = () => { recLimite = 150; verbaLimite = 150; };
-    return [
-      {label:'Mês', multi:true, allLabel:'Todos', values:recFiltro.mes, options:uq(r => r.mes).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(m => optF(m, mesLabel(m))), change:vals => { recFiltro.mes = vals; reset(); }},
-      {label:'Loja', multi:true, allLabel:'Todas', values:recFiltro.loja, options:uq(r => r.loja).sort((a,b) => a.localeCompare(b, undefined, {numeric:true})).map(l => optF(l, l)), change:vals => { recFiltro.loja = vals; reset(); }},
-      {label:'Tipo de Carga', multi:true, allLabel:'Todos', values:recFiltro.tipoCarga, options:uq(r => r.tipoCarga).sort().map(t => optF(t, t)), change:vals => { recFiltro.tipoCarga = vals; reset(); }},
-      {label:'Status Nota', multi:true, allLabel:'Todos', values:recFiltro.statusNota, options:uq(r => r.statusNota).sort().map(s => optF(s, s)), change:vals => { recFiltro.statusNota = vals; reset(); }},
-      {label:'Fornecedor', multi:true, allLabel:'Todos', values:recFiltro.fornecedor, options:uq(r => r.fornecedor).sort().map(f => optF(f, f)), change:vals => { recFiltro.fornecedor = vals; reset(); }}
-    ];
   }
   return [];
 }
@@ -3313,11 +3304,15 @@ function secPreAlerta(){
 let RecebD = null;
 let searchRecNotas = '';
 let searchRecVerba = '';
-let recFiltro = {mes:[], loja:[], tipoCarga:[], statusNota:[], tipoOp:[], fornecedor:[]};
+let searchSemVerba = '';
+let recFiltro = {mes:[], loja:[], tipoCarga:[], statusNota:[], tipoOp:[], fornecedor:[], pagaVerba:'todos'};
 let recOrdem = 'valor';
 let recLimite = 150;
 let verbaOrdem = 'verba';
 let verbaLimite = 150;
+let semVerbaOrdem = 'valor';
+let semVerbaLimite = 150;
+let semVerbaExpanded = true;
 
 async function loadRecebimentoData(){
   try {
@@ -3332,39 +3327,46 @@ async function loadRecebimentoData(){
 function recNotasTodas(){
   const raw = (RecebD && (RecebD.notas_recebimento || RecebD.notas || RecebD.data)) || [];
   return raw.map(n => {
-    const dtRec = String(n.dataRecebimento || n.dataEmissao || '').trim();
-    const dtEmi = String(n.dataEmissao || '').trim();
+    const dtRec = String(n.dataRecebimento || n['Data de Recebimento/Saída'] || n.dataEmissao || n['Data de Emissão'] || '').trim();
+    const dtEmi = String(n.dataEmissao || n['Data de Emissão'] || '').trim();
     const mesRef = nfMes(dtRec || dtEmi);
-    const lojaRaw = String(n.loja || '').trim();
-    const lojaNome = /^\d+$/.test(lojaRaw) ? getNomeLoja(lojaRaw) : (lojaRaw || 'Sem Loja');
-    const valNf = parseNum(n.valorNf);
-    const valRec = parseNum(n.valorRecebido) || valNf;
-    let vPct = parseNum(n.verbaPct);
+    const lojaRaw = String(n.loja || n.Loja || '').trim();
+    const lojaClean = lojaRaw.replace(/\.0$/, '');
+    const lojaNome = lojaClean === '205' ? 'CD 205 - ROLDÃO' : (/^\d+$/.test(lojaClean) ? getNomeLoja(lojaClean) : (lojaClean || 'Sem Loja'));
+    const valNf = parseNum(n.valorNf != null ? n.valorNf : n['Valor NF']);
+    const valRec = parseNum(n.valorRecebido != null ? n.valorRecebido : n['Valor Recebido']) || valNf;
+    let vPct = parseNum(n.verbaPct != null ? n.verbaPct : n['Verba logistica']);
     const vVal = n.verbaValor != null ? parseNum(n.verbaValor) : (valRec * (vPct / 100));
+    const temVerba = (vVal > 0.005 || vPct > 0);
+    const fornRaw = String(n.fornecedor || n['Fornecedor/Loja'] || n['Emitente/Destinatário'] || 'NÃO INFORMADO').trim();
+    const statusNotaRaw = String(n.statusNota || n['Status da Nota Fiscal'] || '').trim() || 'Não informado';
+    const statusNfeRaw = String(n.statusNfe || n['Status NF-e'] || '').trim();
     return {
       dataEmissao: dtEmi,
       dataRecebimento: dtRec,
       mes: mesRef,
       loja: lojaNome,
-      tipoNota: String(n.tipoNota || '').trim(),
-      tipoOperacao: String(n.tipoOperacao || '').trim() || 'Não informado',
-      cfop: String(n.cfop || '').trim(),
-      fornecedor: String(n.fornecedor || 'NÃO INFORMADO').trim(),
-      cnpj: String(n.cnpj || '').trim(),
-      nf: String(n.nf || '').trim(),
-      serie: String(n.serie || '').trim(),
-      statusNfe: String(n.statusNfe || '').trim(),
-      statusNota: String(n.statusNota || '').trim() || 'Não informado',
+      tipoNota: String(n.tipoNota || n['Tipo de Nota Fiscal'] || '').trim(),
+      tipoOperacao: String(n.tipoOperacao || n['Tipo de Operação'] || '').trim() || 'Não informado',
+      cfop: String(n.cfop || n.CFOP || '').trim(),
+      fornecedor: fornRaw,
+      cnpj: String(n.cnpj || n.CNPJ || '').trim(),
+      nf: String(n.nf || n.NF || '').replace(/\.0$/, '').trim(),
+      serie: String(n.serie || n['Série'] || '').replace(/\.0$/, '').trim(),
+      statusNfe: statusNfeRaw,
+      statusNota: statusNotaRaw,
       valorNf: valNf,
-      valorLiquido: parseNum(n.valorLiquido),
-      valorCompra: parseNum(n.valorCompra),
-      valorBonificada: parseNum(n.valorBonificada),
-      usuario: String(n.usuario || '').trim(),
-      tipoCarga: String(n.tipoCarga || 'FORNECEDOR').trim().toUpperCase(),
+      valorLiquido: parseNum(n.valorLiquido != null ? n.valorLiquido : n['Valor Liquido']),
+      valorCompra: parseNum(n.valorCompra != null ? n.valorCompra : n['Valor NF Compra']),
+      valorBonificada: parseNum(n.valorBonificada != null ? n.valorBonificada : n['Valor NF Bonificada']),
+      usuario: String(n.usuario || n['Usuário'] || '').trim(),
+      usuarioConfirmacao: String(n.usuarioConfirmacao || n['Usuário Confirmação'] || '').trim(),
+      tipoCarga: String(n.tipoCarga || n['Tipo de Carga'] || 'FORNECEDOR').trim().toUpperCase(),
       valorRecebido: valRec,
       verbaPct: vPct,
       verbaValor: vVal,
-      qtdFaturado: parseNum(n.qtdFaturado)
+      temVerba: temVerba,
+      qtdFaturado: parseNum(n.qtdFaturado != null ? n.qtdFaturado : n['Qtd Faturado'])
     };
   });
 }
@@ -3377,6 +3379,8 @@ function recNotasFiltradas(){
     if (recFiltro.statusNota.length > 0 && !hasArr(recFiltro.statusNota, n.statusNota)) return false;
     if (recFiltro.tipoOp.length > 0 && !hasArr(recFiltro.tipoOp, n.tipoOperacao)) return false;
     if (recFiltro.fornecedor.length > 0 && !hasArr(recFiltro.fornecedor, n.fornecedor)) return false;
+    if (recFiltro.pagaVerba === 'sim' && !n.temVerba) return false;
+    if (recFiltro.pagaVerba === 'nao' && n.temVerba) return false;
     return true;
   });
 }
@@ -3388,7 +3392,7 @@ function recAtualizadoTxt(){
   return isNaN(d) ? '' : ` Base atualizada em ${d.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})}.`;
 }
 
-/* ---------- SUB-ABA 1: NOTAS DE RECEBIMENTO ---------- */
+/* ---------- SUB-ABA 1: NOTAS DE RECEBIMENTO (DASHBOARD + TABELAS DINÂMICAS) ---------- */
 function secRecebNotas(){
   const el = $('#s-recebnotas');
   if (!el) return;
@@ -3402,10 +3406,16 @@ function secRecebNotas(){
   const totValRec = notas.reduce((s,n) => s + n.valorRecebido, 0);
   const totVerba = notas.reduce((s,n) => s + n.verbaValor, 0);
   const totQtd = notas.reduce((s,n) => s + n.qtdFaturado, 0);
-  const fornSet = new Set(notas.map(n => n.fornecedor).filter(Boolean));
+
+  const notasComVerba = notas.filter(n => n.temVerba);
+  const notasSemVerba = notas.filter(n => !n.temVerba);
+  const valComVerba = notasComVerba.reduce((s,n) => s + n.valorRecebido, 0);
+  const valSemVerba = notasSemVerba.reduce((s,n) => s + n.valorRecebido, 0);
+
+  const fornAllSet = new Set(notas.map(n => n.fornecedor).filter(Boolean));
+  const fornPagamSet = new Set(notasComVerba.map(n => n.fornecedor).filter(Boolean));
+  const fornNaoPagamList = Array.from(fornAllSet).filter(f => !fornPagamSet.has(f));
   const lojasSet = new Set(notas.map(n => n.loja).filter(Boolean));
-  const confNotas = notas.filter(n => n.statusNota.toLowerCase().includes('confirmad'));
-  const pctConf = notas.length ? (confNotas.length / notas.length) * 100 : 0;
 
   // Agrupamento por Mês
   const porMesMap = {};
@@ -3419,6 +3429,18 @@ function secRecebNotas(){
     porMesMap[k].qtd += n.qtdFaturado;
   });
   const porMes = Object.values(porMesMap).sort((a,b) => mesOrdem(a.mes).localeCompare(mesOrdem(b.mes)));
+  const maxMesRec = porMes.length ? Math.max(...porMes.map(m => m.valorRec)) * 1.18 : 1;
+
+  // Agrupamento por Tipo de Operação
+  const porOpMap = {};
+  notas.forEach(n => {
+    const k = n.tipoOperacao || 'Não informado';
+    porOpMap[k] = porOpMap[k] || {op:k, nfs:0, valorRec:0, verba:0};
+    porOpMap[k].nfs++;
+    porOpMap[k].valorRec += n.valorRecebido;
+    porOpMap[k].verba += n.verbaValor;
+  });
+  const porOp = Object.values(porOpMap).sort((a,b) => b.valorRec - a.valorRec);
 
   // Agrupamento por Tipo de Carga
   const porCargaMap = {};
@@ -3443,15 +3465,12 @@ function secRecebNotas(){
   });
   const porLoja = Object.values(porLojaMap).sort((a,b) => b.valorRec - a.valorRec);
 
-  // Agrupamento por Status da Nota
-  const porStatusMap = {};
-  notas.forEach(n => {
-    const k = n.statusNota;
-    porStatusMap[k] = porStatusMap[k] || {status:k, nfs:0, valorRec:0};
-    porStatusMap[k].nfs++;
-    porStatusMap[k].valorRec += n.valorRecebido;
-  });
-  const porStatus = Object.values(porStatusMap).sort((a,b) => b.nfs - a.nfs);
+  // Donut: Volume Recebido Com Verba vs Sem Verba
+  const donutVerbaItems = [
+    { rawKey: 'sim', n: 'Com Verba Logística', v: valComVerba, c: '#35d49a', topProd: `${fmtN.format(notasComVerba.length)} NFs (${fmtN.format(fornPagamSet.size)} forn.)` },
+    { rawKey: 'nao', n: 'Sem Verba Logística', v: valSemVerba, c: '#ff5d62', topProd: `${fmtN.format(notasSemVerba.length)} NFs (${fmtN.format(fornNaoPagamList.length)} forn.)` }
+  ].filter(i => i.v > 0);
+  const pctComVerbaVal = totValRec ? (valComVerba / totValRec) * 100 : 0;
 
   const q = searchRecNotas.trim().toLowerCase();
   const busca = q ? notas.filter(n =>
@@ -3460,7 +3479,7 @@ function secRecebNotas(){
     n.loja.toLowerCase().includes(q) ||
     n.cnpj.toLowerCase().includes(q) ||
     n.tipoCarga.toLowerCase().includes(q) ||
-    n.statusNota.toLowerCase().includes(q) ||
+    n.tipoOperacao.toLowerCase().includes(q) ||
     n.usuario.toLowerCase().includes(q)
   ) : notas;
 
@@ -3477,22 +3496,85 @@ function secRecebNotas(){
   const dica = '<span style="color:var(--mute);font-weight:500;font-size:12px">(clique para filtrar)</span>';
 
   el.innerHTML = `
-    <h2>Notas de Recebimento</h2>
-    <p class="sub">Setor Recebimento · Acompanhamento de notas fiscais recebidas por loja, fornecedor e tipo de carga.${esc(recAtualizadoTxt())}</p>
+    <h2>Notas de Recebimento · Dashboard Executivo</h2>
+    <p class="sub">Setor Recebimento · Visão consolidada de entradas, cobertura de verba logística e fornecedores.${esc(recAtualizadoTxt())}</p>
 
     <div class="grid kpis">
       ${kpi('Valor Total Recebido', brlShort(totValRec), `${fmtN.format(notas.length)} NFs · Valor NF: ${brlShort(totValNf)}`, 'hl')}
-      ${kpi('Verba Logística Apurada', `<span style="color:var(--ok)">${brlShort(totVerba)}</span>`, `Média ${fmtP(totValRec ? (totVerba / totValRec) * 100 : 0, 2)} sobre recebido`)}
-      ${kpi('NFs Confirmadas', `<span style="color:var(--blue)">${fmtN.format(confNotas.length)}</span>`, `${fmtP(pctConf)} do total (${fmtN.format(notas.length)} NFs)`)}
-      ${kpi('Fornecedores & Lojas', `${fmtN.format(fornSet.size)} forn.`, `${fmtN.format(lojasSet.size)} lojas · ${fmtN.format(totQtd)} itens faturados`)}
+      ${kpi('Verba Logística Apurada', `<span style="color:var(--ok)">${brlShort(totVerba)}</span>`, `Média ${fmtP(totValRec ? (totVerba / totValRec) * 100 : 0, 2)} sobre recebido`, 'hl')}
+      ${kpi('Cobertura de Verba (R$)', `<span style="color:var(--blue)">${fmtP(pctComVerbaVal, 1)}</span>`, `${brlShort(valComVerba)} c/ verba · ${brlShort(valSemVerba)} s/ verba`)}
+      ${kpi('Fornecedores (Pagam vs Não)', `${fmtN.format(fornPagamSet.size)} <span style="font-size:20px;color:var(--mute)">/ ${fmtN.format(fornAllSet.size)}</span>`, `<span style="color:var(--crit);font-weight:700">${fmtN.format(fornNaoPagamList.length)} sem verba</span> · ${fmtN.format(totQtd)} itens`)}
     </div>
 
+    <!-- GRÁFICOS DO DASHBOARD -->
+    <div class="grid two" style="margin-top:20px">
+      <div class="card">
+        <h3>📊 Evolução Mensal do Recebimento (R$) ${dica}</h3>
+        ${porMes.length ? `
+          <div class="bar-chart-container" style="height:260px;padding-top:52px">
+            <div class="bar-chart-wrapper">
+              ${porMes.map((m, idx) => {
+                const pctH = (m.valorRec / maxMesRec) * 100;
+                const isSel = isSelectedArr(recFiltro.mes, m.mes);
+                let varTag = '';
+                if (idx > 0 && porMes[idx - 1].valorRec > 0) {
+                  const vp = ((m.valorRec - porMes[idx - 1].valorRec) / porMes[idx - 1].valorRec) * 100;
+                  const clsV = vp >= 0 ? 'up' : 'down';
+                  varTag = `<span class="bar-var-tag ${clsV}">${vp >= 0 ? '+' : ''}${fmtP(vp, 0)}</span>`;
+                }
+                const ttItems = [
+                  { prod: `${mesLabel(m.mes)} · ${fmtN.format(m.nfs)} NFs`, sub: `Recebido: ${brl(m.valorRec)}` },
+                  { prod: `Verba Apurada: ${brl(m.verba)}`, sub: `Clique na barra para filtrar este mês` }
+                ];
+                return `
+                <div class="bar-chart-col" data-rec-mes="${esc(m.mes)}" style="cursor:pointer">
+                  <div class="bar-chart-bar ${isSel ? 'is-proj' : ''}" style="height:${Math.max(pctH, 6)}%"
+                       data-tooltip-title="${esc(mesLabel(m.mes))}"
+                       data-tooltip-color="${isSel ? 'var(--accent)' : 'var(--blue)'}"
+                       data-tooltip-items="${JSON.stringify(ttItems).replace(/"/g, '&quot;')}">
+                    <div class="bar-val-label">
+                      <span>${brlShort(m.valorRec).replace('R$ ', '')}</span>
+                      ${varTag}
+                    </div>
+                  </div>
+                  <div class="bar-date-label" style="${isSel ? 'color:var(--accent);font-weight:800' : ''}">${esc(m.mes)}</div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+        ` : '<p style="color:var(--mute)">Sem dados mensais.</p>'}
+      </div>
+
+      <div class="card">
+        <h3>🍩 Recebimento: Com Verba vs Sem Verba ${dica}</h3>
+        <div class="donutwrap">
+          ${donut(donutVerbaItems, fmtP(pctComVerbaVal, 0), 'c/ verba', 'data-rec-pagaverba', recFiltro.pagaVerba !== 'todos' ? [recFiltro.pagaVerba] : [])}
+          ${legend(donutVerbaItems, 'data-rec-pagaverba', recFiltro.pagaVerba !== 'todos' ? [recFiltro.pagaVerba] : [])}
+        </div>
+        <div class="tw" style="margin-top:10px">
+          <table>
+            <thead><tr><th>Tipo de Operação</th><th class="r">NFs</th><th class="r">Recebido</th><th class="r">Verba R$</th></tr></thead>
+            <tbody>
+              ${porOp.map(o => `
+                <tr class="clickable-row ${isSelectedArr(recFiltro.tipoOp, o.op) ? 'active-row' : ''}" data-rec-op="${esc(o.op)}">
+                  <td><b>${esc(o.op)}</b></td>
+                  <td class="r">${fmtN.format(o.nfs)}</td>
+                  <td class="r" style="font-weight:700">${brlShort(o.valorRec)}</td>
+                  <td class="r" style="color:var(--ok);font-weight:700">${brlShort(o.verba)}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABELAS CONSOLIDADAS CLICÁVEIS -->
     <div class="grid two" style="margin-top:20px">
       <div class="card">
         <h3>Recebimento por Mês ${dica}</h3>
         <div class="tw">
           <table>
-            <thead><tr><th>Mês</th><th class="r">Qtd NFs</th><th class="r">Valor Recebido</th><th class="r">Verba R$</th></tr></thead>
+            <thead><tr><th>Mês</th><th class="r">Qtd NFs</th><th class="r">Valor Recebido</th><th class="r">Verba R$</th><th class="r">% Verba</th></tr></thead>
             <tbody>
               ${porMes.map(m => `
                 <tr class="clickable-row ${isSelectedArr(recFiltro.mes, m.mes) ? 'active-row' : ''}" data-rec-mes="${esc(m.mes)}">
@@ -3500,16 +3582,32 @@ function secRecebNotas(){
                   <td class="r">${fmtN.format(m.nfs)}</td>
                   <td class="r" style="font-weight:700">${brl(m.valorRec)}</td>
                   <td class="r" style="color:var(--ok);font-weight:700">${brl(m.verba)}</td>
-                </tr>`).join('') || '<tr><td colspan="4">Nenhum dado encontrado.</td></tr>'}
-              <tr class="tot"><td><b>Total</b></td><td class="r">${fmtN.format(notas.length)}</td><td class="r" style="color:var(--accent)">${brl(totValRec)}</td><td class="r" style="color:var(--ok)">${brl(totVerba)}</td></tr>
+                  <td class="r">${fmtP(m.valorRec ? (m.verba / m.valorRec) * 100 : 0, 2)}</td>
+                </tr>`).join('') || '<tr><td colspan="5">Nenhum dado encontrado.</td></tr>'}
+              <tr class="tot"><td><b>Total</b></td><td class="r">${fmtN.format(notas.length)}</td><td class="r" style="color:var(--accent)">${brl(totValRec)}</td><td class="r" style="color:var(--ok)">${brl(totVerba)}</td><td class="r">${fmtP(totValRec ? (totVerba / totValRec) * 100 : 0, 2)}</td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
       <div class="card">
-        <h3>Por Tipo de Carga & Status ${dica}</h3>
+        <h3>Recebimento por Loja & Tipo de Carga ${dica}</h3>
         <div class="tw">
+          <table>
+            <thead><tr><th>Loja</th><th class="r">NFs</th><th class="r">Qtd Faturada</th><th class="r">Valor Recebido</th><th class="r">Verba R$</th></tr></thead>
+            <tbody>
+              ${porLoja.map(l => `
+                <tr class="clickable-row ${isSelectedArr(recFiltro.loja, l.loja) ? 'active-row' : ''}" data-rec-loja="${esc(l.loja)}">
+                  <td><b>${esc(l.loja)}</b></td>
+                  <td class="r">${fmtN.format(l.nfs)}</td>
+                  <td class="r">${fmtN.format(l.qtd)}</td>
+                  <td class="r" style="font-weight:700">${brl(l.valorRec)}</td>
+                  <td class="r" style="color:var(--ok);font-weight:700">${brl(l.verba)}</td>
+                </tr>`).join('') || '<tr><td colspan="5">Nenhuma loja encontrada.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+        <div class="tw" style="margin-top:14px">
           <table>
             <thead><tr><th>Tipo de Carga</th><th class="r">NFs</th><th class="r">Valor Recebido</th><th class="r">% Part.</th></tr></thead>
             <tbody>
@@ -3519,19 +3617,6 @@ function secRecebNotas(){
                   <td class="r">${fmtN.format(c.nfs)}</td>
                   <td class="r" style="font-weight:700">${brl(c.valorRec)}</td>
                   <td class="r">${fmtP(totValRec ? (c.valorRec / totValRec) * 100 : 0)}</td>
-                </tr>`).join('') || '<tr><td colspan="4">Sem dados.</td></tr>'}
-            </tbody>
-          </table>
-        </div>
-        <div class="tw" style="margin-top:14px">
-          <table>
-            <thead><tr><th>Status da Nota</th><th class="r">Qtd NFs</th><th class="r">Valor Recebido</th></tr></thead>
-            <tbody>
-              ${porStatus.map(s => `
-                <tr class="clickable-row ${isSelectedArr(recFiltro.statusNota, s.status) ? 'active-row' : ''}" data-rec-status="${esc(s.status)}">
-                  <td><b>${esc(s.status)}</b></td>
-                  <td class="r">${fmtN.format(s.nfs)}</td>
-                  <td class="r" style="font-weight:700">${brl(s.valorRec)}</td>
                 </tr>`).join('')}
             </tbody>
           </table>
@@ -3539,26 +3624,7 @@ function secRecebNotas(){
       </div>
     </div>
 
-    <div class="card" style="margin-top:20px">
-      <h3>Recebimento por Loja Destino ${dica}</h3>
-      <div class="tw">
-        <table>
-          <thead><tr><th>Loja</th><th class="r">Qtd NFs</th><th class="r">Qtd Faturada</th><th class="r">Valor Recebido</th><th class="r">Verba Logística</th><th class="r">% do Total</th></tr></thead>
-          <tbody>
-            ${porLoja.map(l => `
-              <tr class="clickable-row ${isSelectedArr(recFiltro.loja, l.loja) ? 'active-row' : ''}" data-rec-loja="${esc(l.loja)}">
-                <td><b>${esc(l.loja)}</b></td>
-                <td class="r">${fmtN.format(l.nfs)}</td>
-                <td class="r">${fmtN.format(l.qtd)}</td>
-                <td class="r" style="font-weight:700">${brl(l.valorRec)}</td>
-                <td class="r" style="color:var(--ok);font-weight:700">${brl(l.verba)}</td>
-                <td class="r">${fmtP(totValRec ? (l.valorRec / totValRec) * 100 : 0)}</td>
-              </tr>`).join('') || '<tr><td colspan="6">Nenhuma loja encontrada.</td></tr>'}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
+    <!-- LISTAGEM DE NOTAS -->
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
         <h3>📄 NOTAS FISCAIS DE RECEBIMENTO (${fmtN.format(lista.length)} NFs)</h3>
@@ -3569,7 +3635,7 @@ function secRecebNotas(){
             <option value="data" ${recOrdem === 'data' ? 'selected' : ''}>Ordem: recebimento mais recente</option>
             <option value="nf" ${recOrdem === 'nf' ? 'selected' : ''}>Ordem: nº da NF</option>
           </select>
-          <input type="text" id="inputSearchRecNotas" placeholder="🔍 Buscar NF, fornecedor, loja, usuário..." value="${esc(searchRecNotas)}" style="width:260px">
+          <input type="text" id="inputSearchRecNotas" placeholder="🔍 Buscar NF, fornecedor, loja, operação..." value="${esc(searchRecNotas)}" style="width:260px">
         </div>
       </div>
       <div class="tw">
@@ -3580,8 +3646,8 @@ function secRecebNotas(){
               <th>Recebimento</th>
               <th>Loja</th>
               <th>Fornecedor</th>
-              <th>Tipo Carga</th>
-              <th>Status</th>
+              <th>Operação</th>
+              <th>Verba?</th>
               <th class="r">Valor Recebido</th>
               <th class="r">% Verba</th>
               <th class="r">Verba R$</th>
@@ -3594,11 +3660,11 @@ function secRecebNotas(){
                 <td>${esc(n.dataRecebimento || n.dataEmissao)}</td>
                 <td><b>${esc(n.loja)}</b></td>
                 <td>${esc(n.fornecedor)}</td>
-                <td>${esc(n.tipoCarga)}</td>
-                <td>${esc(n.statusNota)}</td>
+                <td>${esc(n.tipoOperacao)}</td>
+                <td>${n.temVerba ? '<span class="badge-pill badge-verba-sim">SIM</span>' : '<span class="badge-pill badge-verba-nao">NÃO</span>'}</td>
                 <td class="r" style="font-weight:700">${brl(n.valorRecebido)}</td>
                 <td class="r">${fmtP(n.verbaPct, 2)}</td>
-                <td class="r" style="color:var(--ok);font-weight:700">${brl(n.verbaValor)}</td>
+                <td class="r" style="color:${n.temVerba ? 'var(--ok)' : 'var(--mute)'};font-weight:700">${brl(n.verbaValor)}</td>
               </tr>`).join('') : '<tr><td colspan="9">Nenhuma nota encontrada.</td></tr>'}
           </tbody>
         </table>
@@ -3607,15 +3673,22 @@ function secRecebNotas(){
     </div>
   `;
 
-  const bindToggle = (attr, key) => document.querySelectorAll(`[${attr}]`).forEach(tr => tr.addEventListener('click', () => {
-    toggleArr(recFiltro[key], tr.getAttribute(attr));
+  const bindToggle = (attr, key) => document.querySelectorAll(`[${attr}]`).forEach(el => el.addEventListener('click', () => {
+    toggleArr(recFiltro[key], el.getAttribute(attr));
     recLimite = 150;
     secRecebNotas();
   }));
   bindToggle('data-rec-mes', 'mes');
   bindToggle('data-rec-carga', 'tipoCarga');
-  bindToggle('data-rec-status', 'statusNota');
+  bindToggle('data-rec-op', 'tipoOp');
   bindToggle('data-rec-loja', 'loja');
+
+  document.querySelectorAll('[data-rec-pagaverba]').forEach(el => el.addEventListener('click', () => {
+    const v = el.getAttribute('data-rec-pagaverba');
+    recFiltro.pagaVerba = (recFiltro.pagaVerba === v) ? 'todos' : v;
+    recLimite = 150;
+    secRecebNotas();
+  }));
 
   const selO = $('#selRecOrdem');
   if (selO) selO.addEventListener('change', e => { recOrdem = e.target.value; recLimite = 150; secRecebNotas(); });
@@ -3627,9 +3700,10 @@ function secRecebNotas(){
   });
   const bm = $('#btnMoreRecNotas');
   if (bm) bm.addEventListener('click', () => { recLimite += 150; secRecebNotas(); });
+  attachTooltipEvents();
 }
 
-/* ---------- SUB-ABA 2: VERBA LOGÍSTICA ---------- */
+/* ---------- SUB-ABA 2: VERBA LOGÍSTICA (DASHBOARD + PAGANTES + NÃO PAGANTES) ---------- */
 function secRecebVerba(){
   const el = $('#s-recebverba');
   if (!el) return;
@@ -3639,26 +3713,57 @@ function secRecebVerba(){
   }
 
   const notas = recNotasFiltradas();
-  const notasComVerba = notas.filter(n => n.verbaValor > 0 || n.verbaPct > 0);
+  const notasComVerba = notas.filter(n => n.temVerba);
+  const notasSemVerba = notas.filter(n => !n.temVerba);
   const totValRec = notas.reduce((s,n) => s + n.valorRecebido, 0);
   const totBaseVerba = notasComVerba.reduce((s,n) => s + n.valorRecebido, 0);
+  const totBaseSemVerba = notasSemVerba.reduce((s,n) => s + n.valorRecebido, 0);
   const totVerba = notas.reduce((s,n) => s + n.verbaValor, 0);
   const pctMedioGeral = totValRec ? (totVerba / totValRec) * 100 : 0;
   const pctMedioComVerba = totBaseVerba ? (totVerba / totBaseVerba) * 100 : 0;
 
-  // Ranking por Fornecedor
+  // Consolidar TODOS os fornecedores no filtro atual
   const porFornMap = {};
   notas.forEach(n => {
     const k = n.fornecedor;
-    porFornMap[k] = porFornMap[k] || {fornecedor:k, cnpj:n.cnpj, nfs:0, nfsVerba:0, valorRec:0, verba:0};
-    porFornMap[k].nfs++;
-    if (n.verbaValor > 0) porFornMap[k].nfsVerba++;
-    porFornMap[k].valorRec += n.valorRecebido;
-    porFornMap[k].verba += n.verbaValor;
+    porFornMap[k] = porFornMap[k] || {
+      fornecedor: k,
+      cnpj: n.cnpj,
+      nfs: 0,
+      nfsComVerba: 0,
+      nfsSemVerba: 0,
+      qtd: 0,
+      valorRec: 0,
+      valorRecComVerba: 0,
+      valorRecSemVerba: 0,
+      verba: 0,
+      ultimaData: ''
+    };
+    const o = porFornMap[k];
+    o.nfs++;
+    o.qtd += n.qtdFaturado;
+    o.valorRec += n.valorRecebido;
+    o.verba += n.verbaValor;
+    if (n.temVerba) {
+      o.nfsComVerba++;
+      o.valorRecComVerba += n.valorRecebido;
+    } else {
+      o.nfsSemVerba++;
+      o.valorRecSemVerba += n.valorRecebido;
+    }
+    if (!o.cnpj && n.cnpj) o.cnpj = n.cnpj;
+    const dt = n.dataRecebimento || n.dataEmissao;
+    if (dt && (!o.ultimaData || dt.split('/').reverse().join('') > o.ultimaData.split('/').reverse().join(''))) {
+      o.ultimaData = dt;
+    }
   });
-  const porForn = Object.values(porFornMap).sort((a,b) => b.verba - a.verba);
 
-  // Verba por Mês
+  const todosFornecedores = Object.values(porFornMap);
+  const fornPagam = todosFornecedores.filter(f => f.verba > 0 || f.nfsComVerba > 0).sort((a,b) => b.verba - a.verba);
+  // Fornecedores que NÃO pagam verba logística (verba total = 0 no período/filtro)
+  const fornNaoPagam = todosFornecedores.filter(f => f.verba <= 0 && f.nfsComVerba === 0);
+
+  // Verba por Mês (para gráfico de barras do Dashboard)
   const porMesMap = {};
   notas.forEach(n => {
     const k = n.mes || 'Sem data';
@@ -3668,18 +3773,31 @@ function secRecebVerba(){
     porMesMap[k].verba += n.verbaValor;
   });
   const porMes = Object.values(porMesMap).sort((a,b) => mesOrdem(a.mes).localeCompare(mesOrdem(b.mes)));
+  const maxMesVerba = porMes.length ? Math.max(...porMes.map(m => m.verba)) * 1.2 : 1;
 
-  // Verba por Loja
-  const porLojaMap = {};
-  notas.forEach(n => {
-    const k = n.loja;
-    porLojaMap[k] = porLojaMap[k] || {loja:k, nfs:0, valorRec:0, verba:0};
-    porLojaMap[k].nfs++;
-    porLojaMap[k].valorRec += n.valorRecebido;
-    porLojaMap[k].verba += n.verbaValor;
-  });
-  const porLoja = Object.values(porLojaMap).sort((a,b) => b.verba - a.verba);
+  // Top 12 fornecedores pagantes para barras horizontais
+  const topFornChart = fornPagam.slice(0, 12);
+  const maxFornVerba = topFornChart.length ? Math.max(...topFornChart.map(f => f.verba)) : 1;
 
+  // Busca & Ordenação da tabela de FORNECEDORES QUE NÃO PAGAM VERBA LOGÍSTICA
+  const qSem = searchSemVerba.trim().toLowerCase();
+  const buscaSem = qSem ? fornNaoPagam.filter(f =>
+    f.fornecedor.toLowerCase().includes(qSem) ||
+    f.cnpj.toLowerCase().includes(qSem)
+  ) : fornNaoPagam;
+
+  const cmpSem = {
+    valor: (a,b) => b.valorRec - a.valorRec,
+    nfs:   (a,b) => b.nfs - a.nfs,
+    nome:  (a,b) => a.fornecedor.localeCompare(b.fornecedor)
+  }[semVerbaOrdem] || (() => 0);
+
+  const listaSemVerba = buscaSem.slice().sort(cmpSem);
+  const mostradosSem = listaSemVerba.slice(0, semVerbaLimite);
+  const restamSem = listaSemVerba.length - mostradosSem.length;
+  const totValFornNaoPagam = fornNaoPagam.reduce((s,f) => s + f.valorRec, 0);
+
+  // Busca & Ordenação do detalhamento de NFs com verba
   const q = searchRecVerba.trim().toLowerCase();
   const baseLista = notasComVerba.length ? notasComVerba : notas;
   const busca = q ? baseLista.filter(n =>
@@ -3701,72 +3819,149 @@ function secRecebVerba(){
   const dica = '<span style="color:var(--mute);font-weight:500;font-size:12px">(clique para filtrar)</span>';
 
   el.innerHTML = `
-    <h2>Verba Logística · Recebimento</h2>
-    <p class="sub">Setor Recebimento · Apuração de verba logística por fornecedor, loja e período.${esc(recAtualizadoTxt())}</p>
+    <h2>Verba Logística · Dashboard & Fornecedores</h2>
+    <p class="sub">Setor Recebimento · Apuração de verba logística, evolução mensal, ranking de pagantes e fornecedores sem verba.${esc(recAtualizadoTxt())}</p>
 
     <div class="grid kpis">
-      ${kpi('Verba Logística Total', `<span style="color:var(--ok)">${brlShort(totVerba)}</span>`, brl(totVerba), 'hl')}
-      ${kpi('% Verba Médio (Total)', fmtP(pctMedioGeral, 2), `Sobre ${brlShort(totValRec)} recebidos`)}
-      ${kpi('% Verba Médio (NFs c/ Verba)', fmtP(pctMedioComVerba, 2), `${fmtN.format(notasComVerba.length)} de ${fmtN.format(notas.length)} NFs possuem verba`)}
-      ${kpi('Fornecedores c/ Verba', fmtN.format(porForn.filter(f => f.verba > 0).length), `De ${fmtN.format(porForn.length)} fornecedores no filtro`)}
+      ${kpi('Verba Logística Total', `<span style="color:var(--ok)">${brlShort(totVerba)}</span>`, `${brl(totVerba)} · Média geral ${fmtP(pctMedioGeral, 2)}`, 'hl')}
+      ${kpi('% Verba (NFs Pagantes)', `<span style="color:var(--blue)">${fmtP(pctMedioComVerba, 2)}</span>`, `${fmtN.format(notasComVerba.length)} NFs (${brlShort(totBaseVerba)})`)}
+      ${kpi('Fornecedores Pagantes', `<span style="color:var(--ok)">${fmtN.format(fornPagam.length)}</span>`, `De ${fmtN.format(todosFornecedores.length)} fornecedores ativos`)}
+      ${kpi('Fornecedores SEM Verba', `<span style="color:var(--crit)">${fmtN.format(fornNaoPagam.length)}</span>`, `Volume: ${brlShort(totValFornNaoPagam)} (${fmtP(totValRec ? (totValFornNaoPagam / totValRec) * 100 : 0, 1)})`, 'hl')}
     </div>
 
+    <!-- DASHBOARD VISUAL: EVOLUÇÃO MENSAL DA VERBA + TOP FORNECEDORES -->
     <div class="grid two" style="margin-top:20px">
       <div class="card">
-        <h3>Top Fornecedores por Verba Logística ${dica}</h3>
-        <div class="tw">
-          <table>
-            <thead><tr><th>Fornecedor</th><th class="r">NFs</th><th class="r">Recebido</th><th class="r">% Médio</th><th class="r">Verba R$</th></tr></thead>
-            <tbody>
-              ${porForn.slice(0, 15).map(f => `
-                <tr class="clickable-row ${isSelectedArr(recFiltro.fornecedor, f.fornecedor) ? 'active-row' : ''}" data-verba-forn="${esc(f.fornecedor)}">
-                  <td><b>${esc(f.fornecedor)}</b></td>
-                  <td class="r">${fmtN.format(f.nfs)}</td>
-                  <td class="r">${brlShort(f.valorRec)}</td>
-                  <td class="r">${fmtP(f.valorRec ? (f.verba / f.valorRec) * 100 : 0, 2)}</td>
-                  <td class="r" style="color:var(--ok);font-weight:700">${brl(f.verba)}</td>
-                </tr>`).join('') || '<tr><td colspan="5">Sem dados de fornecedores.</td></tr>'}
-              <tr class="tot"><td><b>Total Geral</b></td><td class="r">${fmtN.format(notas.length)}</td><td class="r">${brlShort(totValRec)}</td><td class="r">${fmtP(pctMedioGeral, 2)}</td><td class="r" style="color:var(--accent)">${brl(totVerba)}</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <h3>📈 Evolução Mensal da Verba Logística (R$) ${dica}</h3>
+        ${porMes.length ? `
+          <div class="bar-chart-container" style="height:285px;padding-top:55px">
+            <div class="bar-chart-wrapper">
+              ${porMes.map((m, idx) => {
+                const pctH = (m.verba / maxMesVerba) * 100;
+                const isSel = isSelectedArr(recFiltro.mes, m.mes);
+                const pctEfetivo = m.valorRec ? (m.verba / m.valorRec) * 100 : 0;
+                let varTag = `<span class="bar-var-tag up">${fmtP(pctEfetivo, 2)}</span>`;
+                if (idx > 0 && porMes[idx - 1].verba > 0) {
+                  const vp = ((m.verba - porMes[idx - 1].verba) / porMes[idx - 1].verba) * 100;
+                  varTag = `<span class="bar-var-tag ${vp >= 0 ? 'up' : 'down'}">${vp >= 0 ? '+' : ''}${fmtP(vp, 0)}</span>`;
+                }
+                const ttItems = [
+                  { prod: `${mesLabel(m.mes)}`, sub: `Verba: ${brl(m.verba)} (${fmtP(pctEfetivo, 2)})` },
+                  { prod: `Recebido: ${brl(m.valorRec)}`, sub: `${fmtN.format(m.nfs)} NFs · Clique para filtrar` }
+                ];
+                return `
+                <div class="bar-chart-col" data-verba-mes="${esc(m.mes)}" style="cursor:pointer">
+                  <div class="bar-chart-bar ${isSel ? 'is-proj' : ''}" style="height:${Math.max(pctH, 6)}%;background:linear-gradient(180deg, #35d49a 0%, #166548 100%);border-color:rgba(53,212,154,0.5)"
+                       data-tooltip-title="${esc(mesLabel(m.mes))}"
+                       data-tooltip-color="var(--ok)"
+                       data-tooltip-items="${JSON.stringify(ttItems).replace(/"/g, '&quot;')}">
+                    <div class="bar-val-label" style="color:var(--ok)">
+                      <span>${brlShort(m.verba).replace('R$ ', '')}</span>
+                      ${varTag}
+                    </div>
+                  </div>
+                  <div class="bar-date-label" style="${isSel ? 'color:var(--accent);font-weight:800' : ''}">${esc(m.mes)}</div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+        ` : '<p style="color:var(--mute)">Sem dados mensais.</p>'}
       </div>
 
       <div class="card">
-        <h3>Evolução Mensal da Verba & Lojas ${dica}</h3>
-        <div class="tw">
-          <table>
-            <thead><tr><th>Mês</th><th class="r">Recebido</th><th class="r">% Verba</th><th class="r">Verba R$</th></tr></thead>
-            <tbody>
-              ${porMes.map(m => `
-                <tr class="clickable-row ${isSelectedArr(recFiltro.mes, m.mes) ? 'active-row' : ''}" data-verba-mes="${esc(m.mes)}">
-                  <td><b>${esc(mesLabel(m.mes))}</b></td>
-                  <td class="r">${brlShort(m.valorRec)}</td>
-                  <td class="r">${fmtP(m.valorRec ? (m.verba / m.valorRec) * 100 : 0, 2)}</td>
-                  <td class="r" style="color:var(--ok);font-weight:700">${brl(m.verba)}</td>
-                </tr>`).join('') || '<tr><td colspan="4">Sem dados mensais.</td></tr>'}
-            </tbody>
-          </table>
-        </div>
-
-        <h3 style="margin-top:18px">Verba por Loja ${dica}</h3>
-        <div class="tw">
-          <table>
-            <thead><tr><th>Loja</th><th class="r">Recebido</th><th class="r">% Verba</th><th class="r">Verba R$</th></tr></thead>
-            <tbody>
-              ${porLoja.slice(0, 10).map(l => `
-                <tr class="clickable-row ${isSelectedArr(recFiltro.loja, l.loja) ? 'active-row' : ''}" data-verba-loja="${esc(l.loja)}">
-                  <td><b>${esc(l.loja)}</b></td>
-                  <td class="r">${brlShort(l.valorRec)}</td>
-                  <td class="r">${fmtP(l.valorRec ? (l.verba / l.valorRec) * 100 : 0, 2)}</td>
-                  <td class="r" style="color:var(--ok);font-weight:700">${brl(l.verba)}</td>
-                </tr>`).join('') || '<tr><td colspan="4">Sem dados por loja.</td></tr>'}
-            </tbody>
-          </table>
+        <h3>🏆 Top 12 Fornecedores por Verba Arrecadada ${dica}</h3>
+        <div class="dept-hbar-list">
+          ${topFornChart.length ? topFornChart.map((f, idx) => {
+            const barW = maxFornVerba ? (f.verba / maxFornVerba) * 100 : 0;
+            const pctForn = f.valorRec ? (f.verba / f.valorRec) * 100 : 0;
+            const isSel = isSelectedArr(recFiltro.fornecedor, f.fornecedor);
+            const barCol = isSel ? 'var(--accent)' : (idx < 3 ? '#35d49a' : '#4285f4');
+            return `
+            <div class="dept-hbar-row ${isSel ? 'active-dept' : ''}" data-verba-forn="${esc(f.fornecedor)}" title="${esc(f.fornecedor)}: Verba ${brl(f.verba)} (${fmtP(pctForn, 2)}) sobre ${brl(f.valorRec)}">
+              <div class="dept-hbar-name">${esc(f.fornecedor)}</div>
+              <div class="dept-hbar-track">
+                <div class="dept-hbar-fill" style="width:${Math.max(barW, 3)}%;background:${barCol}"></div>
+              </div>
+              <div class="dept-hbar-val">
+                <span style="color:var(--ok)">${brlShort(f.verba).replace('R$ ', '')}</span>
+                <span style="color:var(--mute);font-size:11px;margin-left:4px">(${fmtP(pctForn, 2)})</span>
+              </div>
+            </div>`;
+          }).join('') : '<p style="color:var(--mute)">Nenhum fornecedor com verba no filtro atual.</p>'}
         </div>
       </div>
     </div>
 
+    <!-- SEÇÃO DESTACADA: TODOS OS FORNECEDORES QUE NÃO PAGAM VERBA LOGÍSTICA -->
+    <div class="card" style="margin-top:20px;border-left:4px solid var(--crit)">
+      <div class="card-header-action">
+        <h3>🚨 FORNECEDORES QUE NÃO PAGAM VERBA LOGÍSTICA (${fmtN.format(fornNaoPagam.length)} FORNECEDORES · ${brlShort(totValFornNaoPagam)})</h3>
+        <button class="toggle-btn" id="btnToggleSemVerba">
+          ${semVerbaExpanded ? '▲ Ocultar Lista' : '▼ Exibir Fornecedores (' + fornNaoPagam.length + ')'}
+        </button>
+      </div>
+
+      <div class="collapsible-content ${semVerbaExpanded ? 'open' : ''}">
+        <div class="prod-controls" style="margin-bottom:12px;justify-content:space-between">
+          <span style="font-size:13px;color:var(--mute)">Fornecedores com <b>R$ 0,00</b> de verba logística no período filtrado. Clique em qualquer linha para filtrar o painel por ele.</span>
+          <div class="prod-controls">
+            <select id="selSemVerbaOrdem">
+              <option value="valor" ${semVerbaOrdem === 'valor' ? 'selected' : ''}>Ordem: maior volume recebido (R$)</option>
+              <option value="nfs" ${semVerbaOrdem === 'nfs' ? 'selected' : ''}>Ordem: maior qtd de NFs</option>
+              <option value="nome" ${semVerbaOrdem === 'nome' ? 'selected' : ''}>Ordem: ordem alfabética (A-Z)</option>
+            </select>
+            <input type="text" id="inputSearchSemVerba" placeholder="🔍 Buscar fornecedor ou CNPJ sem verba..." value="${esc(searchSemVerba)}" style="width:270px">
+          </div>
+        </div>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Fornecedor</th>
+                <th>CNPJ</th>
+                <th>Último Receb.</th>
+                <th class="r">Qtd NFs</th>
+                <th class="r">Qtd Faturada</th>
+                <th class="r">Valor Recebido (R$)</th>
+                <th class="r">% do Volume Total</th>
+                <th class="r">Verba</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${mostradosSem.length ? mostradosSem.map((f, idx) => {
+                const isSel = isSelectedArr(recFiltro.fornecedor, f.fornecedor);
+                const pctVol = totValRec ? (f.valorRec / totValRec) * 100 : 0;
+                return `
+                <tr class="clickable-row ${isSel ? 'active-row' : ''}" data-verba-forn="${esc(f.fornecedor)}">
+                  <td style="color:var(--mute);font-weight:700">${idx + 1}</td>
+                  <td><b>${esc(f.fornecedor)}</b></td>
+                  <td style="color:var(--mute);font-size:13px">${esc(f.cnpj || '-')}</td>
+                  <td>${esc(f.ultimaData || '-')}</td>
+                  <td class="r">${fmtN.format(f.nfs)}</td>
+                  <td class="r">${fmtN.format(f.qtd)}</td>
+                  <td class="r" style="font-weight:700">${brl(f.valorRec)}</td>
+                  <td class="r">${fmtP(pctVol, 2)}</td>
+                  <td class="r"><span class="badge-pill badge-verba-nao">R$ 0,00 (0%)</span></td>
+                </tr>`;
+              }).join('') : '<tr><td colspan="9">Nenhum fornecedor sem verba encontrado no filtro atual.</td></tr>'}
+              ${fornNaoPagam.length ? `
+                <tr class="tot">
+                  <td colspan="4"><b>Total Fornecedores Sem Verba (${fmtN.format(fornNaoPagam.length)})</b></td>
+                  <td class="r">${fmtN.format(fornNaoPagam.reduce((s,f) => s + f.nfs, 0))}</td>
+                  <td class="r">${fmtN.format(fornNaoPagam.reduce((s,f) => s + f.qtd, 0))}</td>
+                  <td class="r" style="color:var(--crit)">${brl(totValFornNaoPagam)}</td>
+                  <td class="r">${fmtP(totValRec ? (totValFornNaoPagam / totValRec) * 100 : 0, 2)}</td>
+                  <td class="r" style="color:var(--crit)">R$ 0,00</td>
+                </tr>` : ''}
+            </tbody>
+          </table>
+        </div>
+        ${restamSem > 0 ? `<div style="text-align:center;margin-top:12px"><button class="btn-more" id="btnMoreSemVerba">Mostrar mais 150 fornecedores (restam ${fmtN.format(restamSem)})</button></div>` : ''}
+      </div>
+    </div>
+
+    <!-- DETALHAMENTO POR NOTA FISCAL COM VERBA -->
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
         <h3>💰 DETALHAMENTO DE VERBA POR NOTA FISCAL (${fmtN.format(lista.length)} NFs)</h3>
@@ -3812,14 +4007,30 @@ function secRecebVerba(){
     </div>
   `;
 
-  const bindToggle = (attr, key) => document.querySelectorAll(`[${attr}]`).forEach(tr => tr.addEventListener('click', () => {
-    toggleArr(recFiltro[key], tr.getAttribute(attr));
+  const bindToggle = (attr, key) => document.querySelectorAll(`[${attr}]`).forEach(el => el.addEventListener('click', () => {
+    toggleArr(recFiltro[key], el.getAttribute(attr));
     verbaLimite = 150;
+    semVerbaLimite = 150;
     secRecebVerba();
   }));
   bindToggle('data-verba-forn', 'fornecedor');
   bindToggle('data-verba-mes', 'mes');
-  bindToggle('data-verba-loja', 'loja');
+
+  const btnSem = $('#btnToggleSemVerba');
+  if (btnSem) btnSem.addEventListener('click', () => { semVerbaExpanded = !semVerbaExpanded; secRecebVerba(); });
+
+  const selSem = $('#selSemVerbaOrdem');
+  if (selSem) selSem.addEventListener('change', e => { semVerbaOrdem = e.target.value; semVerbaLimite = 150; secRecebVerba(); });
+
+  const inSem = $('#inputSearchSemVerba');
+  if (inSem) inSem.addEventListener('input', e => {
+    searchSemVerba = e.target.value; semVerbaLimite = 150;
+    secRecebVerba();
+    keepFocus('#inputSearchSemVerba', () => searchSemVerba);
+  });
+
+  const bmSem = $('#btnMoreSemVerba');
+  if (bmSem) bmSem.addEventListener('click', () => { semVerbaLimite += 150; secRecebVerba(); });
 
   const selO = $('#selVerbaOrdem');
   if (selO) selO.addEventListener('change', e => { verbaOrdem = e.target.value; verbaLimite = 150; secRecebVerba(); });
@@ -3831,6 +4042,7 @@ function secRecebVerba(){
   });
   const bm = $('#btnMoreRecVerba');
   if (bm) bm.addEventListener('click', () => { verbaLimite += 150; secRecebVerba(); });
+  attachTooltipEvents();
 }
 
 /* ================= SETORES, ABAS E BARRA DE FILTROS ================= */
@@ -3984,6 +4196,19 @@ function fbDefs(tab){
     if (todas.some(r => r.statusLoja)) defs.push({label:'Status Loja', multi:true, allLabel:'Todos', values:preFiltro.stLoja, options:uq(r => r.statusLoja).sort().map(s => optF(s, s)), change:vals => { preFiltro.stLoja = vals; reset(); }});
     defs.push({label:'Documento', multi:true, allLabel:'Todos', values:preFiltro.situacao, options:uq(r => r.situacao).sort().map(s => optF(s, s)), change:vals => { preFiltro.situacao = vals; reset(); }});
     return defs;
+  }
+  if ((tab === 'recebnotas' || tab === 'recebverba') && RecebD) {
+    const notas = recNotasTodas();
+    const uq = f => Array.from(new Set(notas.map(f))).filter(Boolean);
+    const reset = () => { recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; };
+    return [
+      {label:'Mês', multi:true, allLabel:'Todos', values:recFiltro.mes, options:uq(r => r.mes).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(m => optF(m, mesLabel(m))), change:vals => { recFiltro.mes = vals; reset(); }},
+      {label:'Loja', multi:true, allLabel:'Todas', values:recFiltro.loja, options:uq(r => r.loja).sort((a,b) => a.localeCompare(b, undefined, {numeric:true})).map(l => optF(l, l)), change:vals => { recFiltro.loja = vals; reset(); }},
+      {label:'Fornecedor', multi:true, allLabel:'Todos', values:recFiltro.fornecedor, options:uq(r => r.fornecedor).sort().map(f => optF(f, f)), change:vals => { recFiltro.fornecedor = vals; reset(); }},
+      {label:'Tipo de Operação', multi:true, allLabel:'Todos', values:recFiltro.tipoOp, options:uq(r => r.tipoOperacao).sort().map(o => optF(o, o)), change:vals => { recFiltro.tipoOp = vals; reset(); }},
+      {label:'Tipo de Carga', multi:true, allLabel:'Todos', values:recFiltro.tipoCarga, options:uq(r => r.tipoCarga).sort().map(t => optF(t, t)), change:vals => { recFiltro.tipoCarga = vals; reset(); }},
+      {label:'Paga Verba?', multi:false, value:recFiltro.pagaVerba, def:'todos', options:[optF('todos','Todos'), optF('sim','Sim (Com Verba)'), optF('nao','Não (Sem Verba)')], set:v => { recFiltro.pagaVerba = v; reset(); }}
+    ];
   }
   return [];
 }
