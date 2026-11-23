@@ -4,31 +4,77 @@
 <meta charset="utf-8">
 <meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Painel CDR - Roldão Ataacadista</title>
+<title>Painel CDR - Roldão Atacadista</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Barlow+Semi+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   color-scheme:dark;
-  --bg:#050c1a; --panel:#0a1733; --panel2:#0f2046; --line:#1a3163;
-  --text:#eaf0ff; --mute:#8da1cc; --accent:#ffc400;
-  --blue:#4285f4; --navy:#3a5db0; --cream:#fce8b2;
-  --ok:#35d49a; --warn:#ffb020; --crit:#ff5d62; --none:#5b6b8f;
+  /* Tema Escuro Suavizado (Padrão Executivo Comercial/Operações) */
+  --bg:#0b192c;
+  --panel:#132640;
+  --panel2:#193152;
+  --line:#27446b;
+  --row-line:#1e3759;
+  --header-bg:rgba(11, 25, 44, 0.94);
+  --side-bg:linear-gradient(180deg, #0e2038 0%, #091526 100%);
+  --text:#f1f5f9;
+  --text-strong:#ffffff;
+  --mute:#9fb3cc;
+  --accent:#ffc400;
+  --accent-text:#ffc400;
+  --blue:#4da3ff;
+  --navy:#3a6bc7;
+  --cream:#fce8b2;
+  --ok:#35d49a;
+  --warn:#ffb020;
+  --crit:#ff6368;
+  --none:#647899;
+  --track-bg:#0d1d33;
+  --card-shadow:0 8px 24px rgba(0, 0, 0, 0.28);
   --f-body:'Montserrat', system-ui, sans-serif; 
   --f-num:'Barlow Semi Condensed', 'Montserrat', system-ui, sans-serif;
-  --radius:10px;
+  --radius:12px;
 }
+
+/* Tema Claro Inspirado no BI Comercial */
+body.light-theme{
+  color-scheme:light;
+  --bg:#f0f4f8;
+  --panel:#ffffff;
+  --panel2:#f8fafc;
+  --line:#cbd5e1;
+  --row-line:#e2e8f0;
+  --header-bg:rgba(255, 255, 255, 0.95);
+  --side-bg:linear-gradient(180deg, #0b2545 0%, #071930 100%);
+  --text:#1e293b;
+  --text-strong:#0f172a;
+  --mute:#475569;
+  --accent:#eab308;
+  --accent-text:#b45309;
+  --blue:#0284c7;
+  --navy:#1d4ed8;
+  --cream:#fef08a;
+  --ok:#059669;
+  --warn:#d97706;
+  --crit:#dc2626;
+  --none:#64748b;
+  --track-bg:#e2e8f0;
+  --card-shadow:0 4px 16px rgba(15, 23, 42, 0.08);
+}
+
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:15px;line-height:1.4;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 28px}
+body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:17px;line-height:1.45;
+  padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));padding-block:0 32px;
+  transition:background .25s ease, color .25s ease}
 button, input, select{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 
-header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 0;border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:10;background:var(--header-bg);backdrop-filter:blur(12px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:14px 0;border-bottom:1px solid var(--line)}
 .brand-container { display: flex; align-items: center; gap: 16px; }
 
 .roldao-logo-wrap {
@@ -40,8 +86,8 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
   border-radius: 10px;
   padding: 6px 10px;
   margin-bottom: 12px;
-  background: linear-gradient(135deg, #02122b 0%, #0a224a 100%);
-  border: 1px solid rgba(255, 196, 0, 0.4);
+  background: linear-gradient(135deg, #071930 0%, #102e54 100%);
+  border: 1px solid rgba(255, 196, 0, 0.45);
   box-shadow: 0 0 12px rgba(255, 196, 0, 0.15), inset 0 0 8px rgba(255, 196, 0, 0.1);
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -52,9 +98,9 @@ header{position:sticky;top:0;z-index:10;background:rgba(5, 12, 26, 0.92);backdro
 }
 
 .roldao-logo-img {
-  height: 36px;
+  height: 38px;
   width: 100%;
-  max-width: 160px;
+  max-width: 165px;
   display: block;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
@@ -65,123 +111,123 @@ body.side-collapsed .roldao-logo-wrap {
   padding: 6px 4px;
 }
 body.side-collapsed .roldao-logo-img {
-  height: 22px;
+  height: 24px;
   max-width: 44px;
 }
 
-.brand{display:flex;flex-direction:column;line-height:1.1}
-.brand b{font-family:var(--f-body);font-size:20px;font-weight:700;letter-spacing:-.01em;color:#fff}
-.brand small{color:var(--mute);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.brand{display:flex;flex-direction:column;line-height:1.15}
+.brand b{font-family:var(--f-body);font-size:23px;font-weight:800;letter-spacing:-.01em;color:var(--text-strong)}
+.brand small{color:var(--mute);font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
 
 nav{display:flex;gap:8px;flex-wrap:wrap}
 nav button{
-  background: linear-gradient(135deg, #071530 0%, #0e234c 100%);
-  border: 1px solid rgba(255, 196, 0, 0.25);
+  background: var(--panel2);
+  border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 9px 18px;
+  padding: 10px 18px;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 nav button:hover{
   border-color: var(--accent);
   transform: translateY(-2px);
-  box-shadow: 0 0 16px rgba(255, 196, 0, 0.35);
-  color: #fff;
+  color: var(--text-strong);
 }
 nav button[aria-selected="true"]{
-  background: linear-gradient(135deg, #ffc400 0%, #e6a800 100%);
+  background: linear-gradient(135deg, #ffc400 0%, #eab308 100%);
   color: #120e00;
-  border-color: #ffe066;
+  border-color: #fde047;
   font-weight: 800;
-  box-shadow: 0 0 22px rgba(255, 196, 0, 0.55), inset 0 0 10px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 16px rgba(255, 196, 0, 0.4);
   transform: translateY(-1px);
 }
 
-.tools{margin-left:auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.tools{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 
 .seg{
   display:inline-flex;
-  border:1px solid rgba(255, 196, 0, 0.3);
+  border:1px solid var(--line);
   border-radius:10px;
   overflow:hidden;
-  background:#040d21;
-  padding: 2px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  background:var(--panel2);
+  padding: 3px;
 }
 .seg button{
   background:transparent;
   border:0;
-  padding:7px 15px;
-  font-size:13px;
+  padding:8px 16px;
+  font-size:14px;
   font-weight:700;
   color:var(--mute);
   border-radius: 8px;
-  transition:all .3s ease;
+  transition:all .25s ease;
 }
-.seg button:hover { color: #fff; }
+.seg button:hover { color: var(--text-strong); }
 .seg button[aria-pressed="true"]{
-  background: linear-gradient(135deg, #102958 0%, #1a3c7e 100%);
-  color: var(--accent);
-  border: 1px solid rgba(255, 196, 0, 0.5);
-  box-shadow: 0 0 12px rgba(255, 196, 0, 0.3);
+  background: var(--panel);
+  color: var(--accent-text);
+  border: 1px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.tv{
-  background: linear-gradient(135deg, #071530 0%, #0e234c 100%);
-  border: 1px solid rgba(255, 196, 0, 0.3);
+.tv, .theme-btn{
+  background: var(--panel2);
+  border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 8px 16px;
-  font-size: 13px;
+  padding: 9px 16px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transition: all 0.25s ease;
 }
-.tv:hover{
+.tv:hover, .theme-btn:hover{
   border-color: var(--accent);
   transform: translateY(-2px);
-  box-shadow: 0 0 16px rgba(255, 196, 0, 0.35);
 }
 .tv[aria-pressed="true"]{
-  background: linear-gradient(135deg, #ffc400 0%, #e6a800 100%);
+  background: linear-gradient(135deg, #ffc400 0%, #eab308 100%);
   color: #120e00;
-  border-color: #ffe066;
-  box-shadow: 0 0 20px rgba(255, 196, 0, 0.6);
+  border-color: #fde047;
+  box-shadow: 0 0 18px rgba(255, 196, 0, 0.5);
 }
 
-#src{font-size:13px;color:var(--mute);width:100%;display:flex;gap:8px;align-items:center}
-#src i{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block}
+#src{font-size:14px;color:var(--mute);width:100%;display:flex;gap:8px;align-items:center}
+#src i{width:10px;height:10px;border-radius:50%;background:var(--warn);display:inline-block}
 #src.live i{background:var(--ok)}
 #src.error i{background:var(--crit)}
 #bar{height:3px;background:var(--accent);width:0;position:fixed;left:0;top:0;z-index:99}
 
-section{display:none;padding-top:20px}
+section{display:none;padding-top:22px}
 section.on{display:block}
-h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;letter-spacing:-.01em}
-.sub{color:var(--mute);margin:0 0 18px;font-size:14px}
-.grid{display:grid;gap:16px}
-.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-.two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:stretch}
+h2{font-family:var(--f-body);font-size:30px;font-weight:800;margin:0 0 6px;letter-spacing:-.01em;color:var(--text-strong)}
+.sub{color:var(--mute);margin:0 0 20px;font-size:16px}
+.grid{display:grid;gap:18px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
+.two{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);align-items:stretch}
+.two-even{grid-template-columns:repeat(2, minmax(0,1fr));align-items:stretch}
 
 .card{
   background:var(--panel);
   border:1px solid var(--line);
   border-radius:var(--radius);
-  padding:20px;
+  padding:22px;
   min-width:0;
-  box-shadow:0 8px 24px rgba(0,0,0,0.3);
+  box-shadow:var(--card-shadow);
   display:flex;
   flex-direction:column;
   justify-content:flex-start;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   position: relative;
 }
 .card:hover {
-  border-color: rgba(255, 196, 0, 0.35);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 0 15px rgba(255, 196, 0, 0.1);
+  border-color: rgba(255, 196, 0, 0.5);
 }
 .card.clickable-card {
   cursor: pointer;
@@ -191,11 +237,11 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   border-color: var(--accent);
 }
 
-.card h3{margin:0 0 14px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:700}
-.card-header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+.card h3{margin:0 0 16px;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:800}
+.card-header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
 .card-header-action h3 { margin: 0; }
-.kpi .v{font-family:var(--f-num);font-size:38px;font-weight:700;line-height:1.05}
-.kpi .s{color:var(--mute);font-size:13px;margin-top:6px}
+.kpi .v{font-family:var(--f-num);font-size:44px;font-weight:800;line-height:1.05;color:var(--text-strong)}
+.kpi .s{color:var(--mute);font-size:15px;margin-top:8px;font-weight:500}
 .kpi.hl{border-top:4px solid var(--accent)}
 .good{color:var(--ok)} .warnc{color:var(--warn)} .critc{color:var(--crit)}
 
@@ -204,13 +250,13 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   display: flex;
   align-items: flex-end;
   gap: 16px;
-  height: 295px;
-  padding: 65px 16px 14px 16px;
+  height: 305px;
+  padding: 68px 16px 14px 16px;
   overflow-x: auto;
   position: relative;
-  background: rgba(4, 13, 33, 0.4);
-  border-radius: 8px;
-  border: 1px solid rgba(26, 49, 99, 0.6);
+  background: var(--track-bg);
+  border-radius: 10px;
+  border: 1px solid var(--line);
 }
 .bar-chart-wrapper {
   display: flex;
@@ -222,7 +268,7 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 }
 .bar-chart-col {
   flex: 1;
-  min-width: 48px;
+  min-width: 52px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -233,36 +279,35 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 }
 .bar-chart-bar {
   width: 100%;
-  max-width: 44px;
-  background: linear-gradient(180deg, #4285f4 0%, #1a3c7e 100%);
+  max-width: 48px;
+  background: linear-gradient(180deg, #4285f4 0%, #1e429f 100%);
   border: 1px solid rgba(141, 161, 204, 0.4);
   border-radius: 6px 6px 2px 2px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 .bar-chart-bar.is-proj {
-  background: linear-gradient(180deg, rgba(255, 196, 0, 0.8) 0%, rgba(138, 98, 0, 0.6) 100%);
+  background: linear-gradient(180deg, rgba(255, 196, 0, 0.85) 0%, rgba(161, 114, 0, 0.75) 100%);
   border: 1px dashed var(--accent);
 }
 .bar-chart-bar:hover {
   background: linear-gradient(180deg, #ffc400 0%, #d49b00 100%);
   border-color: #ffe066;
-  box-shadow: 0 0 20px rgba(255, 196, 0, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(255, 196, 0, 0.5);
   transform: translateY(-2px);
 }
 .bar-val-label {
   position: absolute;
-  top: -46px;
+  top: -50px;
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--f-num);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--accent-text);
   white-space: nowrap;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.9);
   pointer-events: none;
   display: flex;
   flex-direction: column;
@@ -270,23 +315,22 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   line-height: 1.15;
 }
 .bar-var-tag {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 1px 4px;
-  border-radius: 3px;
+  padding: 1px 5px;
+  border-radius: 4px;
   margin-top: 2px;
 }
-.bar-var-tag.up { color: var(--ok); background: rgba(53, 212, 154, 0.15); }
-.bar-var-tag.down { color: var(--crit); background: rgba(255, 93, 98, 0.15); }
+.bar-var-tag.up { color: var(--ok); background: rgba(53, 212, 154, 0.16); }
+.bar-var-tag.down { color: var(--crit); background: rgba(255, 93, 98, 0.16); }
 .bar-var-tag.neutral { color: var(--mute); }
 
 .bar-chart-bar:hover .bar-val-label {
-  color: #fff;
   transform: translateX(-50%) scale(1.08);
 }
 .bar-date-label {
   margin-top: 10px;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--mute);
   font-weight: 700;
   white-space: nowrap;
@@ -296,22 +340,21 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   position: absolute;
   left: 0;
   width: 100%;
-  border-top: 2px dashed #ff5d62;
+  border-top: 2px dashed var(--crit);
   z-index: 2;
   pointer-events: none;
-  box-shadow: 0 0 8px rgba(255, 93, 98, 0.4);
 }
 .limit-line-label {
   position: absolute;
   right: 12px;
-  top: -20px;
-  font-size: 11px;
+  top: -22px;
+  font-size: 12px;
   font-weight: 800;
-  color: #ff5d62;
-  background: #081329;
+  color: var(--crit);
+  background: var(--panel);
   padding: 2px 8px;
   border-radius: 4px;
-  border: 1px solid rgba(255, 93, 98, 0.4);
+  border: 1px solid var(--crit);
 }
 
 .active-filters-bar {
@@ -324,39 +367,24 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   padding: 10px 16px;
   border-radius: 8px;
   margin-bottom: 16px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--accent);
-  box-shadow: 0 0 15px rgba(255, 196, 0, 0.15);
+  color: var(--accent-text);
 }
 .active-filters-bar.visible { display: flex; }
-.active-filters-bar button {
-  background: var(--accent);
-  color: #1a1400;
-  border: 0;
-  padding: 5px 14px;
-  border-radius: 6px;
-  font-weight: 800;
-  font-size: 12px;
-  transition: all 0.2s ease;
-}
-.active-filters-bar button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(255, 196, 0, 0.5);
-}
 
 #floating-tooltip {
   position: fixed;
   z-index: 9999;
   display: none;
   pointer-events: none;
-  background: rgba(8, 20, 48, 0.95);
+  background: var(--panel);
   backdrop-filter: blur(12px);
-  border: 1px solid var(--accent);
+  border: 2px solid var(--accent);
   border-radius: 10px;
   padding: 12px 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 15px rgba(255, 196, 0, 0.25);
-  max-width: 320px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  max-width: 340px;
   animation: tooltipFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -366,69 +394,65 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 }
 
 #floating-tooltip .tt-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--accent-text);
   text-transform: uppercase;
   margin-bottom: 6px;
-  border-bottom: 1px solid rgba(255, 196, 0, 0.2);
+  border-bottom: 1px solid var(--line);
   padding-bottom: 4px;
 }
 
 #floating-tooltip .tt-item {
-  font-size: 12px;
+  font-size: 14px;
   margin-top: 6px;
   line-height: 1.35;
 }
 
-#floating-tooltip .tt-item b { color: #fff; display: block; }
+#floating-tooltip .tt-item b { color: var(--text-strong); display: block; }
 #floating-tooltip .tt-item span { color: var(--mute); }
 
 .filter-bar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; background: var(--panel2); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--line); }
-.filter-bar label { font-size: 14px; font-weight: 600; color: var(--mute); display: flex; align-items: center; gap: 8px; }
-.filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 7px 12px; border-radius: 6px; font-size: 14px; outline: none; transition: border-color .2s ease; }
+.filter-bar label { font-size: 15px; font-weight: 600; color: var(--mute); display: flex; align-items: center; gap: 8px; }
+.filter-bar select, .filter-bar input { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 8px 12px; border-radius: 6px; font-size: 15px; outline: none; transition: border-color .2s ease; }
 .filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
 
 .prod-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.prod-controls select, .prod-controls input { background: var(--panel2); border: 1px solid var(--line); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 13px; outline: none; transition: border-color .2s ease; }
+.prod-controls select, .prod-controls input { background: var(--panel2); border: 1px solid var(--line); color: var(--text); padding: 8px 12px; border-radius: 6px; font-size: 15px; outline: none; transition: border-color .2s ease; }
 .prod-controls select:focus, .prod-controls input:focus { border-color: var(--accent); }
 
 .toggle-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #0b1f44 0%, #122d63 100%);
-  border: 1px solid rgba(255, 196, 0, 0.35);
-  color: var(--accent);
-  padding: 8px 16px;
+  background: var(--panel2);
+  border: 1px solid var(--accent);
+  color: var(--accent-text);
+  padding: 9px 18px;
   border-radius: 8px;
   font-weight: 700;
-  font-size: 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  transition: all .3s ease;
+  font-size: 15px;
+  transition: all .25s ease;
 }
 .toggle-btn:hover {
-  border-color: var(--accent);
+  background: rgba(255, 196, 0, 0.15);
   transform: translateY(-1px);
-  box-shadow: 0 0 14px rgba(255, 196, 0, 0.35);
-  color: #fff;
 }
 
 .btn-export-pdf {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, #1b3d1f 0%, #2e6935 100%);
+  background: linear-gradient(135deg, #1b4d27 0%, #27733a 100%);
   border: 1px solid var(--ok);
   color: #fff;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 6px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   transition: all 0.2s ease;
 }
 .btn-export-pdf:hover {
-  background: linear-gradient(135deg, #25542b 0%, #3a8543 100%);
   transform: scale(1.03);
   box-shadow: 0 0 12px rgba(53, 212, 154, 0.4);
 }
@@ -446,67 +470,60 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  color: #ff8b8f;
+  font-size: 14px;
+  color: var(--crit);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 .sem-fisico-badge:hover {
-  background: rgba(255, 93, 98, 0.3);
-  box-shadow: 0 0 10px rgba(255, 93, 98, 0.4);
+  background: rgba(255, 93, 98, 0.25);
 }
-.sem-fisico-badge b { color: var(--crit); font-family: var(--f-num); font-size: 16px; }
+.sem-fisico-badge b { color: var(--crit); font-family: var(--f-num); font-size: 17px; }
 
 .donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;margin:auto 0;padding:12px 0;width:100%}
-.donut{width:210px;height:210px;flex:none; cursor: pointer;}
+.donut{width:220px;height:220px;flex:none; cursor: pointer;}
 .donut circle { transition: stroke-width 0.2s ease, opacity 0.2s ease; }
 .donut circle:hover { stroke-width: 32; opacity: 0.9; }
 .donut circle.active-slice { stroke-width: 34; filter: drop-shadow(0 0 8px var(--accent)); }
-.donut text{fill:var(--text);font-family:var(--f-num)}
-.legend{display:flex;flex-direction:column;gap:12px;min-width:200px;flex:1}
-.legend div{display:flex;align-items:center;gap:10px;font-size:14px; cursor: pointer; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;}
-.legend div:hover, .legend div.active-item { background: rgba(255, 196, 0, 0.15); border: 1px solid rgba(255, 196, 0, 0.3); }
-.legend i{width:14px;height:14px;border-radius:3px;flex:none}
+.donut text{fill:var(--text-strong);font-family:var(--f-num)}
+.legend{display:flex;flex-direction:column;gap:12px;min-width:210px;flex:1}
+.legend div{display:flex;align-items:center;gap:10px;font-size:15px; cursor: pointer; padding: 7px 10px; border-radius: 6px; transition: all 0.2s;}
+.legend div:hover, .legend div.active-item { background: rgba(255, 196, 0, 0.16); border: 1px solid rgba(255, 196, 0, 0.4); }
+.legend i{width:15px;height:15px;border-radius:3px;flex:none}
 .legend span:last-child{margin-left:auto;font-family:var(--f-num);font-weight:700;white-space:nowrap}
 
 .tw{overflow-x:auto;width:100%}
-table{border-collapse:collapse;width:100%;font-size:14px}
-th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
-td{padding:11px 12px;border-bottom:1px solid #12244b;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:16px}
+th{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);text-align:left;padding:12px 14px;border-bottom:2px solid var(--line);font-weight:800;white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--row-line);white-space:nowrap}
 tr.clickable-row { cursor: pointer; transition: background 0.2s ease; }
-tr.clickable-row:hover, tr.clickable-row.active-row { background: rgba(255, 196, 0, 0.12) !important; }
-th.r,td.r{text-align:right;font-family:var(--f-num)}
-tr.tot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
+tr.clickable-row:hover, tr.clickable-row.active-row { background: rgba(255, 196, 0, 0.15) !important; }
+th.r,td.r{text-align:right;font-family:var(--f-num);font-size:17px}
+th.r{font-size:13px}
+tr.tot td{font-weight:800;border-top:2px solid var(--line);border-bottom:0;color:var(--text-strong)}
 td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
-.bar{display:block;height:8px;background:#162a58;border-radius:4px;min-width:70px;margin-top:6px}
+.bar{display:block;height:9px;background:var(--track-bg);border-radius:4px;min-width:75px;margin-top:6px}
 .bar b{display:block;height:100%;border-radius:4px}
 
-.sep-progress { display: flex; flex-direction: column; gap: 14px; margin-top: 6px; }
-.sep-item { display: flex; flex-direction: column; gap: 6px; cursor: pointer; padding: 4px; border-radius: 6px; transition: background 0.2s; }
-.sep-item:hover { background: rgba(255,255,255,0.05); }
-.sep-header { display: flex; justify-content: space-between; font-size: 14px; font-weight:600; }
-.sep-bar-bg { height: 12px; background: var(--panel2); border-radius: 6px; overflow: hidden; display: flex; }
-.sep-bar-fill { height: 100%; transition: width 0.3s ease; }
-
 .info-note {
-  background: rgba(66, 133, 244, 0.1);
-  border: 1px solid rgba(66, 133, 244, 0.3);
+  background: rgba(66, 133, 244, 0.12);
+  border: 1px solid rgba(66, 133, 244, 0.35);
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 13px 16px;
   margin-top: 16px;
-  font-size: 13px;
-  color: #b0cdff;
-  line-height: 1.4;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.45;
 }
-.info-note b { color: var(--accent); }
+.info-note b { color: var(--accent-text); }
 
-.occ { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; align-items: stretch; }
+.occ { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; align-items: stretch; }
 .mini { display: flex; flex-direction: column; gap: 8px; min-width: 0; cursor: pointer; transition: transform 0.2s; }
 .mini:hover { transform: translateY(-2px); }
 .mini .b { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 10px; text-align: center; }
-.mini .b small { display: block; color: var(--mute); font-size: 11px; text-transform: uppercase; margin-bottom: 4px; font-weight:600; }
-.mini .b strong { font-family: var(--f-num); font-size: 26px; line-height: 1.1; }
+.mini .b small { display: block; color: var(--mute); font-size: 12px; text-transform: uppercase; margin-bottom: 4px; font-weight:700; }
+.mini .b strong { font-family: var(--f-num); font-size: 28px; line-height: 1.1; color: var(--text-strong); }
 .mini.g1 .b { border-left: 3px solid var(--blue); border-right: 3px solid var(--blue); }
 .mini.g2 .b { border-left: 3px solid var(--navy); border-right: 3px solid var(--navy); }
 
@@ -515,190 +532,156 @@ td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-rig
 .pcts { display: flex; flex-direction: column; gap: 12px; justify-content: center; min-width: 0; }
 .pcts .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .pcts .b { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 14px; text-align: center; min-width: 0; }
-.pcts .b small { display: block; color: var(--mute); font-size: 11px; margin-bottom: 4px; font-weight:600; }
-.pcts .b strong { font-family: var(--f-num); font-size: 24px; }
-.pcts .big strong { font-size: 42px; color: var(--accent); }
+.pcts .b small { display: block; color: var(--mute); font-size: 12px; margin-bottom: 4px; font-weight:700; }
+.pcts .b strong { font-family: var(--f-num); font-size: 26px; color: var(--text-strong); }
+.pcts .big strong { font-size: 44px; color: var(--accent-text); }
 
 .rua-container { overflow-x: auto; width: 100%; }
-.rua { display: flex; gap: 12px; align-items: flex-end; height: 230px; padding-top: 10px; min-width: 600px; }
-.rua .c { flex: 1; min-width: 32px; display: flex; flex-direction: column; align-items: stretch; height: 100%; }
+.rua { display: flex; gap: 12px; align-items: flex-end; height: 240px; padding-top: 10px; min-width: 600px; }
+.rua .c { flex: 1; min-width: 34px; display: flex; flex-direction: column; align-items: stretch; height: 100%; }
 .rua .stk { flex: 1; display: flex; flex-direction: column; border-radius: 4px; overflow: hidden; min-height: 0; }
-.rua .lv { display: flex; align-items: center; justify-content: center; font-family: var(--f-num); font-size: 12px; font-weight: 600; overflow: hidden; min-height: 0; }
+.rua .lv { display: flex; align-items: center; justify-content: center; font-family: var(--f-num); font-size: 13px; font-weight: 700; overflow: hidden; min-height: 0; }
 .rua .oc { background: var(--cream); color: #2b2205; }
-.rua .name { text-align: center; font-family: var(--f-num); font-size: 14px; font-weight: 600; margin-top: 8px; color: var(--mute); }
-.lg { display: flex; gap: 18px; font-size: 13px; color: var(--mute); margin-bottom: 10px; justify-content: center; }
+.rua .name { text-align: center; font-family: var(--f-num); font-size: 15px; font-weight: 700; margin-top: 8px; color: var(--mute); }
+.lg { display: flex; gap: 18px; font-size: 14px; color: var(--mute); margin-bottom: 10px; justify-content: center; }
 .lg i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
-.foot { color: var(--mute); font-size: 13px; margin-top: 18px; }
+.foot { color: var(--mute); font-size: 14px; margin-top: 18px; }
 
-/* ESTILOS ESPECÍFICOS DAS SUB-ABAS DO ADMINISTRATIVO */
-.admin-subnav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--panel2);
-  border: 1px solid var(--line);
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  margin-bottom: 20px;
-}
-.admin-subtabs {
-  display: flex;
-  gap: 8px;
-}
-.admin-subtabs button {
-  background: transparent;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 6px 14px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--mute);
-  transition: all 0.2s ease;
-}
-.admin-subtabs button:hover {
-  color: #fff;
-  border-color: var(--accent);
-}
-.admin-subtabs button[aria-selected="true"] {
-  background: var(--blue);
-  color: #fff;
-  border-color: #64b5f6;
-  box-shadow: 0 0 10px rgba(66, 133, 244, 0.4);
-}
 .alert-banner {
-  background: rgba(255, 176, 32, 0.1);
+  background: rgba(255, 176, 32, 0.12);
   border: 1px solid var(--warn);
   border-radius: var(--radius);
-  padding: 14px 18px;
+  padding: 15px 18px;
   display: flex;
   align-items: center;
   gap: 14px;
   margin-top: 16px;
 }
 .alert-banner-icon { font-size: 26px; flex-shrink: 0; }
-.alert-banner-content h4 { margin: 0 0 4px; font-size: 14px; color: var(--accent); font-weight: 800; }
-.alert-banner-content p { margin: 0; font-size: 13px; color: var(--text); }
+.alert-banner-content h4 { margin: 0 0 4px; font-size: 16px; color: var(--accent-text); font-weight: 800; }
+.alert-banner-content p { margin: 0; font-size: 15px; color: var(--text); }
 
 body.tvmode header nav, body.tvmode .seg, body.tvmode #src { display: none !important; }
 body.tvmode header { border-bottom: 0; padding: 10px 0; }
-body.tvmode .card { padding: 24px; }
-body.tvmode h2 { font-size: 36px; }
-body.tvmode .kpi .v { font-size: 52px; }
+body.tvmode .card { padding: 26px; }
+body.tvmode h2 { font-size: 38px; }
+body.tvmode .kpi .v { font-size: 56px; }
 
-@media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:960px){.two, .two-even{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:no-preference){#bar{transition:width .3s linear}}
 
 /* ===== SETORES + BARRA DE FILTROS ===== */
-.side{position:fixed;left:0;top:0;bottom:0;width:var(--side-w);z-index:20;display:flex;flex-direction:column;background:linear-gradient(180deg,#0b1b3d 0%,#07122b 100%);border-right:1px solid var(--line);padding:14px 10px;transition:width .25s ease}
-body{--side-w:216px}
-body.side-collapsed{--side-w:64px}
+.side{position:fixed;left:0;top:0;bottom:0;width:var(--side-w);z-index:20;display:flex;flex-direction:column;background:var(--side-bg);border-right:1px solid var(--line);padding:14px 10px;transition:width .25s ease}
+body{--side-w:228px}
+body.side-collapsed{--side-w:66px}
 .side{width:var(--side-w)}
-body{padding-left:calc(var(--side-w) + 16px) !important;transition:padding-left .25s ease}
-.side-label{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--mute);text-transform:uppercase;padding:6px 10px 10px;white-space:nowrap;overflow:hidden}
-.setores{display:flex;flex-direction:column;gap:4px}
-.setores button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border:0;border-left:3px solid transparent;border-radius:8px;padding:11px 10px;font-size:14px;font-weight:700;color:var(--mute);transition:all .2s ease;white-space:nowrap;overflow:hidden}
-.setores button .si{font-size:19px;flex:0 0 24px;text-align:center}
-.setores button:hover{color:#fff;background:rgba(255,255,255,.05)}
-.setores button[aria-pressed="true"]{background:rgba(255,196,0,.12);color:var(--accent);border-left-color:var(--accent)}
-.side-toggle{margin-top:auto;align-self:flex-start;width:34px;height:34px;border-radius:6px;background:transparent;border:1px solid var(--line);color:var(--mute);font-size:16px;font-weight:800;line-height:1;transition:transform .25s ease}
-.side-toggle:hover{color:#fff;border-color:var(--accent)}
+body{padding-left:calc(var(--side-w) + 18px) !important;transition:padding-left .25s ease}
+.side-label{font-size:12px;font-weight:800;letter-spacing:.1em;color:#9fb3cc;text-transform:uppercase;padding:6px 10px 10px;white-space:nowrap;overflow:hidden}
+.setores{display:flex;flex-direction:column;gap:5px}
+.setores button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border:0;border-left:3px solid transparent;border-radius:8px;padding:12px 10px;font-size:15px;font-weight:700;color:#b8c7db;transition:all .2s ease;white-space:nowrap;overflow:hidden}
+.setores button .si{font-size:20px;flex:0 0 24px;text-align:center}
+.setores button:hover{color:#fff;background:rgba(255,255,255,.07)}
+.setores button[aria-pressed="true"]{background:rgba(255,196,0,.16);color:#ffc400;border-left-color:#ffc400}
+.side-toggle{margin-top:auto;align-self:flex-start;width:36px;height:36px;border-radius:6px;background:transparent;border:1px solid rgba(255,255,255,0.2);color:#b8c7db;font-size:18px;font-weight:800;line-height:1;transition:transform .25s ease}
+.side-toggle:hover{color:#fff;border-color:#ffc400}
 body.side-collapsed .side-toggle{transform:rotate(180deg);align-self:center}
 body.side-collapsed .side-label,body.side-collapsed .setores button .st{display:none}
-body.side-collapsed .setores button{justify-content:center;padding:11px 0;gap:0}
+body.side-collapsed .setores button{justify-content:center;padding:12px 0;gap:0}
 body[data-setor="admin"] #basis, body[data-setor="recebimento"] #basis{display:none}
 
-.gfbar{display:none;margin-top:14px;background:var(--panel2);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;position:relative;z-index:15}
+.gfbar{display:none;margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px;position:relative;z-index:15;box-shadow:var(--card-shadow)}
 .gfbar.on{display:block}
-.gf-row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end}
-.gf-title{font-weight:800;font-size:13px;color:var(--accent);align-self:center;letter-spacing:.04em;text-transform:uppercase}
-.gf{display:flex;flex-direction:column;gap:3px;min-width:140px;flex:0 1 190px;position:relative}
-.gf span.gf-lbl{font-size:11px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
-.gf select{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:7px 10px;border-radius:6px;font-size:14px;outline:none;width:100%;transition:border-color .2s ease}
+.gf-row{display:flex;flex-wrap:wrap;gap:12px 14px;align-items:flex-end}
+.gf-title{font-weight:800;font-size:14px;color:var(--accent-text);align-self:center;letter-spacing:.04em;text-transform:uppercase}
+.gf{display:flex;flex-direction:column;gap:4px;min-width:150px;flex:0 1 200px;position:relative}
+.gf span.gf-lbl{font-size:12px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+.gf select{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:8px 11px;border-radius:6px;font-size:15px;outline:none;width:100%;transition:border-color .2s ease}
 .gf select:focus{border-color:var(--accent)}
-.gf.on select{border-color:var(--accent);color:var(--accent);font-weight:700}
+.gf.on select{border-color:var(--accent);color:var(--accent-text);font-weight:700}
 
 /* MULTISELECT DROPDOWN */
 .ms-wrap{position:relative;width:100%}
 .ms-btn{
   display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
-  background:var(--panel);border:1px solid var(--line);color:var(--text);
-  padding:7px 10px;border-radius:6px;font-size:14px;text-align:left;transition:border-color .2s ease;
+  background:var(--panel2);border:1px solid var(--line);color:var(--text);
+  padding:8px 11px;border-radius:6px;font-size:15px;text-align:left;transition:border-color .2s ease;
 }
 .ms-btn:hover, .ms-wrap.open .ms-btn{border-color:var(--accent)}
-.gf.on .ms-btn{border-color:var(--accent);color:var(--accent);font-weight:700}
+.gf.on .ms-btn{border-color:var(--accent);color:var(--accent-text);font-weight:700}
 .ms-btn-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.ms-badge{background:var(--accent);color:#120e00;font-weight:800;font-size:11px;border-radius:999px;padding:1px 7px;line-height:1.3;flex:none}
-.ms-arrow{font-size:10px;color:var(--mute);flex:none}
+.ms-badge{background:var(--accent);color:#120e00;font-weight:800;font-size:12px;border-radius:999px;padding:1px 7px;line-height:1.3;flex:none}
+.ms-arrow{font-size:11px;color:var(--mute);flex:none}
 .ms-menu{
-  display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:270px;max-width:340px;
-  background:#07122b;border:1px solid var(--accent);border-radius:10px;padding:10px;z-index:100;
-  box-shadow:0 14px 36px rgba(0,0,0,0.75), 0 0 18px rgba(255,196,0,0.2);
+  display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:280px;max-width:350px;
+  background:var(--panel);border:1px solid var(--accent);border-radius:10px;padding:10px;z-index:100;
+  box-shadow:0 14px 36px rgba(0,0,0,0.45);
 }
 .ms-wrap.open .ms-menu{display:block;animation:fadeIn .15s ease-out}
 .ms-search{
-  width:100%;background:var(--panel);border:1px solid var(--line);color:var(--text);
-  padding:6px 10px;border-radius:6px;font-size:13px;outline:none;margin-bottom:8px;
+  width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);
+  padding:7px 10px;border-radius:6px;font-size:14px;outline:none;margin-bottom:8px;
 }
 .ms-search:focus{border-color:var(--accent)}
-.ms-actions{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--mute);padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.ms-actions{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--mute);padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid var(--line)}
 .ms-actions-btns{display:flex;gap:8px}
-.ms-actions button{background:transparent;border:0;color:var(--accent);font-weight:700;font-size:11px;padding:2px 4px}
+.ms-actions button{background:transparent;border:0;color:var(--accent-text);font-weight:700;font-size:12px;padding:2px 4px}
 .ms-actions button:hover{text-decoration:underline}
-.ms-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;padding-right:2px}
+.ms-list{max-height:230px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;padding-right:2px}
 .ms-item{
-  display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;font-size:13px;
+  display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;font-size:14px;
   cursor:pointer;user-select:none;transition:background .15s ease;color:var(--text);
 }
-.ms-item:hover{background:rgba(255,255,255,0.06)}
-.ms-item.checked{background:rgba(255,196,0,0.14);color:#fff;font-weight:700}
-.ms-item input[type="checkbox"]{accent-color:var(--accent);width:15px;height:15px;cursor:pointer;flex:none;margin:0}
+.ms-item:hover{background:rgba(148, 163, 184, 0.14)}
+.ms-item.checked{background:rgba(255,196,0,0.18);color:var(--text-strong);font-weight:700}
+.ms-item input[type="checkbox"]{accent-color:var(--accent);width:16px;height:16px;cursor:pointer;flex:none;margin:0}
 .ms-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-.gf-clear{margin-left:auto;background:transparent;border:1px solid var(--line);color:var(--mute);border-radius:6px;padding:7px 12px;font-size:13px;font-weight:700;transition:all .2s ease}
-.gf-clear:not(:disabled):hover{color:#fff;border-color:var(--crit)}
-.gf-clear:disabled{opacity:.35;cursor:default}
+.gf-clear{margin-left:auto;background:transparent;border:1px solid var(--line);color:var(--mute);border-radius:6px;padding:8px 14px;font-size:14px;font-weight:700;transition:all .2s ease}
+.gf-clear:not(:disabled):hover{color:var(--text-strong);border-color:var(--crit)}
+.gf-clear:disabled{opacity:.4;cursor:default}
 .gf-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.chip{background:rgba(255,196,0,.12);border:1px solid rgba(255,196,0,.45);color:var(--text);border-radius:999px;padding:4px 12px;font-size:12px}
-.chip b{color:var(--accent)}
+.chip{background:rgba(255,196,0,.15);border:1px solid rgba(255,196,0,.5);color:var(--text);border-radius:999px;padding:5px 13px;font-size:13px}
+.chip b{color:var(--accent-text)}
 .chip:hover{background:rgba(255,93,98,.18);border-color:var(--crit)}
-.btn-more{background:var(--panel2);border:1px solid var(--line);color:var(--accent);border-radius:8px;padding:8px 18px;font-weight:700;font-size:13px}
+.btn-more{background:var(--panel2);border:1px solid var(--line);color:var(--accent-text);border-radius:8px;padding:9px 18px;font-weight:700;font-size:14px}
 .btn-more:hover{border-color:var(--accent)}
 
-/* os filtros da Carteira agora ficam na barra do topo */
 #s-carteira .filter-bar{display:none}
 
 body.tvmode .side, body.tvmode .gfbar{display:none !important}
-body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
+body.tvmode{padding-left:max(18px,env(safe-area-inset-left,0px)) !important}
 @media (max-width:820px){.gf{flex:1 1 140px}.gf-clear{margin-left:0}.side-label{display:none}}
 
 
 /* ===== MATRIZ EXECUTIVA CARTEIRA DE PEDIDO ===== */
-.cart-matrix th { background: rgba(15, 32, 70, 0.9); position: sticky; top: 0; z-index: 2; }
+.cart-matrix th { background: var(--panel2); position: sticky; top: 0; z-index: 2; }
 .cart-matrix td { transition: background 0.15s ease; }
-.hm-cell { border-radius: 6px; padding: 4px 8px; display: inline-block; min-width: 54px; text-align: right; font-weight: 800; }
-.hm-crit { background: rgba(255, 93, 98, 0.28); color: #ff9ea1; border: 1px solid rgba(255, 93, 98, 0.5); }
-.hm-high { background: rgba(255, 196, 0, 0.24); color: #ffe066; border: 1px solid rgba(255, 196, 0, 0.45); }
-.hm-mid  { background: rgba(66, 133, 244, 0.22); color: #8ab4f8; border: 1px solid rgba(66, 133, 244, 0.4); }
-.hm-low  { background: rgba(255, 255, 255, 0.04); color: var(--mute); }
+.hm-cell { border-radius: 6px; padding: 4px 9px; display: inline-block; min-width: 58px; text-align: right; font-weight: 800; font-size: 15px; }
+.hm-crit { background: rgba(255, 93, 98, 0.24); color: var(--crit); border: 1px solid rgba(255, 93, 98, 0.45); }
+.hm-high { background: rgba(255, 196, 0, 0.22); color: var(--accent-text); border: 1px solid rgba(255, 196, 0, 0.45); }
+.hm-mid  { background: rgba(66, 133, 244, 0.20); color: var(--blue); border: 1px solid rgba(66, 133, 244, 0.4); }
+.hm-low  { background: rgba(148, 163, 184, 0.12); color: var(--mute); }
 
-.dept-hbar-list { display: flex; flex-direction: column; gap: 9px; margin-top: 4px; }
+/* Lista de Departamentos em Grade 2 Colunas (Embaixo na Carteira) */
+.dept-hbar-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 24px; margin-top: 6px; }
+@media (max-width: 960px) { .dept-hbar-list { grid-template-columns: minmax(0, 1fr); } }
 .dept-hbar-row {
-  display: grid; grid-template-columns: 155px 1fr 125px; align-items: center; gap: 10px;
-  padding: 5px 8px; border-radius: 7px; cursor: pointer; transition: all 0.2s ease;
+  display: grid; grid-template-columns: 185px 1fr 145px; align-items: center; gap: 12px;
+  padding: 7px 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;
   border: 1px solid transparent;
 }
-.dept-hbar-row:hover { background: rgba(255, 255, 255, 0.05); }
-.dept-hbar-row.active-dept { background: rgba(255, 196, 0, 0.14); border-color: rgba(255, 196, 0, 0.45); }
-.dept-hbar-name { font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dept-hbar-track { height: 14px; background: #07132b; border-radius: 5px; overflow: hidden; position: relative; border: 1px solid rgba(26,49,99,0.7); }
+.dept-hbar-row:hover { background: rgba(148, 163, 184, 0.1); }
+.dept-hbar-row.active-dept { background: rgba(255, 196, 0, 0.16); border-color: rgba(255, 196, 0, 0.5); }
+.dept-hbar-name { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dept-hbar-track { height: 15px; background: var(--track-bg); border-radius: 5px; overflow: hidden; position: relative; border: 1px solid var(--line); }
 .dept-hbar-fill { height: 100%; border-radius: 4px; transition: width 0.35s ease; }
-.dept-hbar-val { font-family: var(--f-num); font-size: 13px; font-weight: 700; text-align: right; white-space: nowrap; }
-.badge-pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 800; font-family: var(--f-num); }
-.badge-full { background: rgba(66, 133, 244, 0.2); border: 1px solid rgba(66, 133, 244, 0.5); color: #7cb3ff; }
+.dept-hbar-val { font-family: var(--f-num); font-size: 15px; font-weight: 700; text-align: right; white-space: nowrap; }
+.badge-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 14px; font-weight: 800; font-family: var(--f-num); }
+.badge-full { background: rgba(66, 133, 244, 0.18); border: 1px solid rgba(66, 133, 244, 0.45); color: var(--blue); }
 
 .badge-verba-sim { background: rgba(53, 212, 154, 0.18); border: 1px solid rgba(53, 212, 154, 0.5); color: var(--ok); }
-.badge-verba-nao { background: rgba(255, 93, 98, 0.18); border: 1px solid rgba(255, 93, 98, 0.5); color: #ff9ea1; }
-.badge-lote { background: rgba(255, 196, 0, 0.16); border: 1px solid rgba(255, 196, 0, 0.4); color: var(--accent); }
+.badge-verba-nao { background: rgba(255, 93, 98, 0.18); border: 1px solid rgba(255, 93, 98, 0.5); color: var(--crit); }
+.badge-lote { background: rgba(255, 196, 0, 0.18); border: 1px solid rgba(255, 196, 0, 0.45); color: var(--accent-text); }
 
 
 /* Ícones SVG Lucide alinhados ao texto */
@@ -717,11 +700,6 @@ nav button {
   align-items: center;
   gap: 8px;
 }
-.tv {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
 .gf-title {
   display: inline-flex;
   align-items: center;
@@ -739,7 +717,6 @@ nav button {
   flex: 0 0 24px;
 }
 
-/* o aviso de filtro ativo agora é só o da barra do topo (chips) */
 .active-filters-bar{display:none !important}
 </style>
 </head>
@@ -771,7 +748,11 @@ nav button {
       <button data-b="custo" aria-pressed="true">R$</button>
       <button data-b="qtd" aria-pressed="false">Qtd. endereçada</button>
     </div>
-    <button class="tv" id="tv" aria-pressed="false"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg></span> Modo TV</button>
+    <button class="theme-btn" id="themeToggle" title="Alternar entre tema claro e escuro">
+      <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></span>
+      <span>Tema Claro</span>
+    </button>
+    <button class="tv" id="tv" aria-pressed="false"><span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg></span> Modo TV</button>
   </div>
   <div id="src"><i></i><span id="srctxt">Carregando…</span></div>
 </header>
@@ -791,23 +772,25 @@ nav button {
 <script>
 
 const ICONS = {
-  box: `<span class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></span>`,
-  admin: `<span class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>`,
-  inbox: `<span class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></span>`,
-  truck: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></span>`,
-  alert: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span>`,
-  doc: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>`,
-  dollar: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>`,
-  filter: `<span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span>`,
-  tv: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg></span>`,
-  chart: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>`,
-  calendar: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>`,
-  sliders: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>`,
-  store: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg></span>`,
-  printer: `<span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span>`,
-  info: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>`,
-  pie: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>`,
-  trophy: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span>`
+  box: `<span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></span>`,
+  admin: `<span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>`,
+  inbox: `<span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></span>`,
+  truck: `<span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></span>`,
+  alert: `<span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span>`,
+  doc: `<span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>`,
+  dollar: `<span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>`,
+  filter: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></span>`,
+  tv: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg></span>`,
+  sun: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></span>`,
+  moon: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span>`,
+  chart: `<span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>`,
+  calendar: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>`,
+  sliders: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>`,
+  store: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg></span>`,
+  printer: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span>`,
+  info: `<span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>`,
+  pie: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>`,
+  trophy: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span>`
 };
 
 const CONFIG = {
@@ -900,7 +883,6 @@ function brlShort(v){
 const esc = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nice = s => String(s).replace(/^ESTOQUE\s+/i,'').toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase());
 
-/* Helpers para seleção múltipla (arrays de valores selecionados; array vazio = todos) */
 function toggleArr(arr, val) {
   const s = String(val);
   const idx = arr.findIndex(x => String(x).toLowerCase() === s.toLowerCase());
@@ -928,13 +910,11 @@ let filterRua = [];
 let filterShelfFaixa = [];
 let filterAgingFaixa = [];
 
-/* FILTROS DO GRÁFICO DIÁRIO/MENSAL */
 let filterModoAcum = 'mes'; 
 let filterDiaEspec = 'todos';
 
 let geralProdExpanded = false; 
 
-/* FILTROS DA CARTEIRA (MÚLTIPLOS) */
 let dateReservaFilter = []; 
 let resFilter = 'todos';
 let sepFilter = [];
@@ -1011,7 +991,7 @@ function getProp(obj, propNames) {
 function parseNum(val) {
   if (typeof val === 'number') return val;
   if (!val) return 0;
-  var str = String(val).replace(/R\$\s?/gi, '').replace(/%/gi, '').trim();
+  var str = String(val).replace(/R\$\s?/gi, '').replace(/%/g, '').trim();
   if (str.indexOf(',') !== -1) {
     str = str.replace(/\./g, '').replace(',', '.');
   }
@@ -1254,8 +1234,8 @@ function donut(items,center,sub, filterAttr = 'data-filter-local', activeArr = [
     }
     off+=L; 
   });
-  return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle r="${R}" cx="100" cy="100" fill="none" stroke="#162e5c" stroke-width="26"/>${segs}
-    <text x="100" y="${sub?98:106}" text-anchor="middle" font-size="${String(center).length>5?24:30}" font-weight="700">${center}</text>${sub?`<text x="100" y="122" text-anchor="middle" font-size="13" style="fill:var(--mute)">${sub}</text>`:''}</svg>`;
+  return `<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="${esc(sub||'Gráfico de rosca')}"><circle r="${R}" cx="100" cy="100" fill="none" stroke="var(--track-bg)" stroke-width="26"/>${segs}
+    <text x="100" y="${sub?98:106}" text-anchor="middle" font-size="${String(center).length>5?24:30}" font-weight="700">${center}</text>${sub?`<text x="100" y="122" text-anchor="middle" font-size="14" style="fill:var(--mute)">${sub}</text>`:''}</svg>`;
 }
 
 function legend(items, filterAttr = 'data-filter-local', activeArr = []){
@@ -1284,9 +1264,9 @@ const COLOR_MAP = {
   'virtual': '#ff5d62',
   'pre alerta': '#ff8b8f',
   'pré alerta': '#ff8b8f',
-  'suprimentos': '#c084fc'
+  'suprimentos': '#a855f7'
 };
-const DEFAULT_COLORS = ['#ffc400','#ff5d62','#ff8b8f','#c084fc','#35d49a','#3a5db0','#4285f4','#e6a800','#ffb020','#ff5d62','#35d49a','#8da1cc'];
+const DEFAULT_COLORS = ['#ffc400','#ff5d62','#ff8b8f','#a855f7','#35d49a','#3a5db0','#4285f4','#e6a800','#ffb020','#ff5d62','#35d49a','#8da1cc'];
 
 function clearAllFilters() {
   filterLocalEst = [];
@@ -1620,12 +1600,12 @@ function secGeral(){
   const maxValAcum = Math.max(limitSeguro, ...chartItems.map(a => a.custoTotal || 0)) * 1.25;
 
   let acumHtml = `
-  <div class="card" style="margin-top:16px;">
+  <div class="card" style="margin-top:18px;">
     <div class="card-header-action">
       <h3>${ICONS.chart} POSIÇÃO DE ESTOQUE HISTÓRICO E PROJEÇÃO (${filterModoAcum === 'mes' ? 'MÉDIA MENSAL R$' : 'FECHAMENTO DIÁRIO R$'})</h3>
       
       <div class="prod-controls">
-        <select id="selectModoAcum" style="font-weight:700;color:var(--accent)">
+        <select id="selectModoAcum" style="font-weight:700;color:var(--accent-text)">
           <option value="mes" ${filterModoAcum==='mes'?'selected':''}>Média Agrupada por MÊS</option>
           <option value="dia" ${filterModoAcum==='dia'?'selected':''}>Detalhado por DIA</option>
         </select>
@@ -1637,7 +1617,7 @@ function secGeral(){
           </select>
         ` : ''}
 
-        <span style="font-size:12px; font-weight:700; color:var(--accent); margin-left:8px;">Limite: <b>R$ 45,0 mi</b></span>
+        <span style="font-size:14px; font-weight:700; color:var(--accent-text); margin-left:8px;">Limite: <b>R$ 45,0 mi</b></span>
       </div>
     </div>
     
@@ -1677,7 +1657,7 @@ function secGeral(){
                   ${tagVarHtml}
                 </div>
               </div>
-              <div class="bar-date-label" style="${item.isProj ? 'color:var(--accent);font-weight:800' : ''}">
+              <div class="bar-date-label" style="${item.isProj ? 'color:var(--accent-text);font-weight:800' : ''}">
                 ${esc(item.label)}${item.isProj ? ' (Proj)' : ''}
               </div>
             </div>
@@ -1700,7 +1680,7 @@ function secGeral(){
 
   ${acumHtml}
 
-  <div class="grid two" style="margin-top:16px">
+  <div class="grid two" style="margin-top:18px">
     <div class="card">
       <div class="card-header-action">
         <h3>${cardTitle}</h3>
@@ -1736,7 +1716,7 @@ function secGeral(){
     </div>
   </div>
 
-  <div class="card" style="margin-top:16px">
+  <div class="card" style="margin-top:18px">
     <div class="card-header-action">
       <h3>${ICONS.box} PRODUTOS EM ESTOQUE NO FILTRO (${listEstoqueProds.length} PALETES)</h3>
       <button class="toggle-btn" id="btnToggleGeralProds">
@@ -1752,12 +1732,12 @@ function secGeral(){
           <option value="7" ${filterArea.length===1 && filterArea[0]==='7'?'selected':''}>Galpão 2 (Área 7)</option>
         </select>
 
-        <select id="selectRuaFilter" style="font-weight:700;color:var(--accent)">
+        <select id="selectRuaFilter" style="font-weight:700;color:var(--accent-text)">
           <option value="todos" ${filterRua.length===0?'selected':''}>-- Todas as Ruas --</option>
           ${ruasDisponiveis.map(r => `<option value="${r}" ${filterRua.length===1 && filterRua[0]===String(r)?'selected':''}>Rua ${r}</option>`).join('')}
         </select>
 
-        <input type="text" id="inputEstoqueProdSearch" placeholder="Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:240px" />
+        <input type="text" id="inputEstoqueProdSearch" placeholder="Buscar código / GTIN / produto / endereço..." value="${esc(estoqueProdSearch)}" style="width:260px" />
         
         <select id="selectEstoqueProdSort">
           <option value="endereco" ${estoqueProdSortOrder==='endereco'?'selected':''}>Ordenar por Endereço (Corredor)</option>
@@ -1785,14 +1765,14 @@ function secGeral(){
           <tbody>
             ${listEstoqueProds.length ? listEstoqueProds.slice(0, 100).map(p => `
               <tr>
-                <td><span class="num" style="color:var(--accent);font-weight:800;font-size:15px">${esc(p.end)}</span></td>
+                <td><span class="num" style="color:var(--accent-text);font-weight:800;font-size:17px">${esc(p.end)}</span></td>
                 <td><span class="num" style="color:var(--mute);font-weight:700">${esc(p.codProd)}</span></td>
                 <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
                 <td><b>${esc(p.prod)}</b></td>
                 <td><span class="dot" style="background:var(--accent)"></span>${esc(nice(p.est))}</td>
                 <td>${esc(p.status)}</td>
                 <td class="r" style="font-weight:700;color:var(--ok)">${fmtN.format(p.qtd)}</td>
-                <td class="r" style="font-weight:700;color:var(--text)">${brl(p.custo)}</td>
+                <td class="r" style="font-weight:700">${brl(p.custo)}</td>
               </tr>
             `).join('') : '<tr><td colspan="8">Nenhum palete encontrado com os filtros aplicados.</td></tr>'}
           </tbody>
@@ -2024,7 +2004,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
     ${kpi('Em atenção',`<span class="warnc">${fmtP(cls.warn/comVal*100)}</span>`,fmtV(cls.warn), '', 'Top 3 em Atenção', topAtencao, 'var(--warn)')}
     ${kpi('Crítico',`<span class="critc">${fmtP(cls.crit/comVal*100)}</span>`,fmtV(critV)+' · '+fmtN.format(critN)+' linhas', '', 'Top 3 Críticos (Maior Valor)', topCriticos, 'var(--crit)')}
   </div>
-  <div class="grid two" style="margin-top:16px">
+  <div class="grid two" style="margin-top:18px">
     <div class="card"><h3>Saúde do estoque revenda</h3><div class="donutwrap">${donut(items,fmtP(pctOk,0),'saudável', 'data-filter-faixa', activeFaixaArr)}${legend(items, 'data-filter-faixa', activeFaixaArr)}</div></div>
     <div class="card"><h3>Por faixa (Clique para filtrar)</h3><div class="tw"><table>
       <tr><th>Faixa</th><th class="r">Linhas</th><th class="r">Qtd. endereçada</th><th class="r">Custo bruto</th><th>Participação</th></tr>
@@ -2044,12 +2024,12 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
       }).join('')}
     </table></div></div>
   </div>
-  <div class="card" style="margin-top:16px">
+  <div class="card" style="margin-top:18px">
     <div class="card-header-action">
       <h3>${topTitle} (${top.length} linhas encontradas)</h3>
       <div class="prod-controls">
         <button class="btn-export-pdf" id="${btnPdfId}">${ICONS.printer} Cara-Crachá (PDF)</button>
-        <input type="text" id="${inputId}" placeholder="Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:260px" />
+        <input type="text" id="${inputId}" placeholder="Buscar código / GTIN / produto / endereço..." value="${esc(currentSearch)}" style="width:280px" />
         <select id="${selectId}">
           <option value="critico" ${currentSort==='critico'?'selected':''}>Ordenar por Mais Crítico</option>
           <option value="endereco" ${currentSort==='endereco'?'selected':''}>Ordenar por Endereço (Corredor)</option>
@@ -2077,10 +2057,10 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
             const classKey = cmap[r[field]] || 'none';
             const badgeColor = CLS[classKey].c;
             return `<tr>
-              <td><span class="num" style="color:var(--accent);font-weight:700">${esc(r.codProd)}</span></td>
+              <td><span class="num" style="color:var(--accent-text);font-weight:700">${esc(r.codProd)}</span></td>
               <td><span class="num" style="color:var(--mute);font-weight:600">${esc(r.gtin)}</span></td>
               <td><b>${esc(r.prod)}</b></td>
-              <td><b style="color:var(--accent);font-family:var(--f-num)">${esc(r.end)}</b></td>
+              <td><b style="color:var(--accent-text);font-family:var(--f-num)">${esc(r.end)}</b></td>
               <td>${esc(r.status)}</td>
               <td><span class="dot" style="background:${badgeColor}"></span><b>${esc(r[field])}</b></td>
               <td class="r" style="font-weight:700">${fmtN.format(r.qtd)}</td>
@@ -2234,8 +2214,8 @@ function secOcup(){
       <div class="b big"><small>% Ocupação total CD</small><strong>${fmtP(O.pct,2)}</strong></div>
     </div>
   </div>
-  ${showG1 ? `<div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'#4285f4')}</div>` : ''}
-  ${showG2 ? `<div class="card" style="margin-top:16px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'#3a5db0')}</div>` : ''}
+  ${showG1 ? `<div class="card" style="margin-top:18px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'#4285f4')}</div>` : ''}
+  ${showG2 ? `<div class="card" style="margin-top:18px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'#3a5db0')}</div>` : ''}
   <p class="foot">Todas as ruas ativas são exibidas nos gráficos e contam nos totais.</p>`;
 
   attachTooltipEvents();
@@ -2263,7 +2243,6 @@ function secCarteira(){
     filteredC = filteredC.filter(r => hasArr(deptFilter, r.dept));
   }
 
-  // Respeitar também o filtro rápido de Status (Pendentes / Separados / Todos) nos cálculos visuais
   const isRowSeparado = r => r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida <= r.qtdSeparada);
   const viewC = filteredC.filter(r => {
     if (statusFilter === 'pendente') return !isRowSeparado(r);
@@ -2277,7 +2256,6 @@ function secCarteira(){
   const totValor = viewC.reduce((s,r) => s + r.valorTotal, 0);
   const pctAtendimento = totPedida ? (totSeparada / totPedida) * 100 : 0;
 
-  // Contagem de linhas/paletes da separação Full dentro dos filtros ativos
   const fullLinhasAll = viewC.filter(r => r.tipoSep.toLowerCase().trim() === 'full');
   const fullLinhasPend = fullLinhasAll.filter(r => !isRowSeparado(r)).length;
   const fullLinhasSep = fullLinhasAll.length - fullLinhasPend;
@@ -2301,7 +2279,6 @@ function secCarteira(){
     sub: `Destino: ${r.dest} | Valor: ${brlShort(r.valorTotal)}`
   }));
 
-  // Helper de Heatmap dinâmico para % Representada e Valores
   const hmClass = (pct) => {
     if (pct >= 40) return 'hm-crit';
     if (pct >= 15) return 'hm-high';
@@ -2309,7 +2286,7 @@ function secCarteira(){
     return 'hm-low';
   };
 
-  // 1. TABELA POR DATA DE GERAÇÃO DA RESERVA (com Qtd Pedida, Valor Total, % Representada e Linhas/Paletes Full)
+  // 1. TABELA POR DATA DE GERAÇÃO DA RESERVA
   const byRes = {};
   viewC.forEach(r => {
     const k = r.gerReserva || 'Sem data';
@@ -2337,7 +2314,7 @@ function secCarteira(){
   const totResBase = basis === 'custo' ? totValor : totPedida;
   const totFullLinhasRes = resRows.reduce((s, [, o]) => s + o.fullLinhas, 0);
 
-  // 2. TABELA POR TIPO DE SEPARAÇÃO (estilo visão antiga: Qtd Pedida, Valor Total, % Representada, Nº do Lote / Linhas)
+  // 2. TABELA POR TIPO DE SEPARAÇÃO
   const bySep = {};
   viewC.forEach(r => {
     const k = r.tipoSep || 'Não informado';
@@ -2350,7 +2327,7 @@ function secCarteira(){
   const sepRows = Object.entries(bySep).sort((a,b) => (basis === 'custo' ? b[1].valor - a[1].valor : b[1].pedida - a[1].pedida));
   const totLinhasSep = sepRows.reduce((s, [, o]) => s + o.linhas, 0);
 
-  // 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (Barras Horizontais ordenadas estilo visão antiga + clique para filtrar)
+  // 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (CATEGORIA)
   const baseDept = C.filter(r => {
     if (dateReservaFilter.length > 0 && !hasArr(dateReservaFilter, r.gerReserva)) return false;
     if (sepFilter.length > 0 && !hasArr(sepFilter, r.tipoSep)) return false;
@@ -2462,145 +2439,141 @@ function secCarteira(){
     ${kpi('Qtd Pedida', fmtN.format(totPedida), `Separado: ${fmtN.format(totSeparada)} (${fmtP(pctAtendimento)})`, 'hl')}
     ${kpi('Valor Total', brlShort(totValor), brl(totValor), 'hl')}
     ${kpi('Pendente de Separação', fmtN.format(totPendQtd), brlShort(viewC.reduce((s,r) => s + (!isRowSeparado(r) ? r.valorTotal : 0), 0)), '', 'Maiores Pedidos Pendentes', topPedentesCrit, 'var(--warn)')}
-    ${kpi('Linhas / Paletes Full', `<span style="color:#7cb3ff">${fmtN.format(fullLinhasAll.length)}</span>`, `Pend: ${fmtN.format(fullLinhasPend)} | Sep: ${fmtN.format(fullLinhasSep)}`, '', 'Separação Full (Paletes Fechados)', [{prod: `Total de Linhas Full: ${fmtN.format(fullLinhasAll.length)}`, sub: `Pendentes: ${fmtN.format(fullLinhasPend)} paletes | Separados: ${fmtN.format(fullLinhasSep)} paletes`}], '#7cb3ff')}
+    ${kpi('Linhas / Paletes Full', `<span style="color:var(--blue)">${fmtN.format(fullLinhasAll.length)}</span>`, `Pend: ${fmtN.format(fullLinhasPend)} | Sep: ${fmtN.format(fullLinhasSep)}`, '', 'Separação Full (Paletes Fechados)', [{prod: `Total de Linhas Full: ${fmtN.format(fullLinhasAll.length)}`, sub: `Pendentes: ${fmtN.format(fullLinhasPend)} paletes | Separados: ${fmtN.format(fullLinhasSep)} paletes`}], 'var(--blue)')}
     ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso, 'Datas em Atraso Crítico', Array.from(datasPendentesSet).map(d => ({prod: `Data Reserva: ${d}`, sub: 'Pendente de liberação'})), isCritico ? 'var(--crit)' : 'var(--warn)')}
   </div>
 
-  <!-- BLOCO PRINCIPAL ESTILO VISÃO EXECUTIVA: ESQUERDA (DATA RESERVA + TIPO SEPARAÇÃO) | DIREITA (DEPARTAMENTOS) -->
-  <div class="grid two" style="margin-top:16px">
-    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
-      
-      <!-- 1. GERAÇÃO RESERVA COM LINHAS / PALETES FULL -->
-      <div class="card">
-        <div class="card-header-action">
-          <h3>${ICONS.calendar} GERAÇÃO RESERVA (${resRows.length} DATAS) · CLIQUE P/ FILTRAR</h3>
-          <span style="font-size:12px;color:var(--mute);font-weight:700">Paletes Full: <b style="color:#7cb3ff">${fmtN.format(totFullLinhasRes)}</b></span>
-        </div>
-        <div class="tw">
-          <table class="cart-matrix">
-            <thead>
-              <tr>
-                <th>Geração Reserva</th>
-                <th class="r">Qtd Pedida</th>
-                <th class="r">Valor Total</th>
-                <th class="r">% Repr.</th>
-                <th class="r" title="Quantidade de linhas / paletes do fluxo Full nesta data">Linhas / Paletes Full</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${resRows.length ? resRows.map(([dt, o]) => {
-                const isSelectedDt = isSelectedArr(dateReservaFilter, dt);
-                const valMetric = basis === 'custo' ? o.valor : o.qtd;
-                const pctRep = totResBase ? (valMetric / totResBase) * 100 : 0;
-                const pctStr = pctRep > 0 && pctRep < 0.01 ? '+0%' : fmtP(pctRep, pctRep >= 10 ? 1 : 2);
-                return `
-                <tr class="clickable-row ${isSelectedDt ? 'active-row' : ''}" data-filter-res-dt="${esc(dt)}">
-                  <td>
-                    <b>${esc(dt)}</b>
-                    ${o.pendentes === 0 ? '<span style="color:var(--ok);font-size:11px;margin-left:6px">✔</span>' : ''}
-                  </td>
-                  <td class="r" style="font-weight:700">${fmtN.format(o.qtd)}</td>
-                  <td class="r">${brlShort(o.valor)}</td>
-                  <td class="r"><span class="hm-cell ${hmClass(pctRep)}">${pctStr}</span></td>
-                  <td class="r">
-                    ${o.fullLinhas > 0 
-                      ? `<span class="badge-pill badge-full" title="${fmtN.format(o.fullQtd)} unidades em ${o.fullLinhas} paletes Full">${fmtN.format(o.fullLinhas)}</span>` 
-                      : `<span style="color:var(--mute)">0</span>`}
-                  </td>
-                </tr>`;
-              }).join('') : '<tr><td colspan="5">Nenhuma data encontrada no filtro.</td></tr>'}
-              <tr class="tot">
-                <td>Total Geral</td>
-                <td class="r">${fmtN.format(totPedida)}</td>
-                <td class="r">${brlShort(totValor)}</td>
-                <td class="r" style="color:var(--accent)">100,0%</td>
-                <td class="r" style="color:#7cb3ff">${fmtN.format(totFullLinhasRes)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- 2. TIPO DE SEPARAÇÃO (VISÃO CLÁSSICA COM Nº DO LOTE / LINHAS) -->
-      <div class="card">
-        <div class="card-header-action">
-          <h3>${ICONS.sliders} TIPO DE SEPARAÇÃO · CLIQUE P/ FILTRAR</h3>
-          <span style="font-size:12px;color:var(--mute);font-weight:700">Lotes/Linhas: <b style="color:var(--accent)">${fmtN.format(totLinhasSep)}</b></span>
-        </div>
-        <div class="tw">
-          <table class="cart-matrix">
-            <thead>
-              <tr>
-                <th>Tipo de Separação</th>
-                <th class="r">Qtd Pedida</th>
-                <th class="r">Valor Total</th>
-                <th class="r">% Repr.</th>
-                <th class="r">Nº do Lote / Linhas</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${sepRows.length ? sepRows.map(([tp, o]) => {
-                const isSelectedSep = isSelectedArr(sepFilter, tp);
-                const valMetric = basis === 'custo' ? o.valor : o.pedida;
-                const pctRep = totResBase ? (valMetric / totResBase) * 100 : 0;
-                const pctStr = pctRep > 0 && pctRep < 1 ? '+0%' : fmtP(pctRep, 0);
-                return `
-                <tr class="clickable-row ${isSelectedSep ? 'active-row' : ''}" data-filter-carteira-sep="${esc(tp)}">
-                  <td><b>${esc(tp)}</b></td>
-                  <td class="r" style="font-weight:700">${fmtN.format(o.pedida)}</td>
-                  <td class="r">${brlShort(o.valor)}</td>
-                  <td class="r"><span class="hm-cell ${hmClass(pctRep)}">${pctStr}</span></td>
-                  <td class="r"><span class="badge-pill badge-lote">${fmtN.format(o.linhas)}</span></td>
-                </tr>`;
-              }).join('') : '<tr><td colspan="5">Nenhum tipo encontrado.</td></tr>'}
-              <tr class="tot">
-                <td>Total</td>
-                <td class="r">${fmtN.format(totPedida)}</td>
-                <td class="r">${brlShort(totValor)}</td>
-                <td class="r" style="color:var(--accent)">100%</td>
-                <td class="r" style="color:var(--accent)">${fmtN.format(totLinhasSep)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="info-note">
-          ${ICONS.info} <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
-        </div>
-      </div>
-
-    </div>
-
-    <!-- 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (BARRAS HORIZONTAIS ESTILO VISÃO ANTIGA) -->
+  <!-- BLOCO SUPERIOR: GERAÇÃO RESERVA (DATAS) AO LADO DE TIPO DE SEPARAÇÃO -->
+  <div class="grid two-even" style="margin-top:18px">
+    <!-- 1. GERAÇÃO RESERVA COM LINHAS / PALETES FULL -->
     <div class="card">
       <div class="card-header-action">
-        <h3>${ICONS.chart} PARTICIPAÇÃO POR DEPARTAMENTO CD (${basis === 'custo' ? 'VALOR R$' : 'QTD PEDIDA'})</h3>
-        <span style="font-size:11px;color:var(--mute);font-weight:600">Clique p/ filtrar</span>
+        <h3>${ICONS.calendar} GERAÇÃO RESERVA (${resRows.length} DATAS) · CLIQUE P/ FILTRAR</h3>
+        <span style="font-size:14px;color:var(--mute);font-weight:700">Paletes Full: <b style="color:var(--blue)">${fmtN.format(totFullLinhasRes)}</b></span>
       </div>
-      <div class="dept-hbar-list">
-        ${deptRows.length ? deptRows.map(([deptName, o], idx) => {
-          const valMetric = basis === 'custo' ? o.valor : o.qtd;
-          const pct = (valMetric / totDeptVal) * 100;
-          const barW = maxDeptVal ? (valMetric / maxDeptVal) * 100 : 0;
-          const isSel = isSelectedArr(deptFilter, deptName);
-          const barColor = isSel ? 'var(--accent)' : (idx < 2 ? 'var(--blue)' : '#3a5db0');
-          return `
-          <div class="dept-hbar-row ${isSel ? 'active-dept' : ''}" data-filter-dept="${esc(deptName)}" title="${esc(deptName)}: ${brl(o.valor)} | ${fmtN.format(o.qtd)} un. (${fmtP(pct, 2)})">
-            <div class="dept-hbar-name">${esc(deptName)}</div>
-            <div class="dept-hbar-track">
-              <div class="dept-hbar-fill" style="width:${Math.max(barW, 2)}%;background:${barColor}"></div>
-            </div>
-            <div class="dept-hbar-val">
-              <span style="color:var(--accent)">${fmtP(pct, 2)}</span>
-              <span style="color:var(--mute);font-size:11px;margin-left:4px">${basis === 'custo' ? brlShort(o.valor).replace('R$ ','') : fmtN.format(o.qtd)}</span>
-            </div>
-          </div>`;
-        }).join('') : '<p style="color:var(--mute)">Nenhum departamento encontrado.</p>'}
+      <div class="tw">
+        <table class="cart-matrix">
+          <thead>
+            <tr>
+              <th>Geração Reserva</th>
+              <th class="r">Qtd Pedida</th>
+              <th class="r">Valor Total</th>
+              <th class="r">% Repr.</th>
+              <th class="r" title="Quantidade de linhas / paletes do fluxo Full nesta data">Linhas / Paletes Full</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${resRows.length ? resRows.map(([dt, o]) => {
+              const isSelectedDt = isSelectedArr(dateReservaFilter, dt);
+              const valMetric = basis === 'custo' ? o.valor : o.qtd;
+              const pctRep = totResBase ? (valMetric / totResBase) * 100 : 0;
+              const pctStr = pctRep > 0 && pctRep < 0.01 ? '+0%' : fmtP(pctRep, pctRep >= 10 ? 1 : 2);
+              return `
+              <tr class="clickable-row ${isSelectedDt ? 'active-row' : ''}" data-filter-res-dt="${esc(dt)}">
+                <td>
+                  <b>${esc(dt)}</b>
+                  ${o.pendentes === 0 ? '<span style="color:var(--ok);font-size:13px;margin-left:6px">✔</span>' : ''}
+                </td>
+                <td class="r" style="font-weight:700">${fmtN.format(o.qtd)}</td>
+                <td class="r">${brlShort(o.valor)}</td>
+                <td class="r"><span class="hm-cell ${hmClass(pctRep)}">${pctStr}</span></td>
+                <td class="r">
+                  ${o.fullLinhas > 0 
+                    ? `<span class="badge-pill badge-full" title="${fmtN.format(o.fullQtd)} unidades em ${o.fullLinhas} paletes Full">${fmtN.format(o.fullLinhas)}</span>` 
+                    : `<span style="color:var(--mute)">0</span>`}
+                </td>
+              </tr>`;
+            }).join('') : '<tr><td colspan="5">Nenhuma data encontrada no filtro.</td></tr>'}
+            <tr class="tot">
+              <td>Total Geral</td>
+              <td class="r">${fmtN.format(totPedida)}</td>
+              <td class="r">${brlShort(totValor)}</td>
+              <td class="r" style="color:var(--accent-text)">100,0%</td>
+              <td class="r" style="color:var(--blue)">${fmtN.format(totFullLinhasRes)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2. TIPO DE SEPARAÇÃO AO LADO DAS DATAS -->
+    <div class="card">
+      <div class="card-header-action">
+        <h3>${ICONS.sliders} TIPO DE SEPARAÇÃO · CLIQUE P/ FILTRAR</h3>
+        <span style="font-size:14px;color:var(--mute);font-weight:700">Lotes/Linhas: <b style="color:var(--accent-text)">${fmtN.format(totLinhasSep)}</b></span>
+      </div>
+      <div class="tw">
+        <table class="cart-matrix">
+          <thead>
+            <tr>
+              <th>Tipo de Separação</th>
+              <th class="r">Qtd Pedida</th>
+              <th class="r">Valor Total</th>
+              <th class="r">% Repr.</th>
+              <th class="r">Nº do Lote / Linhas</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sepRows.length ? sepRows.map(([tp, o]) => {
+              const isSelectedSep = isSelectedArr(sepFilter, tp);
+              const valMetric = basis === 'custo' ? o.valor : o.pedida;
+              const pctRep = totResBase ? (valMetric / totResBase) * 100 : 0;
+              const pctStr = pctRep > 0 && pctRep < 1 ? '+0%' : fmtP(pctRep, 0);
+              return `
+              <tr class="clickable-row ${isSelectedSep ? 'active-row' : ''}" data-filter-carteira-sep="${esc(tp)}">
+                <td><b>${esc(tp)}</b></td>
+                <td class="r" style="font-weight:700">${fmtN.format(o.pedida)}</td>
+                <td class="r">${brlShort(o.valor)}</td>
+                <td class="r"><span class="hm-cell ${hmClass(pctRep)}">${pctStr}</span></td>
+                <td class="r"><span class="badge-pill badge-lote">${fmtN.format(o.linhas)}</span></td>
+              </tr>`;
+            }).join('') : '<tr><td colspan="5">Nenhum tipo encontrado.</td></tr>'}
+            <tr class="tot">
+              <td>Total</td>
+              <td class="r">${fmtN.format(totPedida)}</td>
+              <td class="r">${brlShort(totValor)}</td>
+              <td class="r" style="color:var(--accent-text)">100%</td>
+              <td class="r" style="color:var(--accent-text)">${fmtN.format(totLinhasSep)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="info-note">
+        ${ICONS.info} <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
       </div>
     </div>
   </div>
 
-  <!-- 4. RESUMO POR LOJA / DESTINATÁRIO (MANTIDO E APRIMORADO COM PALETES FULL) -->
-  <div class="card" style="margin-top:16px">
+  <!-- 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (CATEGORIAS) EMBAIXO -->
+  <div class="card" style="margin-top:18px">
+    <div class="card-header-action">
+      <h3>${ICONS.chart} PARTICIPAÇÃO POR DEPARTAMENTO CD / CATEGORIA (${basis === 'custo' ? 'VALOR R$' : 'QTD PEDIDA'})</h3>
+      <span style="font-size:13px;color:var(--mute);font-weight:600">Clique p/ filtrar</span>
+    </div>
+    <div class="dept-hbar-list">
+      ${deptRows.length ? deptRows.map(([deptName, o], idx) => {
+        const valMetric = basis === 'custo' ? o.valor : o.qtd;
+        const pct = (valMetric / totDeptVal) * 100;
+        const barW = maxDeptVal ? (valMetric / maxDeptVal) * 100 : 0;
+        const isSel = isSelectedArr(deptFilter, deptName);
+        const barColor = isSel ? 'var(--accent)' : (idx < 2 ? 'var(--blue)' : '#3a6bc7');
+        return `
+        <div class="dept-hbar-row ${isSel ? 'active-dept' : ''}" data-filter-dept="${esc(deptName)}" title="${esc(deptName)}: ${brl(o.valor)} | ${fmtN.format(o.qtd)} un. (${fmtP(pct, 2)})">
+          <div class="dept-hbar-name">${esc(deptName)}</div>
+          <div class="dept-hbar-track">
+            <div class="dept-hbar-fill" style="width:${Math.max(barW, 2)}%;background:${barColor}"></div>
+          </div>
+          <div class="dept-hbar-val">
+            <span style="color:var(--accent-text)">${fmtP(pct, 2)}</span>
+            <span style="color:var(--mute);font-size:13px;margin-left:4px">${basis === 'custo' ? brlShort(o.valor).replace('R$ ','') : fmtN.format(o.qtd)}</span>
+          </div>
+        </div>`;
+      }).join('') : '<p style="color:var(--mute)">Nenhum departamento encontrado.</p>'}
+    </div>
+  </div>
+
+  <!-- 4. RESUMO POR LOJA / DESTINATÁRIO -->
+  <div class="card" style="margin-top:18px">
     <div class="card-header-action">
       <h3>${ICONS.store} RESUMO DE SEPARAÇÃO POR LOJA / DESTINATÁRIO (${destRows.length} LOJAS)</h3>
       <button class="toggle-btn" id="btnToggleDest">
@@ -2610,7 +2583,7 @@ function secCarteira(){
 
     <div class="collapsible-content ${destExpanded ? 'open' : ''}" id="boxDestinos">
       <div style="margin-bottom: 12px;">
-        <input type="text" id="inputDestSearch" placeholder="Buscar loja / destino..." value="${esc(destSearch)}" style="width: 100%; max-width: 340px;" />
+        <input type="text" id="inputDestSearch" placeholder="Buscar loja / destino..." value="${esc(destSearch)}" style="width: 100%; max-width: 360px;" />
       </div>
       <div class="tw">
         <table>
@@ -2638,7 +2611,7 @@ function secCarteira(){
                 <td class="r" style="font-weight:700">${fmtN.format(o.pedida)}</td>
                 <td class="r" style="color:${o.separada > 0 ? 'var(--ok)' : 'var(--mute)'}">${fmtN.format(o.separada)}</td>
                 <td class="r">${brlShort(o.valor)}</td>
-                <td class="r" style="color:var(--accent);font-weight:700">${fmtP(pctDest, 2)}</td>
+                <td class="r" style="color:var(--accent-text);font-weight:700">${fmtP(pctDest, 2)}</td>
               </tr>`;
             }).join('') : '<tr><td colspan="7">Nenhuma loja encontrada.</td></tr>'}
           </tbody>
@@ -2647,8 +2620,8 @@ function secCarteira(){
     </div>
   </div>
 
-  <!-- 5. PRODUTOS DA CARTEIRA (MANTIDO COM BUSCA E ORDENAÇÃO) -->
-  <div class="card" style="margin-top:16px">
+  <!-- 5. PRODUTOS DA CARTEIRA -->
+  <div class="card" style="margin-top:18px">
     <div class="card-header-action">
       <h3>${ICONS.box} ${statusTitleText} (${prodsList.length} PRODUTOS ÚNICOS SOMADOS)</h3>
       <button class="toggle-btn" id="btnToggleProds">
@@ -2658,12 +2631,12 @@ function secCarteira(){
 
     <div class="collapsible-content ${prodExpanded ? 'open' : ''}" id="boxProdutos">
       <div class="prod-controls" style="margin-bottom:12px">
-        <select id="selectStatusFilter" style="font-weight:700;color:var(--accent)">
+        <select id="selectStatusFilter" style="font-weight:700;color:var(--accent-text)">
           <option value="pendente" ${statusFilter==='pendente'?'selected':''}>Status: Apenas Pendentes</option>
           <option value="separado" ${statusFilter==='separado'?'selected':''}>Status: Apenas Separados</option>
           <option value="todos" ${statusFilter==='todos'?'selected':''}>Status: Todos os Status</option>
         </select>
-        <input type="text" id="inputProdSearch" placeholder="Buscar código / GTIN / produto..." value="${esc(prodSearch)}" style="width:240px" />
+        <input type="text" id="inputProdSearch" placeholder="Buscar código / GTIN / produto..." value="${esc(prodSearch)}" style="width:260px" />
         <select id="selectProdSort">
           <option value="qtd" ${prodSortOrder==='qtd'?'selected':''}>Ordenar por Maior Qtd Pendente</option>
           <option value="linhas" ${prodSortOrder==='linhas'?'selected':''}>Ordenar por Maior Qtd Linhas / Paletes</option>
@@ -2689,15 +2662,15 @@ function secCarteira(){
           <tbody>
             ${prodsList.length ? prodsList.map(p => `
               <tr>
-                <td><span class="num" style="color:var(--accent);font-weight:700">${esc(p.codProd)}</span></td>
+                <td><span class="num" style="color:var(--accent-text);font-weight:700">${esc(p.codProd)}</span></td>
                 <td><span class="num" style="color:var(--mute);font-weight:600">${esc(p.gtin)}</span></td>
                 <td><b>${esc(p.prod)}</b></td>
                 <td><span class="dot" style="background:var(--accent)"></span>${esc(p.tipoSep)}</td>
                 <td class="r"><span class="badge-pill badge-full">${fmtN.format(p.linhas)}</span></td>
                 <td class="r" style="font-weight:700">${fmtN.format(p.qtdPedida)}</td>
                 <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(p.qtdSeparada)}</td>
-                <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'};font-weight:700;font-size:15px">${fmtN.format(p.qtdPend)}</td>
-                <td class="r" style="font-weight:700;color:var(--text)">${brl(p.valorPend)}</td>
+                <td class="r" style="color:${p.qtdPend > 0 ? 'var(--warn)' : 'var(--ok)'};font-weight:700;font-size:17px">${fmtN.format(p.qtdPend)}</td>
+                <td class="r" style="font-weight:700">${brl(p.valorPend)}</td>
               </tr>
             `).join('') : '<tr><td colspan="9">Nenhum produto encontrado com os filtros aplicados.</td></tr>'}
           </tbody>
@@ -2949,9 +2922,9 @@ function secTransito(){
 
   const linhasFluxo = ['saida','entrada','outros'].filter(k => porSent[k].nfs > 0).map(k => {
     const s = porSent[k];
-    const cor = k === 'saida' ? 'var(--accent)' : (k === 'entrada' ? 'var(--ok)' : 'var(--blue)');
+    const cor = k === 'saida' ? 'var(--accent-text)' : (k === 'entrada' ? 'var(--ok)' : 'var(--blue)');
     return `<tr>
-      <td><b>${SENT_LABEL[k]}</b><br><span style="color:var(--mute);font-size:12px">${esc(s.periodo)}</span></td>
+      <td><b>${SENT_LABEL[k]}</b><br><span style="color:var(--mute);font-size:13px">${esc(s.periodo)}</span></td>
       <td class="r">${fmtN.format(s.nfs)}</td>
       <td class="r">${fmtP(nfs.length ? s.nfs / nfs.length * 100 : 0, 0)}</td>
       <td class="r">${fmtN.format(s.skus)}</td>
@@ -2979,7 +2952,7 @@ function secTransito(){
             <thead><tr><th>Período</th><th class="r">QTD NF</th><th class="r">% QTD NF</th><th class="r">QTD SKU</th><th class="r">TT CX</th><th class="r">R$ Total</th></tr></thead>
             <tbody>
               ${linhasFluxo || '<tr><td colspan="6">Nenhuma nota com os filtros aplicados.</td></tr>'}
-              <tr class="tot"><td><b>Total</b></td><td class="r">${fmtN.format(nfs.length)}</td><td class="r">100%</td><td class="r">${fmtN.format(new Set(linhas.map(n => n.codProd)).size)}</td><td class="r">${fmtN.format(linhas.reduce((s,n) => s + (n.qtd || 0), 0))}</td><td class="r" style="color:var(--accent)">${brl(totVal)}</td></tr>
+              <tr class="tot"><td><b>Total</b></td><td class="r">${fmtN.format(nfs.length)}</td><td class="r">100%</td><td class="r">${fmtN.format(new Set(linhas.map(n => n.codProd)).size)}</td><td class="r">${fmtN.format(linhas.reduce((s,n) => s + (n.qtd || 0), 0))}</td><td class="r" style="color:var(--accent-text)">${brl(totVal)}</td></tr>
             </tbody>
           </table>
         </div>
@@ -2993,7 +2966,7 @@ function secTransito(){
             <tbody>
               ${antigas.slice(0, 8).map(g => `
                 <tr>
-                  <td><b style="color:var(--accent)">${esc(g.nf)}</b></td>
+                  <td><b style="color:var(--accent-text)">${esc(g.nf)}</b></td>
                   <td>${esc(lojaNota(g))}</td>
                   <td>${esc(g.dataEmissao)}</td>
                   <td class="r" style="color:var(--crit);font-weight:700">${g.dias}</td>
@@ -3029,7 +3002,7 @@ function secTransito(){
             <option value="valor" ${admOrdem === 'valor' ? 'selected' : ''}>Ordem: maior valor</option>
             <option value="nf" ${admOrdem === 'nf' ? 'selected' : ''}>Ordem: nº da NF</option>
           </select>
-          <input type="text" id="inputSearchNotas" placeholder="Buscar NF, loja, produto..." value="${esc(searchNotas)}" style="width:240px">
+          <input type="text" id="inputSearchNotas" placeholder="Buscar NF, loja, produto..." value="${esc(searchNotas)}" style="width:260px">
         </div>
       </div>
       <div class="tw">
@@ -3041,7 +3014,7 @@ function secTransito(){
           <tbody>
             ${mostradas.length ? mostradas.map(n => porNF ? `
               <tr>
-                <td><b style="color:var(--accent)">${esc(n.nf)}</b></td>
+                <td><b style="color:var(--accent-text)">${esc(n.nf)}</b></td>
                 <td>${esc(locNome(n.origem))}</td>
                 <td><b>${esc(locNome(n.destino))}</b></td>
                 <td>${esc(n.dataEmissao)}</td>
@@ -3051,7 +3024,7 @@ function secTransito(){
                 <td class="r" style="font-weight:700">${brl(n.valor)}</td>
               </tr>` : `
               <tr>
-                <td><b style="color:var(--accent)">${esc(n.nf)}</b></td>
+                <td><b style="color:var(--accent-text)">${esc(n.nf)}</b></td>
                 <td>${esc(locNome(n.origem))}</td>
                 <td><b>${esc(locNome(n.destino))}</b></td>
                 <td>${esc(n.dataEmissao)}</td>
@@ -3208,7 +3181,7 @@ function secPreAlerta(){
       <div class="card kpi"><h3>Lojas com Ocorrência</h3><div class="v" style="color:var(--blue)">${fmtN.format(lojasSet.size)}</div><div class="s">${fmtN.format(unid)} unidades divergentes</div></div>
       <div class="card kpi"><h3>Sem Nota / Sem Pedido</h3><div class="v" style="color:var(--crit)">${brlShort(semDocVal)}</div><div class="s">${fmtN.format(semDoc.length)} ocorrências sem documento</div></div>`;
 
-  const dica = '<span style="color:var(--mute);font-weight:500;font-size:12px">(clique para filtrar)</span>';
+  const dica = '<span style="color:var(--mute);font-weight:500;font-size:13px">(clique para filtrar)</span>';
 
   el.innerHTML = `
     <h2>Pré-Alerta · Sobra e Falta</h2>
@@ -3236,7 +3209,7 @@ function secPreAlerta(){
                 <tr class="clickable-row ${isSelectedArr(preFiltro.mes, k) ? 'active-row' : ''}" data-pre-mes="${esc(k)}">
                   <td><b>${esc(mesLabel(k))}</b></td><td class="r" style="font-weight:700">${brl(o.valor)}</td><td class="r">${fmtN.format(o.lojas.size)}</td>
                 </tr>`).join('') || '<tr><td colspan="3">Sem ocorrências com os filtros aplicados.</td></tr>'}
-              <tr class="tot"><td><b>Total Geral</b></td><td class="r" style="color:var(--accent)">${brl(tot)}</td><td class="r">${fmtN.format(lojasSet.size)}</td></tr>
+              <tr class="tot"><td><b>Total Geral</b></td><td class="r" style="color:var(--accent-text)">${brl(tot)}</td><td class="r">${fmtN.format(lojasSet.size)}</td></tr>
             </tbody>
           </table>
         </div>
@@ -3252,7 +3225,7 @@ function secPreAlerta(){
                 <tr class="clickable-row ${isSelectedArr(preFiltro.stCd, k) ? 'active-row' : ''}" data-pre-st="${esc(k)}">
                   <td><b style="color:${stCor(k)}">${esc(k)}</b></td><td class="r">${fmtN.format(o.n)}</td><td class="r" style="color:${stCor(k)};font-weight:700">${brl(o.valor)}</td>
                 </tr>`).join('') || '<tr><td colspan="3">Sem ocorrências com os filtros aplicados.</td></tr>'}
-              <tr class="tot"><td><b>Total Geral Auditado</b></td><td class="r">${fmtN.format(rows.length)}</td><td class="r" style="color:var(--accent)">${brl(tot)}</td></tr>
+              <tr class="tot"><td><b>Total Geral Auditado</b></td><td class="r">${fmtN.format(rows.length)}</td><td class="r" style="color:var(--accent-text)">${brl(tot)}</td></tr>
             </tbody>
           </table>
         </div>
@@ -3270,7 +3243,7 @@ function secPreAlerta(){
                 <tr class="clickable-row ${isSelectedArr(preFiltro.loja, k) ? 'active-row' : ''}" data-pre-loja="${esc(k)}">
                   <td><b>${esc(k)}</b></td><td class="r">${fmtN.format(o.n)}</td><td class="r">${fmtN.format(o.qtd)}</td><td class="r" style="font-weight:700">${brl(o.valor)}</td>
                 </tr>`).join('') || '<tr><td colspan="4">Sem ocorrências com os filtros aplicados.</td></tr>'}
-              <tr class="tot"><td><b>Total Geral</b></td><td class="r">${fmtN.format(rows.length)}</td><td class="r">${fmtN.format(unid)}</td><td class="r" style="color:var(--accent)">${brl(tot)}</td></tr>
+              <tr class="tot"><td><b>Total Geral</b></td><td class="r">${fmtN.format(rows.length)}</td><td class="r">${fmtN.format(unid)}</td><td class="r" style="color:var(--accent-text)">${brl(tot)}</td></tr>
             </tbody>
           </table>
         </div>
@@ -3286,7 +3259,7 @@ function secPreAlerta(){
                 <tr class="clickable-row ${isSelectedArr(preFiltro.situacao, k) ? 'active-row' : ''}" data-pre-sit="${esc(k)}">
                   <td><b style="color:${SIT_COR[k] || 'var(--text)'}">${esc(k)}</b></td><td class="r">${fmtN.format(o.n)}</td><td class="r" style="color:${SIT_COR[k] || 'var(--text)'};font-weight:700">${brl(o.valor)}</td><td class="r">${fmtP(tot ? o.valor / tot * 100 : 0, 0)}</td>
                 </tr>`).join('') || '<tr><td colspan="4">Sem ocorrências com os filtros aplicados.</td></tr>'}
-              <tr class="tot"><td><b>Total Geral Auditado</b></td><td class="r">${fmtN.format(rows.length)}</td><td class="r" style="color:var(--accent)">${brl(tot)}</td><td class="r">100%</td></tr>
+              <tr class="tot"><td><b>Total Geral Auditado</b></td><td class="r">${fmtN.format(rows.length)}</td><td class="r" style="color:var(--accent-text)">${brl(tot)}</td><td class="r">100%</td></tr>
             </tbody>
           </table>
         </div>
@@ -3303,7 +3276,7 @@ function secPreAlerta(){
             <option value="dias" ${preOrdem === 'dias' ? 'selected' : ''}>Ordem: mais dias sem retorno</option>
             <option value="loja" ${preOrdem === 'loja' ? 'selected' : ''}>Ordem: loja (A-Z)</option>
           </select>
-          <input type="text" id="inputSearchPre" placeholder="Buscar loja, produto, NF, obs..." value="${esc(searchPre)}" style="width:240px">
+          <input type="text" id="inputSearchPre" placeholder="Buscar loja, produto, NF, obs..." value="${esc(searchPre)}" style="width:260px">
         </div>
       </div>
       <div class="tw">
@@ -3452,7 +3425,7 @@ function recAtualizadoTxt(){
   return isNaN(d) ? '' : ` Base atualizada em ${d.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})}.`;
 }
 
-/* ---------- SUB-ABA 1: NOTAS DE RECEBIMENTO (DASHBOARD + TABELAS DINÂMICAS) ---------- */
+/* ---------- SUB-ABA 1: NOTAS DE RECEBIMENTO ---------- */
 function secRecebNotas(){
   const el = $('#s-recebnotas');
   if (!el) return;
@@ -3475,9 +3448,7 @@ function secRecebNotas(){
   const fornAllSet = new Set(notas.map(n => n.fornecedor).filter(Boolean));
   const fornPagamSet = new Set(notasComVerba.map(n => n.fornecedor).filter(Boolean));
   const fornNaoPagamList = Array.from(fornAllSet).filter(f => !fornPagamSet.has(f));
-  const lojasSet = new Set(notas.map(n => n.loja).filter(Boolean));
 
-  // Agrupamento por Mês
   const porMesMap = {};
   notas.forEach(n => {
     const k = n.mes || 'Sem data';
@@ -3491,7 +3462,6 @@ function secRecebNotas(){
   const porMes = Object.values(porMesMap).sort((a,b) => mesOrdem(a.mes).localeCompare(mesOrdem(b.mes)));
   const maxMesRec = porMes.length ? Math.max(...porMes.map(m => m.valorRec)) * 1.18 : 1;
 
-  // Agrupamento por Tipo de Operação
   const porOpMap = {};
   notas.forEach(n => {
     const k = n.tipoOperacao || 'Não informado';
@@ -3502,7 +3472,6 @@ function secRecebNotas(){
   });
   const porOp = Object.values(porOpMap).sort((a,b) => b.valorRec - a.valorRec);
 
-  // Agrupamento por Tipo de Carga
   const porCargaMap = {};
   notas.forEach(n => {
     const k = n.tipoCarga || 'OUTROS';
@@ -3513,7 +3482,6 @@ function secRecebNotas(){
   });
   const porCarga = Object.values(porCargaMap).sort((a,b) => b.valorRec - a.valorRec);
 
-  // Agrupamento por Loja
   const porLojaMap = {};
   notas.forEach(n => {
     const k = n.loja;
@@ -3525,7 +3493,6 @@ function secRecebNotas(){
   });
   const porLoja = Object.values(porLojaMap).sort((a,b) => b.valorRec - a.valorRec);
 
-  // Donut: Volume Recebido Com Verba vs Sem Verba
   const donutVerbaItems = [
     { rawKey: 'sim', n: 'Com Verba Logística', v: valComVerba, c: '#35d49a', topProd: `${fmtN.format(notasComVerba.length)} NFs (${fmtN.format(fornPagamSet.size)} forn.)` },
     { rawKey: 'nao', n: 'Sem Verba Logística', v: valSemVerba, c: '#ff5d62', topProd: `${fmtN.format(notasSemVerba.length)} NFs (${fmtN.format(fornNaoPagamList.length)} forn.)` }
@@ -3553,7 +3520,7 @@ function secRecebNotas(){
   const lista = busca.slice().sort(cmp);
   const mostradas = lista.slice(0, recLimite);
   const restam = lista.length - mostradas.length;
-  const dica = '<span style="color:var(--mute);font-weight:500;font-size:12px">(clique para filtrar)</span>';
+  const dica = '<span style="color:var(--mute);font-weight:500;font-size:13px">(clique para filtrar)</span>';
 
   el.innerHTML = `
     <h2>Notas de Recebimento · Dashboard Executivo</h2>
@@ -3563,15 +3530,14 @@ function secRecebNotas(){
       ${kpi('Valor Total Recebido', brlShort(totValRec), `${fmtN.format(notas.length)} NFs · Valor NF: ${brlShort(totValNf)}`, 'hl')}
       ${kpi('Verba Logística Apurada', `<span style="color:var(--ok)">${brlShort(totVerba)}</span>`, `Média ${fmtP(totValRec ? (totVerba / totValRec) * 100 : 0, 2)} sobre recebido`, 'hl')}
       ${kpi('Cobertura de Verba (R$)', `<span style="color:var(--blue)">${fmtP(pctComVerbaVal, 1)}</span>`, `${brlShort(valComVerba)} c/ verba · ${brlShort(valSemVerba)} s/ verba`)}
-      ${kpi('Fornecedores (Pagam vs Não)', `${fmtN.format(fornPagamSet.size)} <span style="font-size:20px;color:var(--mute)">/ ${fmtN.format(fornAllSet.size)}</span>`, `<span style="color:var(--crit);font-weight:700">${fmtN.format(fornNaoPagamList.length)} sem verba</span> · ${fmtN.format(totQtd)} itens`)}
+      ${kpi('Fornecedores (Pagam vs Não)', `${fmtN.format(fornPagamSet.size)} <span style="font-size:22px;color:var(--mute)">/ ${fmtN.format(fornAllSet.size)}</span>`, `<span style="color:var(--crit);font-weight:700">${fmtN.format(fornNaoPagamList.length)} sem verba</span> · ${fmtN.format(totQtd)} itens`)}
     </div>
 
-    <!-- GRÁFICOS DO DASHBOARD -->
     <div class="grid two" style="margin-top:20px">
       <div class="card">
         <h3>${ICONS.chart} Evolução Mensal do Recebimento (R$) ${dica}</h3>
         ${porMes.length ? `
-          <div class="bar-chart-container" style="height:260px;padding-top:52px">
+          <div class="bar-chart-container" style="height:265px;padding-top:54px">
             <div class="bar-chart-wrapper">
               ${porMes.map((m, idx) => {
                 const pctH = (m.valorRec / maxMesRec) * 100;
@@ -3597,7 +3563,7 @@ function secRecebNotas(){
                       ${varTag}
                     </div>
                   </div>
-                  <div class="bar-date-label" style="${isSel ? 'color:var(--accent);font-weight:800' : ''}">${esc(m.mes)}</div>
+                  <div class="bar-date-label" style="${isSel ? 'color:var(--accent-text);font-weight:800' : ''}">${esc(m.mes)}</div>
                 </div>`;
               }).join('')}
             </div>
@@ -3628,7 +3594,6 @@ function secRecebNotas(){
       </div>
     </div>
 
-    <!-- TABELAS CONSOLIDADAS CLICÁVEIS -->
     <div class="grid two" style="margin-top:20px">
       <div class="card">
         <h3>Recebimento por Mês ${dica}</h3>
@@ -3644,7 +3609,7 @@ function secRecebNotas(){
                   <td class="r" style="color:var(--ok);font-weight:700">${brl(m.verba)}</td>
                   <td class="r">${fmtP(m.valorRec ? (m.verba / m.valorRec) * 100 : 0, 2)}</td>
                 </tr>`).join('') || '<tr><td colspan="5">Nenhum dado encontrado.</td></tr>'}
-              <tr class="tot"><td><b>Total</b></td><td class="r">${fmtN.format(notas.length)}</td><td class="r" style="color:var(--accent)">${brl(totValRec)}</td><td class="r" style="color:var(--ok)">${brl(totVerba)}</td><td class="r">${fmtP(totValRec ? (totVerba / totValRec) * 100 : 0, 2)}</td></tr>
+              <tr class="tot"><td><b>Total</b></td><td class="r">${fmtN.format(notas.length)}</td><td class="r" style="color:var(--accent-text)">${brl(totValRec)}</td><td class="r" style="color:var(--ok)">${brl(totVerba)}</td><td class="r">${fmtP(totValRec ? (totVerba / totValRec) * 100 : 0, 2)}</td></tr>
             </tbody>
           </table>
         </div>
@@ -3684,7 +3649,6 @@ function secRecebNotas(){
       </div>
     </div>
 
-    <!-- LISTAGEM DE NOTAS -->
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
         <h3>${ICONS.doc} NOTAS FISCAIS DE RECEBIMENTO (${fmtN.format(lista.length)} NFs)</h3>
@@ -3695,7 +3659,7 @@ function secRecebNotas(){
             <option value="data" ${recOrdem === 'data' ? 'selected' : ''}>Ordem: recebimento mais recente</option>
             <option value="nf" ${recOrdem === 'nf' ? 'selected' : ''}>Ordem: nº da NF</option>
           </select>
-          <input type="text" id="inputSearchRecNotas" placeholder="Buscar NF, fornecedor, loja, operação..." value="${esc(searchRecNotas)}" style="width:260px">
+          <input type="text" id="inputSearchRecNotas" placeholder="Buscar NF, fornecedor, loja, operação..." value="${esc(searchRecNotas)}" style="width:280px">
         </div>
       </div>
       <div class="tw">
@@ -3716,7 +3680,7 @@ function secRecebNotas(){
           <tbody>
             ${mostradas.length ? mostradas.map(n => `
               <tr>
-                <td><b style="color:var(--accent)">${esc(n.nf)}</b>${n.serie ? `<span style="color:var(--mute);font-size:12px"> / ${esc(n.serie)}</span>` : ''}</td>
+                <td><b style="color:var(--accent-text)">${esc(n.nf)}</b>${n.serie ? `<span style="color:var(--mute);font-size:13px"> / ${esc(n.serie)}</span>` : ''}</td>
                 <td>${esc(n.dataRecebimento || n.dataEmissao)}</td>
                 <td><b>${esc(n.loja)}</b></td>
                 <td>${esc(n.fornecedor)}</td>
@@ -3763,7 +3727,7 @@ function secRecebNotas(){
   attachTooltipEvents();
 }
 
-/* ---------- SUB-ABA 2: VERBA LOGÍSTICA (DASHBOARD + PAGANTES + NÃO PAGANTES) ---------- */
+/* ---------- SUB-ABA 2: VERBA LOGÍSTICA ---------- */
 function secRecebVerba(){
   const el = $('#s-recebverba');
   if (!el) return;
@@ -3774,15 +3738,12 @@ function secRecebVerba(){
 
   const notas = recNotasFiltradas();
   const notasComVerba = notas.filter(n => n.temVerba);
-  const notasSemVerba = notas.filter(n => !n.temVerba);
   const totValRec = notas.reduce((s,n) => s + n.valorRecebido, 0);
   const totBaseVerba = notasComVerba.reduce((s,n) => s + n.valorRecebido, 0);
-  const totBaseSemVerba = notasSemVerba.reduce((s,n) => s + n.valorRecebido, 0);
   const totVerba = notas.reduce((s,n) => s + n.verbaValor, 0);
   const pctMedioGeral = totValRec ? (totVerba / totValRec) * 100 : 0;
   const pctMedioComVerba = totBaseVerba ? (totVerba / totBaseVerba) * 100 : 0;
 
-  // Consolidar TODOS os fornecedores no filtro atual
   const porFornMap = {};
   notas.forEach(n => {
     const k = n.fornecedor;
@@ -3820,10 +3781,8 @@ function secRecebVerba(){
 
   const todosFornecedores = Object.values(porFornMap);
   const fornPagam = todosFornecedores.filter(f => f.verba > 0 || f.nfsComVerba > 0).sort((a,b) => b.verba - a.verba);
-  // Fornecedores que NÃO pagam verba logística (verba total = 0 no período/filtro)
   const fornNaoPagam = todosFornecedores.filter(f => f.verba <= 0 && f.nfsComVerba === 0);
 
-  // Verba por Mês (para gráfico de barras do Dashboard)
   const porMesMap = {};
   notas.forEach(n => {
     const k = n.mes || 'Sem data';
@@ -3835,11 +3794,9 @@ function secRecebVerba(){
   const porMes = Object.values(porMesMap).sort((a,b) => mesOrdem(a.mes).localeCompare(mesOrdem(b.mes)));
   const maxMesVerba = porMes.length ? Math.max(...porMes.map(m => m.verba)) * 1.2 : 1;
 
-  // Top 12 fornecedores pagantes para barras horizontais
   const topFornChart = fornPagam.slice(0, 12);
   const maxFornVerba = topFornChart.length ? Math.max(...topFornChart.map(f => f.verba)) : 1;
 
-  // Busca & Ordenação da tabela de FORNECEDORES QUE NÃO PAGAM VERBA LOGÍSTICA
   const qSem = searchSemVerba.trim().toLowerCase();
   const buscaSem = qSem ? fornNaoPagam.filter(f =>
     f.fornecedor.toLowerCase().includes(qSem) ||
@@ -3857,7 +3814,6 @@ function secRecebVerba(){
   const restamSem = listaSemVerba.length - mostradosSem.length;
   const totValFornNaoPagam = fornNaoPagam.reduce((s,f) => s + f.valorRec, 0);
 
-  // Busca & Ordenação do detalhamento de NFs com verba
   const q = searchRecVerba.trim().toLowerCase();
   const baseLista = notasComVerba.length ? notasComVerba : notas;
   const busca = q ? baseLista.filter(n =>
@@ -3876,7 +3832,7 @@ function secRecebVerba(){
   const lista = busca.slice().sort(cmp);
   const mostradas = lista.slice(0, verbaLimite);
   const restam = lista.length - mostradas.length;
-  const dica = '<span style="color:var(--mute);font-weight:500;font-size:12px">(clique para filtrar)</span>';
+  const dica = '<span style="color:var(--mute);font-weight:500;font-size:13px">(clique para filtrar)</span>';
 
   el.innerHTML = `
     <h2>Verba Logística · Dashboard & Fornecedores</h2>
@@ -3889,7 +3845,6 @@ function secRecebVerba(){
       ${kpi('Fornecedores SEM Verba', `<span style="color:var(--crit)">${fmtN.format(fornNaoPagam.length)}</span>`, `Volume: ${brlShort(totValFornNaoPagam)} (${fmtP(totValRec ? (totValFornNaoPagam / totValRec) * 100 : 0, 1)})`, 'hl')}
     </div>
 
-    <!-- DASHBOARD VISUAL: EVOLUÇÃO MENSAL DA VERBA + TOP FORNECEDORES -->
     <div class="grid two" style="margin-top:20px">
       <div class="card">
         <h3>${ICONS.chart} Evolução Mensal da Verba Logística (R$) ${dica}</h3>
@@ -3920,7 +3875,7 @@ function secRecebVerba(){
                       ${varTag}
                     </div>
                   </div>
-                  <div class="bar-date-label" style="${isSel ? 'color:var(--accent);font-weight:800' : ''}">${esc(m.mes)}</div>
+                  <div class="bar-date-label" style="${isSel ? 'color:var(--accent-text);font-weight:800' : ''}">${esc(m.mes)}</div>
                 </div>`;
               }).join('')}
             </div>
@@ -3930,7 +3885,7 @@ function secRecebVerba(){
 
       <div class="card">
         <h3>${ICONS.trophy} Top 12 Fornecedores por Verba Arrecadada ${dica}</h3>
-        <div class="dept-hbar-list">
+        <div class="dept-hbar-list" style="grid-template-columns:1fr">
           ${topFornChart.length ? topFornChart.map((f, idx) => {
             const barW = maxFornVerba ? (f.verba / maxFornVerba) * 100 : 0;
             const pctForn = f.valorRec ? (f.verba / f.valorRec) * 100 : 0;
@@ -3944,76 +3899,55 @@ function secRecebVerba(){
               </div>
               <div class="dept-hbar-val">
                 <span style="color:var(--ok)">${brlShort(f.verba).replace('R$ ', '')}</span>
-                <span style="color:var(--mute);font-size:11px;margin-left:4px">(${fmtP(pctForn, 2)})</span>
+                <span style="color:var(--mute);font-size:13px;margin-left:4px">(${fmtP(pctForn, 2)})</span>
               </div>
             </div>`;
-          }).join('') : '<p style="color:var(--mute)">Nenhum fornecedor com verba no filtro atual.</p>'}
+          }).join('') : '<p style="color:var(--mute)">Nenhum fornecedor com verba no filtro.</p>'}
         </div>
       </div>
     </div>
 
-    <!-- SEÇÃO DESTACADA: TODOS OS FORNECEDORES QUE NÃO PAGAM VERBA LOGÍSTICA -->
     <div class="card" style="margin-top:20px;border-left:4px solid var(--crit)">
       <div class="card-header-action">
         <h3>${ICONS.alert} FORNECEDORES QUE NÃO PAGAM VERBA LOGÍSTICA (${fmtN.format(fornNaoPagam.length)} FORNECEDORES · ${brlShort(totValFornNaoPagam)})</h3>
         <button class="toggle-btn" id="btnToggleSemVerba">
-          ${semVerbaExpanded ? '▲ Ocultar Lista' : '▼ Exibir Fornecedores (' + fornNaoPagam.length + ')'}
+          ${semVerbaExpanded ? '▲ Ocultar Fornecedores sem Verba' : '▼ Exibir Fornecedores sem Verba (' + fmtN.format(fornNaoPagam.length) + ')'}
         </button>
       </div>
-
-      <div class="collapsible-content ${semVerbaExpanded ? 'open' : ''}">
-        <div class="prod-controls" style="margin-bottom:12px;justify-content:space-between">
-          <span style="font-size:13px;color:var(--mute)">Fornecedores com <b>R$ 0,00</b> de verba logística no período filtrado. Clique em qualquer linha para filtrar o painel por ele.</span>
-          <div class="prod-controls">
-            <select id="selSemVerbaOrdem">
-              <option value="valor" ${semVerbaOrdem === 'valor' ? 'selected' : ''}>Ordem: maior volume recebido (R$)</option>
-              <option value="nfs" ${semVerbaOrdem === 'nfs' ? 'selected' : ''}>Ordem: maior qtd de NFs</option>
-              <option value="nome" ${semVerbaOrdem === 'nome' ? 'selected' : ''}>Ordem: ordem alfabética (A-Z)</option>
-            </select>
-            <input type="text" id="inputSearchSemVerba" placeholder="Buscar fornecedor ou CNPJ sem verba..." value="${esc(searchSemVerba)}" style="width:270px">
-          </div>
+      <div class="collapsible-content ${semVerbaExpanded ? 'open' : ''}" id="boxSemVerba">
+        <div class="prod-controls" style="margin-bottom:12px">
+          <input type="text" id="inputSearchSemVerba" placeholder="Buscar fornecedor ou CNPJ sem verba..." value="${esc(searchSemVerba)}" style="width:300px">
+          <select id="selSemVerbaOrdem">
+            <option value="valor" ${semVerbaOrdem === 'valor' ? 'selected' : ''}>Ordem: maior volume recebido (R$)</option>
+            <option value="nfs" ${semVerbaOrdem === 'nfs' ? 'selected' : ''}>Ordem: maior qtd de NFs</option>
+            <option value="nome" ${semVerbaOrdem === 'nome' ? 'selected' : ''}>Ordem: nome do fornecedor (A-Z)</option>
+          </select>
+          <span style="font-size:14px;color:var(--mute);margin-left:auto">Clique em um fornecedor para filtrar suas notas</span>
         </div>
         <div class="tw">
           <table>
             <thead>
               <tr>
-                <th>#</th>
                 <th>Fornecedor</th>
                 <th>CNPJ</th>
-                <th>Último Receb.</th>
+                <th>Última Entrada</th>
                 <th class="r">Qtd NFs</th>
                 <th class="r">Qtd Faturada</th>
-                <th class="r">Valor Recebido (R$)</th>
-                <th class="r">% do Volume Total</th>
-                <th class="r">Verba</th>
+                <th class="r">Volume Recebido (R$)</th>
+                <th class="r">% Vol. Sem Verba</th>
               </tr>
             </thead>
             <tbody>
-              ${mostradosSem.length ? mostradosSem.map((f, idx) => {
-                const isSel = isSelectedArr(recFiltro.fornecedor, f.fornecedor);
-                const pctVol = totValRec ? (f.valorRec / totValRec) * 100 : 0;
-                return `
-                <tr class="clickable-row ${isSel ? 'active-row' : ''}" data-verba-forn="${esc(f.fornecedor)}">
-                  <td style="color:var(--mute);font-weight:700">${idx + 1}</td>
+              ${mostradosSem.length ? mostradosSem.map(f => `
+                <tr class="clickable-row ${isSelectedArr(recFiltro.fornecedor, f.fornecedor) ? 'active-row' : ''}" data-verba-forn="${esc(f.fornecedor)}">
                   <td><b>${esc(f.fornecedor)}</b></td>
-                  <td style="color:var(--mute);font-size:13px">${esc(f.cnpj || '-')}</td>
+                  <td><span class="num" style="color:var(--mute)">${esc(f.cnpj || '-')}</span></td>
                   <td>${esc(f.ultimaData || '-')}</td>
                   <td class="r">${fmtN.format(f.nfs)}</td>
                   <td class="r">${fmtN.format(f.qtd)}</td>
-                  <td class="r" style="font-weight:700">${brl(f.valorRec)}</td>
-                  <td class="r">${fmtP(pctVol, 2)}</td>
-                  <td class="r"><span class="badge-pill badge-verba-nao">R$ 0,00 (0%)</span></td>
-                </tr>`;
-              }).join('') : '<tr><td colspan="9">Nenhum fornecedor sem verba encontrado no filtro atual.</td></tr>'}
-              ${fornNaoPagam.length ? `
-                <tr class="tot">
-                  <td colspan="4"><b>Total Fornecedores Sem Verba (${fmtN.format(fornNaoPagam.length)})</b></td>
-                  <td class="r">${fmtN.format(fornNaoPagam.reduce((s,f) => s + f.nfs, 0))}</td>
-                  <td class="r">${fmtN.format(fornNaoPagam.reduce((s,f) => s + f.qtd, 0))}</td>
-                  <td class="r" style="color:var(--crit)">${brl(totValFornNaoPagam)}</td>
-                  <td class="r">${fmtP(totValRec ? (totValFornNaoPagam / totValRec) * 100 : 0, 2)}</td>
-                  <td class="r" style="color:var(--crit)">R$ 0,00</td>
-                </tr>` : ''}
+                  <td class="r" style="color:var(--crit);font-weight:700">${brl(f.valorRec)}</td>
+                  <td class="r">${fmtP(totValFornNaoPagam ? (f.valorRec / totValFornNaoPagam) * 100 : 0, 2)}</td>
+                </tr>`).join('') : '<tr><td colspan="7">Nenhum fornecedor sem verba encontrado no filtro atual.</td></tr>'}
             </tbody>
           </table>
         </div>
@@ -4021,17 +3955,16 @@ function secRecebVerba(){
       </div>
     </div>
 
-    <!-- DETALHAMENTO POR NOTA FISCAL COM VERBA -->
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>${ICONS.dollar} DETALHAMENTO DE VERBA POR NOTA FISCAL (${fmtN.format(lista.length)} NFs)</h3>
+        <h3>${ICONS.dollar} DETALHAMENTO POR NOTA FISCAL - VERBA LOGÍSTICA (${fmtN.format(lista.length)} NFs)</h3>
         <div class="prod-controls">
           <select id="selVerbaOrdem">
             <option value="verba" ${verbaOrdem === 'verba' ? 'selected' : ''}>Ordem: maior verba R$</option>
             <option value="pct" ${verbaOrdem === 'pct' ? 'selected' : ''}>Ordem: maior % verba</option>
             <option value="valor" ${verbaOrdem === 'valor' ? 'selected' : ''}>Ordem: maior valor recebido</option>
           </select>
-          <input type="text" id="inputSearchRecVerba" placeholder="Buscar fornecedor, NF, loja..." value="${esc(searchRecVerba)}" style="width:260px">
+          <input type="text" id="inputSearchRecVerba" placeholder="Buscar fornecedor, NF, CNPJ, loja..." value="${esc(searchRecVerba)}" style="width:280px">
         </div>
       </div>
       <div class="tw">
@@ -4042,24 +3975,24 @@ function secRecebVerba(){
               <th>Recebimento</th>
               <th>Loja</th>
               <th>Fornecedor</th>
-              <th>Tipo Carga</th>
+              <th>CNPJ</th>
               <th class="r">Valor Recebido</th>
               <th class="r">% Verba</th>
-              <th class="r">Verba Apurada (R$)</th>
+              <th class="r">Verba R$</th>
             </tr>
           </thead>
           <tbody>
             ${mostradas.length ? mostradas.map(n => `
               <tr>
-                <td><b style="color:var(--accent)">${esc(n.nf)}</b></td>
+                <td><b style="color:var(--accent-text)">${esc(n.nf)}</b></td>
                 <td>${esc(n.dataRecebimento || n.dataEmissao)}</td>
                 <td><b>${esc(n.loja)}</b></td>
                 <td>${esc(n.fornecedor)}</td>
-                <td>${esc(n.tipoCarga)}</td>
+                <td style="color:var(--mute);font-size:14px">${esc(n.cnpj || '-')}</td>
                 <td class="r">${brl(n.valorRecebido)}</td>
-                <td class="r" style="font-weight:700">${fmtP(n.verbaPct, 2)}</td>
+                <td class="r" style="color:var(--blue);font-weight:700">${fmtP(n.verbaPct, 2)}</td>
                 <td class="r" style="color:var(--ok);font-weight:700">${brl(n.verbaValor)}</td>
-              </tr>`).join('') : '<tr><td colspan="8">Nenhuma nota com verba encontrada.</td></tr>'}
+              </tr>`).join('') : '<tr><td colspan="8">Nenhum registro encontrado.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -4067,28 +4000,34 @@ function secRecebVerba(){
     </div>
   `;
 
-  const bindToggle = (attr, key) => document.querySelectorAll(`[${attr}]`).forEach(el => el.addEventListener('click', () => {
-    toggleArr(recFiltro[key], el.getAttribute(attr));
+  document.querySelectorAll('[data-verba-forn]').forEach(el => el.addEventListener('click', () => {
+    toggleArr(recFiltro.fornecedor, el.getAttribute('data-verba-forn'));
     verbaLimite = 150;
     semVerbaLimite = 150;
     secRecebVerba();
   }));
-  bindToggle('data-verba-forn', 'fornecedor');
-  bindToggle('data-verba-mes', 'mes');
 
-  const btnSem = $('#btnToggleSemVerba');
-  if (btnSem) btnSem.addEventListener('click', () => { semVerbaExpanded = !semVerbaExpanded; secRecebVerba(); });
+  document.querySelectorAll('[data-verba-mes]').forEach(el => el.addEventListener('click', () => {
+    toggleArr(recFiltro.mes, el.getAttribute('data-verba-mes'));
+    verbaLimite = 150;
+    semVerbaLimite = 150;
+    secRecebVerba();
+  }));
 
-  const selSem = $('#selSemVerbaOrdem');
-  if (selSem) selSem.addEventListener('change', e => { semVerbaOrdem = e.target.value; semVerbaLimite = 150; secRecebVerba(); });
+  const btnToggleSem = $('#btnToggleSemVerba');
+  if (btnToggleSem) btnToggleSem.addEventListener('click', () => {
+    semVerbaExpanded = !semVerbaExpanded;
+    secRecebVerba();
+  });
 
+  const selSemO = $('#selSemVerbaOrdem');
+  if (selSemO) selSemO.addEventListener('change', e => { semVerbaOrdem = e.target.value; semVerbaLimite = 150; secRecebVerba(); });
   const inSem = $('#inputSearchSemVerba');
   if (inSem) inSem.addEventListener('input', e => {
     searchSemVerba = e.target.value; semVerbaLimite = 150;
     secRecebVerba();
     keepFocus('#inputSearchSemVerba', () => searchSemVerba);
   });
-
   const bmSem = $('#btnMoreSemVerba');
   if (bmSem) bmSem.addEventListener('click', () => { semVerbaLimite += 150; secRecebVerba(); });
 
@@ -4105,462 +4044,423 @@ function secRecebVerba(){
   attachTooltipEvents();
 }
 
-/* ================= SETORES, ABAS E BARRA DE FILTROS ================= */
-const SETORES = {
-  gestao:      {title:'Gestão de Estoque', icon: ICONS.box, tabs:['geral','shelf','aging','ocup','carteira']},
-  admin:       {title:'Administrativo',    icon: ICONS.admin, tabs:['transito','prealerta']},
-  recebimento: {title:'Recebimento',       icon: ICONS.inbox, tabs:['recebnotas','recebverba']}
-};
-
-const SECTIONS = [
-  {id:'geral',      setor:'gestao',      title:'Visão Geral',                    render:() => secGeral()},
-  {id:'shelf',      setor:'gestao',      title:'Shelf Life',                     render:() => secShelf()},
-  {id:'aging',      setor:'gestao',      title:'Aging',                          render:() => secAging()},
-  {id:'ocup',       setor:'gestao',      title:'Ocupação',                       render:() => secOcup()},
-  {id:'carteira',   setor:'gestao',      title:'Carteira',                       render:() => secCarteira()},
-  {id:'transito',   setor:'admin',       title: `${ICONS.truck} Notas em Trânsito`,           render:() => secTransito()},
-  {id:'prealerta',  setor:'admin',       title: `${ICONS.alert} Pré-Alerta (Sobra e Falta)`,  render:() => secPreAlerta()},
-  {id:'recebnotas', setor:'recebimento', title: `${ICONS.doc} Notas de Recebimento`,        render:() => secRecebNotas()},
-  {id:'recebverba', setor:'recebimento', title: `${ICONS.dollar} Verba Logística`,             render:() => secRecebVerba()}
+/* ================= SETORES + TABS + BARRA DE FILTROS ================= */
+const SETORES = [
+  { id:'estoque', nome:'Estoque', ico:ICONS.box, tabs:[
+    { id:'geral',    nome:'Visão geral',        render:secGeral },
+    { id:'shelf',    nome:'Shelf Life',         render:secShelf },
+    { id:'aging',    nome:'Aging',              render:secAging },
+    { id:'ocup',     nome:'Ocupação',           render:secOcup },
+    { id:'carteira', nome:'Carteira de Pedido', render:secCarteira }
+  ]},
+  { id:'admin', nome:'Administrativo', ico:ICONS.admin, tabs:[
+    { id:'transito',  nome:`${ICONS.truck} Notas em Trânsito`, render:secTransito },
+    { id:'prealerta', nome:`${ICONS.alert} Pré-Alerta (Sobra/Falta)`, render:secPreAlerta }
+  ]},
+  { id:'recebimento', nome:'Recebimento', ico:ICONS.inbox, tabs:[
+    { id:'recebnotas', nome:`${ICONS.doc} Notas de Recebimento`, render:secRecebNotas },
+    { id:'recebverba', nome:`${ICONS.dollar} Verba Logística`, render:secRecebVerba }
+  ]}
 ];
+const TAB_RENDER = Object.fromEntries(SETORES.flatMap(s => s.tabs.map(t => [t.id, t.render])));
+const TAB_SETOR  = Object.fromEntries(SETORES.flatMap(s => s.tabs.map(t => [t.id, s.id])));
 
-let activeTab = 'geral';
-const lastTab = {gestao:'geral', admin:'transito', recebimento:'recebnotas'};
-const setorDe = id => (SECTIONS.find(s => s.id === id) || {setor:'gestao'}).setor;
-
+let activeSetor = 'estoque';
+let activeTab   = 'geral';
 let filterOcupGalpao = [];
-const SHELF_ORDER = ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'];
-const AGING_ORDER = ['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'];
 
-function setActiveTab(id){
-  activeTab = id;
-  try { history.replaceState(null, '', '#' + id); } catch(e) { window.location.hash = id; }
-  render();
+function renderSetores(){
+  const box = $('#setores');
+  if (!box) return;
+  box.innerHTML = SETORES.map(s => `<button type="button" data-setor="${s.id}" aria-pressed="${s.id === activeSetor}"><span class="si">${s.ico}</span><span class="st">${esc(s.nome)}</span></button>`).join('');
+  box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => setSetor(b.dataset.setor)));
 }
 
 function renderNav(){
-  const setor = setorDe(activeTab);
-  const box = $('#setores');
-  if (box) {
-    box.innerHTML = Object.entries(SETORES).map(([k,s]) =>
-      `<button data-setor="${k}" aria-pressed="${k === setor}" title="${s.title}"><span class="si">${s.icon}</span><span class="st">${s.title}</span></button>`).join('');
-    box.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
-      const k = btn.getAttribute('data-setor');
-      if (k !== setorDe(activeTab)) setActiveTab(lastTab[k] || SETORES[k].tabs[0]);
-    }));
-  }
+  const s = SETORES.find(x => x.id === activeSetor) || SETORES[0];
   const nav = $('#tabs');
   if (!nav) return;
-  nav.innerHTML = SECTIONS.filter(s => s.setor === setor).map(s =>
-    `<button data-tab="${s.id}" role="tab" aria-selected="${s.id === activeTab}">${s.title}</button>`).join('');
-  nav.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => setActiveTab(btn.getAttribute('data-tab'))));
+  nav.innerHTML = s.tabs.map(t => `<button type="button" role="tab" data-t="${t.id}" aria-selected="${t.id === activeTab}">${t.nome}</button>`).join('');
+  nav.querySelectorAll('button').forEach(b => b.addEventListener('click', () => setActiveTab(b.dataset.t)));
 }
 
-function render(){
-  let hash = window.location.hash.replace('#','');
-  if (hash === 'admin') hash = 'transito';
-  if (hash && SECTIONS.some(s => s.id === hash)) activeTab = hash;
-  const setor = setorDe(activeTab);
-  lastTab[setor] = activeTab;
-  document.body.setAttribute('data-setor', setor);
+function setSetor(id){
+  const s = SETORES.find(x => x.id === id);
+  if (!s) return;
+  activeSetor = id;
+  document.body.dataset.setor = id;
+  if (!s.tabs.some(t => t.id === activeTab)) activeTab = s.tabs[0].id;
+  renderSetores();
   renderNav();
-  if (!D && setor !== 'admin' && setor !== 'recebimento') return;
-
-  SECTIONS.forEach(s => {
-    const el = $('#s-' + s.id);
-    if (!el) return;
-    if (s.id === activeTab) {
-      el.classList.add('on');
-      try {
-        s.render();
-      } catch(err) {
-        console.error('Erro ao renderizar seção ' + s.id, err);
-        el.innerHTML = '<div class="card"><h3>Erro de Exibição</h3><p>Ocorreu um erro ao carregar esta aba.</p></div>';
-      }
-    } else {
-      el.classList.remove('on');
-    }
-  });
-  renderFilterBar();
+  setActiveTab(activeTab);
 }
 
-/* ---------- barra de filtros com suporte a seleção múltipla ---------- */
-const optF = (v, l, g) => ({v:String(v), l, g});
-let openDropdownIdx = null;
-let dropdownSearchTerm = '';
+function setActiveTab(id){
+  const setor = TAB_SETOR[id];
+  if (setor && setor !== activeSetor) {
+    activeSetor = setor;
+    document.body.dataset.setor = setor;
+    renderSetores();
+    renderNav();
+  }
+  activeTab = id;
+  document.querySelectorAll('#tabs button').forEach(x => x.setAttribute('aria-selected', x.dataset.t === id));
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === 's-' + id));
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
 
-function fbDefs(tab){
-  if (tab === 'geral' && D) {
-    const rows = D.rows;
-    const baseA = filterArea.length === 0 ? rows : rows.filter(r => hasArr(filterArea, r.area));
-    const ruas = Array.from(new Set(baseA.map(r => r.rua).filter(r => r > 0))).sort((a,b) => a - b);
-    const locais = Array.from(new Set(rows.map(r => r.est).filter(Boolean)));
-    const status = Array.from(new Set(rows.map(r => r.status).filter(Boolean))).sort();
+/* ---------- BARRA DE FILTROS UNIVERSAL ---------- */
+const uniqSorted = arr => Array.from(new Set(arr.filter(x => x !== '' && x != null))).sort((a,b) => String(a).localeCompare(String(b), 'pt-BR', {numeric:true}));
+
+function getFilterControls(){
+  if (!D) return [];
+  const t = activeTab;
+  if (t === 'geral') {
+    const locais = uniqSorted(D.rows.map(r => r.est)).map(v => ({v, l:nice(v)}));
+    const status = uniqSorted(D.rows.map(r => r.status)).map(v => ({v, l:v}));
+    const areas = uniqSorted(D.rows.map(r => r.area).filter(a => a === '1' || a === '7')).map(v => ({v, l:v === '1' ? 'Galpão 1 (Área 1)' : 'Galpão 2 (Área 7)'}));
+    const baseRua = filterArea.length > 0 ? D.rows.filter(r => hasArr(filterArea, r.area)) : D.rows;
+    const ruas = uniqSorted(baseRua.map(r => r.rua).filter(r => r > 0)).map(v => ({v:String(v), l:'Rua ' + v}));
     return [
-      {label:'Galpão', multi:true, allLabel:'Todos', values:filterArea, options:[optF('1','Galpão 1'), optF('7','Galpão 2')], change:vals => { filterArea = vals; filterRua = []; }},
-      {label:'Rua', multi:true, allLabel:'Todas', values:filterRua, options:ruas.map(r => optF(r, 'Rua ' + r)), change:vals => { filterRua = vals; }},
-      {label:'Local de estoque', multi:true, allLabel:'Todos', values:filterLocalEst, options:locais.map(l => optF(l, nice(l))), change:vals => { filterLocalEst = vals; }},
-      {label:'Status', multi:true, allLabel:'Todos', values:filterStatusEst, options:status.map(s => optF(s, s)), change:vals => { filterStatusEst = vals; }}
+      {id:'g_local',  lbl:'Local de estoque', type:'multi', val:filterLocalEst,  all:'Todos', opts:locais, set:v => { filterLocalEst = v; }},
+      {id:'g_status', lbl:'Status',           type:'multi', val:filterStatusEst, all:'Todos', opts:status, set:v => { filterStatusEst = v; }},
+      {id:'g_area',   lbl:'Galpão',           type:'multi', val:filterArea,      all:'Todos', opts:areas,  set:v => { filterArea = v; filterRua = []; }},
+      {id:'g_rua',    lbl:'Rua',              type:'multi', val:filterRua,       all:'Todas', opts:ruas,   set:v => { filterRua = v; }}
     ];
   }
-  if (tab === 'shelf' || tab === 'aging') {
-    const isShelf = tab === 'shelf';
-    return [{
-      label:isShelf ? 'Validade' : 'Aging',
-      multi:true,
-      allLabel:'Todas',
-      values:isShelf ? filterShelfFaixa : filterAgingFaixa,
-      options:[
-        ...['ok','warn','crit','none'].filter(k => isShelf || k !== 'none').map(k => optF(k, CLS[k].n, 'Classe')),
-        ...(isShelf ? SHELF_ORDER : AGING_ORDER).map(f => optF(f, f, 'Faixa'))
-      ],
-      change:vals => { if (isShelf) filterShelfFaixa = vals; else filterAgingFaixa = vals; }
-    }];
+  if (t === 'shelf') {
+    const order = ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'];
+    const opts = [
+      {v:'ok', l:'Grupo: Saudável'}, {v:'warn', l:'Grupo: Atenção'}, {v:'crit', l:'Grupo: Crítico'}, {v:'none', l:'Grupo: Sem validade'},
+      ...order.map(f => ({v:f, l:f}))
+    ];
+    return [{id:'sh_faixa', lbl:'Faixa / Saúde', type:'multi', val:filterShelfFaixa, all:'Todas', opts, set:v => { filterShelfFaixa = v; }}];
   }
-  if (tab === 'ocup') {
-    return [{label:'Galpão', multi:true, allLabel:'Todos', values:filterOcupGalpao, options:[optF('g1','Galpão 1'), optF('g2','Galpão 2')], change:vals => { filterOcupGalpao = vals; }}];
+  if (t === 'aging') {
+    const order = ['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'];
+    const opts = [
+      {v:'ok', l:'Grupo: Saudável'}, {v:'warn', l:'Grupo: Atenção'}, {v:'crit', l:'Grupo: Crítico'},
+      ...order.map(f => ({v:f, l:f}))
+    ];
+    return [{id:'ag_faixa', lbl:'Faixa / Saúde', type:'multi', val:filterAgingFaixa, all:'Todas', opts, set:v => { filterAgingFaixa = v; }}];
   }
-  if (tab === 'carteira' && D) {
+  if (t === 'ocup') {
+    return [{id:'oc_g', lbl:'Galpão', type:'multi', val:filterOcupGalpao, all:'Todos (G1 e G2)', opts:[{v:'g1', l:'Galpão 1'}, {v:'g2', l:'Galpão 2'}], set:v => { filterOcupGalpao = v; }}];
+  }
+  if (t === 'carteira') {
     const C = D.cart || [];
-    const uniq = f => Array.from(new Set(C.map(f))).filter(Boolean);
+    const datas = uniqSorted(C.map(r => r.gerReserva)).map(v => ({v, l:v}));
+    const seps = uniqSorted(C.map(r => r.tipoSep)).map(v => ({v, l:v}));
+    const depts = uniqSorted(C.map(r => r.dept)).map(v => ({v, l:v}));
+    const lojas = uniqSorted(C.map(r => r.dest)).map(v => ({v, l:v}));
     return [
-      {label:'Data de geração', multi:true, allLabel:'Todas', values:dateReservaFilter, options:uniq(r => r.gerReserva).sort((a,b) => a.localeCompare(b)).map(d => optF(d, 'Data ' + d)), change:vals => { dateReservaFilter = vals; }},
-      {label:'Tipo de separação', multi:true, allLabel:'Todos', values:sepFilter, options:uniq(r => r.tipoSep).map(t => optF(t, t)), change:vals => { sepFilter = vals; }},
-      {label:'Destino', multi:true, allLabel:'Todos', values:targetDestFilter, options:uniq(r => r.dest).sort((a,b) => String(a).localeCompare(String(b), undefined, {numeric:true})).map(d => optF(d, d)), change:vals => { targetDestFilter = vals; }},
-      {label:'Departamento', multi:true, allLabel:'Todos', values:deptFilter, options:uniq(r => r.dept).sort().map(d => optF(d, d)), change:vals => { deptFilter = vals; }},
-      {label:'Itens', multi:false, value:statusFilter, def:'pendente', options:[optF('pendente','Pendentes'), optF('separado','Separados'), optF('todos','Todos')], set:v => { statusFilter = v; }}
+      {id:'c_st',   lbl:'Situação',       type:'single', val:statusFilter,     all:'Todos', opts:[{v:'pendente', l:'Pendentes'}, {v:'separado', l:'Separados'}, {v:'todos', l:'Todos'}], set:v => { statusFilter = v; }},
+      {id:'c_dt',   lbl:'Data reserva',   type:'multi',  val:dateReservaFilter,all:'Todas', opts:datas, set:v => { dateReservaFilter = v; }},
+      {id:'c_sep',  lbl:'Tipo separação', type:'multi',  val:sepFilter,        all:'Todos', opts:seps,  set:v => { sepFilter = v; }},
+      {id:'c_dept', lbl:'Departamento',   type:'multi',  val:deptFilter,       all:'Todos', opts:depts, set:v => { deptFilter = v; }},
+      {id:'c_dest', lbl:'Loja / destino', type:'multi',  val:targetDestFilter, all:'Todas', opts:lojas, set:v => { targetDestFilter = v; }}
     ];
   }
-  if (tab === 'transito' && AdminD) {
-    const notas = admNotasTodas();
-    const meses = Array.from(new Set(notas.map(n => nfMes(n.dataEmissao)))).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b)));
-    const lojas = Array.from(new Set(notas.flatMap(n => [sCod(n.origem), sCod(n.destino)]).filter(c => c && c !== CD_COD)))
-      .sort((a,b) => a.localeCompare(b, undefined, {numeric:true}));
+  if (t === 'transito' && AdminD) {
+    const todas = admNotasTodas();
+    const meses = Array.from(new Set(todas.map(n => nfMes(n.dataEmissao)))).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(v => ({v, l:mesLabel(v)}));
+    const faixas = ['0-7','8-15','16-30','31-60','60+'].map(v => ({v, l:FAIXA_DIAS_LABEL[v]}));
+    const cods = Array.from(new Set(todas.flatMap(n => [sCod(n.origem), sCod(n.destino)]))).filter(c => c && c !== CD_COD);
+    const lojas = cods.map(c => ({v:c, l:getNomeLoja(c)})).sort((a,b) => a.l.localeCompare(b.l));
     return [
-      {label:'Sentido', multi:true, allLabel:'Todos', values:admFiltro.sentido, options:Object.entries(SENT_LABEL).map(([k,l]) => optF(k, l)), change:vals => { admFiltro.sentido = vals; admLimite = 150; }},
-      {label:'Mês de emissão', multi:true, allLabel:'Todos', values:admFiltro.mes, options:meses.map(m => optF(m, mesLabel(m))), change:vals => { admFiltro.mes = vals; admLimite = 150; }},
-      {label:'Tempo em trânsito', multi:true, allLabel:'Todos', values:admFiltro.faixa, options:Object.entries(FAIXA_DIAS_LABEL).map(([k,l]) => optF(k, l)), change:vals => { admFiltro.faixa = vals; admLimite = 150; }},
-      {label:'Loja', multi:true, allLabel:'Todas', values:admFiltro.loja, options:lojas.map(c => optF(c, getNomeLoja(c))), change:vals => { admFiltro.loja = vals; admLimite = 150; }}
+      {id:'a_sent',  lbl:'Sentido',   type:'multi', val:admFiltro.sentido, all:'Todos', opts:[{v:'saida', l:SENT_LABEL.saida}, {v:'entrada', l:SENT_LABEL.entrada}, {v:'outros', l:SENT_LABEL.outros}], set:v => { admFiltro.sentido = v; admLimite = 150; }},
+      {id:'a_mes',   lbl:'Mês',       type:'multi', val:admFiltro.mes,     all:'Todos', opts:meses,  set:v => { admFiltro.mes = v;     admLimite = 150; }},
+      {id:'a_faixa', lbl:'Trânsito',  type:'multi', val:admFiltro.faixa,   all:'Todos', opts:faixas, set:v => { admFiltro.faixa = v;   admLimite = 150; }},
+      {id:'a_loja',  lbl:'Loja',      type:'multi', val:admFiltro.loja,    all:'Todas', opts:lojas,  set:v => { admFiltro.loja = v;    admLimite = 150; }}
     ];
   }
-  if (tab === 'prealerta' && AdminD) {
+  if (t === 'prealerta' && AdminD) {
     const todas = preTodas();
-    const uq = f => Array.from(new Set(todas.map(f))).filter(Boolean);
-    const reset = () => { preLimite = 150; };
-    const defs = [
-      {label:'Loja', multi:true, allLabel:'Todas', values:preFiltro.loja, options:uq(r => r.loja).sort((a,b) => a.localeCompare(b)).map(l => optF(l, l)), change:vals => { preFiltro.loja = vals; reset(); }},
-      {label:'Mês', multi:true, allLabel:'Todos', values:preFiltro.mes, options:uq(r => r.mes).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(m => optF(m, mesLabel(m))), change:vals => { preFiltro.mes = vals; reset(); }}
+    const lojas = uniqSorted(todas.map(r => r.loja)).map(v => ({v, l:v}));
+    const sits = uniqSorted(todas.map(r => r.situacao)).map(v => ({v, l:v}));
+    const meses = Array.from(new Set(todas.map(r => r.mes))).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(v => ({v, l:mesLabel(v)}));
+    const sts = uniqSorted(todas.map(r => r.statusCd).filter(Boolean)).map(v => ({v, l:v}));
+    const ctrls = [
+      {id:'p_loja', lbl:'Loja',      type:'multi', val:preFiltro.loja,     all:'Todas', opts:lojas, set:v => { preFiltro.loja = v;     preLimite = 150; }},
+      {id:'p_sit',  lbl:'Documento', type:'multi', val:preFiltro.situacao, all:'Todos', opts:sits,  set:v => { preFiltro.situacao = v; preLimite = 150; }},
+      {id:'p_mes',  lbl:'Mês',       type:'multi', val:preFiltro.mes,      all:'Todos', opts:meses, set:v => { preFiltro.mes = v;      preLimite = 150; }},
+      {id:'p_st',   lbl:'Status CD', type:'multi', val:preFiltro.stCd,     all:'Todos', opts:sts,   set:v => { preFiltro.stCd = v;     preLimite = 150; }}
     ];
-    if (todas.some(r => r.tipo)) defs.push({label:'Tipo', multi:true, allLabel:'Todos', values:preFiltro.tipo, options:[optF('SOBRA','Sobra'), optF('FALTA','Falta')], change:vals => { preFiltro.tipo = vals; reset(); }});
-    if (todas.some(r => r.statusCd)) defs.push({label:'Status CD', multi:true, allLabel:'Todos', values:preFiltro.stCd, options:uq(r => r.statusCd).sort().map(s => optF(s, s)), change:vals => { preFiltro.stCd = vals; reset(); }});
-    if (todas.some(r => r.statusLoja)) defs.push({label:'Status Loja', multi:true, allLabel:'Todos', values:preFiltro.stLoja, options:uq(r => r.statusLoja).sort().map(s => optF(s, s)), change:vals => { preFiltro.stLoja = vals; reset(); }});
-    defs.push({label:'Documento', multi:true, allLabel:'Todos', values:preFiltro.situacao, options:uq(r => r.situacao).sort().map(s => optF(s, s)), change:vals => { preFiltro.situacao = vals; reset(); }});
-    return defs;
+    if (todas.some(r => r.tipo)) ctrls.splice(2, 0, {id:'p_tipo', lbl:'Tipo', type:'multi', val:preFiltro.tipo, all:'Todos', opts:[{v:'SOBRA', l:'Sobra'}, {v:'FALTA', l:'Falta'}], set:v => { preFiltro.tipo = v; preLimite = 150; }});
+    return ctrls;
   }
-  if ((tab === 'recebnotas' || tab === 'recebverba') && RecebD) {
-    const notas = recNotasTodas();
-    const uq = f => Array.from(new Set(notas.map(f))).filter(Boolean);
-    const reset = () => { recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; };
+  if ((t === 'recebnotas' || t === 'recebverba') && RecebD) {
+    const todas = recNotasTodas();
+    const meses = Array.from(new Set(todas.map(n => n.mes))).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(v => ({v, l:mesLabel(v)}));
+    const lojas = uniqSorted(todas.map(n => n.loja)).map(v => ({v, l:v}));
+    const cargas = uniqSorted(todas.map(n => n.tipoCarga)).map(v => ({v, l:v}));
+    const ops = uniqSorted(todas.map(n => n.tipoOperacao)).map(v => ({v, l:v}));
+    const forns = uniqSorted(todas.map(n => n.fornecedor)).map(v => ({v, l:v}));
     return [
-      {label:'Mês', multi:true, allLabel:'Todos', values:recFiltro.mes, options:uq(r => r.mes).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(m => optF(m, mesLabel(m))), change:vals => { recFiltro.mes = vals; reset(); }},
-      {label:'Loja', multi:true, allLabel:'Todas', values:recFiltro.loja, options:uq(r => r.loja).sort((a,b) => a.localeCompare(b, undefined, {numeric:true})).map(l => optF(l, l)), change:vals => { recFiltro.loja = vals; reset(); }},
-      {label:'Fornecedor', multi:true, allLabel:'Todos', values:recFiltro.fornecedor, options:uq(r => r.fornecedor).sort().map(f => optF(f, f)), change:vals => { recFiltro.fornecedor = vals; reset(); }},
-      {label:'Tipo de Operação', multi:true, allLabel:'Todos', values:recFiltro.tipoOp, options:uq(r => r.tipoOperacao).sort().map(o => optF(o, o)), change:vals => { recFiltro.tipoOp = vals; reset(); }},
-      {label:'Tipo de Carga', multi:true, allLabel:'Todos', values:recFiltro.tipoCarga, options:uq(r => r.tipoCarga).sort().map(t => optF(t, t)), change:vals => { recFiltro.tipoCarga = vals; reset(); }},
-      {label:'Paga Verba?', multi:false, value:recFiltro.pagaVerba, def:'todos', options:[optF('todos','Todos'), optF('sim','Sim (Com Verba)'), optF('nao','Não (Sem Verba)')], set:v => { recFiltro.pagaVerba = v; reset(); }}
+      {id:'r_mes',   lbl:'Mês',          type:'multi',  val:recFiltro.mes,        all:'Todos', opts:meses,  set:v => { recFiltro.mes = v;        recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }},
+      {id:'r_loja',  lbl:'Loja / CD',    type:'multi',  val:recFiltro.loja,       all:'Todas', opts:lojas,  set:v => { recFiltro.loja = v;       recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }},
+      {id:'r_verba', lbl:'Paga Verba?',  type:'single', val:recFiltro.pagaVerba,  all:'Todos', opts:[{v:'todos', l:'Todos (Com e Sem)'}, {v:'sim', l:'Somente Com Verba'}, {v:'nao', l:'Somente Sem Verba'}], set:v => { recFiltro.pagaVerba = v; recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }},
+      {id:'r_op',    lbl:'Operação',     type:'multi',  val:recFiltro.tipoOp,     all:'Todas', opts:ops,    set:v => { recFiltro.tipoOp = v;     recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }},
+      {id:'r_carga', lbl:'Tipo Carga',   type:'multi',  val:recFiltro.tipoCarga,  all:'Todos', opts:cargas, set:v => { recFiltro.tipoCarga = v;  recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }},
+      {id:'r_forn',  lbl:'Fornecedor',   type:'multi',  val:recFiltro.fornecedor, all:'Todos', opts:forns,  set:v => { recFiltro.fornecedor = v; recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }}
     ];
   }
   return [];
 }
 
+function resetTabFilters(){
+  const t = activeTab;
+  if (t === 'geral') { filterLocalEst = []; filterStatusEst = []; filterArea = []; filterRua = []; }
+  else if (t === 'shelf') filterShelfFaixa = [];
+  else if (t === 'aging') filterAgingFaixa = [];
+  else if (t === 'ocup') filterOcupGalpao = [];
+  else if (t === 'carteira') { statusFilter = 'pendente'; dateReservaFilter = []; sepFilter = []; deptFilter = []; targetDestFilter = []; }
+  else if (t === 'transito') { admFiltro = {sentido:[], mes:[], faixa:[], loja:[]}; admLimite = 150; }
+  else if (t === 'prealerta') { preFiltro = {loja:[], situacao:[], tipo:[], mes:[], stCd:[], stLoja:[]}; preLimite = 150; }
+  else if (t === 'recebnotas' || t === 'recebverba') { recFiltro = {mes:[], loja:[], tipoCarga:[], statusNota:[], tipoOp:[], fornecedor:[], pagaVerba:'todos'}; recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }
+}
+
 function renderFilterBar(){
-  const el = $('#filterbar');
-  if (!el) return;
-  const defs = fbDefs(activeTab);
-  if (!defs.length) { el.innerHTML = ''; el.classList.remove('on'); return; }
+  const bar = $('#filterbar');
+  if (!bar) return;
+  const openIds = Array.from(bar.querySelectorAll('.ms-wrap.open')).map(el => el.dataset.msId);
+  const ctrls = getFilterControls();
+  bar.classList.toggle('on', ctrls.length > 0);
+  if (!ctrls.length) { bar.innerHTML = ''; return; }
 
-  const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
-
-  // Coletar chips ativos (cada item marcado vira um chip individual)
-  const chips = [];
-  defs.forEach((d, i) => {
-    if (d.multi) {
-      (d.values || []).forEach(v => {
-        const opt = d.options.find(o => same(o.v, v));
-        chips.push({ defIdx: i, val: v, label: d.label, text: opt ? opt.l : v });
+  const ativos = [];
+  ctrls.forEach(c => {
+    if (c.type === 'multi') {
+      (c.val || []).forEach(v => {
+        const opt = c.opts.find(o => String(o.v) === String(v));
+        ativos.push({ctrl:c, val:v, label:opt ? opt.l : v});
       });
     } else {
-      const defV = d.def || 'todos';
-      if (!same(d.value, defV)) {
-        const opt = d.options.find(o => same(o.v, d.value));
-        chips.push({ defIdx: i, val: d.value, label: d.label, text: opt ? opt.l : d.value });
+      const def = c.id === 'c_st' ? 'pendente' : 'todos';
+      if (c.val && c.val !== def) {
+        const opt = c.opts.find(o => String(o.v) === String(c.val));
+        ativos.push({ctrl:c, val:c.val, label:opt ? opt.l : c.val});
       }
     }
   });
 
-  const renderControl = (d, i) => {
-    if (!d.multi) {
-      const defV = d.def || 'todos';
-      let html = '';
-      d.options.forEach(o => {
-        html += `<option value="${esc(o.v)}" ${same(o.v, d.value) ? 'selected' : ''}>${esc(o.l)}</option>`;
-      });
-      return `<div class="gf ${same(d.value, defV) ? '' : 'on'}"><span class="gf-lbl">${esc(d.label)}</span><select data-gf="${i}">${html}</select></div>`;
-    }
-
-    const vals = d.values || [];
-    const isOn = vals.length > 0;
-    const isOpen = openDropdownIdx === i;
-    let btnTxt = d.allLabel || 'Todos';
-    if (vals.length === 1) {
-      const found = d.options.find(o => same(o.v, vals[0]));
-      btnTxt = found ? found.l : vals[0];
-    } else if (vals.length > 1) {
-      btnTxt = `${vals.length} selecionados`;
-    }
-
-    const q = isOpen ? dropdownSearchTerm.toLowerCase().trim() : '';
-    const filteredOpts = q ? d.options.filter(o => o.l.toLowerCase().includes(q) || o.v.toLowerCase().includes(q)) : d.options;
-
-    return `
-    <div class="gf ${isOn ? 'on' : ''}" data-ms-idx="${i}">
-      <span class="gf-lbl">${esc(d.label)}</span>
-      <div class="ms-wrap ${isOpen ? 'open' : ''}">
-        <button type="button" class="ms-btn" data-ms-toggle="${i}" title="${esc(btnTxt)}">
-          <span class="ms-btn-txt">${esc(btnTxt)}</span>
-          ${vals.length > 0 ? `<span class="ms-badge">${vals.length}</span>` : ''}
-          <span class="ms-arrow">${isOpen ? '▲' : '▼'}</span>
-        </button>
-        <div class="ms-menu" data-ms-menu="${i}">
-          <input type="text" class="ms-search" data-ms-search="${i}" placeholder="Filtrar ${esc(d.label.toLowerCase())}..." value="${isOpen ? esc(dropdownSearchTerm) : ''}" />
-          <div class="ms-actions">
-            <span>${vals.length} de ${d.options.length}</span>
-            <div class="ms-actions-btns">
-              <button type="button" data-ms-all="${i}">Marcar todos</button>
-              <button type="button" data-ms-none="${i}">Limpar</button>
-            </div>
-          </div>
-          <div class="ms-list">
-            ${filteredOpts.length ? filteredOpts.map(o => {
-              const checked = vals.some(x => same(x, o.v));
-              return `<label class="ms-item ${checked ? 'checked' : ''}">
-                <input type="checkbox" data-ms-chk="${i}" value="${esc(o.v)}" ${checked ? 'checked' : ''} />
-                <span>${esc(o.l)}</span>
-              </label>`;
-            }).join('') : '<div style="padding:8px;color:var(--mute);font-size:12px">Nenhuma opção encontrada.</div>'}
-          </div>
-        </div>
-      </div>
-    </div>`;
-  };
-
-  el.classList.add('on');
-  el.innerHTML = `
+  bar.innerHTML = `
     <div class="gf-row">
       <span class="gf-title">${ICONS.filter} Filtros</span>
-      ${defs.map(renderControl).join('')}
-      <button class="gf-clear" id="gfClear" ${chips.length ? '' : 'disabled'}>✕ Limpar filtros</button>
+      ${ctrls.map(c => {
+        if (c.type === 'single') {
+          const def = c.id === 'c_st' ? 'pendente' : 'todos';
+          const on = c.val && c.val !== def;
+          const allOpt = c.opts.some(o => o.v === 'todos') ? '' : `<option value="todos">${esc(c.all)}</option>`;
+          return `<label class="gf ${on ? 'on' : ''}">
+            <span class="gf-lbl">${esc(c.lbl)}</span>
+            <select data-gf="${c.id}">${allOpt}${c.opts.map(o => `<option value="${esc(o.v)}" ${String(o.v) === String(c.val) ? 'selected' : ''}>${esc(o.l)}</option>`).join('')}</select>
+          </label>`;
+        } else {
+          const selArr = c.val || [];
+          const on = selArr.length > 0;
+          let btnLabel = c.all;
+          if (selArr.length === 1) {
+            const found = c.opts.find(o => String(o.v) === String(selArr[0]));
+            btnLabel = found ? found.l : selArr[0];
+          } else if (selArr.length > 1) {
+            btnLabel = `${selArr.length} selecionados`;
+          }
+          const showSearch = c.opts.length > 6;
+          return `<div class="gf ${on ? 'on' : ''}">
+            <span class="gf-lbl">${esc(c.lbl)}</span>
+            <div class="ms-wrap" data-ms-id="${c.id}">
+              <button type="button" class="ms-btn" aria-expanded="false">
+                <span class="ms-btn-txt">${esc(btnLabel)}</span>
+                ${selArr.length > 0 ? `<span class="ms-badge">${selArr.length}</span>` : ''}
+                <span class="ms-arrow">▼</span>
+              </button>
+              <div class="ms-menu">
+                ${showSearch ? `<input type="text" class="ms-search" placeholder="Pesquisar..." />` : ''}
+                <div class="ms-actions">
+                  <span>${selArr.length} de ${c.opts.length}</span>
+                  <div class="ms-actions-btns">
+                    <button type="button" data-ms-all="${c.id}">Todos</button>
+                    <button type="button" data-ms-none="${c.id}">Limpar</button>
+                  </div>
+                </div>
+                <div class="ms-list">
+                  ${c.opts.map(o => {
+                    const checked = isSelectedArr(selArr, o.v);
+                    return `<label class="ms-item ${checked ? 'checked' : ''}" data-ms-text="${esc(String(o.l).toLowerCase())}">
+                      <input type="checkbox" data-ms-ctrl="${c.id}" value="${esc(o.v)}" ${checked ? 'checked' : ''} />
+                      <span title="${esc(o.l)}">${esc(o.l)}</span>
+                    </label>`;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+          </div>`;
+        }
+      }).join('')}
+      <button type="button" class="gf-clear" id="gfClear" ${ativos.length ? '' : 'disabled'}>✕ Limpar</button>
     </div>
-    ${chips.length ? `<div class="gf-chips">${chips.map((c, ci) => `<button class="chip" data-chip-idx="${ci}" title="Remover filtro">${esc(c.label)}: <b>${esc(c.text)}</b> ✕</button>`).join('')}</div>` : ''}`;
+    ${ativos.length ? `<div class="gf-chips">${ativos.map((a, idx) => `<button type="button" class="chip" data-chip-idx="${idx}" title="Remover filtro"><b>${esc(a.ctrl.lbl)}:</b> ${esc(a.label)} ✕</button>`).join('')}</div>` : ''}
+  `;
 
-  // Eventos selects simples
-  el.querySelectorAll('select[data-gf]').forEach(s => s.addEventListener('change', e => {
-    defs[+s.getAttribute('data-gf')].set(e.target.value);
-    render();
+  openIds.forEach(id => {
+    const wrap = bar.querySelector(`.ms-wrap[data-ms-id="${id}"]`);
+    if (wrap) {
+      wrap.classList.add('open');
+      const btn = wrap.querySelector('.ms-btn');
+      if (btn) btn.setAttribute('aria-expanded', 'true');
+    }
+  });
+
+  bar.querySelectorAll('select[data-gf]').forEach(sel => sel.addEventListener('change', () => {
+    const c = ctrls.find(x => x.id === sel.dataset.gf);
+    if (c) { c.set(sel.value); render(); }
   }));
 
-  // Abrir/fechar dropdown multiselect
-  el.querySelectorAll('[data-ms-toggle]').forEach(btn => btn.addEventListener('click', e => {
+  bar.querySelectorAll('.ms-btn').forEach(btn => btn.addEventListener('click', (e) => {
     e.stopPropagation();
-    const idx = +btn.getAttribute('data-ms-toggle');
-    if (openDropdownIdx === idx) {
-      openDropdownIdx = null;
-      dropdownSearchTerm = '';
-    } else {
-      openDropdownIdx = idx;
-      dropdownSearchTerm = '';
-    }
-    renderFilterBar();
-    if (openDropdownIdx !== null) {
-      const inp = el.querySelector(`[data-ms-search="${openDropdownIdx}"]`);
-      if (inp) inp.focus();
-    }
-  }));
-
-  // Impedir que cliques dentro do menu fechem o dropdown
-  el.querySelectorAll('[data-ms-menu]').forEach(menu => menu.addEventListener('click', e => {
-    e.stopPropagation();
-  }));
-
-  // Busca dentro do dropdown
-  el.querySelectorAll('[data-ms-search]').forEach(inp => inp.addEventListener('input', e => {
-    dropdownSearchTerm = e.target.value;
-    renderFilterBar();
-    const nextInp = $('#filterbar').querySelector(`[data-ms-search="${openDropdownIdx}"]`);
-    if (nextInp) {
-      nextInp.focus();
-      nextInp.setSelectionRange(dropdownSearchTerm.length, dropdownSearchTerm.length);
-    }
-  }));
-
-  // Marcar / desmarcar checkbox individual
-  el.querySelectorAll('[data-ms-chk]').forEach(chk => chk.addEventListener('change', e => {
-    const idx = +chk.getAttribute('data-ms-chk');
-    const val = chk.value;
-    const d = defs[idx];
-    const nextVals = [...(d.values || [])];
-    const pos = nextVals.findIndex(x => same(x, val));
-    if (e.target.checked && pos === -1) nextVals.push(val);
-    else if (!e.target.checked && pos !== -1) nextVals.splice(pos, 1);
-    d.change(nextVals);
-    render();
-    if (openDropdownIdx !== null) {
-      const nextInp = $('#filterbar').querySelector(`[data-ms-search="${openDropdownIdx}"]`);
-      if (nextInp) nextInp.focus();
-    }
-  }));
-
-  // Marcar todos (respeitando a busca atual se houver)
-  el.querySelectorAll('[data-ms-all]').forEach(btn => btn.addEventListener('click', () => {
-    const idx = +btn.getAttribute('data-ms-all');
-    const d = defs[idx];
-    const q = dropdownSearchTerm.toLowerCase().trim();
-    const visibleOpts = q ? d.options.filter(o => o.l.toLowerCase().includes(q) || o.v.toLowerCase().includes(q)) : d.options;
-    const nextVals = [...(d.values || [])];
-    visibleOpts.forEach(o => {
-      if (!nextVals.some(x => same(x, o.v))) nextVals.push(o.v);
+    const wrap = btn.closest('.ms-wrap');
+    const wasOpen = wrap.classList.contains('open');
+    bar.querySelectorAll('.ms-wrap.open').forEach(w => {
+      w.classList.remove('open');
+      const b = w.querySelector('.ms-btn');
+      if (b) b.setAttribute('aria-expanded', 'false');
     });
-    d.change(nextVals);
+    if (!wasOpen) {
+      wrap.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      const inp = wrap.querySelector('.ms-search');
+      if (inp) setTimeout(() => inp.focus(), 10);
+    }
+  }));
+
+  bar.querySelectorAll('.ms-menu').forEach(menu => menu.addEventListener('click', e => e.stopPropagation()));
+
+  bar.querySelectorAll('.ms-search').forEach(inp => inp.addEventListener('input', () => {
+    const q = inp.value.trim().toLowerCase();
+    const list = inp.closest('.ms-menu').querySelector('.ms-list');
+    list.querySelectorAll('.ms-item').forEach(item => {
+      const txt = item.dataset.msText || '';
+      item.style.display = (!q || txt.includes(q)) ? 'flex' : 'none';
+    });
+  }));
+
+  bar.querySelectorAll('input[data-ms-ctrl]').forEach(chk => chk.addEventListener('change', () => {
+    const c = ctrls.find(x => x.id === chk.dataset.msCtrl);
+    if (!c) return;
+    const next = [...(c.val || [])];
+    toggleArr(next, chk.value);
+    c.set(next);
     render();
   }));
 
-  // Limpar apenas aquele dropdown
-  el.querySelectorAll('[data-ms-none]').forEach(btn => btn.addEventListener('click', () => {
-    const idx = +btn.getAttribute('data-ms-none');
-    defs[idx].change([]);
+  bar.querySelectorAll('button[data-ms-all]').forEach(btn => btn.addEventListener('click', () => {
+    const c = ctrls.find(x => x.id === btn.dataset.msAll);
+    if (!c) return;
+    c.set(c.opts.map(o => String(o.v)));
     render();
   }));
 
-  // Remover chip individual
-  el.querySelectorAll('[data-chip-idx]').forEach(btn => btn.addEventListener('click', () => {
-    const c = chips[+btn.getAttribute('data-chip-idx')];
-    const d = defs[c.defIdx];
-    if (d.multi) {
-      d.change((d.values || []).filter(x => !same(x, c.val)));
+  bar.querySelectorAll('button[data-ms-none]').forEach(btn => btn.addEventListener('click', () => {
+    const c = ctrls.find(x => x.id === btn.dataset.msNone);
+    if (!c) return;
+    c.set([]);
+    render();
+  }));
+
+  bar.querySelectorAll('[data-chip-idx]').forEach(btn => btn.addEventListener('click', () => {
+    const a = ativos[+btn.dataset.chipIdx];
+    if (!a) return;
+    if (a.ctrl.type === 'multi') {
+      const next = (a.ctrl.val || []).filter(v => String(v) !== String(a.val));
+      a.ctrl.set(next);
     } else {
-      d.set(d.def || 'todos');
+      a.ctrl.set(a.ctrl.id === 'c_st' ? 'pendente' : 'todos');
     }
     render();
   }));
 
-  // Limpar todos os filtros da aba
   const clr = $('#gfClear');
-  if (clr) clr.addEventListener('click', () => {
-    openDropdownIdx = null;
-    dropdownSearchTerm = '';
-    defs.forEach(d => {
-      if (d.multi) d.change([]);
-      else d.set(d.def || 'todos');
+  if (clr) clr.addEventListener('click', () => { resetTabFilters(); render(); });
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.ms-wrap')) {
+    document.querySelectorAll('.ms-wrap.open').forEach(w => {
+      w.classList.remove('open');
+      const b = w.querySelector('.ms-btn');
+      if (b) b.setAttribute('aria-expanded', 'false');
     });
-    render();
+  }
+});
+
+function render(){
+  if (!D) return;
+  const fn = TAB_RENDER[activeTab] || secGeral;
+  fn();
+  renderFilterBar();
+}
+
+renderSetores();
+renderNav();
+document.body.dataset.setor = activeSetor;
+setActiveTab(activeTab);
+
+const sideToggle = $('#sideToggle');
+if (sideToggle) sideToggle.addEventListener('click', () => document.body.classList.toggle('side-collapsed'));
+
+/* ===== CONTROLE DE TEMA CLARO / ESCURO ===== */
+const themeToggle = $('#themeToggle');
+function applyTheme(isLight) {
+  document.body.classList.toggle('light-theme', isLight);
+  if (themeToggle) {
+    themeToggle.innerHTML = isLight
+      ? `${ICONS.moon} <span>Tema Escuro</span>`
+      : `${ICONS.sun} <span>Tema Claro</span>`;
+  }
+}
+const savedTheme = localStorage.getItem('cdr_theme');
+if (savedTheme === 'light') {
+  applyTheme(true);
+}
+if (themeToggle) {
+  themeToggle.addEventListener('click', () => {
+    const nextIsLight = !document.body.classList.contains('light-theme');
+    applyTheme(nextIsLight);
+    localStorage.setItem('cdr_theme', nextIsLight ? 'light' : 'dark');
   });
 }
 
-// Fechar dropdown ao clicar fora
-document.addEventListener('click', () => {
-  if (openDropdownIdx !== null) {
-    openDropdownIdx = null;
-    dropdownSearchTerm = '';
-    renderFilterBar();
-  }
-});
+$('#basis').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  basis=b.dataset.b;
+  $('#basis').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  render();
+}));
 
-/* qualquer clique interno (gráficos, linhas) que re-renderiza uma seção também atualiza a barra */
-['secGeral','secShelf','secAging','secOcup','secCarteira','secTransito','secPreAlerta','secRecebNotas','secRecebVerba'].forEach(n => {
-  const orig = window[n];
-  window[n] = function(){ const r = orig.apply(this, arguments); renderFilterBar(); return r; };
-});
-
-
-/* barra lateral recolhível: lembra a escolha; sem escolha, recolhe só em tela estreita */
-(function(){
-  let manual = null;
-  try { const v = localStorage.getItem('sideCollapsed'); if (v !== null) manual = v === '1'; } catch(e) {}
-  const aplica = () => document.body.classList.toggle('side-collapsed', manual !== null ? manual : window.innerWidth < 820);
-  aplica();
-  window.addEventListener('resize', aplica);
-  document.addEventListener('click', e => {
-    if (!e.target.closest('#sideToggle')) return;
-    manual = !document.body.classList.contains('side-collapsed');
-    try { localStorage.setItem('sideCollapsed', manual ? '1' : '0'); } catch(err) {}
-    aplica();
-  });
-})();
-
-document.querySelectorAll('#basis button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('#basis button').forEach(b => b.setAttribute('aria-pressed', 'false'));
-    btn.setAttribute('aria-pressed', 'true');
-    basis = btn.getAttribute('data-b');
-    render();
-  });
-});
-
-function toggleTvMode() {
-  const isTv = document.body.classList.toggle('tvmode');
-  const btnTv = $('#tv');
-  if (btnTv) btnTv.setAttribute('aria-pressed', isTv);
-
-  if (isTv) {
-    if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    }
-    startTvRotation();
-  } else {
-    if (document.exitFullscreen && document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
-    }
-    stopTvRotation();
-  }
+function setTv(on){
+  document.body.classList.toggle('tvmode',on);
+  $('#tv').setAttribute('aria-pressed',on);
+  clearInterval(tvTimer);
+  const bar=$('#bar'); bar.style.transition='none'; bar.style.width='0%';
+  if(!on) return;
+  const tabs=[...document.querySelectorAll('#tabs button')];
+  if (!tabs.length) return;
+  const step=()=>{
+    bar.style.transition='none'; bar.style.width='0%';
+    requestAnimationFrame(()=>{bar.style.transition=`width ${CONFIG.TV_SEGUNDOS}s linear`;bar.style.width='100%';});
+  };
+  step();
+  tvTimer=setInterval(()=>{
+    const i=tabs.findIndex(t=>t.getAttribute('aria-selected')==='true');
+    tabs[(i+1)%tabs.length].click(); step();
+  },CONFIG.TV_SEGUNDOS*1000);
 }
+$('#tv').addEventListener('click',()=>setTv(!document.body.classList.contains('tvmode')));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')setTv(false);});
 
-function startTvRotation() {
-  stopTvRotation();
-  tvTimer = setInterval(() => {
-    const lista = SECTIONS.filter(s => s.setor === setorDe(activeTab));
-    const currentIndex = lista.findIndex(s => s.id === activeTab);
-    setActiveTab(lista[(currentIndex + 1) % lista.length].id);
-  }, CONFIG.TV_SEGUNDOS * 1000);
-}
-
-function stopTvRotation() {
-  if (tvTimer) {
-    clearInterval(tvTimer);
-    tvTimer = null;
-  }
-}
-
-document.addEventListener('fullscreenchange', () => {
-  if (!document.fullscreenElement && document.body.classList.contains('tvmode')) {
-    document.body.classList.remove('tvmode');
-    const btnTv = $('#tv');
-    if (btnTv) btnTv.setAttribute('aria-pressed', 'false');
-    stopTvRotation();
-  }
-});
-
-const btnTv = $('#tv');
-if (btnTv) {
-  btnTv.addEventListener('click', toggleTvMode);
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-  renderNav();
-  load();
-});
-
-window.addEventListener('hashchange', render);
-setInterval(load, CONFIG.ATUALIZAR_MIN * 60 * 1000);
+load();
+if(CONFIG.ATUALIZAR_MIN>0) setInterval(load, CONFIG.ATUALIZAR_MIN*60*1000);
 </script>
 </body>
 </html>
