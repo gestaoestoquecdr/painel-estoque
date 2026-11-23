@@ -165,7 +165,6 @@ h2{font-family:var(--f-body);font-size:26px;font-weight:700;margin:0 0 6px;lette
 .grid{display:grid;gap:16px}
 .kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 .two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:stretch}
-.two-equal{grid-template-columns:repeat(2, minmax(0,1fr));align-items:stretch}
 
 .card{
   background:var(--panel);
@@ -586,7 +585,7 @@ body.tvmode .card { padding: 24px; }
 body.tvmode h2 { font-size: 36px; }
 body.tvmode .kpi .v { font-size: 52px; }
 
-@media (max-width:820px){.two, .two-equal{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:no-preference){#bar{transition:width .3s linear}}
 
 /* ===== SETORES + BARRA DE FILTROS ===== */
@@ -606,7 +605,7 @@ body{padding-left:calc(var(--side-w) + 16px) !important;transition:padding-left 
 body.side-collapsed .side-toggle{transform:rotate(180deg);align-self:center}
 body.side-collapsed .side-label,body.side-collapsed .setores button .st{display:none}
 body.side-collapsed .setores button{justify-content:center;padding:11px 0;gap:0}
-body[data-setor="admin"] #basis{display:none}
+body[data-setor="admin"] #basis, body[data-setor="recebimento"] #basis{display:none}
 
 .gfbar{display:none;margin-top:14px;background:var(--panel2);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;position:relative;z-index:15}
 .gfbar.on{display:block}
@@ -684,19 +683,16 @@ body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
 
 .dept-hbar-list { display: flex; flex-direction: column; gap: 9px; margin-top: 4px; }
 .dept-hbar-row {
-  display: grid; grid-template-columns: 230px 1fr 190px; align-items: center; gap: 14px;
-  padding: 6px 10px; border-radius: 7px; cursor: pointer; transition: all 0.2s ease;
+  display: grid; grid-template-columns: 155px 1fr 125px; align-items: center; gap: 10px;
+  padding: 5px 8px; border-radius: 7px; cursor: pointer; transition: all 0.2s ease;
   border: 1px solid transparent;
 }
 .dept-hbar-row:hover { background: rgba(255, 255, 255, 0.05); }
 .dept-hbar-row.active-dept { background: rgba(255, 196, 0, 0.14); border-color: rgba(255, 196, 0, 0.45); }
-.dept-hbar-name { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dept-hbar-track { height: 15px; background: #07132b; border-radius: 5px; overflow: hidden; position: relative; border: 1px solid rgba(26,49,99,0.7); }
+.dept-hbar-name { font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dept-hbar-track { height: 14px; background: #07132b; border-radius: 5px; overflow: hidden; position: relative; border: 1px solid rgba(26,49,99,0.7); }
 .dept-hbar-fill { height: 100%; border-radius: 4px; transition: width 0.35s ease; }
-.dept-hbar-val { font-family: var(--f-num); font-size: 14px; font-weight: 700; text-align: right; white-space: nowrap; }
-@media (max-width:720px){
-  .dept-hbar-row { grid-template-columns: 140px 1fr 125px; gap: 8px; }
-}
+.dept-hbar-val { font-family: var(--f-num); font-size: 13px; font-weight: 700; text-align: right; white-space: nowrap; }
 .badge-pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 800; font-family: var(--f-num); }
 .badge-full { background: rgba(66, 133, 244, 0.2); border: 1px solid rgba(66, 133, 244, 0.5); color: #7cb3ff; }
 .badge-lote { background: rgba(255, 196, 0, 0.16); border: 1px solid rgba(255, 196, 0, 0.4); color: var(--accent); }
@@ -747,6 +743,8 @@ body.tvmode{padding-left:max(16px,env(safe-area-inset-left,0px)) !important}
 <section id="s-carteira"></section>
 <section id="s-transito"></section>
 <section id="s-prealerta"></section>
+<section id="s-recebnotas"></section>
+<section id="s-recebverba"></section>
 
 <script>
 const CONFIG = {
@@ -755,6 +753,7 @@ const CONFIG = {
   DATA_CARTEIRA_URL: "./dados_carteira.json",
   DATA_ACUMULADO_URL: "./dados_acumulado.json",
   ADMIN_URL: "./administrativo.json",
+  RECEBIMENTO_URL: "./recebimento.json",
   ESTOQUE_FISICO: "ESTOQUE REVENDA",
   ATUALIZAR_MIN: 1,
   TV_SEGUNDOS: 20
@@ -966,6 +965,18 @@ function extractList(source) {
     const vals = Object.values(source).filter(v => v && typeof v === 'object');
     if (vals.length > 0) return vals;
   }
+  if ((tab === 'recebnotas' || tab === 'recebverba') && RecebD) {
+    const notas = recNotasTodas();
+    const uq = f => Array.from(new Set(notas.map(f))).filter(Boolean);
+    const reset = () => { recLimite = 150; verbaLimite = 150; };
+    return [
+      {label:'Mês', multi:true, allLabel:'Todos', values:recFiltro.mes, options:uq(r => r.mes).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(m => optF(m, mesLabel(m))), change:vals => { recFiltro.mes = vals; reset(); }},
+      {label:'Loja', multi:true, allLabel:'Todas', values:recFiltro.loja, options:uq(r => r.loja).sort((a,b) => a.localeCompare(b, undefined, {numeric:true})).map(l => optF(l, l)), change:vals => { recFiltro.loja = vals; reset(); }},
+      {label:'Tipo de Carga', multi:true, allLabel:'Todos', values:recFiltro.tipoCarga, options:uq(r => r.tipoCarga).sort().map(t => optF(t, t)), change:vals => { recFiltro.tipoCarga = vals; reset(); }},
+      {label:'Status Nota', multi:true, allLabel:'Todos', values:recFiltro.statusNota, options:uq(r => r.statusNota).sort().map(s => optF(s, s)), change:vals => { recFiltro.statusNota = vals; reset(); }},
+      {label:'Fornecedor', multi:true, allLabel:'Todos', values:recFiltro.fornecedor, options:uq(r => r.fornecedor).sort().map(f => optF(f, f)), change:vals => { recFiltro.fornecedor = vals; reset(); }}
+    ];
+  }
   return [];
 }
 
@@ -1117,6 +1128,7 @@ async function fromJsonFile(){
 async function load(){
   try {
     await loadAdminData();
+    await loadRecebimentoData();
     const d = await fromJsonFile();
     D = d;
     $('#src').className = 'live';
@@ -2287,7 +2299,7 @@ function secCarteira(){
   const sepRows = Object.entries(bySep).sort((a,b) => (basis === 'custo' ? b[1].valor - a[1].valor : b[1].pedida - a[1].pedida));
   const totLinhasSep = sepRows.reduce((s, [, o]) => s + o.linhas, 0);
 
-  // 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (Barras Horizontais ordenadas + clique para filtrar)
+  // 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (Barras Horizontais ordenadas estilo visão antiga + clique para filtrar)
   const baseDept = C.filter(r => {
     if (dateReservaFilter.length > 0 && !hasArr(dateReservaFilter, r.gerReserva)) return false;
     if (sepFilter.length > 0 && !hasArr(sepFilter, r.tipoSep)) return false;
@@ -2403,133 +2415,136 @@ function secCarteira(){
     ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso, 'Datas em Atraso Crítico', Array.from(datasPendentesSet).map(d => ({prod: `Data Reserva: ${d}`, sub: 'Pendente de liberação'})), isCritico ? 'var(--crit)' : 'var(--warn)')}
   </div>
 
-  <!-- BLOCO SUPERIOR LADO A LADO: ESQUERDA (GERAÇÃO RESERVA) | DIREITA (TIPO DE SEPARAÇÃO) -->
-  <div class="grid two-equal" style="margin-top:16px">
-    <!-- 1. GERAÇÃO RESERVA COM LINHAS / PALETES FULL -->
-    <div class="card">
-      <div class="card-header-action">
-        <h3>📅 GERAÇÃO RESERVA (${resRows.length} DATAS) · CLIQUE P/ FILTRAR</h3>
-        <span style="font-size:12px;color:var(--mute);font-weight:700">Paletes Full: <b style="color:#7cb3ff">${fmtN.format(totFullLinhasRes)}</b></span>
+  <!-- BLOCO PRINCIPAL ESTILO VISÃO EXECUTIVA: ESQUERDA (DATA RESERVA + TIPO SEPARAÇÃO) | DIREITA (DEPARTAMENTOS) -->
+  <div class="grid two" style="margin-top:16px">
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      
+      <!-- 1. GERAÇÃO RESERVA COM LINHAS / PALETES FULL -->
+      <div class="card">
+        <div class="card-header-action">
+          <h3>📅 GERAÇÃO RESERVA (${resRows.length} DATAS) · CLIQUE P/ FILTRAR</h3>
+          <span style="font-size:12px;color:var(--mute);font-weight:700">Paletes Full: <b style="color:#7cb3ff">${fmtN.format(totFullLinhasRes)}</b></span>
+        </div>
+        <div class="tw">
+          <table class="cart-matrix">
+            <thead>
+              <tr>
+                <th>Geração Reserva</th>
+                <th class="r">Qtd Pedida</th>
+                <th class="r">Valor Total</th>
+                <th class="r">% Repr.</th>
+                <th class="r" title="Quantidade de linhas / paletes do fluxo Full nesta data">Linhas / Paletes Full</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${resRows.length ? resRows.map(([dt, o]) => {
+                const isSelectedDt = isSelectedArr(dateReservaFilter, dt);
+                const valMetric = basis === 'custo' ? o.valor : o.qtd;
+                const pctRep = totResBase ? (valMetric / totResBase) * 100 : 0;
+                const pctStr = pctRep > 0 && pctRep < 0.01 ? '+0%' : fmtP(pctRep, pctRep >= 10 ? 1 : 2);
+                return `
+                <tr class="clickable-row ${isSelectedDt ? 'active-row' : ''}" data-filter-res-dt="${esc(dt)}">
+                  <td>
+                    <b>${esc(dt)}</b>
+                    ${o.pendentes === 0 ? '<span style="color:var(--ok);font-size:11px;margin-left:6px">✔</span>' : ''}
+                  </td>
+                  <td class="r" style="font-weight:700">${fmtN.format(o.qtd)}</td>
+                  <td class="r">${brlShort(o.valor)}</td>
+                  <td class="r"><span class="hm-cell ${hmClass(pctRep)}">${pctStr}</span></td>
+                  <td class="r">
+                    ${o.fullLinhas > 0 
+                      ? `<span class="badge-pill badge-full" title="${fmtN.format(o.fullQtd)} unidades em ${o.fullLinhas} paletes Full">${fmtN.format(o.fullLinhas)}</span>` 
+                      : `<span style="color:var(--mute)">0</span>`}
+                  </td>
+                </tr>`;
+              }).join('') : '<tr><td colspan="5">Nenhuma data encontrada no filtro.</td></tr>'}
+              <tr class="tot">
+                <td>Total Geral</td>
+                <td class="r">${fmtN.format(totPedida)}</td>
+                <td class="r">${brlShort(totValor)}</td>
+                <td class="r" style="color:var(--accent)">100,0%</td>
+                <td class="r" style="color:#7cb3ff">${fmtN.format(totFullLinhasRes)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div class="tw">
-        <table class="cart-matrix">
-          <thead>
-            <tr>
-              <th>Geração Reserva</th>
-              <th class="r">Qtd Pedida</th>
-              <th class="r">Valor Total</th>
-              <th class="r">% Repr.</th>
-              <th class="r" title="Quantidade de linhas / paletes do fluxo Full nesta data">Linhas / Paletes Full</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${resRows.length ? resRows.map(([dt, o]) => {
-              const isSelectedDt = isSelectedArr(dateReservaFilter, dt);
-              const valMetric = basis === 'custo' ? o.valor : o.qtd;
-              const pctRep = totResBase ? (valMetric / totResBase) * 100 : 0;
-              const pctStr = pctRep > 0 && pctRep < 0.01 ? '+0%' : fmtP(pctRep, pctRep >= 10 ? 1 : 2);
-              return `
-              <tr class="clickable-row ${isSelectedDt ? 'active-row' : ''}" data-filter-res-dt="${esc(dt)}">
-                <td>
-                  <b>${esc(dt)}</b>
-                  ${o.pendentes === 0 ? '<span style="color:var(--ok);font-size:11px;margin-left:6px">✔</span>' : ''}
-                </td>
-                <td class="r" style="font-weight:700">${fmtN.format(o.qtd)}</td>
-                <td class="r">${brlShort(o.valor)}</td>
-                <td class="r"><span class="hm-cell ${hmClass(pctRep)}">${pctStr}</span></td>
-                <td class="r">
-                  ${o.fullLinhas > 0 
-                    ? `<span class="badge-pill badge-full" title="${fmtN.format(o.fullQtd)} unidades em ${o.fullLinhas} paletes Full">${fmtN.format(o.fullLinhas)}</span>` 
-                    : `<span style="color:var(--mute)">0</span>`}
-                </td>
-              </tr>`;
-            }).join('') : '<tr><td colspan="5">Nenhuma data encontrada no filtro.</td></tr>'}
-            <tr class="tot">
-              <td>Total Geral</td>
-              <td class="r">${fmtN.format(totPedida)}</td>
-              <td class="r">${brlShort(totValor)}</td>
-              <td class="r" style="color:var(--accent)">100,0%</td>
-              <td class="r" style="color:#7cb3ff">${fmtN.format(totFullLinhasRes)}</td>
-            </tr>
-          </tbody>
-        </table>
+
+      <!-- 2. TIPO DE SEPARAÇÃO (VISÃO CLÁSSICA COM Nº DO LOTE / LINHAS) -->
+      <div class="card">
+        <div class="card-header-action">
+          <h3>⚙️ TIPO DE SEPARAÇÃO · CLIQUE P/ FILTRAR</h3>
+          <span style="font-size:12px;color:var(--mute);font-weight:700">Lotes/Linhas: <b style="color:var(--accent)">${fmtN.format(totLinhasSep)}</b></span>
+        </div>
+        <div class="tw">
+          <table class="cart-matrix">
+            <thead>
+              <tr>
+                <th>Tipo de Separação</th>
+                <th class="r">Qtd Pedida</th>
+                <th class="r">Valor Total</th>
+                <th class="r">% Repr.</th>
+                <th class="r">Nº do Lote / Linhas</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${sepRows.length ? sepRows.map(([tp, o]) => {
+                const isSelectedSep = isSelectedArr(sepFilter, tp);
+                const valMetric = basis === 'custo' ? o.valor : o.pedida;
+                const pctRep = totResBase ? (valMetric / totResBase) * 100 : 0;
+                const pctStr = pctRep > 0 && pctRep < 1 ? '+0%' : fmtP(pctRep, 0);
+                return `
+                <tr class="clickable-row ${isSelectedSep ? 'active-row' : ''}" data-filter-carteira-sep="${esc(tp)}">
+                  <td><b>${esc(tp)}</b></td>
+                  <td class="r" style="font-weight:700">${fmtN.format(o.pedida)}</td>
+                  <td class="r">${brlShort(o.valor)}</td>
+                  <td class="r"><span class="hm-cell ${hmClass(pctRep)}">${pctStr}</span></td>
+                  <td class="r"><span class="badge-pill badge-lote">${fmtN.format(o.linhas)}</span></td>
+                </tr>`;
+              }).join('') : '<tr><td colspan="5">Nenhum tipo encontrado.</td></tr>'}
+              <tr class="tot">
+                <td>Total</td>
+                <td class="r">${fmtN.format(totPedida)}</td>
+                <td class="r">${brlShort(totValor)}</td>
+                <td class="r" style="color:var(--accent)">100%</td>
+                <td class="r" style="color:var(--accent)">${fmtN.format(totLinhasSep)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="info-note">
+          💡 <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
+        </div>
       </div>
+
     </div>
 
-    <!-- 2. TIPO DE SEPARAÇÃO (NO TOPO AO LADO DE GERAÇÃO RESERVA) -->
+    <!-- 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (BARRAS HORIZONTAIS ESTILO VISÃO ANTIGA) -->
     <div class="card">
       <div class="card-header-action">
-        <h3>⚙️ TIPO DE SEPARAÇÃO · CLIQUE P/ FILTRAR</h3>
-        <span style="font-size:12px;color:var(--mute);font-weight:700">Lotes/Linhas: <b style="color:var(--accent)">${fmtN.format(totLinhasSep)}</b></span>
+        <h3>📊 PARTICIPAÇÃO POR DEPARTAMENTO CD (${basis === 'custo' ? 'VALOR R$' : 'QTD PEDIDA'})</h3>
+        <span style="font-size:11px;color:var(--mute);font-weight:600">Clique p/ filtrar</span>
       </div>
-      <div class="tw">
-        <table class="cart-matrix">
-          <thead>
-            <tr>
-              <th>Tipo de Separação</th>
-              <th class="r">Qtd Pedida</th>
-              <th class="r">Valor Total</th>
-              <th class="r">% Repr.</th>
-              <th class="r">Nº do Lote / Linhas</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${sepRows.length ? sepRows.map(([tp, o]) => {
-              const isSelectedSep = isSelectedArr(sepFilter, tp);
-              const valMetric = basis === 'custo' ? o.valor : o.pedida;
-              const pctRep = totResBase ? (valMetric / totResBase) * 100 : 0;
-              const pctStr = pctRep > 0 && pctRep < 1 ? '+0%' : fmtP(pctRep, 0);
-              return `
-              <tr class="clickable-row ${isSelectedSep ? 'active-row' : ''}" data-filter-carteira-sep="${esc(tp)}">
-                <td><b>${esc(tp)}</b></td>
-                <td class="r" style="font-weight:700">${fmtN.format(o.pedida)}</td>
-                <td class="r">${brlShort(o.valor)}</td>
-                <td class="r"><span class="hm-cell ${hmClass(pctRep)}">${pctStr}</span></td>
-                <td class="r"><span class="badge-pill badge-lote">${fmtN.format(o.linhas)}</span></td>
-              </tr>`;
-            }).join('') : '<tr><td colspan="5">Nenhum tipo encontrado.</td></tr>'}
-            <tr class="tot">
-              <td>Total</td>
-              <td class="r">${fmtN.format(totPedida)}</td>
-              <td class="r">${brlShort(totValor)}</td>
-              <td class="r" style="color:var(--accent)">100%</td>
-              <td class="r" style="color:var(--accent)">${fmtN.format(totLinhasSep)}</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="dept-hbar-list">
+        ${deptRows.length ? deptRows.map(([deptName, o], idx) => {
+          const valMetric = basis === 'custo' ? o.valor : o.qtd;
+          const pct = (valMetric / totDeptVal) * 100;
+          const barW = maxDeptVal ? (valMetric / maxDeptVal) * 100 : 0;
+          const isSel = isSelectedArr(deptFilter, deptName);
+          const barColor = isSel ? 'var(--accent)' : (idx < 2 ? 'var(--blue)' : '#3a5db0');
+          return `
+          <div class="dept-hbar-row ${isSel ? 'active-dept' : ''}" data-filter-dept="${esc(deptName)}" title="${esc(deptName)}: ${brl(o.valor)} | ${fmtN.format(o.qtd)} un. (${fmtP(pct, 2)})">
+            <div class="dept-hbar-name">${esc(deptName)}</div>
+            <div class="dept-hbar-track">
+              <div class="dept-hbar-fill" style="width:${Math.max(barW, 2)}%;background:${barColor}"></div>
+            </div>
+            <div class="dept-hbar-val">
+              <span style="color:var(--accent)">${fmtP(pct, 2)}</span>
+              <span style="color:var(--mute);font-size:11px;margin-left:4px">${basis === 'custo' ? brlShort(o.valor).replace('R$ ','') : fmtN.format(o.qtd)}</span>
+            </div>
+          </div>`;
+        }).join('') : '<p style="color:var(--mute)">Nenhum departamento encontrado.</p>'}
       </div>
-      <div class="info-note" style="margin-top:auto">
-        💡 <b>Nota Operacional:</b> Os fluxos de <b>Cross Docking</b> e <b>Full</b> permanecem listados como <b>Pendente</b> até a finalização completa, quando convertem diretamente para <b>Separado</b>.
-      </div>
-    </div>
-  </div>
-
-  <!-- 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (EMBAIXO EM LARGURA TOTAL COM NOMES COMPLETOS E MÉTRICAS) -->
-  <div class="card" style="margin-top:16px">
-    <div class="card-header-action">
-      <h3>📊 PARTICIPAÇÃO POR DEPARTAMENTO CD (${basis === 'custo' ? 'VALOR R$' : 'QTD PEDIDA'})</h3>
-      <span style="font-size:11px;color:var(--mute);font-weight:600">Clique na barra para filtrar o departamento</span>
-    </div>
-    <div class="dept-hbar-list">
-      ${deptRows.length ? deptRows.map(([deptName, o], idx) => {
-        const valMetric = basis === 'custo' ? o.valor : o.qtd;
-        const pct = (valMetric / totDeptVal) * 100;
-        const barW = maxDeptVal ? (valMetric / maxDeptVal) * 100 : 0;
-        const isSel = isSelectedArr(deptFilter, deptName);
-        const barColor = isSel ? 'var(--accent)' : (idx < 2 ? 'var(--blue)' : '#3a5db0');
-        return `
-        <div class="dept-hbar-row ${isSel ? 'active-dept' : ''}" data-filter-dept="${esc(deptName)}" title="${esc(deptName)}: ${brl(o.valor)} | ${fmtN.format(o.qtd)} un. (${fmtP(pct, 2)})">
-          <div class="dept-hbar-name">${esc(deptName)}</div>
-          <div class="dept-hbar-track">
-            <div class="dept-hbar-fill" style="width:${Math.max(barW, 2)}%;background:${barColor}"></div>
-          </div>
-          <div class="dept-hbar-val">
-            <span style="color:var(--accent)">${fmtP(pct, 2)}</span>
-            <span style="color:var(--text);font-size:12px;margin-left:8px">${basis === 'custo' ? brlShort(o.valor) : fmtN.format(o.qtd) + ' un.'}</span>
-            <span style="color:var(--mute);font-size:11px;margin-left:6px">(${basis === 'custo' ? fmtN.format(o.qtd) + ' un.' : brlShort(o.valor)})</span>
-          </div>
-        </div>`;
-      }).join('') : '<p style="color:var(--mute)">Nenhum departamento encontrado.</p>'}
     </div>
   </div>
 
@@ -3294,24 +3309,551 @@ function secPreAlerta(){
   if (bm) bm.addEventListener('click', () => { preLimite += 150; secPreAlerta(); });
 }
 
+/* ================= SETOR RECEBIMENTO ================= */
+let RecebD = null;
+let searchRecNotas = '';
+let searchRecVerba = '';
+let recFiltro = {mes:[], loja:[], tipoCarga:[], statusNota:[], tipoOp:[], fornecedor:[]};
+let recOrdem = 'valor';
+let recLimite = 150;
+let verbaOrdem = 'verba';
+let verbaLimite = 150;
+
+async function loadRecebimentoData(){
+  try {
+    const timestamp = new Date().getTime();
+    const res = await fetch(`${CONFIG.RECEBIMENTO_URL}?v=${timestamp}`);
+    if (res.ok) RecebD = await res.json();
+  } catch(e) {
+    console.error("Erro ao carregar recebimento.json:", e);
+  }
+}
+
+function recNotasTodas(){
+  const raw = (RecebD && (RecebD.notas_recebimento || RecebD.notas || RecebD.data)) || [];
+  return raw.map(n => {
+    const dtRec = String(n.dataRecebimento || n.dataEmissao || '').trim();
+    const dtEmi = String(n.dataEmissao || '').trim();
+    const mesRef = nfMes(dtRec || dtEmi);
+    const lojaRaw = String(n.loja || '').trim();
+    const lojaNome = /^\d+$/.test(lojaRaw) ? getNomeLoja(lojaRaw) : (lojaRaw || 'Sem Loja');
+    const valNf = parseNum(n.valorNf);
+    const valRec = parseNum(n.valorRecebido) || valNf;
+    let vPct = parseNum(n.verbaPct);
+    const vVal = n.verbaValor != null ? parseNum(n.verbaValor) : (valRec * (vPct / 100));
+    return {
+      dataEmissao: dtEmi,
+      dataRecebimento: dtRec,
+      mes: mesRef,
+      loja: lojaNome,
+      tipoNota: String(n.tipoNota || '').trim(),
+      tipoOperacao: String(n.tipoOperacao || '').trim() || 'Não informado',
+      cfop: String(n.cfop || '').trim(),
+      fornecedor: String(n.fornecedor || 'NÃO INFORMADO').trim(),
+      cnpj: String(n.cnpj || '').trim(),
+      nf: String(n.nf || '').trim(),
+      serie: String(n.serie || '').trim(),
+      statusNfe: String(n.statusNfe || '').trim(),
+      statusNota: String(n.statusNota || '').trim() || 'Não informado',
+      valorNf: valNf,
+      valorLiquido: parseNum(n.valorLiquido),
+      valorCompra: parseNum(n.valorCompra),
+      valorBonificada: parseNum(n.valorBonificada),
+      usuario: String(n.usuario || '').trim(),
+      tipoCarga: String(n.tipoCarga || 'FORNECEDOR').trim().toUpperCase(),
+      valorRecebido: valRec,
+      verbaPct: vPct,
+      verbaValor: vVal,
+      qtdFaturado: parseNum(n.qtdFaturado)
+    };
+  });
+}
+
+function recNotasFiltradas(){
+  return recNotasTodas().filter(n => {
+    if (recFiltro.mes.length > 0 && !hasArr(recFiltro.mes, n.mes)) return false;
+    if (recFiltro.loja.length > 0 && !hasArr(recFiltro.loja, n.loja)) return false;
+    if (recFiltro.tipoCarga.length > 0 && !hasArr(recFiltro.tipoCarga, n.tipoCarga)) return false;
+    if (recFiltro.statusNota.length > 0 && !hasArr(recFiltro.statusNota, n.statusNota)) return false;
+    if (recFiltro.tipoOp.length > 0 && !hasArr(recFiltro.tipoOp, n.tipoOperacao)) return false;
+    if (recFiltro.fornecedor.length > 0 && !hasArr(recFiltro.fornecedor, n.fornecedor)) return false;
+    return true;
+  });
+}
+
+function recAtualizadoTxt(){
+  const t = RecebD && RecebD.ultimaAtualizacao;
+  if (!t) return '';
+  const d = new Date(t);
+  return isNaN(d) ? '' : ` Base atualizada em ${d.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})}.`;
+}
+
+/* ---------- SUB-ABA 1: NOTAS DE RECEBIMENTO ---------- */
+function secRecebNotas(){
+  const el = $('#s-recebnotas');
+  if (!el) return;
+  if (!RecebD) {
+    el.innerHTML = `<h2>Notas de Recebimento</h2><p class="sub">Carregando dados do recebimento.json...</p>`;
+    return;
+  }
+
+  const notas = recNotasFiltradas();
+  const totValNf = notas.reduce((s,n) => s + n.valorNf, 0);
+  const totValRec = notas.reduce((s,n) => s + n.valorRecebido, 0);
+  const totVerba = notas.reduce((s,n) => s + n.verbaValor, 0);
+  const totQtd = notas.reduce((s,n) => s + n.qtdFaturado, 0);
+  const fornSet = new Set(notas.map(n => n.fornecedor).filter(Boolean));
+  const lojasSet = new Set(notas.map(n => n.loja).filter(Boolean));
+  const confNotas = notas.filter(n => n.statusNota.toLowerCase().includes('confirmad'));
+  const pctConf = notas.length ? (confNotas.length / notas.length) * 100 : 0;
+
+  // Agrupamento por Mês
+  const porMesMap = {};
+  notas.forEach(n => {
+    const k = n.mes || 'Sem data';
+    porMesMap[k] = porMesMap[k] || {mes:k, nfs:0, valorNf:0, valorRec:0, verba:0, qtd:0};
+    porMesMap[k].nfs++;
+    porMesMap[k].valorNf += n.valorNf;
+    porMesMap[k].valorRec += n.valorRecebido;
+    porMesMap[k].verba += n.verbaValor;
+    porMesMap[k].qtd += n.qtdFaturado;
+  });
+  const porMes = Object.values(porMesMap).sort((a,b) => mesOrdem(a.mes).localeCompare(mesOrdem(b.mes)));
+
+  // Agrupamento por Tipo de Carga
+  const porCargaMap = {};
+  notas.forEach(n => {
+    const k = n.tipoCarga || 'OUTROS';
+    porCargaMap[k] = porCargaMap[k] || {tipo:k, nfs:0, valorRec:0, verba:0};
+    porCargaMap[k].nfs++;
+    porCargaMap[k].valorRec += n.valorRecebido;
+    porCargaMap[k].verba += n.verbaValor;
+  });
+  const porCarga = Object.values(porCargaMap).sort((a,b) => b.valorRec - a.valorRec);
+
+  // Agrupamento por Loja
+  const porLojaMap = {};
+  notas.forEach(n => {
+    const k = n.loja;
+    porLojaMap[k] = porLojaMap[k] || {loja:k, nfs:0, valorRec:0, verba:0, qtd:0};
+    porLojaMap[k].nfs++;
+    porLojaMap[k].valorRec += n.valorRecebido;
+    porLojaMap[k].verba += n.verbaValor;
+    porLojaMap[k].qtd += n.qtdFaturado;
+  });
+  const porLoja = Object.values(porLojaMap).sort((a,b) => b.valorRec - a.valorRec);
+
+  // Agrupamento por Status da Nota
+  const porStatusMap = {};
+  notas.forEach(n => {
+    const k = n.statusNota;
+    porStatusMap[k] = porStatusMap[k] || {status:k, nfs:0, valorRec:0};
+    porStatusMap[k].nfs++;
+    porStatusMap[k].valorRec += n.valorRecebido;
+  });
+  const porStatus = Object.values(porStatusMap).sort((a,b) => b.nfs - a.nfs);
+
+  const q = searchRecNotas.trim().toLowerCase();
+  const busca = q ? notas.filter(n =>
+    n.nf.toLowerCase().includes(q) ||
+    n.fornecedor.toLowerCase().includes(q) ||
+    n.loja.toLowerCase().includes(q) ||
+    n.cnpj.toLowerCase().includes(q) ||
+    n.tipoCarga.toLowerCase().includes(q) ||
+    n.statusNota.toLowerCase().includes(q) ||
+    n.usuario.toLowerCase().includes(q)
+  ) : notas;
+
+  const cmp = {
+    valor: (a,b) => b.valorRecebido - a.valorRecebido,
+    verba: (a,b) => b.verbaValor - a.verbaValor,
+    data:  (a,b) => String(b.dataRecebimento).split('/').reverse().join('').localeCompare(String(a.dataRecebimento).split('/').reverse().join('')),
+    nf:    (a,b) => String(a.nf).localeCompare(String(b.nf), undefined, {numeric:true})
+  }[recOrdem] || (() => 0);
+
+  const lista = busca.slice().sort(cmp);
+  const mostradas = lista.slice(0, recLimite);
+  const restam = lista.length - mostradas.length;
+  const dica = '<span style="color:var(--mute);font-weight:500;font-size:12px">(clique para filtrar)</span>';
+
+  el.innerHTML = `
+    <h2>Notas de Recebimento</h2>
+    <p class="sub">Setor Recebimento · Acompanhamento de notas fiscais recebidas por loja, fornecedor e tipo de carga.${esc(recAtualizadoTxt())}</p>
+
+    <div class="grid kpis">
+      ${kpi('Valor Total Recebido', brlShort(totValRec), `${fmtN.format(notas.length)} NFs · Valor NF: ${brlShort(totValNf)}`, 'hl')}
+      ${kpi('Verba Logística Apurada', `<span style="color:var(--ok)">${brlShort(totVerba)}</span>`, `Média ${fmtP(totValRec ? (totVerba / totValRec) * 100 : 0, 2)} sobre recebido`)}
+      ${kpi('NFs Confirmadas', `<span style="color:var(--blue)">${fmtN.format(confNotas.length)}</span>`, `${fmtP(pctConf)} do total (${fmtN.format(notas.length)} NFs)`)}
+      ${kpi('Fornecedores & Lojas', `${fmtN.format(fornSet.size)} forn.`, `${fmtN.format(lojasSet.size)} lojas · ${fmtN.format(totQtd)} itens faturados`)}
+    </div>
+
+    <div class="grid two" style="margin-top:20px">
+      <div class="card">
+        <h3>Recebimento por Mês ${dica}</h3>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Mês</th><th class="r">Qtd NFs</th><th class="r">Valor Recebido</th><th class="r">Verba R$</th></tr></thead>
+            <tbody>
+              ${porMes.map(m => `
+                <tr class="clickable-row ${isSelectedArr(recFiltro.mes, m.mes) ? 'active-row' : ''}" data-rec-mes="${esc(m.mes)}">
+                  <td><b>${esc(mesLabel(m.mes))}</b></td>
+                  <td class="r">${fmtN.format(m.nfs)}</td>
+                  <td class="r" style="font-weight:700">${brl(m.valorRec)}</td>
+                  <td class="r" style="color:var(--ok);font-weight:700">${brl(m.verba)}</td>
+                </tr>`).join('') || '<tr><td colspan="4">Nenhum dado encontrado.</td></tr>'}
+              <tr class="tot"><td><b>Total</b></td><td class="r">${fmtN.format(notas.length)}</td><td class="r" style="color:var(--accent)">${brl(totValRec)}</td><td class="r" style="color:var(--ok)">${brl(totVerba)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Por Tipo de Carga & Status ${dica}</h3>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Tipo de Carga</th><th class="r">NFs</th><th class="r">Valor Recebido</th><th class="r">% Part.</th></tr></thead>
+            <tbody>
+              ${porCarga.map(c => `
+                <tr class="clickable-row ${isSelectedArr(recFiltro.tipoCarga, c.tipo) ? 'active-row' : ''}" data-rec-carga="${esc(c.tipo)}">
+                  <td><b>${esc(c.tipo)}</b></td>
+                  <td class="r">${fmtN.format(c.nfs)}</td>
+                  <td class="r" style="font-weight:700">${brl(c.valorRec)}</td>
+                  <td class="r">${fmtP(totValRec ? (c.valorRec / totValRec) * 100 : 0)}</td>
+                </tr>`).join('') || '<tr><td colspan="4">Sem dados.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+        <div class="tw" style="margin-top:14px">
+          <table>
+            <thead><tr><th>Status da Nota</th><th class="r">Qtd NFs</th><th class="r">Valor Recebido</th></tr></thead>
+            <tbody>
+              ${porStatus.map(s => `
+                <tr class="clickable-row ${isSelectedArr(recFiltro.statusNota, s.status) ? 'active-row' : ''}" data-rec-status="${esc(s.status)}">
+                  <td><b>${esc(s.status)}</b></td>
+                  <td class="r">${fmtN.format(s.nfs)}</td>
+                  <td class="r" style="font-weight:700">${brl(s.valorRec)}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <h3>Recebimento por Loja Destino ${dica}</h3>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Loja</th><th class="r">Qtd NFs</th><th class="r">Qtd Faturada</th><th class="r">Valor Recebido</th><th class="r">Verba Logística</th><th class="r">% do Total</th></tr></thead>
+          <tbody>
+            ${porLoja.map(l => `
+              <tr class="clickable-row ${isSelectedArr(recFiltro.loja, l.loja) ? 'active-row' : ''}" data-rec-loja="${esc(l.loja)}">
+                <td><b>${esc(l.loja)}</b></td>
+                <td class="r">${fmtN.format(l.nfs)}</td>
+                <td class="r">${fmtN.format(l.qtd)}</td>
+                <td class="r" style="font-weight:700">${brl(l.valorRec)}</td>
+                <td class="r" style="color:var(--ok);font-weight:700">${brl(l.verba)}</td>
+                <td class="r">${fmtP(totValRec ? (l.valorRec / totValRec) * 100 : 0)}</td>
+              </tr>`).join('') || '<tr><td colspan="6">Nenhuma loja encontrada.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-header-action">
+        <h3>📄 NOTAS FISCAIS DE RECEBIMENTO (${fmtN.format(lista.length)} NFs)</h3>
+        <div class="prod-controls">
+          <select id="selRecOrdem">
+            <option value="valor" ${recOrdem === 'valor' ? 'selected' : ''}>Ordem: maior valor recebido</option>
+            <option value="verba" ${recOrdem === 'verba' ? 'selected' : ''}>Ordem: maior verba R$</option>
+            <option value="data" ${recOrdem === 'data' ? 'selected' : ''}>Ordem: recebimento mais recente</option>
+            <option value="nf" ${recOrdem === 'nf' ? 'selected' : ''}>Ordem: nº da NF</option>
+          </select>
+          <input type="text" id="inputSearchRecNotas" placeholder="🔍 Buscar NF, fornecedor, loja, usuário..." value="${esc(searchRecNotas)}" style="width:260px">
+        </div>
+      </div>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>NF / Série</th>
+              <th>Recebimento</th>
+              <th>Loja</th>
+              <th>Fornecedor</th>
+              <th>Tipo Carga</th>
+              <th>Status</th>
+              <th class="r">Valor Recebido</th>
+              <th class="r">% Verba</th>
+              <th class="r">Verba R$</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${mostradas.length ? mostradas.map(n => `
+              <tr>
+                <td><b style="color:var(--accent)">${esc(n.nf)}</b>${n.serie ? `<span style="color:var(--mute);font-size:12px"> / ${esc(n.serie)}</span>` : ''}</td>
+                <td>${esc(n.dataRecebimento || n.dataEmissao)}</td>
+                <td><b>${esc(n.loja)}</b></td>
+                <td>${esc(n.fornecedor)}</td>
+                <td>${esc(n.tipoCarga)}</td>
+                <td>${esc(n.statusNota)}</td>
+                <td class="r" style="font-weight:700">${brl(n.valorRecebido)}</td>
+                <td class="r">${fmtP(n.verbaPct, 2)}</td>
+                <td class="r" style="color:var(--ok);font-weight:700">${brl(n.verbaValor)}</td>
+              </tr>`).join('') : '<tr><td colspan="9">Nenhuma nota encontrada.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      ${restam > 0 ? `<div style="text-align:center;margin-top:12px"><button class="btn-more" id="btnMoreRecNotas">Mostrar mais 150 (restam ${fmtN.format(restam)})</button></div>` : ''}
+    </div>
+  `;
+
+  const bindToggle = (attr, key) => document.querySelectorAll(`[${attr}]`).forEach(tr => tr.addEventListener('click', () => {
+    toggleArr(recFiltro[key], tr.getAttribute(attr));
+    recLimite = 150;
+    secRecebNotas();
+  }));
+  bindToggle('data-rec-mes', 'mes');
+  bindToggle('data-rec-carga', 'tipoCarga');
+  bindToggle('data-rec-status', 'statusNota');
+  bindToggle('data-rec-loja', 'loja');
+
+  const selO = $('#selRecOrdem');
+  if (selO) selO.addEventListener('change', e => { recOrdem = e.target.value; recLimite = 150; secRecebNotas(); });
+  const inS = $('#inputSearchRecNotas');
+  if (inS) inS.addEventListener('input', e => {
+    searchRecNotas = e.target.value; recLimite = 150;
+    secRecebNotas();
+    keepFocus('#inputSearchRecNotas', () => searchRecNotas);
+  });
+  const bm = $('#btnMoreRecNotas');
+  if (bm) bm.addEventListener('click', () => { recLimite += 150; secRecebNotas(); });
+}
+
+/* ---------- SUB-ABA 2: VERBA LOGÍSTICA ---------- */
+function secRecebVerba(){
+  const el = $('#s-recebverba');
+  if (!el) return;
+  if (!RecebD) {
+    el.innerHTML = `<h2>Verba Logística</h2><p class="sub">Carregando dados do recebimento.json...</p>`;
+    return;
+  }
+
+  const notas = recNotasFiltradas();
+  const notasComVerba = notas.filter(n => n.verbaValor > 0 || n.verbaPct > 0);
+  const totValRec = notas.reduce((s,n) => s + n.valorRecebido, 0);
+  const totBaseVerba = notasComVerba.reduce((s,n) => s + n.valorRecebido, 0);
+  const totVerba = notas.reduce((s,n) => s + n.verbaValor, 0);
+  const pctMedioGeral = totValRec ? (totVerba / totValRec) * 100 : 0;
+  const pctMedioComVerba = totBaseVerba ? (totVerba / totBaseVerba) * 100 : 0;
+
+  // Ranking por Fornecedor
+  const porFornMap = {};
+  notas.forEach(n => {
+    const k = n.fornecedor;
+    porFornMap[k] = porFornMap[k] || {fornecedor:k, cnpj:n.cnpj, nfs:0, nfsVerba:0, valorRec:0, verba:0};
+    porFornMap[k].nfs++;
+    if (n.verbaValor > 0) porFornMap[k].nfsVerba++;
+    porFornMap[k].valorRec += n.valorRecebido;
+    porFornMap[k].verba += n.verbaValor;
+  });
+  const porForn = Object.values(porFornMap).sort((a,b) => b.verba - a.verba);
+
+  // Verba por Mês
+  const porMesMap = {};
+  notas.forEach(n => {
+    const k = n.mes || 'Sem data';
+    porMesMap[k] = porMesMap[k] || {mes:k, nfs:0, valorRec:0, verba:0};
+    porMesMap[k].nfs++;
+    porMesMap[k].valorRec += n.valorRecebido;
+    porMesMap[k].verba += n.verbaValor;
+  });
+  const porMes = Object.values(porMesMap).sort((a,b) => mesOrdem(a.mes).localeCompare(mesOrdem(b.mes)));
+
+  // Verba por Loja
+  const porLojaMap = {};
+  notas.forEach(n => {
+    const k = n.loja;
+    porLojaMap[k] = porLojaMap[k] || {loja:k, nfs:0, valorRec:0, verba:0};
+    porLojaMap[k].nfs++;
+    porLojaMap[k].valorRec += n.valorRecebido;
+    porLojaMap[k].verba += n.verbaValor;
+  });
+  const porLoja = Object.values(porLojaMap).sort((a,b) => b.verba - a.verba);
+
+  const q = searchRecVerba.trim().toLowerCase();
+  const baseLista = notasComVerba.length ? notasComVerba : notas;
+  const busca = q ? baseLista.filter(n =>
+    n.fornecedor.toLowerCase().includes(q) ||
+    n.loja.toLowerCase().includes(q) ||
+    n.nf.toLowerCase().includes(q) ||
+    n.cnpj.toLowerCase().includes(q)
+  ) : baseLista;
+
+  const cmp = {
+    verba: (a,b) => b.verbaValor - a.verbaValor,
+    pct:   (a,b) => b.verbaPct - a.verbaPct,
+    valor: (a,b) => b.valorRecebido - a.valorRecebido
+  }[verbaOrdem] || (() => 0);
+
+  const lista = busca.slice().sort(cmp);
+  const mostradas = lista.slice(0, verbaLimite);
+  const restam = lista.length - mostradas.length;
+  const dica = '<span style="color:var(--mute);font-weight:500;font-size:12px">(clique para filtrar)</span>';
+
+  el.innerHTML = `
+    <h2>Verba Logística · Recebimento</h2>
+    <p class="sub">Setor Recebimento · Apuração de verba logística por fornecedor, loja e período.${esc(recAtualizadoTxt())}</p>
+
+    <div class="grid kpis">
+      ${kpi('Verba Logística Total', `<span style="color:var(--ok)">${brlShort(totVerba)}</span>`, brl(totVerba), 'hl')}
+      ${kpi('% Verba Médio (Total)', fmtP(pctMedioGeral, 2), `Sobre ${brlShort(totValRec)} recebidos`)}
+      ${kpi('% Verba Médio (NFs c/ Verba)', fmtP(pctMedioComVerba, 2), `${fmtN.format(notasComVerba.length)} de ${fmtN.format(notas.length)} NFs possuem verba`)}
+      ${kpi('Fornecedores c/ Verba', fmtN.format(porForn.filter(f => f.verba > 0).length), `De ${fmtN.format(porForn.length)} fornecedores no filtro`)}
+    </div>
+
+    <div class="grid two" style="margin-top:20px">
+      <div class="card">
+        <h3>Top Fornecedores por Verba Logística ${dica}</h3>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Fornecedor</th><th class="r">NFs</th><th class="r">Recebido</th><th class="r">% Médio</th><th class="r">Verba R$</th></tr></thead>
+            <tbody>
+              ${porForn.slice(0, 15).map(f => `
+                <tr class="clickable-row ${isSelectedArr(recFiltro.fornecedor, f.fornecedor) ? 'active-row' : ''}" data-verba-forn="${esc(f.fornecedor)}">
+                  <td><b>${esc(f.fornecedor)}</b></td>
+                  <td class="r">${fmtN.format(f.nfs)}</td>
+                  <td class="r">${brlShort(f.valorRec)}</td>
+                  <td class="r">${fmtP(f.valorRec ? (f.verba / f.valorRec) * 100 : 0, 2)}</td>
+                  <td class="r" style="color:var(--ok);font-weight:700">${brl(f.verba)}</td>
+                </tr>`).join('') || '<tr><td colspan="5">Sem dados de fornecedores.</td></tr>'}
+              <tr class="tot"><td><b>Total Geral</b></td><td class="r">${fmtN.format(notas.length)}</td><td class="r">${brlShort(totValRec)}</td><td class="r">${fmtP(pctMedioGeral, 2)}</td><td class="r" style="color:var(--accent)">${brl(totVerba)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Evolução Mensal da Verba & Lojas ${dica}</h3>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Mês</th><th class="r">Recebido</th><th class="r">% Verba</th><th class="r">Verba R$</th></tr></thead>
+            <tbody>
+              ${porMes.map(m => `
+                <tr class="clickable-row ${isSelectedArr(recFiltro.mes, m.mes) ? 'active-row' : ''}" data-verba-mes="${esc(m.mes)}">
+                  <td><b>${esc(mesLabel(m.mes))}</b></td>
+                  <td class="r">${brlShort(m.valorRec)}</td>
+                  <td class="r">${fmtP(m.valorRec ? (m.verba / m.valorRec) * 100 : 0, 2)}</td>
+                  <td class="r" style="color:var(--ok);font-weight:700">${brl(m.verba)}</td>
+                </tr>`).join('') || '<tr><td colspan="4">Sem dados mensais.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 style="margin-top:18px">Verba por Loja ${dica}</h3>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Loja</th><th class="r">Recebido</th><th class="r">% Verba</th><th class="r">Verba R$</th></tr></thead>
+            <tbody>
+              ${porLoja.slice(0, 10).map(l => `
+                <tr class="clickable-row ${isSelectedArr(recFiltro.loja, l.loja) ? 'active-row' : ''}" data-verba-loja="${esc(l.loja)}">
+                  <td><b>${esc(l.loja)}</b></td>
+                  <td class="r">${brlShort(l.valorRec)}</td>
+                  <td class="r">${fmtP(l.valorRec ? (l.verba / l.valorRec) * 100 : 0, 2)}</td>
+                  <td class="r" style="color:var(--ok);font-weight:700">${brl(l.verba)}</td>
+                </tr>`).join('') || '<tr><td colspan="4">Sem dados por loja.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-header-action">
+        <h3>💰 DETALHAMENTO DE VERBA POR NOTA FISCAL (${fmtN.format(lista.length)} NFs)</h3>
+        <div class="prod-controls">
+          <select id="selVerbaOrdem">
+            <option value="verba" ${verbaOrdem === 'verba' ? 'selected' : ''}>Ordem: maior verba R$</option>
+            <option value="pct" ${verbaOrdem === 'pct' ? 'selected' : ''}>Ordem: maior % verba</option>
+            <option value="valor" ${verbaOrdem === 'valor' ? 'selected' : ''}>Ordem: maior valor recebido</option>
+          </select>
+          <input type="text" id="inputSearchRecVerba" placeholder="🔍 Buscar fornecedor, NF, loja..." value="${esc(searchRecVerba)}" style="width:260px">
+        </div>
+      </div>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>NF</th>
+              <th>Recebimento</th>
+              <th>Loja</th>
+              <th>Fornecedor</th>
+              <th>Tipo Carga</th>
+              <th class="r">Valor Recebido</th>
+              <th class="r">% Verba</th>
+              <th class="r">Verba Apurada (R$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${mostradas.length ? mostradas.map(n => `
+              <tr>
+                <td><b style="color:var(--accent)">${esc(n.nf)}</b></td>
+                <td>${esc(n.dataRecebimento || n.dataEmissao)}</td>
+                <td><b>${esc(n.loja)}</b></td>
+                <td>${esc(n.fornecedor)}</td>
+                <td>${esc(n.tipoCarga)}</td>
+                <td class="r">${brl(n.valorRecebido)}</td>
+                <td class="r" style="font-weight:700">${fmtP(n.verbaPct, 2)}</td>
+                <td class="r" style="color:var(--ok);font-weight:700">${brl(n.verbaValor)}</td>
+              </tr>`).join('') : '<tr><td colspan="8">Nenhuma nota com verba encontrada.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      ${restam > 0 ? `<div style="text-align:center;margin-top:12px"><button class="btn-more" id="btnMoreRecVerba">Mostrar mais 150 (restam ${fmtN.format(restam)})</button></div>` : ''}
+    </div>
+  `;
+
+  const bindToggle = (attr, key) => document.querySelectorAll(`[${attr}]`).forEach(tr => tr.addEventListener('click', () => {
+    toggleArr(recFiltro[key], tr.getAttribute(attr));
+    verbaLimite = 150;
+    secRecebVerba();
+  }));
+  bindToggle('data-verba-forn', 'fornecedor');
+  bindToggle('data-verba-mes', 'mes');
+  bindToggle('data-verba-loja', 'loja');
+
+  const selO = $('#selVerbaOrdem');
+  if (selO) selO.addEventListener('change', e => { verbaOrdem = e.target.value; verbaLimite = 150; secRecebVerba(); });
+  const inS = $('#inputSearchRecVerba');
+  if (inS) inS.addEventListener('input', e => {
+    searchRecVerba = e.target.value; verbaLimite = 150;
+    secRecebVerba();
+    keepFocus('#inputSearchRecVerba', () => searchRecVerba);
+  });
+  const bm = $('#btnMoreRecVerba');
+  if (bm) bm.addEventListener('click', () => { verbaLimite += 150; secRecebVerba(); });
+}
+
 /* ================= SETORES, ABAS E BARRA DE FILTROS ================= */
 const SETORES = {
-  gestao: {title:'Gestão de Estoque', icon:'📦', tabs:['geral','shelf','aging','ocup','carteira']},
-  admin:  {title:'Administrativo',    icon:'🗂️', tabs:['transito','prealerta']}
+  gestao:      {title:'Gestão de Estoque', icon:'📦', tabs:['geral','shelf','aging','ocup','carteira']},
+  admin:       {title:'Administrativo',    icon:'🗂️', tabs:['transito','prealerta']},
+  recebimento: {title:'Recebimento',       icon:'📥', tabs:['recebnotas','recebverba']}
 };
 
 const SECTIONS = [
-  {id:'geral',     setor:'gestao', title:'Visão Geral', render:() => secGeral()},
-  {id:'shelf',     setor:'gestao', title:'Shelf Life',  render:() => secShelf()},
-  {id:'aging',     setor:'gestao', title:'Aging',       render:() => secAging()},
-  {id:'ocup',      setor:'gestao', title:'Ocupação',    render:() => secOcup()},
-  {id:'carteira',  setor:'gestao', title:'Carteira',    render:() => secCarteira()},
-  {id:'transito',  setor:'admin',  title:'🚚 Notas em Trânsito',            render:() => secTransito()},
-  {id:'prealerta', setor:'admin',  title:'⚠️ Pré-Alerta (Sobra e Falta)',   render:() => secPreAlerta()}
+  {id:'geral',      setor:'gestao',      title:'Visão Geral',                    render:() => secGeral()},
+  {id:'shelf',      setor:'gestao',      title:'Shelf Life',                     render:() => secShelf()},
+  {id:'aging',      setor:'gestao',      title:'Aging',                          render:() => secAging()},
+  {id:'ocup',       setor:'gestao',      title:'Ocupação',                       render:() => secOcup()},
+  {id:'carteira',   setor:'gestao',      title:'Carteira',                       render:() => secCarteira()},
+  {id:'transito',   setor:'admin',       title:'🚚 Notas em Trânsito',           render:() => secTransito()},
+  {id:'prealerta',  setor:'admin',       title:'⚠️ Pré-Alerta (Sobra e Falta)',  render:() => secPreAlerta()},
+  {id:'recebnotas', setor:'recebimento', title:'📄 Notas de Recebimento',        render:() => secRecebNotas()},
+  {id:'recebverba', setor:'recebimento', title:'💰 Verba Logística',             render:() => secRecebVerba()}
 ];
 
 let activeTab = 'geral';
-const lastTab = {gestao:'geral', admin:'transito'};
+const lastTab = {gestao:'geral', admin:'transito', recebimento:'recebnotas'};
 const setorDe = id => (SECTIONS.find(s => s.id === id) || {setor:'gestao'}).setor;
 
 let filterOcupGalpao = [];
@@ -3350,7 +3892,7 @@ function render(){
   lastTab[setor] = activeTab;
   document.body.setAttribute('data-setor', setor);
   renderNav();
-  if (!D && setor !== 'admin') return;
+  if (!D && setor !== 'admin' && setor !== 'recebimento') return;
 
   SECTIONS.forEach(s => {
     const el = $('#s-' + s.id);
@@ -3649,7 +4191,7 @@ document.addEventListener('click', () => {
 });
 
 /* qualquer clique interno (gráficos, linhas) que re-renderiza uma seção também atualiza a barra */
-['secGeral','secShelf','secAging','secOcup','secCarteira','secTransito','secPreAlerta'].forEach(n => {
+['secGeral','secShelf','secAging','secOcup','secCarteira','secTransito','secPreAlerta','secRecebNotas','secRecebVerba'].forEach(n => {
   const orig = window[n];
   window[n] = function(){ const r = orig.apply(this, arguments); renderFilterBar(); return r; };
 });
