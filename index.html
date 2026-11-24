@@ -587,7 +587,7 @@ body{padding-left:calc(var(--side-w) + 18px) !important;transition:padding-left 
 body.side-collapsed .side-toggle{transform:rotate(180deg);align-self:center}
 body.side-collapsed .side-label,body.side-collapsed .setores button .st{display:none}
 body.side-collapsed .setores button{justify-content:center;padding:12px 0;gap:0}
-body[data-setor="admin"] #basis, body[data-setor="recebimento"] #basis{display:none}
+body[data-setor="admin"] #basis, body[data-setor="recebimento"] #basis, body[data-setor="separacao"] #basis{display:none}
 
 .gfbar{display:none;margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px;position:relative;z-index:15;box-shadow:var(--card-shadow)}
 .gfbar.on{display:block}
@@ -768,6 +768,8 @@ nav button {
 <section id="s-prealerta"></section>
 <section id="s-recebnotas"></section>
 <section id="s-recebverba"></section>
+<section id="s-sepgeral"></section>
+<section id="s-sepoperadores"></section>
 
 <script>
 
@@ -790,7 +792,10 @@ const ICONS = {
   printer: `<span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span>`,
   info: `<span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>`,
   pie: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>`,
-  trophy: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span>`
+  trophy: `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span>`,
+  layers: `<span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>`,
+  users: `<span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>`,
+  clock: `<span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>`
 };
 
 const CONFIG = {
@@ -800,6 +805,9 @@ const CONFIG = {
   DATA_ACUMULADO_URL: "./dados_acumulado.json",
   ADMIN_URL: "./administrativo.json",
   RECEBIMENTO_URL: "./recebimento.json",
+  SEP_PICKING_URL: "./separacao_picking.json",
+  SEP_PULMAO_URL: "./separacao_pulmao.json",
+  SEP_BLOCADO_URL: "./separacao_blocado.json",
   ESTOQUE_FISICO: "ESTOQUE REVENDA",
   ATUALIZAR_MIN: 1,
   TV_SEGUNDOS: 20
@@ -1008,6 +1016,21 @@ function extractList(source) {
     const vals = Object.values(source).filter(v => v && typeof v === 'object');
     if (vals.length > 0) return vals;
   }
+  if ((t === 'sepgeral' || t === 'sepoperadores') && SepD) {
+    const todas = sepTodosRegistros();
+    const ops = ['Picking', 'Pulmão', 'Blocado'].map(v => ({v, l:v}));
+    const turnos = uniqSorted(todas.map(r => r.turno)).map(v => ({v, l:v}));
+    const datas = uniqSorted(todas.map(r => r.data)).map(v => ({v, l:v}));
+    const lojas = uniqSorted(todas.map(r => r.lojaDestino).filter(Boolean)).map(v => ({v, l:v}));
+    const operadores = uniqSorted(todas.map(r => r.operador).filter(Boolean)).map(v => ({v, l:v}));
+    return [
+      {id:'s_op',    lbl:'Modalidade', type:'multi', val:sepDadosFiltro.operacao, all:'Todas', opts:ops,        set:v => { sepDadosFiltro.operacao = v; sepGeralLimite = 150; }},
+      {id:'s_turno', lbl:'Turno',      type:'multi', val:sepDadosFiltro.turno,    all:'Todos', opts:turnos,     set:v => { sepDadosFiltro.turno = v;    sepGeralLimite = 150; }},
+      {id:'s_data',  lbl:'Data',       type:'multi', val:sepDadosFiltro.data,     all:'Todas', opts:datas,      set:v => { sepDadosFiltro.data = v;     sepGeralLimite = 150; }},
+      {id:'s_loja',  lbl:'Loja Dest.', type:'multi', val:sepDadosFiltro.loja,     all:'Todas', opts:lojas,      set:v => { sepDadosFiltro.loja = v;     sepGeralLimite = 150; }},
+      {id:'s_func',  lbl:'Operador',   type:'multi', val:sepDadosFiltro.operador, all:'Todos', opts:operadores, set:v => { sepDadosFiltro.operador = v; sepGeralLimite = 150; }}
+    ];
+  }
   return [];
 }
 
@@ -1160,6 +1183,7 @@ async function load(){
   try {
     await loadAdminData();
     await loadRecebimentoData();
+    await loadSeparacaoData();
     const d = await fromJsonFile();
     D = d;
     $('#src').className = 'live';
@@ -4044,6 +4068,560 @@ function secRecebVerba(){
   attachTooltipEvents();
 }
 
+
+/* ================= SETOR SEPARAÇÃO (PICKING, PULMÃO E BLOCADO) ================= */
+let SepD = null;
+let sepDadosFiltro = { operacao: [], turno: [], data: [], loja: [], operador: [] };
+let searchSepGeral = '';
+let searchSepOp = '';
+let sepGeralOrdem = 'qtd';
+let sepOpOrdem = 'hh';
+let sepGeralLimite = 150;
+
+async function loadSeparacaoData() {
+  try {
+    const timestamp = new Date().getTime();
+    const fetchOpts = { method: 'GET', headers: { 'Cache-Control': 'no-cache' } };
+    const [resPick, resPulm, resBloc] = await Promise.all([
+      fetch(`${CONFIG.SEP_PICKING_URL}?v=${timestamp}`, fetchOpts).catch(() => null),
+      fetch(`${CONFIG.SEP_PULMAO_URL}?v=${timestamp}`, fetchOpts).catch(() => null),
+      fetch(`${CONFIG.SEP_BLOCADO_URL}?v=${timestamp}`, fetchOpts).catch(() => null)
+    ]);
+
+    const parseSep = async (res, opNome) => {
+      if (!res || !res.ok) return { registros: [], ultimaAtualizacao: '', metas: null };
+      const j = await res.json();
+      const regs = (j.registros || []).map(r => ({
+        ...r,
+        operacao: r.operacao || opNome,
+        qtd: parseNum(r.qtd),
+        qtdConferida: parseNum(r.qtdConferida != null ? r.qtdConferida : r.qtd),
+        qtdPedida: parseNum(r.qtdPedida != null ? r.qtdPedida : r.qtd),
+        peso: parseNum(r.peso),
+        unitizadores: parseNum(r.unitizadores),
+        itens: parseNum(r.itens),
+        hora: +r.hora || 0
+      }));
+      return { registros: regs, ultimaAtualizacao: j.ultimaAtualizacao || '', metas: j.metas || null };
+    };
+
+    const [dPick, dPulm, dBloc] = await Promise.all([
+      parseSep(resPick, 'Picking'),
+      parseSep(resPulm, 'Pulmão'),
+      parseSep(resBloc, 'Blocado')
+    ]);
+
+    const datasAtt = [dPick.ultimaAtualizacao, dPulm.ultimaAtualizacao, dBloc.ultimaAtualizacao].filter(Boolean).sort();
+    SepD = {
+      picking: dPick.registros,
+      pulmao: dPulm.registros,
+      blocado: dBloc.registros,
+      todos: [...dPick.registros, ...dPulm.registros, ...dBloc.registros],
+      metas: dPick.metas || dPulm.metas || dBloc.metas || { hh: 100, horasTurno: 7 },
+      ultimaAtualizacao: datasAtt.length ? datasAtt[datasAtt.length - 1] : ''
+    };
+  } catch (e) {
+    console.error("Erro ao carregar JSONs de separação:", e);
+  }
+}
+
+function sepTodosRegistros() {
+  return (SepD && SepD.todos) || [];
+}
+
+function sepRegistrosFiltrados() {
+  return sepTodosRegistros().filter(r => {
+    if (sepDadosFiltro.operacao.length > 0 && !hasArr(sepDadosFiltro.operacao, r.operacao)) return false;
+    if (sepDadosFiltro.turno.length > 0 && !hasArr(sepDadosFiltro.turno, r.turno)) return false;
+    if (sepDadosFiltro.data.length > 0 && !hasArr(sepDadosFiltro.data, r.data)) return false;
+    if (sepDadosFiltro.loja.length > 0 && !hasArr(sepDadosFiltro.loja, r.lojaDestino)) return false;
+    if (sepDadosFiltro.operador.length > 0 && !hasArr(sepDadosFiltro.operador, r.operador)) return false;
+    return true;
+  });
+}
+
+function tempoStrParaHoras(tStr) {
+  if (!tStr) return 0;
+  const parts = String(tStr).trim().split(':').map(Number);
+  if (parts.length === 3 && !parts.some(isNaN)) return parts[0] + parts[1] / 60 + parts[2] / 3600;
+  if (parts.length === 2 && !parts.some(isNaN)) return parts[0] + parts[1] / 60;
+  return 0;
+}
+
+function sepAtualizadoTxt() {
+  const t = SepD && SepD.ultimaAtualizacao;
+  if (!t) return '';
+  const d = new Date(t);
+  return isNaN(d) ? '' : ` Base atualizada em ${d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}.`;
+}
+
+function calcResumoOperadoresSep(rows, metaHh, horasTurno) {
+  const mapOp = {};
+  rows.forEach(r => {
+    const key = `${r.operador}__${r.operacao}__${r.turno}`;
+    if (!mapOp[key]) {
+      mapOp[key] = {
+        operador: r.operador || 'Não identificado',
+        operacao: r.operacao || 'Picking',
+        turno: r.turno || '-',
+        osSet: new Set(),
+        horasAtivasSet: new Set(),
+        linhas: 0,
+        qtd: 0,
+        qtdConferida: 0,
+        qtdPedida: 0,
+        peso: 0,
+        unitizadores: 0,
+        itens: 0,
+        horasTempo: 0
+      };
+    }
+    const o = mapOp[key];
+    o.linhas++;
+    if (r.ordemServico) o.osSet.add(r.ordemServico);
+    o.horasAtivasSet.add(`${r.data}_${r.hora}`);
+    o.qtd += r.qtd || 0;
+    o.qtdConferida += r.qtdConferida || 0;
+    o.qtdPedida += r.qtdPedida || 0;
+    o.peso += r.peso || 0;
+    o.unitizadores += r.unitizadores || 0;
+    o.itens += r.itens || 0;
+    o.horasTempo += tempoStrParaHoras(r.tempoTotal);
+  });
+
+  return Object.values(mapOp).map(o => {
+    const horasConsideradas = o.horasTempo > 0 ? o.horasTempo : Math.max(o.horasAtivasSet.size, 1);
+    const hhReal = horasConsideradas > 0 ? (o.qtd / horasConsideradas) : 0;
+    const metaTurnoTotal = metaHh * horasTurno;
+    const pctMeta = metaHh > 0 ? (hhReal / metaHh) * 100 : 0;
+    return {
+      ...o,
+      qtdOs: o.osSet.size || o.linhas,
+      horasTrabalhadas: horasConsideradas,
+      hh: hhReal,
+      metaTurnoTotal,
+      pctMeta
+    };
+  });
+}
+
+/* ---------- SUB-ABA 1: VISÃO GERAL SEPARAÇÃO ---------- */
+function secSepGeral() {
+  const el = $('#s-sepgeral');
+  if (!el) return;
+  if (!SepD) {
+    el.innerHTML = `<h2>Separação · Produtividade Geral</h2><p class="sub">Carregando dados de Picking, Pulmão e Blocado...</p>`;
+    return;
+  }
+
+  const metaHh = (SepD.metas && SepD.metas.hh) || 100;
+  const horasTurno = (SepD.metas && SepD.metas.horasTurno) || 7;
+  const rows = sepRegistrosFiltrados();
+
+  const totQtd = rows.reduce((s, r) => s + r.qtd, 0);
+  const totConf = rows.reduce((s, r) => s + r.qtdConferida, 0);
+  const totPed = rows.reduce((s, r) => s + r.qtdPedida, 0);
+  const totPeso = rows.reduce((s, r) => s + r.peso, 0);
+  const totUnit = rows.reduce((s, r) => s + r.unitizadores, 0);
+  const osUnicas = new Set(rows.map(r => r.ordemServico).filter(Boolean)).size || rows.length;
+  const operadoresUnicos = new Set(rows.map(r => r.operador).filter(Boolean)).size;
+  const acuracidade = totPed > 0 ? (totQtd / totPed) * 100 : 100;
+
+  const opsResumo = calcResumoOperadoresSep(rows, metaHh, horasTurno);
+  const totalHorasOps = opsResumo.reduce((s, o) => s + o.horasTrabalhadas, 0);
+  const mediaHhGeral = totalHorasOps > 0 ? (totQtd / totalHorasOps) : 0;
+
+  // Agrupamento por Modalidade (Picking, Pulmão, Blocado)
+  const OP_COR = { 'Picking': '#4285f4', 'Pulmão': '#a855f7', 'Blocado': '#ffc400' };
+  const modalidades = ['Picking', 'Pulmão', 'Blocado'];
+  const porOp = modalidades.map(op => {
+    const sub = rows.filter(r => r.operacao === op);
+    const qtd = sub.reduce((s, r) => s + r.qtd, 0);
+    const os = new Set(sub.map(r => r.ordemServico).filter(Boolean)).size || sub.length;
+    const ops = new Set(sub.map(r => r.operador).filter(Boolean)).size;
+    const peso = sub.reduce((s, r) => s + r.peso, 0);
+    const unit = sub.reduce((s, r) => s + r.unitizadores, 0);
+    const opsOp = calcResumoOperadoresSep(sub, metaHh, horasTurno);
+    const hrs = opsOp.reduce((s, o) => s + o.horasTrabalhadas, 0);
+    const hh = hrs > 0 ? qtd / hrs : 0;
+    return { op, qtd, os, ops, peso, unit, hh, cor: OP_COR[op] || '#4285f4' };
+  });
+
+  const donutItems = porOp.filter(x => x.qtd > 0).map(x => ({
+    rawKey: x.op,
+    n: x.op,
+    v: x.qtd,
+    c: x.cor,
+    topProd: `${fmtN.format(x.os)} OS · HH Médio: ${x.hh.toFixed(1)}`
+  }));
+
+  // Agrupamento por Hora (Curva horária 00h a 23h)
+  const porHoraMap = {};
+  for (let h = 0; h < 24; h++) porHoraMap[h] = { hora: h, qtd: 0, os: 0 };
+  rows.forEach(r => {
+    const h = Math.max(0, Math.min(23, +r.hora || 0));
+    porHoraMap[h].qtd += r.qtd;
+    porHoraMap[h].os += 1;
+  });
+  const horasAtivas = Object.values(porHoraMap).filter(h => h.qtd > 0);
+  const maxHoraQtd = horasAtivas.length ? Math.max(...horasAtivas.map(h => h.qtd)) * 1.18 : 1;
+
+  // Agrupamento por Turno
+  const turnosOrdem = ['1º TURNO', '2º TURNO', '3º TURNO'];
+  const porTurno = turnosOrdem.map(t => {
+    const sub = rows.filter(r => r.turno === t);
+    const qtd = sub.reduce((s, r) => s + r.qtd, 0);
+    const os = new Set(sub.map(r => r.ordemServico).filter(Boolean)).size || sub.length;
+    const ops = new Set(sub.map(r => r.operador).filter(Boolean)).size;
+    const opsT = calcResumoOperadoresSep(sub, metaHh, horasTurno);
+    const hrs = opsT.reduce((s, o) => s + o.horasTrabalhadas, 0);
+    const hh = hrs > 0 ? qtd / hrs : 0;
+    return { turno: t, qtd, os, ops, hh };
+  });
+
+  // Tabela Analítica de Ordens de Serviço / Registros
+  const q = searchSepGeral.trim().toLowerCase();
+  const busca = q ? rows.filter(r =>
+    String(r.operador || '').toLowerCase().includes(q) ||
+    String(r.ordemServico || '').toLowerCase().includes(q) ||
+    String(r.lojaDestino || '').toLowerCase().includes(q) ||
+    String(r.operacao || '').toLowerCase().includes(q) ||
+    String(r.turno || '').toLowerCase().includes(q)
+  ) : rows;
+
+  const cmp = {
+    qtd:  (a, b) => b.qtd - a.qtd,
+    os:   (a, b) => String(b.ordemServico).localeCompare(String(a.ordemServico), undefined, { numeric: true }),
+    hora: (a, b) => b.hora - a.hora,
+    op:   (a, b) => String(a.operador).localeCompare(String(b.operador))
+  }[sepGeralOrdem] || (() => 0);
+
+  const lista = busca.slice().sort(cmp);
+  const mostradas = lista.slice(0, sepGeralLimite);
+  const restam = lista.length - mostradas.length;
+  const dica = '<span style="color:var(--mute);font-weight:500;font-size:13px">(clique para filtrar)</span>';
+
+  const prevBasis = basis;
+  basis = 'qtd';
+  const dnHtml = donut(donutItems, fmtN.format(totQtd), 'caixas sep.', 'data-sep-op', sepDadosFiltro.operacao);
+  const lgHtml = legend(donutItems, 'data-sep-op', sepDadosFiltro.operacao);
+  basis = prevBasis;
+
+  el.innerHTML = `
+    <h2>Separação · Picking, Pulmão & Blocado</h2>
+    <p class="sub">Setor de Separação · Monitoramento consolidado dos 3 fluxos operacionais (separacao_picking, separacao_pulmao e separacao_blocado).${esc(sepAtualizadoTxt())}</p>
+
+    <div class="grid kpis">
+      ${kpi('Volume Total Separado', fmtN.format(totQtd), `${fmtN.format(osUnicas)} OS · Conferido: ${fmtN.format(totConf)} (${fmtP(acuracidade)})`, 'hl')}
+      ${kpi('HH Médio Geral', `<span style="color:${mediaHhGeral >= metaHh ? 'var(--ok)' : 'var(--warn)'}">${mediaHhGeral.toFixed(1)}</span>`, `Meta padrão: ${fmtN.format(metaHh)} cx/h (${horasTurno}h turno)`, 'hl')}
+      ${kpi('Picking vs Pulmão vs Blocado', `${fmtN.format(porOp[0].qtd)} <span style="font-size:18px;color:var(--mute)">/ ${fmtN.format(porOp[1].qtd)} / ${fmtN.format(porOp[2].qtd)}</span>`, `Picking · Pulmão · Blocado`)}
+      ${kpi('Equipe Ativa / Peso', `${fmtN.format(operadoresUnicos)} <span style="font-size:20px;color:var(--mute)">operadores</span>`, `Peso: ${fmtN.format(totPeso)} kg · Unitiz.: ${fmtN.format(totUnit)}`)}
+    </div>
+
+    <div class="grid two" style="margin-top:20px">
+      <div class="card">
+        <h3>${ICONS.pie} Volume por Tipo de Separação ${dica}</h3>
+        <div class="donutwrap">${dnHtml}${lgHtml}</div>
+        <div class="tw" style="margin-top:12px">
+          <table>
+            <thead>
+              <tr>
+                <th>Modalidade</th>
+                <th class="r">OS / Reg.</th>
+                <th class="r">Operad.</th>
+                <th class="r">Qtd Sep.</th>
+                <th class="r">HH Médio</th>
+                <th class="r">% Part.</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${porOp.map(x => `
+                <tr class="clickable-row ${isSelectedArr(sepDadosFiltro.operacao, x.op) ? 'active-row' : ''}" data-sep-op="${esc(x.op)}">
+                  <td><span class="dot" style="background:${x.cor}"></span><b>${esc(x.op)}</b></td>
+                  <td class="r">${fmtN.format(x.os)}</td>
+                  <td class="r">${fmtN.format(x.ops)}</td>
+                  <td class="r" style="font-weight:700">${fmtN.format(x.qtd)}</td>
+                  <td class="r" style="color:${x.hh >= metaHh ? 'var(--ok)' : 'var(--warn)'};font-weight:700">${x.hh.toFixed(1)}</td>
+                  <td class="r">${fmtP(totQtd ? (x.qtd / totQtd) * 100 : 0, 1)}</td>
+                </tr>`).join('')}
+              <tr class="tot">
+                <td><b>Total Geral</b></td>
+                <td class="r">${fmtN.format(osUnicas)}</td>
+                <td class="r">${fmtN.format(operadoresUnicos)}</td>
+                <td class="r" style="color:var(--accent-text)">${fmtN.format(totQtd)}</td>
+                <td class="r" style="color:var(--ok)">${mediaHhGeral.toFixed(1)}</td>
+                <td class="r">100,0%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>${ICONS.clock} Produtividade por Hora & Turno</h3>
+        ${horasAtivas.length ? `
+          <div class="bar-chart-container" style="height:245px;padding-top:46px">
+            <div class="bar-chart-wrapper">
+              ${horasAtivas.map(h => {
+                const pctH = (h.qtd / maxHoraQtd) * 100;
+                const hLabel = String(h.hora).padStart(2, '0') + 'h';
+                const ttItems = [
+                  { prod: `Faixa Horária: ${hLabel}`, sub: `Volume: ${fmtN.format(h.qtd)} caixas` },
+                  { prod: `Ordens/Registros: ${fmtN.format(h.os)}`, sub: `Média: ${h.os ? (h.qtd / h.os).toFixed(1) : 0} cx/OS` }
+                ];
+                return `
+                <div class="bar-chart-col">
+                  <div class="bar-chart-bar" style="height:${Math.max(pctH, 6)}%"
+                       data-tooltip-title="Hora ${hLabel}"
+                       data-tooltip-color="var(--accent)"
+                       data-tooltip-items="${JSON.stringify(ttItems).replace(/"/g, '&quot;')}">
+                    <div class="bar-val-label"><span>${fmtN.format(h.qtd)}</span></div>
+                  </div>
+                  <div class="bar-date-label">${hLabel}</div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+        ` : '<p style="color:var(--mute);padding:16px">Sem registros horários no filtro atual.</p>'}
+
+        <div class="tw" style="margin-top:14px">
+          <table>
+            <thead>
+              <tr>
+                <th>Turno ${dica}</th>
+                <th class="r">Operadores</th>
+                <th class="r">OS / Reg.</th>
+                <th class="r">Qtd Separada</th>
+                <th class="r">HH Médio</th>
+                <th class="r">% Vol.</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${porTurno.map(t => `
+                <tr class="clickable-row ${isSelectedArr(sepDadosFiltro.turno, t.turno) ? 'active-row' : ''}" data-sep-turno="${esc(t.turno)}">
+                  <td><b>${esc(t.turno)}</b></td>
+                  <td class="r">${fmtN.format(t.ops)}</td>
+                  <td class="r">${fmtN.format(t.os)}</td>
+                  <td class="r" style="font-weight:700">${fmtN.format(t.qtd)}</td>
+                  <td class="r" style="color:${t.hh >= metaHh ? 'var(--ok)' : 'var(--warn)'};font-weight:700">${t.hh.toFixed(1)}</td>
+                  <td class="r">${fmtP(totQtd ? (t.qtd / totQtd) * 100 : 0, 1)}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-header-action">
+        <h3>${ICONS.layers} DETALHAMENTO ANALÍTICO DE SEPARAÇÃO (${fmtN.format(lista.length)} REGISTROS)</h3>
+        <div class="prod-controls">
+          <select id="selSepGeralOrdem">
+            <option value="qtd" ${sepGeralOrdem === 'qtd' ? 'selected' : ''}>Ordem: maior volume separado</option>
+            <option value="os" ${sepGeralOrdem === 'os' ? 'selected' : ''}>Ordem: nº da OS</option>
+            <option value="hora" ${sepGeralOrdem === 'hora' ? 'selected' : ''}>Ordem: horário mais recente</option>
+            <option value="op" ${sepGeralOrdem === 'op' ? 'selected' : ''}>Ordem: operador (A-Z)</option>
+          </select>
+          <input type="text" id="inputSearchSepGeral" placeholder="Buscar operador, OS, loja, modalidade..." value="${esc(searchSepGeral)}" style="width:280px">
+        </div>
+      </div>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Modalidade</th>
+              <th>Data</th>
+              <th>Turno</th>
+              <th>OS</th>
+              <th>Loja Destino</th>
+              <th>Operador</th>
+              <th>Início / Fim</th>
+              <th class="r">Tempo</th>
+              <th class="r">Pedida</th>
+              <th class="r">Separada</th>
+              <th class="r">Conferida</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${mostradas.length ? mostradas.map(r => `
+              <tr>
+                <td><span class="dot" style="background:${OP_COR[r.operacao] || 'var(--blue)'}"></span><b>${esc(r.operacao)}</b></td>
+                <td>${esc(r.data)}</td>
+                <td>${esc(r.turno)}</td>
+                <td><b style="color:var(--accent-text)">${esc(r.ordemServico || '-')}</b></td>
+                <td>${esc(r.lojaDestino || '-')}</td>
+                <td><b>${esc(r.operador)}</b></td>
+                <td style="font-size:13px;color:var(--mute)">${esc(r.dataHoraInicio ? `${r.dataHoraInicio} → ${r.dataHoraFim || ''}` : `${String(r.hora).padStart(2, '0')}h`)}</td>
+                <td class="r">${esc(r.tempoTotal || '-')}</td>
+                <td class="r">${fmtN.format(r.qtdPedida)}</td>
+                <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(r.qtd)}</td>
+                <td class="r" style="color:var(--blue)">${fmtN.format(r.qtdConferida)}</td>
+              </tr>`).join('') : '<tr><td colspan="11">Nenhum registro encontrado no filtro atual.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      ${restam > 0 ? `<div style="text-align:center;margin-top:12px"><button class="btn-more" id="btnMoreSepGeral">Mostrar mais 150 (restam ${fmtN.format(restam)})</button></div>` : ''}
+    </div>
+  `;
+
+  document.querySelectorAll('[data-sep-op]').forEach(el => el.addEventListener('click', () => {
+    toggleArr(sepDadosFiltro.operacao, el.getAttribute('data-sep-op'));
+    sepGeralLimite = 150;
+    secSepGeral();
+  }));
+
+  document.querySelectorAll('[data-sep-turno]').forEach(el => el.addEventListener('click', () => {
+    toggleArr(sepDadosFiltro.turno, el.getAttribute('data-sep-turno'));
+    sepGeralLimite = 150;
+    secSepGeral();
+  }));
+
+  const selO = $('#selSepGeralOrdem');
+  if (selO) selO.addEventListener('change', e => { sepGeralOrdem = e.target.value; sepGeralLimite = 150; secSepGeral(); });
+  const inS = $('#inputSearchSepGeral');
+  if (inS) inS.addEventListener('input', e => {
+    searchSepGeral = e.target.value; sepGeralLimite = 150;
+    secSepGeral();
+    keepFocus('#inputSearchSepGeral', () => searchSepGeral);
+  });
+  const bm = $('#btnMoreSepGeral');
+  if (bm) bm.addEventListener('click', () => { sepGeralLimite += 150; secSepGeral(); });
+  attachTooltipEvents();
+}
+
+/* ---------- SUB-ABA 2: RANKING & METAS POR OPERADOR ---------- */
+function secSepOperadores() {
+  const el = $('#s-sepoperadores');
+  if (!el) return;
+  if (!SepD) {
+    el.innerHTML = `<h2>Ranking & Metas por Operador</h2><p class="sub">Carregando dados de separação...</p>`;
+    return;
+  }
+
+  const metaHh = (SepD.metas && SepD.metas.hh) || 100;
+  const horasTurno = (SepD.metas && SepD.metas.horasTurno) || 7;
+  const rows = sepRegistrosFiltrados();
+  const opsAll = calcResumoOperadoresSep(rows, metaHh, horasTurno);
+
+  const acimaMeta = opsAll.filter(o => o.hh >= metaHh);
+  const abaixoMeta = opsAll.filter(o => o.hh < metaHh);
+  const melhorOp = opsAll.slice().sort((a, b) => b.hh - a.hh)[0];
+  const maiorVolOp = opsAll.slice().sort((a, b) => b.qtd - a.qtd)[0];
+
+  const q = searchSepOp.trim().toLowerCase();
+  const busca = q ? opsAll.filter(o =>
+    o.operador.toLowerCase().includes(q) ||
+    o.operacao.toLowerCase().includes(q) ||
+    o.turno.toLowerCase().includes(q)
+  ) : opsAll;
+
+  const cmp = {
+    hh:   (a, b) => b.hh - a.hh,
+    qtd:  (a, b) => b.qtd - a.qtd,
+    os:   (a, b) => b.qtdOs - a.qtdOs,
+    nome: (a, b) => a.operador.localeCompare(b.operador)
+  }[sepOpOrdem] || (() => 0);
+
+  const lista = busca.slice().sort(cmp);
+  const top15 = opsAll.slice().sort((a, b) => b.qtd - a.qtd).slice(0, 15);
+  const maxTopQtd = top15.length ? Math.max(...top15.map(o => o.qtd)) : 1;
+  const OP_COR = { 'Picking': '#4285f4', 'Pulmão': '#a855f7', 'Blocado': '#ffc400' };
+
+  el.innerHTML = `
+    <h2>Ranking & Metas por Operador</h2>
+    <p class="sub">Setor de Separação · Acompanhamento individual de HH (Caixas/Hora) contra a meta de ${fmtN.format(metaHh)} cx/h.${esc(sepAtualizadoTxt())}</p>
+
+    <div class="grid kpis">
+      ${kpi('Acima da Meta (≥ ' + metaHh + ' HH)', `<span style="color:var(--ok)">${fmtN.format(acimaMeta.length)}</span>`, `${fmtP(opsAll.length ? (acimaMeta.length / opsAll.length) * 100 : 0, 1)} da equipe (${fmtN.format(abaixoMeta.length)} abaixo)`, 'hl')}
+      ${kpi('Líder em Produtividade (HH)', melhorOp ? `<span style="color:var(--accent-text)">${melhorOp.hh.toFixed(1)} cx/h</span>` : '—', melhorOp ? `${esc(melhorOp.operador)} (${esc(melhorOp.operacao)})` : 'Sem dados', 'hl')}
+      ${kpi('Líder em Volume Total', maiorVolOp ? fmtN.format(maiorVolOp.qtd) : '0', maiorVolOp ? `${esc(maiorVolOp.operador)} (${fmtN.format(maiorVolOp.qtdOs)} OS)` : 'Sem dados')}
+      ${kpi('Meta do Turno (' + horasTurno + 'h)', `${fmtN.format(metaHh * horasTurno)} <span style="font-size:20px;color:var(--mute)">cx/turno</span>`, `Base: ${fmtN.format(metaHh)} cx/h × ${horasTurno}h líquidas`)}
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <h3>${ICONS.trophy} Top 15 Operadores por Volume Separado (Caixas)</h3>
+      <div class="dept-hbar-list">
+        ${top15.length ? top15.map((o, idx) => {
+          const barW = maxTopQtd ? (o.qtd / maxTopQtd) * 100 : 0;
+          const barCol = o.hh >= metaHh ? '#35d49a' : (idx < 3 ? '#4285f4' : '#ffb020');
+          return `
+          <div class="dept-hbar-row" title="${esc(o.operador)} (${esc(o.operacao)}): ${fmtN.format(o.qtd)} cx | HH: ${o.hh.toFixed(1)}">
+            <div class="dept-hbar-name">${esc(o.operador)}</div>
+            <div class="dept-hbar-track">
+              <div class="dept-hbar-fill" style="width:${Math.max(barW, 3)}%;background:${barCol}"></div>
+            </div>
+            <div class="dept-hbar-val">
+              <span style="color:var(--text-strong)">${fmtN.format(o.qtd)}</span>
+              <span style="color:${o.hh >= metaHh ? 'var(--ok)' : 'var(--warn)'};font-size:13px;margin-left:6px">${o.hh.toFixed(1)} HH</span>
+            </div>
+          </div>`;
+        }).join('') : '<p style="color:var(--mute)">Sem dados de operadores.</p>'}
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-header-action">
+        <h3>${ICONS.users} PERFORMANCE INDIVIDUAL DOS OPERADORES (${fmtN.format(lista.length)} REGISTROS)</h3>
+        <div class="prod-controls">
+          <select id="selSepOpOrdem">
+            <option value="hh" ${sepOpOrdem === 'hh' ? 'selected' : ''}>Ordem: maior HH (cx/hora)</option>
+            <option value="qtd" ${sepOpOrdem === 'qtd' ? 'selected' : ''}>Ordem: maior volume separado</option>
+            <option value="os" ${sepOpOrdem === 'os' ? 'selected' : ''}>Ordem: maior qtd de OS</option>
+            <option value="nome" ${sepOpOrdem === 'nome' ? 'selected' : ''}>Ordem: nome (A-Z)</option>
+          </select>
+          <input type="text" id="inputSearchSepOp" placeholder="Buscar operador, modalidade, turno..." value="${esc(searchSepOp)}" style="width:280px">
+        </div>
+      </div>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Operador</th>
+              <th>Modalidade</th>
+              <th>Turno</th>
+              <th class="r">OS / Reg.</th>
+              <th class="r">Horas</th>
+              <th class="r">Qtd Separada</th>
+              <th class="r">HH Real</th>
+              <th class="r">% Meta (${metaHh})</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${lista.length ? lista.map((o, idx) => {
+              const ok = o.hh >= metaHh;
+              return `
+              <tr>
+                <td style="color:var(--mute);font-weight:700">${idx + 1}º</td>
+                <td><b>${esc(o.operador)}</b></td>
+                <td><span class="dot" style="background:${OP_COR[o.operacao] || 'var(--blue)'}"></span>${esc(o.operacao)}</td>
+                <td>${esc(o.turno)}</td>
+                <td class="r">${fmtN.format(o.qtdOs)}</td>
+                <td class="r">${o.horasTrabalhadas.toFixed(1)}h</td>
+                <td class="r" style="font-weight:700">${fmtN.format(o.qtd)}</td>
+                <td class="r" style="color:${ok ? 'var(--ok)' : 'var(--warn)'};font-weight:800">${o.hh.toFixed(1)}</td>
+                <td class="r">${fmtP(o.pctMeta, 0)}</td>
+                <td>${ok ? '<span class="badge-pill badge-verba-sim">NA META</span>' : '<span class="badge-pill badge-verba-nao">ABAIXO</span>'}</td>
+              </tr>`;
+            }).join('') : '<tr><td colspan="10">Nenhum operador encontrado.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  const selO = $('#selSepOpOrdem');
+  if (selO) selO.addEventListener('change', e => { sepOpOrdem = e.target.value; secSepOperadores(); });
+  const inS = $('#inputSearchSepOp');
+  if (inS) inS.addEventListener('input', e => {
+    searchSepOp = e.target.value;
+    secSepOperadores();
+    keepFocus('#inputSearchSepOp', () => searchSepOp);
+  });
+  attachTooltipEvents();
+}
+
 /* ================= SETORES + TABS + BARRA DE FILTROS ================= */
 const SETORES = [
   { id:'estoque', nome:'Estoque', ico:ICONS.box, tabs:[
@@ -4060,6 +4638,10 @@ const SETORES = [
   { id:'recebimento', nome:'Recebimento', ico:ICONS.inbox, tabs:[
     { id:'recebnotas', nome:`${ICONS.doc} Notas de Recebimento`, render:secRecebNotas },
     { id:'recebverba', nome:`${ICONS.dollar} Verba Logística`, render:secRecebVerba }
+  ]},
+  { id:'separacao', nome:'Separação', ico:ICONS.layers, tabs:[
+    { id:'sepgeral',      nome:`${ICONS.chart} Produtividade Geral`, render:secSepGeral },
+    { id:'sepoperadores', nome:`${ICONS.users} Ranking & Metas`,     render:secSepOperadores }
   ]}
 ];
 const TAB_RENDER = Object.fromEntries(SETORES.flatMap(s => s.tabs.map(t => [t.id, t.render])));
@@ -4206,6 +4788,21 @@ function getFilterControls(){
       {id:'r_forn',  lbl:'Fornecedor',   type:'multi',  val:recFiltro.fornecedor, all:'Todos', opts:forns,  set:v => { recFiltro.fornecedor = v; recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }}
     ];
   }
+  if ((t === 'sepgeral' || t === 'sepoperadores') && SepD) {
+    const todas = sepTodosRegistros();
+    const ops = ['Picking', 'Pulmão', 'Blocado'].map(v => ({v, l:v}));
+    const turnos = uniqSorted(todas.map(r => r.turno)).map(v => ({v, l:v}));
+    const datas = uniqSorted(todas.map(r => r.data)).map(v => ({v, l:v}));
+    const lojas = uniqSorted(todas.map(r => r.lojaDestino).filter(Boolean)).map(v => ({v, l:v}));
+    const operadores = uniqSorted(todas.map(r => r.operador).filter(Boolean)).map(v => ({v, l:v}));
+    return [
+      {id:'s_op',    lbl:'Modalidade', type:'multi', val:sepDadosFiltro.operacao, all:'Todas', opts:ops,        set:v => { sepDadosFiltro.operacao = v; sepGeralLimite = 150; }},
+      {id:'s_turno', lbl:'Turno',      type:'multi', val:sepDadosFiltro.turno,    all:'Todos', opts:turnos,     set:v => { sepDadosFiltro.turno = v;    sepGeralLimite = 150; }},
+      {id:'s_data',  lbl:'Data',       type:'multi', val:sepDadosFiltro.data,     all:'Todas', opts:datas,      set:v => { sepDadosFiltro.data = v;     sepGeralLimite = 150; }},
+      {id:'s_loja',  lbl:'Loja Dest.', type:'multi', val:sepDadosFiltro.loja,     all:'Todas', opts:lojas,      set:v => { sepDadosFiltro.loja = v;     sepGeralLimite = 150; }},
+      {id:'s_func',  lbl:'Operador',   type:'multi', val:sepDadosFiltro.operador, all:'Todos', opts:operadores, set:v => { sepDadosFiltro.operador = v; sepGeralLimite = 150; }}
+    ];
+  }
   return [];
 }
 
@@ -4219,6 +4816,7 @@ function resetTabFilters(){
   else if (t === 'transito') { admFiltro = {sentido:[], mes:[], faixa:[], loja:[]}; admLimite = 150; }
   else if (t === 'prealerta') { preFiltro = {loja:[], situacao:[], tipo:[], mes:[], stCd:[], stLoja:[]}; preLimite = 150; }
   else if (t === 'recebnotas' || t === 'recebverba') { recFiltro = {mes:[], loja:[], tipoCarga:[], statusNota:[], tipoOp:[], fornecedor:[], pagaVerba:'todos'}; recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }
+  else if (t === 'sepgeral' || t === 'sepoperadores') { sepDadosFiltro = { operacao: [], turno: [], data: [], loja: [], operador: [] }; sepGeralLimite = 150; }
 }
 
 function renderFilterBar(){
