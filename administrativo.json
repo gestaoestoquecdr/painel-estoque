@@ -33052,8 +33052,8 @@
       "valorUnitario": 542.5,
       "valorTotal": 542.5,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO RETORNO LOJA",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
@@ -33071,8 +33071,8 @@
       "valorUnitario": 500,
       "valorTotal": 500,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO RETORNO LOJA",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
@@ -33147,8 +33147,8 @@
       "valorUnitario": 372.96,
       "valorTotal": 372.96,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO RETORNO LOJA",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
@@ -33185,8 +33185,8 @@
       "valorUnitario": 349.92,
       "valorTotal": 349.92,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO RETORNO LOJA",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
@@ -33204,8 +33204,8 @@
       "valorUnitario": 2.57,
       "valorTotal": 339.24,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO RETORNO LOJA",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
@@ -33318,8 +33318,8 @@
       "valorUnitario": 180.62,
       "valorTotal": 180.62,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "AGUARDANDO SALDO CD"
     },
     {
@@ -33337,8 +33337,8 @@
       "valorUnitario": 145.2,
       "valorTotal": 145.2,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO RETORNO LOJA",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
@@ -33375,8 +33375,8 @@
       "valorUnitario": 129.22,
       "valorTotal": 129.22,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO RETORNO LOJA",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
@@ -33394,8 +33394,8 @@
       "valorUnitario": 126,
       "valorTotal": 126,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO RETORNO LOJA",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "LOJA ESTA COM PROBLEMA PARA EMITIR A NF INVERSA"
     },
     {
@@ -33546,17 +33546,17 @@
       "valorUnitario": 106.67,
       "valorTotal": 439.68,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
       "carimboDataHora": "19/11/2026 00:00:00",
       "diasSemRetorno": 4,
       "loja": "SANTANA",
-      "pedido": "SEM PEDIDO",
+      "pedido": "sem pedido",
       "dataEmissao": "",
-      "nf": "SEM NOTA",
+      "nf": "sem nota",
       "codProd": "206197",
       "prod": "LIMP MULTIUSO YPE 500ML, NATUREZA",
       "qtd": 5,
@@ -33565,8 +33565,8 @@
       "valorUnitario": 2.65,
       "valorTotal": 200.28,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33584,8 +33584,8 @@
       "valorUnitario": 3.03,
       "valorTotal": 497.88,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33603,8 +33603,8 @@
       "valorUnitario": 3.32,
       "valorTotal": 82.23,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33622,8 +33622,8 @@
       "valorUnitario": 17.92,
       "valorTotal": 202.8,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33641,8 +33641,8 @@
       "valorUnitario": 2.76,
       "valorTotal": 202.8,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33660,8 +33660,8 @@
       "valorUnitario": 9.08,
       "valorTotal": 122.94,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33679,8 +33679,8 @@
       "valorUnitario": 0.59,
       "valorTotal": 154.16,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33698,8 +33698,8 @@
       "valorUnitario": 17.51,
       "valorTotal": 318.8,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33717,8 +33717,8 @@
       "valorUnitario": 9.03,
       "valorTotal": 15.25,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33736,8 +33736,8 @@
       "valorUnitario": 1.07,
       "valorTotal": 1103.04,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33755,8 +33755,8 @@
       "valorUnitario": 1.07,
       "valorTotal": 863.04,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33774,8 +33774,8 @@
       "valorUnitario": 5.5,
       "valorTotal": 87.84,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33793,8 +33793,8 @@
       "valorUnitario": 8.05,
       "valorTotal": 4796,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33812,8 +33812,8 @@
       "valorUnitario": 1.03,
       "valorTotal": 827.28,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33831,8 +33831,8 @@
       "valorUnitario": 1.07,
       "valorTotal": 537,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33850,8 +33850,8 @@
       "valorUnitario": 17.86,
       "valorTotal": 92.88,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33869,8 +33869,8 @@
       "valorUnitario": 5.08,
       "valorTotal": 35.37,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33888,8 +33888,8 @@
       "valorUnitario": 10.86,
       "valorTotal": 188.32,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33907,8 +33907,8 @@
       "valorUnitario": 3.88,
       "valorTotal": 71.64,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33926,8 +33926,8 @@
       "valorUnitario": 19.54,
       "valorTotal": 206.82,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34154,8 +34154,8 @@
       "valorUnitario": 56,
       "valorTotal": 378.74,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34192,8 +34192,8 @@
       "valorUnitario": 152.57,
       "valorTotal": 863.04,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34211,8 +34211,8 @@
       "valorUnitario": 267.84,
       "valorTotal": 215.76,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34230,8 +34230,8 @@
       "valorUnitario": 154.56,
       "valorTotal": 277.47,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34249,8 +34249,8 @@
       "valorUnitario": 176.7,
       "valorTotal": 224.9,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34268,8 +34268,8 @@
       "valorUnitario": 132.73,
       "valorTotal": 112.56,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34287,8 +34287,8 @@
       "valorUnitario": 701.28,
       "valorTotal": 237.12,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34306,8 +34306,8 @@
       "valorUnitario": 261,
       "valorTotal": 1794,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34325,8 +34325,8 @@
       "valorUnitario": 1064.12,
       "valorTotal": 970.8,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34344,8 +34344,8 @@
       "valorUnitario": 233.19,
       "valorTotal": 3165.6,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34363,8 +34363,8 @@
       "valorUnitario": 116.88,
       "valorTotal": 1158.36,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34382,8 +34382,8 @@
       "valorUnitario": 350.64,
       "valorTotal": 235.08,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34401,8 +34401,8 @@
       "valorUnitario": 267.84,
       "valorTotal": 159.48,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34420,8 +34420,8 @@
       "valorUnitario": 133.97,
       "valorTotal": 18.41,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34439,8 +34439,8 @@
       "valorUnitario": 2.38,
       "valorTotal": 276.12,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34458,8 +34458,8 @@
       "valorUnitario": 9.81,
       "valorTotal": 7.73,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34477,8 +34477,8 @@
       "valorUnitario": 25.49,
       "valorTotal": 39.8,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34496,8 +34496,8 @@
       "valorUnitario": 9.44,
       "valorTotal": 87.26,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34515,8 +34515,8 @@
       "valorUnitario": 7.11,
       "valorTotal": 197.34,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34534,8 +34534,8 @@
       "valorUnitario": 19.99,
       "valorTotal": 198,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34553,8 +34553,8 @@
       "valorUnitario": 0.59,
       "valorTotal": 198,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34572,8 +34572,8 @@
       "valorUnitario": 4.18,
       "valorTotal": 114.16,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34591,8 +34591,8 @@
       "valorUnitario": 3.62,
       "valorTotal": 217.92,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34610,8 +34610,8 @@
       "valorUnitario": 12.88,
       "valorTotal": 91.08,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34629,8 +34629,8 @@
       "valorUnitario": 5.9,
       "valorTotal": 94.43,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34648,8 +34648,8 @@
       "valorUnitario": 11.62,
       "valorTotal": 1.41,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34667,8 +34667,8 @@
       "valorUnitario": 9.13,
       "valorTotal": 9.13,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -34691,5 +34691,5 @@
       "observacao": ""
     }
   ],
-  "ultimaAtualizacao": "2026-11-24T12:48:51.207Z"
+  "ultimaAtualizacao": "2026-11-24T13:48:48.062Z"
 }
