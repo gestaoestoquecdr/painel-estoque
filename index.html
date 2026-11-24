@@ -805,6 +805,7 @@ const CONFIG = {
   DATA_ACUMULADO_URL: "./dados_acumulado.json",
   ADMIN_URL: "./administrativo.json",
   RECEBIMENTO_URL: "./recebimento.json",
+  SEP_MANIFESTO_URL: "./dados/manifesto.json",
   SEP_PICKING_URL: "./separacao_picking.json",
   SEP_PULMAO_URL: "./separacao_pulmao.json",
   SEP_BLOCADO_URL: "./separacao_blocado.json",
@@ -1023,13 +1024,29 @@ function extractList(source) {
     const datas = uniqSorted(todas.map(r => r.data)).map(v => ({v, l:v}));
     const lojas = uniqSorted(todas.map(r => r.lojaDestino).filter(Boolean)).map(v => ({v, l:v}));
     const operadores = uniqSorted(todas.map(r => r.operador).filter(Boolean)).map(v => ({v, l:v}));
-    return [
+    const ctrls = [
       {id:'s_op',    lbl:'Modalidade', type:'multi', val:sepDadosFiltro.operacao, all:'Todas', opts:ops,        set:v => { sepDadosFiltro.operacao = v; sepGeralLimite = 150; }},
       {id:'s_turno', lbl:'Turno',      type:'multi', val:sepDadosFiltro.turno,    all:'Todos', opts:turnos,     set:v => { sepDadosFiltro.turno = v;    sepGeralLimite = 150; }},
       {id:'s_data',  lbl:'Data',       type:'multi', val:sepDadosFiltro.data,     all:'Todas', opts:datas,      set:v => { sepDadosFiltro.data = v;     sepGeralLimite = 150; }},
       {id:'s_loja',  lbl:'Loja Dest.', type:'multi', val:sepDadosFiltro.loja,     all:'Todas', opts:lojas,      set:v => { sepDadosFiltro.loja = v;     sepGeralLimite = 150; }},
       {id:'s_func',  lbl:'Operador',   type:'multi', val:sepDadosFiltro.operador, all:'Todos', opts:operadores, set:v => { sepDadosFiltro.operador = v; sepGeralLimite = 150; }}
     ];
+    if (sepMesesDisponiveis.length > 0) {
+      const mesOpts = [
+        ...sepMesesDisponiveis.map(m => ({ v: m, l: formatarChaveMesSep(m) })),
+        { v: 'TODOS', l: 'Todos os Meses (Completo)' }
+      ];
+      ctrls.unshift({
+        id: 's_mes',
+        lbl: 'Mês Base',
+        type: 'single',
+        val: sepMesSelecionado,
+        all: formatarChaveMesSep(sepMesesDisponiveis[0]),
+        opts: mesOpts,
+        set: v => { trocarMesSep(v); }
+      });
+    }
+    return ctrls;
   }
   return [];
 }
@@ -4071,6 +4088,10 @@ function secRecebVerba(){
 
 /* ================= SETOR SEPARAÇÃO (PICKING, PULMÃO E BLOCADO) ================= */
 let SepD = null;
+let sepManifesto = null;
+let sepMesesDisponiveis = [];
+let sepMesSelecionado = ''; // ex: "2026_11" ou "TODOS"
+let sepCacheMeses = {};
 let sepDadosFiltro = { operacao: [], turno: [], data: [], loja: [], operador: [] };
 let searchSepGeral = '';
 let searchSepOp = '';
@@ -4078,10 +4099,157 @@ let sepGeralOrdem = 'qtd';
 let sepOpOrdem = 'hh';
 let sepGeralLimite = 150;
 
+function formatarChaveMesSep(chave) {
+  if (!chave) return '';
+  if (chave === 'TODOS') return 'Todos os Meses';
+  const parts = String(chave).split('_');
+  if (parts.length === 2) {
+    const mesNome = MAPA_MESES[parts[1]] || parts[1];
+    return `${mesNome}/${parts[0]}`;
+  }
+  return chave;
+}
+
+function descompactarArquivoSep(j, opPadrao) {
+  const opNome = j.operacao || opPadrao;
+  // Suporta o formato novo em matriz (colunas + dados)
+  if (Array.isArray(j.colunas) && Array.isArray(j.dados)) {
+    const cols = j.colunas;
+    const idx = {};
+    cols.forEach((c, i) => { idx[c] = i; });
+    return j.dados.map(row => {
+      const qtd = parseNum(row[idx.qtd]);
+      return {
+        data: row[idx.data] || '',
+        turno: row[idx.turno] || '',
+        operacao: opNome,
+        lojaCd: row[idx.lojaCd] || '205',
+        lojaDestino: row[idx.lojaDestino] || '',
+        ordemServico: row[idx.ordemServico] || '',
+        dataHoraInicio: row[idx.dataHoraInicio] || '',
+        dataHoraFim: row[idx.dataHoraFim] || '',
+        tempoPausado: row[idx.tempoPausado] || '00:00',
+        tempoTotal: row[idx.tempoTotal] || '00:00',
+        operador: row[idx.operador] || 'Não identificado',
+        hora: +row[idx.hora] || 0,
+        qtd: qtd,
+        qtdConferida: parseNum(row[idx.qtdConferida] != null ? row[idx.qtdConferida] : qtd),
+        qtdPedida: parseNum(row[idx.qtdPedida] != null ? row[idx.qtdPedida] : qtd),
+        peso: parseNum(row[idx.peso]),
+        unitizadores: parseNum(row[idx.unitizadores]),
+        itens: parseNum(row[idx.itens])
+      };
+    });
+  }
+  // Fallback para o formato antigo (array de objetos em registros)
+  return (j.registros || []).map(r => ({
+    ...r,
+    operacao: r.operacao || opNome,
+    qtd: parseNum(r.qtd),
+    qtdConferida: parseNum(r.qtdConferida != null ? r.qtdConferida : r.qtd),
+    qtdPedida: parseNum(r.qtdPedida != null ? r.qtdPedida : r.qtd),
+    peso: parseNum(r.peso),
+    unitizadores: parseNum(r.unitizadores),
+    itens: parseNum(r.itens),
+    hora: +r.hora || 0
+  }));
+}
+
+async function carregarMesSep(chaveMes) {
+  if (!sepManifesto || !sepManifesto.operacoes) return;
+  const timestamp = new Date().getTime();
+  const fetchOpts = { method: 'GET', headers: { 'Cache-Control': 'no-cache' } };
+  const mesesParaCarregar = chaveMes === 'TODOS' ? sepMesesDisponiveis : [chaveMes];
+
+  const promessas = [];
+  mesesParaCarregar.forEach(m => {
+    if (sepCacheMeses[m] && m !== sepMesesDisponiveis[0]) return; // Usa cache para meses antigos já baixados
+    const listaArquivosMes = [];
+    Object.values(sepManifesto.operacoes).forEach(opObj => {
+      const infoMes = opObj.meses && opObj.meses[m];
+      if (infoMes && Array.isArray(infoMes.arquivos)) {
+        infoMes.arquivos.forEach(arq => listaArquivosMes.push({ path: arq, op: opObj.operacao }));
+      }
+    });
+
+    promessas.push((async () => {
+      const resultados = await Promise.all(listaArquivosMes.map(async item => {
+        const cleanPath = item.path.startsWith('./') ? item.path : `./${item.path}`;
+        const res = await fetch(`${cleanPath}?v=${timestamp}`, fetchOpts).catch(() => null);
+        if (!res || !res.ok) return { regs: [], metas: null, att: '' };
+        const j = await res.json();
+        return {
+          regs: descompactarArquivoSep(j, item.op),
+          metas: j.metas || null,
+          att: j.ultimaAtualizacao || ''
+        };
+      }));
+      sepCacheMeses[m] = resultados;
+    })());
+  });
+
+  await Promise.all(promessas);
+
+  const todosRegs = [];
+  let metasEncontradas = null;
+  let ultimaAtt = sepManifesto.ultimaAtualizacao || '';
+
+  mesesParaCarregar.forEach(m => {
+    const blocos = sepCacheMeses[m] || [];
+    blocos.forEach(b => {
+      for (let i = 0; i < b.regs.length; i++) todosRegs.push(b.regs[i]);
+      if (!metasEncontradas && b.metas) metasEncontradas = b.metas;
+      if (b.att && b.att > ultimaAtt) ultimaAtt = b.att;
+    });
+  });
+
+  SepD = {
+    todos: todosRegs,
+    metas: metasEncontradas || { hh: 100, horasTurno: 7 },
+    ultimaAtualizacao: ultimaAtt
+  };
+}
+
+async function trocarMesSep(novoMes) {
+  if (!novoMes || novoMes === sepMesSelecionado) return;
+  sepMesSelecionado = novoMes;
+  sepDadosFiltro.data = [];
+  sepGeralLimite = 150;
+  $('#srctxt').textContent = `Carregando ${formatarChaveMesSep(novoMes)}...`;
+  await carregarMesSep(novoMes);
+  if (D && D.when) $('#srctxt').textContent = D.when;
+  render();
+}
+
 async function loadSeparacaoData() {
   try {
     const timestamp = new Date().getTime();
     const fetchOpts = { method: 'GET', headers: { 'Cache-Control': 'no-cache' } };
+    const resMan = await fetch(`${CONFIG.SEP_MANIFESTO_URL}?v=${timestamp}`, fetchOpts).catch(() => null);
+
+    if (resMan && resMan.ok) {
+      sepManifesto = await resMan.json();
+      const setMeses = new Set();
+      if (sepManifesto && sepManifesto.operacoes) {
+        Object.values(sepManifesto.operacoes).forEach(opObj => {
+          if (opObj && opObj.meses) {
+            Object.keys(opObj.meses).forEach(m => setMeses.add(m));
+          }
+        });
+      }
+      // Ordena do mais recente para o mais antigo (ex: 2026_11, 2026_10...)
+      sepMesesDisponiveis = Array.from(setMeses).sort((a, b) => b.localeCompare(a));
+
+      if (sepMesesDisponiveis.length > 0) {
+        if (!sepMesSelecionado || (sepMesSelecionado !== 'TODOS' && !sepMesesDisponiveis.includes(sepMesSelecionado))) {
+          sepMesSelecionado = sepMesesDisponiveis[0]; // Abre automaticamente no mês mais recente
+        }
+        await carregarMesSep(sepMesSelecionado);
+        return;
+      }
+    }
+
+    // Fallback caso o manifesto ainda não tenha sido gerado
     const [resPick, resPulm, resBloc] = await Promise.all([
       fetch(`${CONFIG.SEP_PICKING_URL}?v=${timestamp}`, fetchOpts).catch(() => null),
       fetch(`${CONFIG.SEP_PULMAO_URL}?v=${timestamp}`, fetchOpts).catch(() => null),
@@ -4091,18 +4259,7 @@ async function loadSeparacaoData() {
     const parseSep = async (res, opNome) => {
       if (!res || !res.ok) return { registros: [], ultimaAtualizacao: '', metas: null };
       const j = await res.json();
-      const regs = (j.registros || []).map(r => ({
-        ...r,
-        operacao: r.operacao || opNome,
-        qtd: parseNum(r.qtd),
-        qtdConferida: parseNum(r.qtdConferida != null ? r.qtdConferida : r.qtd),
-        qtdPedida: parseNum(r.qtdPedida != null ? r.qtdPedida : r.qtd),
-        peso: parseNum(r.peso),
-        unitizadores: parseNum(r.unitizadores),
-        itens: parseNum(r.itens),
-        hora: +r.hora || 0
-      }));
-      return { registros: regs, ultimaAtualizacao: j.ultimaAtualizacao || '', metas: j.metas || null };
+      return { registros: descompactarArquivoSep(j, opNome), ultimaAtualizacao: j.ultimaAtualizacao || '', metas: j.metas || null };
     };
 
     const [dPick, dPulm, dBloc] = await Promise.all([
@@ -4113,9 +4270,6 @@ async function loadSeparacaoData() {
 
     const datasAtt = [dPick.ultimaAtualizacao, dPulm.ultimaAtualizacao, dBloc.ultimaAtualizacao].filter(Boolean).sort();
     SepD = {
-      picking: dPick.registros,
-      pulmao: dPulm.registros,
-      blocado: dBloc.registros,
       todos: [...dPick.registros, ...dPulm.registros, ...dBloc.registros],
       metas: dPick.metas || dPulm.metas || dBloc.metas || { hh: 100, horasTurno: 7 },
       ultimaAtualizacao: datasAtt.length ? datasAtt[datasAtt.length - 1] : ''
@@ -4309,7 +4463,7 @@ function secSepGeral() {
 
   el.innerHTML = `
     <h2>Separação · Picking, Pulmão & Blocado</h2>
-    <p class="sub">Setor de Separação · Monitoramento consolidado dos 3 fluxos operacionais (separacao_picking, separacao_pulmao e separacao_blocado).${esc(sepAtualizadoTxt())}</p>
+    <p class="sub">Setor de Separação · Monitoramento dos 3 fluxos operacionais (Picking, Pulmão e Blocado) · Período ativo: <b>${esc(formatarChaveMesSep(sepMesSelecionado) || 'Atual')}</b>.${esc(sepAtualizadoTxt())}</p>
 
     <div class="grid kpis">
       ${kpi('Volume Total Separado', fmtN.format(totQtd), `${fmtN.format(osUnicas)} OS · Conferido: ${fmtN.format(totConf)} (${fmtP(acuracidade)})`, 'hl')}
@@ -4835,7 +4989,7 @@ function renderFilterBar(){
         ativos.push({ctrl:c, val:v, label:opt ? opt.l : v});
       });
     } else {
-      const def = c.id === 'c_st' ? 'pendente' : 'todos';
+      const def = c.id === 'c_st' ? 'pendente' : (c.id === 's_mes' ? sepMesesDisponiveis[0] : 'todos');
       if (c.val && c.val !== def) {
         const opt = c.opts.find(o => String(o.v) === String(c.val));
         ativos.push({ctrl:c, val:c.val, label:opt ? opt.l : c.val});
@@ -4848,7 +5002,7 @@ function renderFilterBar(){
       <span class="gf-title">${ICONS.filter} Filtros</span>
       ${ctrls.map(c => {
         if (c.type === 'single') {
-          const def = c.id === 'c_st' ? 'pendente' : 'todos';
+          const def = c.id === 'c_st' ? 'pendente' : (c.id === 's_mes' ? sepMesesDisponiveis[0] : 'todos');
           const on = c.val && c.val !== def;
           const allOpt = c.opts.some(o => o.v === 'todos') ? '' : `<option value="todos">${esc(c.all)}</option>`;
           return `<label class="gf ${on ? 'on' : ''}">
@@ -4913,7 +5067,10 @@ function renderFilterBar(){
 
   bar.querySelectorAll('select[data-gf]').forEach(sel => sel.addEventListener('change', () => {
     const c = ctrls.find(x => x.id === sel.dataset.gf);
-    if (c) { c.set(sel.value); render(); }
+    if (c) {
+      c.set(sel.value);
+      if (c.id !== 's_mes') render();
+    }
   }));
 
   bar.querySelectorAll('.ms-btn').forEach(btn => btn.addEventListener('click', (e) => {
@@ -4974,7 +5131,9 @@ function renderFilterBar(){
       const next = (a.ctrl.val || []).filter(v => String(v) !== String(a.val));
       a.ctrl.set(next);
     } else {
-      a.ctrl.set(a.ctrl.id === 'c_st' ? 'pendente' : 'todos');
+      const defVal = a.ctrl.id === 'c_st' ? 'pendente' : (a.ctrl.id === 's_mes' ? sepMesesDisponiveis[0] : 'todos');
+      a.ctrl.set(defVal);
+      if (a.ctrl.id === 's_mes') return;
     }
     render();
   }));
