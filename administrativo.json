@@ -33223,8 +33223,8 @@
       "valorUnitario": 289,
       "valorTotal": 289,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "AGUARDANDO SALDO CD"
     },
     {
@@ -34691,5 +34691,5 @@
       "observacao": ""
     }
   ],
-  "ultimaAtualizacao": "2026-11-24T11:49:06.360Z"
+  "ultimaAtualizacao": "2026-11-24T12:48:51.207Z"
 }
