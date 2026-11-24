@@ -1,0 +1,287 @@
+{
+  "operacoes": {
+    "picking": {
+      "operacao": "Picking",
+      "meses": {
+        "2026_01": {
+          "registros": 14896,
+          "arquivos": [
+            "dados/picking_2026_01_p1.json",
+            "dados/picking_2026_01_p2.json",
+            "dados/picking_2026_01_p3.json"
+          ]
+        },
+        "2026_02": {
+          "registros": 13842,
+          "arquivos": [
+            "dados/picking_2026_02_p1.json",
+            "dados/picking_2026_02_p2.json",
+            "dados/picking_2026_02_p3.json"
+          ]
+        },
+        "2026_03": {
+          "registros": 19211,
+          "arquivos": [
+            "dados/picking_2026_03_p1.json",
+            "dados/picking_2026_03_p2.json",
+            "dados/picking_2026_03_p3.json"
+          ]
+        },
+        "2026_04": {
+          "registros": 13312,
+          "arquivos": [
+            "dados/picking_2026_04_p1.json",
+            "dados/picking_2026_04_p2.json",
+            "dados/picking_2026_04_p3.json"
+          ]
+        },
+        "2026_05": {
+          "registros": 7276,
+          "arquivos": [
+            "dados/picking_2026_05_p1.json",
+            "dados/picking_2026_05_p2.json"
+          ]
+        },
+        "2026_06": {
+          "registros": 13818,
+          "arquivos": [
+            "dados/picking_2026_06_p1.json",
+            "dados/picking_2026_06_p2.json",
+            "dados/picking_2026_06_p3.json"
+          ]
+        },
+        "2026_07": {
+          "registros": 32968,
+          "arquivos": [
+            "dados/picking_2026_07_p1.json",
+            "dados/picking_2026_07_p2.json",
+            "dados/picking_2026_07_p3.json",
+            "dados/picking_2026_07_p4.json",
+            "dados/picking_2026_07_p5.json",
+            "dados/picking_2026_07_p6.json"
+          ]
+        },
+        "2026_08": {
+          "registros": 36365,
+          "arquivos": [
+            "dados/picking_2026_08_p1.json",
+            "dados/picking_2026_08_p2.json",
+            "dados/picking_2026_08_p3.json",
+            "dados/picking_2026_08_p4.json",
+            "dados/picking_2026_08_p5.json",
+            "dados/picking_2026_08_p6.json"
+          ]
+        },
+        "2026_09": {
+          "registros": 90545,
+          "arquivos": [
+            "dados/picking_2026_09_p1.json",
+            "dados/picking_2026_09_p2.json",
+            "dados/picking_2026_09_p3.json",
+            "dados/picking_2026_09_p4.json",
+            "dados/picking_2026_09_p5.json",
+            "dados/picking_2026_09_p6.json",
+            "dados/picking_2026_09_p7.json",
+            "dados/picking_2026_09_p8.json",
+            "dados/picking_2026_09_p9.json",
+            "dados/picking_2026_09_p10.json",
+            "dados/picking_2026_09_p11.json",
+            "dados/picking_2026_09_p12.json",
+            "dados/picking_2026_09_p13.json",
+            "dados/picking_2026_09_p14.json"
+          ]
+        },
+        "2026_10": {
+          "registros": 28581,
+          "arquivos": [
+            "dados/picking_2026_10_p1.json",
+            "dados/picking_2026_10_p2.json",
+            "dados/picking_2026_10_p3.json",
+            "dados/picking_2026_10_p4.json",
+            "dados/picking_2026_10_p5.json"
+          ]
+        },
+        "2026_11": {
+          "registros": 24591,
+          "arquivos": [
+            "dados/picking_2026_11_p1.json",
+            "dados/picking_2026_11_p2.json",
+            "dados/picking_2026_11_p3.json",
+            "dados/picking_2026_11_p4.json"
+          ]
+        }
+      }
+    },
+    "pulmao": {
+      "operacao": "Pulmão",
+      "meses": {
+        "2026_01": {
+          "registros": 3015,
+          "arquivos": [
+            "dados/pulmao_2026_01.json"
+          ]
+        },
+        "2026_02": {
+          "registros": 2134,
+          "arquivos": [
+            "dados/pulmao_2026_02.json"
+          ]
+        },
+        "2026_03": {
+          "registros": 1885,
+          "arquivos": [
+            "dados/pulmao_2026_03.json"
+          ]
+        },
+        "2026_04": {
+          "registros": 2142,
+          "arquivos": [
+            "dados/pulmao_2026_04.json"
+          ]
+        },
+        "2026_05": {
+          "registros": 3546,
+          "arquivos": [
+            "dados/pulmao_2026_05.json"
+          ]
+        },
+        "2026_06": {
+          "registros": 3003,
+          "arquivos": [
+            "dados/pulmao_2026_06.json"
+          ]
+        },
+        "2026_07": {
+          "registros": 2799,
+          "arquivos": [
+            "dados/pulmao_2026_07.json"
+          ]
+        },
+        "2026_08": {
+          "registros": 6801,
+          "arquivos": [
+            "dados/pulmao_2026_08_p1.json",
+            "dados/pulmao_2026_08_p2.json"
+          ]
+        },
+        "2026_09": {
+          "registros": 3810,
+          "arquivos": [
+            "dados/pulmao_2026_09.json"
+          ]
+        },
+        "2026_10": {
+          "registros": 2569,
+          "arquivos": [
+            "dados/pulmao_2026_10.json"
+          ]
+        },
+        "2026_11": {
+          "registros": 2984,
+          "arquivos": [
+            "dados/pulmao_2026_11.json"
+          ]
+        }
+      }
+    },
+    "blocado": {
+      "operacao": "Blocado",
+      "meses": {
+        "2026_01": {
+          "registros": 3725,
+          "arquivos": [
+            "dados/blocado_2026_01.json"
+          ]
+        },
+        "2026_02": {
+          "registros": 26226,
+          "arquivos": [
+            "dados/blocado_2026_02_p1.json",
+            "dados/blocado_2026_02_p2.json",
+            "dados/blocado_2026_02_p3.json",
+            "dados/blocado_2026_02_p4.json",
+            "dados/blocado_2026_02_p5.json"
+          ]
+        },
+        "2026_03": {
+          "registros": 34354,
+          "arquivos": [
+            "dados/blocado_2026_03_p1.json",
+            "dados/blocado_2026_03_p2.json",
+            "dados/blocado_2026_03_p3.json",
+            "dados/blocado_2026_03_p4.json",
+            "dados/blocado_2026_03_p5.json",
+            "dados/blocado_2026_03_p6.json"
+          ]
+        },
+        "2026_04": {
+          "registros": 29433,
+          "arquivos": [
+            "dados/blocado_2026_04_p1.json",
+            "dados/blocado_2026_04_p2.json",
+            "dados/blocado_2026_04_p3.json",
+            "dados/blocado_2026_04_p4.json",
+            "dados/blocado_2026_04_p5.json"
+          ]
+        },
+        "2026_05": {
+          "registros": 43460,
+          "arquivos": [
+            "dados/blocado_2026_05_p1.json",
+            "dados/blocado_2026_05_p2.json",
+            "dados/blocado_2026_05_p3.json",
+            "dados/blocado_2026_05_p4.json",
+            "dados/blocado_2026_05_p5.json",
+            "dados/blocado_2026_05_p6.json",
+            "dados/blocado_2026_05_p7.json"
+          ]
+        },
+        "2026_06": {
+          "registros": 30848,
+          "arquivos": [
+            "dados/blocado_2026_06_p1.json",
+            "dados/blocado_2026_06_p2.json",
+            "dados/blocado_2026_06_p3.json",
+            "dados/blocado_2026_06_p4.json",
+            "dados/blocado_2026_06_p5.json"
+          ]
+        },
+        "2026_07": {
+          "registros": 24090,
+          "arquivos": [
+            "dados/blocado_2026_07_p1.json",
+            "dados/blocado_2026_07_p2.json",
+            "dados/blocado_2026_07_p3.json",
+            "dados/blocado_2026_07_p4.json"
+          ]
+        },
+        "2026_08": {
+          "registros": 5725,
+          "arquivos": [
+            "dados/blocado_2026_08.json"
+          ]
+        },
+        "2026_09": {
+          "registros": 2856,
+          "arquivos": [
+            "dados/blocado_2026_09.json"
+          ]
+        },
+        "2026_10": {
+          "registros": 9822,
+          "arquivos": [
+            "dados/blocado_2026_10_p1.json",
+            "dados/blocado_2026_10_p2.json"
+          ]
+        },
+        "2026_11": {
+          "registros": 1795,
+          "arquivos": [
+            "dados/blocado_2026_11.json"
+          ]
+        }
+      }
+    }
+  },
+  "ultimaAtualizacao": "2026-11-24T20:16:39.886Z"
+}
