@@ -4012,990 +4012,2142 @@ function secRecebVerba(){
   `;
 
   document.querySelectorAll('[data-verba-forn]').forEach(el => el.addEventListener('click', () => {
+
     toggleArr(recFiltro.fornecedor, el.getAttribute('data-verba-forn'));
+
     verbaLimite = 150;
+
     semVerbaLimite = 150;
+
     secRecebVerba();
+
   }));
+
+
 
   document.querySelectorAll('[data-verba-mes]').forEach(el => el.addEventListener('click', () => {
+
     toggleArr(recFiltro.mes, el.getAttribute('data-verba-mes'));
+
     verbaLimite = 150;
+
     semVerbaLimite = 150;
+
     secRecebVerba();
+
   }));
 
+
+
   const btnToggleSem = $('#btnToggleSemVerba');
+
   if (btnToggleSem) btnToggleSem.addEventListener('click', () => {
+
     semVerbaExpanded = !semVerbaExpanded;
+
     secRecebVerba();
+
   });
+
+
 
   const selSemO = $('#selSemVerbaOrdem');
+
   if (selSemO) selSemO.addEventListener('change', e => { semVerbaOrdem = e.target.value; semVerbaLimite = 150; secRecebVerba(); });
+
   const inSem = $('#inputSearchSemVerba');
+
   if (inSem) inSem.addEventListener('input', e => {
+
     searchSemVerba = e.target.value; semVerbaLimite = 150;
+
     secRecebVerba();
+
     keepFocus('#inputSearchSemVerba', () => searchSemVerba);
+
   });
+
   const bmSem = $('#btnMoreSemVerba');
+
   if (bmSem) bmSem.addEventListener('click', () => { semVerbaLimite += 150; secRecebVerba(); });
 
+
+
   const selO = $('#selVerbaOrdem');
+
   if (selO) selO.addEventListener('change', e => { verbaOrdem = e.target.value; verbaLimite = 150; secRecebVerba(); });
+
   const inS = $('#inputSearchRecVerba');
+
   if (inS) inS.addEventListener('input', e => {
+
     searchRecVerba = e.target.value; verbaLimite = 150;
+
     secRecebVerba();
+
     keepFocus('#inputSearchRecVerba', () => searchRecVerba);
+
   });
+
   const bm = $('#btnMoreRecVerba');
+
   if (bm) bm.addEventListener('click', () => { verbaLimite += 150; secRecebVerba(); });
+
   attachTooltipEvents();
+
 }
+
+
+
 
 
 //* ================= SETOR SEPARAÇÃO (SEPARAÇÃO FRACIONADO & FULL) ================= */
+
 let SepD = null;
+
 let sepManifesto = null;
+
 let sepMesesDisponiveis = [];
+
 let sepMesSelecionado = ''; // ex: "2026_11" ou "TODOS"
+
 let sepCacheMeses = {};
+
 let sepDadosFiltro = { operacao: [], turno: [], data: [], loja: [], operador: [] };
+
 let searchSepAnual = '';
+
 let searchSepOp = '';
+
 let sepAnualOrdem = 'qtd';
+
 let sepOpOrdem = 'hh';
+
 let sepAnualLimite = 150;
+
 let sepAnualModalidade = 'TODAS'; // 'TODAS' | 'Separação Fracionado' | 'Full'
+
 let sepAnualCarregando = false;
+
 let sepHoraModo = 'COMPARATIVO'; // 'COMPARATIVO' | 'ATUAL' | 'ANTERIOR'
+
 let sepHoraFluxoGrafico = 'FRAC'; // 'FRAC' | 'FULL'
 
+
+
 function normalizarOpSep(op) {
+
   const s = String(op || '').trim();
+
   const low = s.toLowerCase();
+
   if (!s) return 'Separação Fracionado';
+
   if (low.includes('full') || low.includes('pulm') || low.includes('palet')) return 'Full';
+
   if (low.includes('frac') || low.includes('pick') || low.includes('cross') || low.includes('bloc')) return 'Separação Fracionado';
+
   return 'Separação Fracionado';
+
 }
+
+
 
 function isFullOp(op) {
+
   return normalizarOpSep(op) === 'Full';
+
 }
+
+
 
 function medicaoPrincipalReg(r) {
+
   return isFullOp(r.operacao) ? 1 : (r.qtd || 0);
+
 }
+
+
 
 function labelUnidadeOp(op) {
+
   return isFullOp(op) ? 'paletes (linhas)' : 'caixas';
+
 }
+
+
 
 function siglaUnidadeOp(op) {
+
   return isFullOp(op) ? 'plt' : 'cx';
+
 }
+
+
 
 function formatarChaveMesSep(chave) {
+
   if (!chave) return '';
+
   if (chave === 'TODOS') return 'Todos os Meses (Ano Completo)';
+
   const parts = String(chave).split('_');
+
   if (parts.length === 2) {
+
     const mesNome = MAPA_MESES[parts[1]] || parts[1];
+
     return `${mesNome}/${parts[0]}`;
+
   }
+
   return chave;
+
 }
+
+
 
 function extrairMesChaveDeData(dtStr) {
+
   const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(dtStr || '').trim());
+
   return m ? `${m[3]}_${m[2]}` : 'Sem_Data';
+
 }
+
+
 
 function chaveDataOrdenavel(dtStr) {
+
   const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(dtStr || '').trim());
+
   if (m) return `${m[3]}${m[2]}${m[1]}`;
+
   const parts = String(dtStr || '').split('/');
+
   if (parts.length === 3) return parts.slice().reverse().join('');
+
   return String(dtStr || '');
+
 }
+
+
 
 function getDatasOrdenadasDesc(rows) {
+
   return Array.from(new Set(rows.map(r => r.data).filter(Boolean)))
+
     .sort((a, b) => chaveDataOrdenavel(b).localeCompare(chaveDataOrdenavel(a)));
+
 }
+
+
 
 function descompactarArquivoSep(j, opPadrao) {
+
   const opNome = normalizarOpSep(j.operacao || opPadrao);
+
   if (Array.isArray(j.colunas) && Array.isArray(j.dados)) {
+
     const cols = j.colunas;
+
     const idx = {};
+
     cols.forEach((c, i) => { idx[c] = i; });
+
     return j.dados.map(row => {
+
       const qtd = parseNum(row[idx.qtd]);
+
       const dataStr = row[idx.data] || '';
+
       return {
+
         data: dataStr,
+
         mesChave: extrairMesChaveDeData(dataStr),
+
         turno: row[idx.turno] || '',
+
         operacao: opNome,
+
         lojaCd: row[idx.lojaCd] || '205',
+
         lojaDestino: row[idx.lojaDestino] ? getNomeLoja(row[idx.lojaDestino]) : '',
+
         ordemServico: row[idx.ordemServico] || '',
+
         dataHoraInicio: row[idx.dataHoraInicio] || '',
+
         dataHoraFim: row[idx.dataHoraFim] || '',
+
         tempoPausado: row[idx.tempoPausado] || '00:00',
+
         tempoTotal: row[idx.tempoTotal] || '00:00',
+
         operador: row[idx.operador] || 'Não identificado',
+
         hora: +row[idx.hora] || 0,
+
         qtd: qtd,
+
         qtdConferida: parseNum(row[idx.qtdConferida] != null ? row[idx.qtdConferida] : qtd),
+
         qtdPedida: parseNum(row[idx.qtdPedida] != null ? row[idx.qtdPedida] : qtd),
+
         peso: parseNum(row[idx.peso]),
+
         unitizadores: parseNum(row[idx.unitizadores]),
+
         itens: parseNum(row[idx.itens])
+
       };
+
     });
+
   }
+
   return (j.registros || []).map(r => {
+
     const qtd = parseNum(r.qtd);
+
     const dataStr = r.data || '';
+
     return {
+
       ...r,
+
       data: dataStr,
+
       mesChave: extrairMesChaveDeData(dataStr),
+
       operacao: normalizarOpSep(r.operacao || opPadrao),
+
       qtd: qtd,
+
       qtdConferida: parseNum(r.qtdConferida != null ? r.qtdConferida : qtd),
+
       qtdPedida: parseNum(r.qtdPedida != null ? r.qtdPedida : qtd),
+
       peso: parseNum(r.peso),
+
       unitizadores: parseNum(r.unitizadores),
+
       itens: parseNum(r.itens),
+
       hora: +r.hora || 0
+
     };
+
   });
+
 }
+
+
 
 async function baixarMesesParaCache(listaMeses) {
+
   if (!sepManifesto || !sepManifesto.operacoes) return;
+
   const timestamp = new Date().getTime();
+
   const fetchOpts = { method: 'GET', headers: { 'Cache-Control': 'no-cache' } };
+
   const promessas = [];
 
+
+
   listaMeses.forEach(m => {
+
     if (sepCacheMeses[m] && m !== sepMesesDisponiveis[0]) return;
+
     const listaArquivosMes = [];
+
     Object.values(sepManifesto.operacoes).forEach(opObj => {
+
       const infoMes = opObj.meses && opObj.meses[m];
+
       if (infoMes && Array.isArray(infoMes.arquivos)) {
+
         infoMes.arquivos.forEach(arq => listaArquivosMes.push({ path: arq, op: normalizarOpSep(opObj.operacao) }));
+
       }
+
     });
+
+
 
     promessas.push((async () => {
+
       const resultados = await Promise.all(listaArquivosMes.map(async item => {
+
         const cleanPath = item.path.startsWith('./') ? item.path : `./${item.path}`;
+
         const res = await fetch(`${cleanPath}?v=${timestamp}`, fetchOpts).catch(() => null);
+
         if (!res || !res.ok) return { regs: [], metas: null, att: '' };
+
         const j = await res.json();
+
         return {
+
           regs: descompactarArquivoSep(j, item.op),
+
           metas: j.metas || null,
+
           att: j.ultimaAtualizacao || ''
+
         };
+
       }));
+
       sepCacheMeses[m] = resultados;
+
     })());
+
   });
+
+
 
   await Promise.all(promessas);
+
 }
+
+
 
 async function carregarMesSep(chaveMes) {
+
   if (!sepManifesto || !sepManifesto.operacoes) return;
+
   const mesesParaCarregar = chaveMes === 'TODOS' ? sepMesesDisponiveis : [chaveMes];
+
   await baixarMesesParaCache(mesesParaCarregar);
 
+
+
   const todosRegs = [];
+
   let metasEncontradas = null;
+
   let ultimaAtt = sepManifesto.ultimaAtualizacao || '';
 
+
+
   mesesParaCarregar.forEach(m => {
+
     const blocos = sepCacheMeses[m] || [];
+
     blocos.forEach(b => {
+
       for (let i = 0; i < b.regs.length; i++) todosRegs.push(b.regs[i]);
+
       if (!metasEncontradas && b.metas) metasEncontradas = b.metas;
+
       if (b.att && b.att > ultimaAtt) ultimaAtt = b.att;
+
     });
+
   });
+
+
 
   SepD = {
+
     todos: todosRegs,
+
     metas: metasEncontradas || { hh: 100, hhFull: 15, hhPulmao: 15, horasTurno: 7 },
+
     ultimaAtualizacao: ultimaAtt
+
   };
+
 }
+
+
 
 async function garantirTodosMesesSep() {
+
   if (!sepManifesto || !sepMesesDisponiveis.length) return;
+
   const faltando = sepMesesDisponiveis.filter(m => !sepCacheMeses[m]);
+
   if (!faltando.length) return;
+
   sepAnualCarregando = true;
+
   await baixarMesesParaCache(faltando);
+
   sepAnualCarregando = false;
+
 }
+
+
 
 async function trocarMesSep(novoMes) {
+
   if (!novoMes || novoMes === sepMesSelecionado) return;
+
   sepMesSelecionado = novoMes;
+
   sepDadosFiltro.data = [];
+
   sepAnualLimite = 150;
+
   $('#srctxt').textContent = `Carregando ${formatarChaveMesSep(novoMes)}...`;
+
   await carregarMesSep(novoMes);
+
   if (D && D.when) $('#srctxt').textContent = D.when;
+
   render();
+
 }
+
 async function loadSeparacaoData() {
+
   try {
+
     const timestamp = new Date().getTime();
+
     const fetchOpts = { method: 'GET', headers: { 'Cache-Control': 'no-cache' } };
+
     const resMan = await fetch(`${CONFIG.SEP_MANIFESTO_URL}?v=${timestamp}`, fetchOpts).catch(() => null);
 
+
+
     if (resMan && resMan.ok) {
+
       sepManifesto = await resMan.json();
+
       const setMeses = new Set();
+
       if (sepManifesto && sepManifesto.operacoes) {
+
         Object.values(sepManifesto.operacoes).forEach(opObj => {
+
           if (opObj && opObj.meses) {
+
             Object.keys(opObj.meses).forEach(m => setMeses.add(m));
+
           }
+
         });
+
       }
+
      sepMesesDisponiveis = Array.from(setMeses).sort((a, b) => b.localeCompare(a));
 
+
+
       if (sepMesesDisponiveis.length > 0) {
+
         if (!sepMesSelecionado) {
+
           sepMesSelecionado = 'TODOS';
+
         } else if (sepMesSelecionado !== 'TODOS' && !sepMesesDisponiveis.includes(sepMesSelecionado)) {
+
           sepMesSelecionado = 'TODOS';
+
         }
+
         await carregarMesSep(sepMesSelecionado);
+
         return;
+
       }
+
     }
+
+
 
     // Fallback caso o manifesto ainda não tenha sido gerado
+
     const [resPick, resPulm, resBloc] = await Promise.all([
+
       fetch(`${CONFIG.SEP_PICKING_URL}?v=${timestamp}`, fetchOpts).catch(() => null),
+
       fetch(`${CONFIG.SEP_PULMAO_URL}?v=${timestamp}`, fetchOpts).catch(() => null),
+
       fetch(`${CONFIG.SEP_BLOCADO_URL}?v=${timestamp}`, fetchOpts).catch(() => null)
+
     ]);
+
+
 
     const parseSep = async (res, opNome) => {
+
       if (!res || !res.ok) return { registros: [], ultimaAtualizacao: '', metas: null };
+
       const j = await res.json();
+
       return { registros: descompactarArquivoSep(j, opNome), ultimaAtualizacao: j.ultimaAtualizacao || '', metas: j.metas || null };
+
     };
+
+
 
     const [dPick, dPulm, dBloc] = await Promise.all([
+
       parseSep(resPick, 'Separação Fracionado'),
+
       parseSep(resPulm, 'Full'),
+
       parseSep(resBloc, 'Separação Fracionado')
+
     ]);
 
+
+
     const datasAtt = [dPick.ultimaAtualizacao, dPulm.ultimaAtualizacao, dBloc.ultimaAtualizacao].filter(Boolean).sort();
+
     const todos = [...dPick.registros, ...dPulm.registros, ...dBloc.registros];
+
     sepMesesDisponiveis = Array.from(new Set(todos.map(r => r.mesChave).filter(m => m !== 'Sem_Data'))).sort((a, b) => b.localeCompare(a));
+
     if (!sepMesSelecionado && sepMesesDisponiveis.length) sepMesSelecionado = 'TODOS';
 
+
+
     const metasBase = dPick.metas || dPulm.metas || dBloc.metas || {};
+
     SepD = {
+
       todos,
+
       metas: {
+
         hh: metasBase.hh || 100,
+
         hhFull: metasBase.hhFull || metasBase.hhPulmao || 15,
+
         horasTurno: metasBase.horasTurno || 7
+
       },
+
       ultimaAtualizacao: datasAtt.length ? datasAtt[datasAtt.length - 1] : ''
+
     };
+
   } catch (e) {
+
     console.error("Erro ao carregar JSONs de separação:", e);
+
   }
+
 }
+
+
 
 function sepTodosRegistros() {
+
   return (SepD && SepD.todos) || [];
+
 }
+
+
 
 function sepRegistrosFiltrados() {
+
   return sepTodosRegistros().filter(r => {
+
     if (sepDadosFiltro.operacao.length > 0 && !hasArr(sepDadosFiltro.operacao, r.operacao)) return false;
+
     if (sepDadosFiltro.turno.length > 0 && !hasArr(sepDadosFiltro.turno, r.turno)) return false;
+
     if (sepDadosFiltro.data.length > 0 && !hasArr(sepDadosFiltro.data, r.data)) return false;
+
     if (sepDadosFiltro.loja.length > 0 && !hasArr(sepDadosFiltro.loja, r.lojaDestino)) return false;
+
     if (sepDadosFiltro.operador.length > 0 && !hasArr(sepDadosFiltro.operador, r.operador)) return false;
+
     return true;
+
   });
+
 }
+
+
 
 function tempoStrParaHoras(tStr) {
+
   if (!tStr) return 0;
+
   const parts = String(tStr).trim().split(':').map(Number);
+
   if (parts.length === 3 && !parts.some(isNaN)) return parts[0] + parts[1] / 60 + parts[2] / 3600;
+
   if (parts.length === 2 && !parts.some(isNaN)) return parts[0] + parts[1] / 60;
+
   return 0;
+
 }
+
+
 
 function sepAtualizadoTxt() {
+
   const t = SepD && SepD.ultimaAtualizacao;
+
   if (!t) return '';
+
   const d = new Date(t);
+
   return isNaN(d) ? '' : ` Base atualizada em ${d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}.`;
+
 }
+
+
 
 // Calcula HH respeitando a unidade de cada modalidade:
+
 // - Separação Fracionado -> Caixas / Hora (meta padrão: 100 cx/h)
+
 // - Full -> Paletes (Linhas) / Hora (meta padrão: 15 plt/h)
+
 function calcResumoOperadoresSep(rows, metaHhCx, horasTurno, metaHhPlt = 15) {
+
   const mapOp = {};
+
   rows.forEach(r => {
+
     const opNorm = normalizarOpSep(r.operacao);
+
     const key = `${r.operador}__${opNorm}__${r.turno}`;
+
     if (!mapOp[key]) {
+
       mapOp[key] = {
+
         operador: r.operador || 'Não identificado',
+
         operacao: opNorm,
+
         turno: r.turno || '-',
+
         osSet: new Set(),
+
         horasAtivasSet: new Set(),
+
         linhas: 0,
+
         qtd: 0,
+
         qtdConferida: 0,
+
         qtdPedida: 0,
+
         peso: 0,
+
         unitizadores: 0,
+
         itens: 0,
+
         horasTempo: 0
+
       };
+
     }
+
     const o = mapOp[key];
+
     o.linhas++;
+
     if (r.ordemServico) o.osSet.add(r.ordemServico);
+
     o.horasAtivasSet.add(`${r.data}_${r.hora}`);
+
     o.qtd += r.qtd || 0;
+
     o.qtdConferida += r.qtdConferida || 0;
+
     o.qtdPedida += r.qtdPedida || 0;
+
     o.peso += r.peso || 0;
+
     o.unitizadores += r.unitizadores || 0;
+
     o.itens += r.itens || 0;
+
     o.horasTempo += tempoStrParaHoras(r.tempoTotal);
+
   });
+
+
 
   return Object.values(mapOp).map(o => {
+
     const isFull = isFullOp(o.operacao);
+
     const horasConsideradas = o.horasTempo > 0 ? o.horasTempo : Math.max(o.horasAtivasSet.size, 1);
+
     const prodPrincipal = isFull ? o.linhas : o.qtd;
+
     const metaAplicada = isFull ? metaHhPlt : metaHhCx;
+
     const hhReal = horasConsideradas > 0 ? (prodPrincipal / horasConsideradas) : 0;
+
     const metaTurnoTotal = metaAplicada * horasTurno;
+
     const pctMeta = metaAplicada > 0 ? (hhReal / metaAplicada) * 100 : 0;
+
     return {
+
       ...o,
+
       isFull,
+
       isPulmao: isFull,
+
       prodPrincipal,
+
       unidade: isFull ? 'plt' : 'cx',
+
       metaAplicada,
+
       qtdOs: o.osSet.size || o.linhas,
+
       horasTrabalhadas: horasConsideradas,
+
       hh: hhReal,
+
       metaTurnoTotal,
+
       pctMeta
+
     };
+
   });
+
 }
+
+
 
 function buildGradeHoraPorFluxo(rowsDia, isFullFluxo, metaHhFluxo, horasTurno) {
+
   const sub = rowsDia.filter(r => isFullOp(r.operacao) === isFullFluxo);
+
   const horasComMov = Array.from(new Set(sub.map(r => Math.max(0, Math.min(23, +r.hora || 0))))).sort((a, b) => a - b);
+
   let gradeHoras = [];
+
   if (horasComMov.length > 0) {
+
     const minH = horasComMov[0];
+
     const maxH = Math.max(horasComMov[horasComMov.length - 1], minH + 6);
+
     for (let h = minH; h <= Math.min(23, maxH); h++) gradeHoras.push(h);
+
   } else {
+
     gradeHoras = [6, 7, 8, 9, 10, 11, 12, 13, 14];
+
   }
+
+
 
   const porHoraTotal = {};
+
   gradeHoras.forEach(h => { porHoraTotal[h] = 0; });
 
+
+
   const mapOp = {};
+
   sub.forEach(r => {
+
     const opNome = r.operador || 'Não identificado';
+
     const turnoNome = r.turno || '-';
+
     const key = `${opNome}__${turnoNome}`;
+
     if (!mapOp[key]) {
+
       mapOp[key] = {
+
         operador: opNome,
+
         turno: turnoNome,
+
         porHora: {},
+
         total: 0,
+
         caixas: 0,
+
         horasTempo: 0
+
       };
+
     }
+
     const item = mapOp[key];
+
     const h = Math.max(0, Math.min(23, +r.hora || 0));
+
     const val = isFullFluxo ? 1 : (r.qtd || 0);
+
     item.porHora[h] = (item.porHora[h] || 0) + val;
+
     item.total += val;
+
     item.caixas += (r.qtd || 0);
+
     item.horasTempo += tempoStrParaHoras(r.tempoTotal);
+
     if (porHoraTotal[h] !== undefined) porHoraTotal[h] += val;
+
   });
+
+
 
   const operadores = Object.values(mapOp).map(o => {
+
     const hrsEfetivas = o.horasTempo > 0 ? o.horasTempo : Math.max(Object.keys(o.porHora).length, 1);
+
     const hhCalc = hrsEfetivas > 0 ? (o.total / hrsEfetivas) : 0;
+
     const metaTurno = metaHhFluxo * horasTurno;
+
     const pctMetaTurno = metaTurno > 0 ? (o.total / metaTurno) * 100 : 0;
+
     return { ...o, hrsEfetivas, hhCalc, metaTurno, pctMetaTurno };
+
   }).sort((a, b) => b.total - a.total);
 
+
+
   const qtdOps = operadores.length;
+
   const totalUnid = sub.reduce((s, r) => s + (isFullFluxo ? 1 : (r.qtd || 0)), 0);
+
   const totalCx = sub.reduce((s, r) => s + (r.qtd || 0), 0);
+
   const metaEquipeHora = qtdOps * metaHhFluxo;
+
   const metaEquipeTurno = metaEquipeHora * horasTurno;
+
   const pctEquipeTurno = metaEquipeTurno > 0 ? (totalUnid / metaEquipeTurno) * 100 : 0;
 
+
+
   return {
+
     gradeHoras,
+
     porHoraTotal,
+
     operadores,
+
     qtdOps,
+
     totalUnid,
+
     totalCx,
+
     metaEquipeHora,
+
     metaEquipeTurno,
+
     pctEquipeTurno
+
   };
+
 }
+
+
 
 function fmtDeltaPct(atual, anterior) {
+
   if (!anterior || anterior <= 0) {
+
     return atual > 0 ? '<span class="bar-var-tag up">Novo</span>' : '<span class="bar-var-tag">—</span>';
+
   }
+
   const diff = ((atual - anterior) / anterior) * 100;
+
   const sinal = diff >= 0 ? '+' : '';
+
   return `<span class="bar-var-tag ${diff >= 0 ? 'up' : 'down'}">${sinal}${fmtP(diff, 1)}</span>`;
+
 }
+
+
 
 /* ---------- TELA INICIAL DA SEPARAÇÃO: VISÃO GERAL & ANALÍTICO (SEM POLUIÇÃO DE METAS) ---------- */
+
 function secSepAnual() {
+
   const el = $('#s-sepanual');
+
   if (!el) return;
 
+
+
   if (!SepD) {
+
     el.innerHTML = `<h2>Separação · Visão Geral & Analítico</h2><p class="sub">Carregando dados de Separação Fracionado e Full...</p>`;
+
     return;
+
   }
+
+
 
   // Se estiver no modo 'TODOS' (ano todo) e ainda houver meses não baixados no manifesto, carrega automaticamente
+
   if (sepMesSelecionado === 'TODOS' && sepManifesto && sepMesesDisponiveis.some(m => !sepCacheMeses[m]) && !sepAnualCarregando) {
+
     el.innerHTML = `<h2>Separação · Visão Geral & Analítico</h2><p class="sub">Consolidando todos os meses disponíveis (${sepMesesDisponiveis.length} meses)...</p>`;
+
     garantirTodosMesesSep().then(() => {
+
       if (activeTab === 'sepanual') secSepAnual();
+
     });
+
     return;
+
   }
+
+
 
   let baseRegs = [];
+
   if (sepMesSelecionado === 'TODOS' && sepManifesto && sepMesesDisponiveis.length > 0) {
+
     sepMesesDisponiveis.forEach(m => {
+
       const blocos = sepCacheMeses[m] || [];
+
       blocos.forEach(b => {
+
         for (let i = 0; i < b.regs.length; i++) baseRegs.push(b.regs[i]);
+
       });
+
     });
+
   } else {
+
     baseRegs = sepTodosRegistros();
+
   }
 
+
+
   const filtrados = baseRegs.filter(r => {
+
     if (sepAnualModalidade !== 'TODAS' && normalizarOpSep(r.operacao) !== sepAnualModalidade) return false;
+
     if (sepDadosFiltro.operacao.length > 0 && !hasArr(sepDadosFiltro.operacao, r.operacao)) return false;
+
     if (sepDadosFiltro.turno.length > 0 && !hasArr(sepDadosFiltro.turno, r.turno)) return false;
+
     if (sepDadosFiltro.data.length > 0 && !hasArr(sepDadosFiltro.data, r.data)) return false;
+
     if (sepDadosFiltro.loja.length > 0 && !hasArr(sepDadosFiltro.loja, r.lojaDestino)) return false;
+
     if (sepDadosFiltro.operador.length > 0 && !hasArr(sepDadosFiltro.operador, r.operador)) return false;
+
     return true;
+
   });
+
+
 
   const regsFrac = filtrados.filter(r => !isFullOp(r.operacao));
+
   const regsFull = filtrados.filter(r => isFullOp(r.operacao));
 
+
+
   const fracCx = regsFrac.reduce((s, r) => s + (r.qtd || 0), 0);
+
   const fullPlt = regsFull.length;
+
   const fullCx = regsFull.reduce((s, r) => s + (r.qtd || 0), 0);
+
   const totalCx = filtrados.reduce((s, r) => s + (r.qtd || 0), 0);
+
   const totalPeso = filtrados.reduce((s, r) => s + (r.peso || 0), 0);
+
   const osUnicas = new Set(filtrados.map(r => r.ordemServico).filter(Boolean)).size || filtrados.length;
+
   const opsUnicos = new Set(filtrados.map(r => r.operador).filter(Boolean)).size;
+
   const diasUnicos = new Set(filtrados.map(r => r.data).filter(Boolean)).size;
+
   const lojasUnicas = new Set(filtrados.map(r => r.lojaDestino).filter(Boolean)).size;
 
+
+
   // Agrupamento mês a mês em ordem cronológica
+
   const porMesMap = {};
+
   filtrados.forEach(r => {
+
     const m = r.mesChave || extrairMesChaveDeData(r.data);
+
     if (!porMesMap[m]) {
+
       porMesMap[m] = {
+
         mesChave: m,
+
         label: formatarChaveMesSep(m),
+
         fracCx: 0,
+
         fullPlt: 0,
+
         fullCx: 0,
+
         totalCx: 0,
+
         osSet: new Set(),
+
         opsSet: new Set(),
+
         diasSet: new Set()
+
       };
+
     }
+
     const obj = porMesMap[m];
+
     obj.totalCx += r.qtd || 0;
+
     if (r.ordemServico) obj.osSet.add(r.ordemServico);
+
     if (r.operador) obj.opsSet.add(r.operador);
+
     if (r.data) obj.diasSet.add(r.data);
 
+
+
     if (isFullOp(r.operacao)) {
+
       obj.fullPlt += 1;
+
       obj.fullCx += r.qtd || 0;
+
     } else {
+
       obj.fracCx += r.qtd || 0;
+
     }
+
   });
+
+
 
   const mesesCrono = Object.values(porMesMap)
+
     .filter(m => m.mesChave !== 'Sem_Data')
+
     .sort((a, b) => a.mesChave.localeCompare(b.mesChave))
+
     .map(m => ({
+
       ...m,
+
       qtdOs: m.osSet.size || (m.fracCx > 0 || m.fullPlt > 0 ? 1 : 0),
+
       qtdOps: m.opsSet.size,
+
       qtdDias: m.diasSet.size
+
     }));
 
+
+
+  // Agrupamento dia a dia em ordem cronológica decrescente (mais recente primeiro)
+
+  const porDiaMap = {};
+
+  filtrados.forEach(r => {
+
+    const dStr = r.data || 'Sem_Data';
+
+    if (!porDiaMap[dStr]) {
+
+      porDiaMap[dStr] = {
+
+        data: dStr,
+
+        sortKey: chaveDataOrdenavel(dStr),
+
+        fracCx: 0,
+
+        fullPlt: 0,
+
+        fullCx: 0,
+
+        totalCx: 0,
+
+        osSet: new Set(),
+
+        opsSet: new Set()
+
+      };
+
+    }
+
+    const obj = porDiaMap[dStr];
+
+    obj.totalCx += r.qtd || 0;
+
+    if (r.ordemServico) obj.osSet.add(r.ordemServico);
+
+    if (r.operador) obj.opsSet.add(r.operador);
+
+
+
+    if (isFullOp(r.operacao)) {
+
+      obj.fullPlt += 1;
+
+      obj.fullCx += r.qtd || 0;
+
+    } else {
+
+      obj.fracCx += r.qtd || 0;
+
+    }
+
+  });
+
+
+
+  const diasCrono = Object.values(porDiaMap)
+
+    .filter(d => d.data !== 'Sem_Data')
+
+    .sort((a, b) => b.sortKey.localeCompare(a.sortKey))
+
+    .map(d => ({
+
+      ...d,
+
+      qtdOs: d.osSet.size || (d.fracCx > 0 || d.fullPlt > 0 ? 1 : 0),
+
+      qtdOps: d.opsSet.size
+
+    }));
+
+
+
   const mediaMensalCx = mesesCrono.length ? (totalCx / mesesCrono.length) : totalCx;
+
   const mediaMensalFrac = mesesCrono.length ? (fracCx / mesesCrono.length) : fracCx;
+
   const mediaMensalPlt = mesesCrono.length ? (fullPlt / mesesCrono.length) : fullPlt;
 
+
+
   const isModoFull = sepAnualModalidade === 'Full';
+
   const isModoFrac = sepAnualModalidade === 'Separação Fracionado';
+
   const maxBarAnual = mesesCrono.length
+
     ? Math.max(...mesesCrono.map(m => isModoFull ? m.fullPlt : (isModoFrac ? m.fracCx : m.totalCx))) * 1.22
+
     : 1;
 
+
+
   // Donut de composição: Separação Fracionado vs Full (em volume de caixas)
+
   const donutItems = [
+
     {
+
       rawKey: 'Separação Fracionado',
+
       n: 'Separação Fracionado (cx)',
+
       v: fracCx,
+
       c: '#4285f4',
+
       topProd: `${fmtN.format(fracCx)} caixas · ${fmtN.format(regsFrac.length)} linhas`
+
     },
+
     {
+
       rawKey: 'Full',
+
       n: 'Full (Paletes / Linhas)',
+
       v: fullCx,
+
       c: '#a855f7',
+
       topProd: `${fmtN.format(fullPlt)} paletes · ${fmtN.format(fullCx)} caixas`
+
     }
+
   ].filter(x => x.v > 0 || x.rawKey === 'Separação Fracionado');
 
+
+
   const prevBasis = basis;
+
   basis = 'qtd';
+
   const dnHtml = donut(donutItems, fmtN.format(totalCx), 'caixas total', 'data-sep-op', sepDadosFiltro.operacao);
+
   const lgHtml = legend(donutItems, 'data-sep-op', sepDadosFiltro.operacao);
+
   basis = prevBasis;
 
+
+
   // Resumo por Turno (sem coluna de meta, foco em volume e participação)
+
   const turnosOrdem = ['1º TURNO', '2º TURNO', '3º TURNO'];
+
   const porTurno = turnosOrdem.map(t => {
+
     const sub = filtrados.filter(r => r.turno === t);
+
     const tFracCx = sub.filter(r => !isFullOp(r.operacao)).reduce((s, r) => s + (r.qtd || 0), 0);
+
     const tFullPlt = sub.filter(r => isFullOp(r.operacao)).length;
+
     const tFullCx = sub.filter(r => isFullOp(r.operacao)).reduce((s, r) => s + (r.qtd || 0), 0);
+
     const tTotalCx = sub.reduce((s, r) => s + (r.qtd || 0), 0);
+
     const tOps = new Set(sub.map(r => r.operador).filter(Boolean)).size;
+
     return { turno: t, tFracCx, tFullPlt, tFullCx, tTotalCx, tOps };
+
   });
+
+
 
   // Top Lojas Destino
+
   const lojaMap = {};
+
   filtrados.forEach(r => {
+
     const lj = r.lojaDestino || 'Sem Destino';
+
     if (!lojaMap[lj]) lojaMap[lj] = { loja: lj, cx: 0, plt: 0, osSet: new Set() };
+
     lojaMap[lj].cx += r.qtd || 0;
+
     if (isFullOp(r.operacao)) lojaMap[lj].plt += 1;
+
     if (r.ordemServico) lojaMap[lj].osSet.add(r.ordemServico);
+
   });
+
   const topLojas = Object.values(lojaMap).sort((a, b) => b.cx - a.cx).slice(0, 8);
+
   const maxLojaCx = topLojas.length ? Math.max(...topLojas.map(x => x.cx)) : 1;
 
+
+
   // Tabela analítica de registros / OS
+
   const q = searchSepAnual.trim().toLowerCase();
+
   const busca = q ? filtrados.filter(r =>
+
     String(r.operador || '').toLowerCase().includes(q) ||
+
     String(r.ordemServico || '').toLowerCase().includes(q) ||
+
     String(r.lojaDestino || '').toLowerCase().includes(q) ||
+
     String(r.operacao || '').toLowerCase().includes(q) ||
+
     String(r.turno || '').toLowerCase().includes(q)
+
   ) : filtrados;
 
+
+
   const cmp = {
+
     qtd:  (a, b) => (b.qtd || 0) - (a.qtd || 0),
+
     os:   (a, b) => String(b.ordemServico).localeCompare(String(a.ordemServico), undefined, { numeric: true }),
+
     hora: (a, b) => (b.hora || 0) - (a.hora || 0),
+
     op:   (a, b) => String(a.operador).localeCompare(String(b.operador))
+
   }[sepAnualOrdem] || (() => 0);
 
+
+
   const lista = busca.slice().sort(cmp);
+
   const mostradas = lista.slice(0, sepAnualLimite);
+
   const restam = lista.length - mostradas.length;
+
   const dica = '<span style="color:var(--mute);font-weight:500;font-size:13px">(clique para filtrar)</span>';
 
+
+
   el.innerHTML = `
+
     <h2>Separação · Visão Geral & Analítico</h2>
+
     <p class="sub">Visão analítica consolidada · Modalidades unificadas em <b>Separação Fracionado</b> (Caixas) e <b>Full</b> (Paletes/Linhas) · Período: <b>${esc(formatarChaveMesSep(sepMesSelecionado) || 'Atual')}</b>.${esc(sepAtualizadoTxt())}</p>
 
+
+
     <div class="grid kpis">
+
       ${kpi('Volume Consolidado (cx)', fmtN.format(totalCx), `Média mensal: ${fmtN.format(mediaMensalCx)} cx · ${fmtN.format(diasUnicos)} dias oper.`, 'hl')}
+
       ${kpi('Separação Fracionado', `${fmtN.format(fracCx)} <span style="font-size:18px;color:var(--mute)">cx</span>`, `${fmtP(totalCx ? (fracCx / totalCx) * 100 : 0, 1)} do volume · Média: ${fmtN.format(mediaMensalFrac)} cx/mês`, 'hl')}
+
       ${kpi('Full (Paletes)', `${fmtN.format(fullPlt)} <span style="font-size:18px;color:var(--mute)">paletes</span>`, `Equivalente a ${fmtN.format(fullCx)} cx · Média: ${fmtN.format(mediaMensalPlt)} plt/mês`)}
+
       ${kpi('Operação & Alcance', `${fmtN.format(osUnicas)} <span style="font-size:18px;color:var(--mute)">OS</span>`, `${fmtN.format(opsUnicos)} operadores · ${fmtN.format(lojasUnicas)} lojas · ${fmtN.format(totalPeso)} kg`)}
+
     </div>
 
+
+
     <div class="card" style="margin-top:20px">
+
       <div class="card-header-action">
+
         <h3>${ICONS.chart} EVOLUÇÃO MENSAL (${isModoFull ? 'PALETES FULL' : 'VOLUME EM CAIXAS'})</h3>
+
         <div class="prod-controls">
+
           <select id="selSepAnualMod" style="font-weight:700;color:var(--accent-text)">
+
             <option value="TODAS" ${sepAnualModalidade === 'TODAS' ? 'selected' : ''}>Consolidado (Volume Cx)</option>
+
             <option value="Separação Fracionado" ${sepAnualModalidade === 'Separação Fracionado' ? 'selected' : ''}>Separação Fracionado (Caixas)</option>
+
             <option value="Full" ${sepAnualModalidade === 'Full' ? 'selected' : ''}>Full (Paletes / Linhas)</option>
+
           </select>
+
         </div>
+
       </div>
+
+
 
       ${mesesCrono.length ? `
+
         <div class="bar-chart-container" style="height:295px;padding-top:62px">
+
           <div class="bar-chart-wrapper">
+
             ${mesesCrono.map((m, idx) => {
+
               const valAtual = isModoFull ? m.fullPlt : (isModoFrac ? m.fracCx : m.totalCx);
+
               const pctH = (valAtual / maxBarAnual) * 100;
+
               let tagVar = '';
+
               if (idx > 0) {
+
                 const prev = mesesCrono[idx - 1];
+
                 const valPrev = isModoFull ? prev.fullPlt : (isModoFrac ? prev.fracCx : prev.totalCx);
+
                 tagVar = fmtDeltaPct(valAtual, valPrev);
+
               }
+
               const ttItems = [
+
                 { prod: `Separação Fracionado: ${fmtN.format(m.fracCx)} cx`, sub: `Full: ${fmtN.format(m.fullPlt)} paletes (${fmtN.format(m.fullCx)} cx)` },
+
                 { prod: `Total Consolidado: ${fmtN.format(m.totalCx)} cx`, sub: `${fmtN.format(m.qtdDias)} dias · ${fmtN.format(m.qtdOs)} OS · Clique p/ abrir mês` }
+
               ];
+
               return `
+
               <div class="bar-chart-col" data-anual-mes="${esc(m.mesChave)}" style="cursor:pointer">
+
                 <div class="bar-chart-bar" style="height:${Math.max(pctH, 6)}%;${isModoFull ? 'background:linear-gradient(180deg, #a855f7 0%, #581c87 100%);border-color:rgba(216,180,254,0.5)' : ''}"
+
                      data-tooltip-title="${esc(m.label)}"
+
                      data-tooltip-color="${isModoFull ? '#a855f7' : 'var(--accent)'}"
+
                      data-tooltip-items="${JSON.stringify(ttItems).replace(/"/g, '&quot;')}">
+
                   <div class="bar-val-label">
+
                     <span>${fmtN.format(valAtual)} ${isModoFull ? 'plt' : ''}</span>
+
                     ${tagVar}
+
                   </div>
+
                 </div>
+
                 <div class="bar-date-label">${esc(m.label)}</div>
+
               </div>`;
+
             }).join('')}
+
           </div>
+
         </div>
+
       ` : '<p style="color:var(--mute);padding:20px">Nenhum dado mensal disponível no filtro atual.</p>'}
+
     </div>
+
+
 
     <div class="grid two" style="margin-top:20px">
-      <div class="card">
-        <h3>${ICONS.pie} COMPOSIÇÃO: SEPARAÇÃO FRACIONADO VS FULL ${dica}</h3>
-        <div class="donutwrap">${dnHtml}${lgHtml}</div>
-        <div class="tw" style="margin-top:12px">
-          <table>
-            <thead>
-              <tr>
-                <th>Modalidade</th>
-                <th class="r">Oper.</th>
-                <th class="r">Paletes</th>
-                <th class="r">Volume (cx)</th>
-                <th class="r">% Vol.</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="clickable-row ${isSelectedArr(sepDadosFiltro.operacao, 'Separação Fracionado') ? 'active-row' : ''}" data-sep-op="Separação Fracionado">
-                <td><span class="dot" style="background:#4285f4"></span><b>Separação Fracionado</b></td>
-                <td class="r">${fmtN.format(new Set(regsFrac.map(r => r.operador).filter(Boolean)).size)}</td>
-                <td class="r" style="color:var(--mute)">—</td>
-                <td class="r" style="font-weight:800;color:var(--accent-text)">${fmtN.format(fracCx)} cx</td>
-                <td class="r">${fmtP(totalCx ? (fracCx / totalCx) * 100 : 0, 1)}</td>
-              </tr>
-              <tr class="clickable-row ${isSelectedArr(sepDadosFiltro.operacao, 'Full') ? 'active-row' : ''}" data-sep-op="Full">
-                <td><span class="dot" style="background:#a855f7"></span><b>Full</b></td>
-                <td class="r">${fmtN.format(new Set(regsFull.map(r => r.operador).filter(Boolean)).size)}</td>
-                <td class="r" style="font-weight:800;color:#d8b4fe">${fmtN.format(fullPlt)} plt</td>
-                <td class="r" style="font-weight:700">${fmtN.format(fullCx)} cx</td>
-                <td class="r">${fmtP(totalCx ? (fullCx / totalCx) * 100 : 0, 1)}</td>
-              </tr>
-              <tr class="tot">
-                <td><b>Total Consolidado</b></td>
-                <td class="r">${fmtN.format(opsUnicos)}</td>
-                <td class="r" style="color:#d8b4fe">${fmtN.format(fullPlt)} plt</td>
-                <td class="r" style="color:var(--ok)">${fmtN.format(totalCx)} cx</td>
-                <td class="r">100,0%</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-</div>
 
-  <div class="card" style="margin-top:20px">
-      <div class="card-header-action">
-        <h3>${ICONS.calendar} TABELA MENSAL CONSOLIDADA (CLIQUE NO MÊS PARA ABRIR)</h3>
-      </div>
-      <div class="tw">
-        <table>
-          <thead>
-            <tr>
-              <th>Mês / Ano</th>
-              <th class="r">Dias Oper.</th>
-              <th class="r">OS</th>
-              <th class="r">Oper.</th>
-              <th class="r">Separação Fracionado (cx)</th>
-              <th class="r">Full (Paletes)</th>
-              <th class="r">Full (cx)</th>
-              <th class="r">Total Geral (cx)</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${mesesCrono.length ? mesesCrono.map(m => `
-              <tr class="clickable-row ${sepMesSelecionado === m.mesChave ? 'active-row' : ''}" data-anual-mes="${esc(m.mesChave)}">
-                <td><b>${esc(m.label)}</b></td>
-                <td class="r">${fmtN.format(m.qtdDias)}</td>
-                <td class="r">${fmtN.format(m.qtdOs)}</td>
-                <td class="r">${fmtN.format(m.qtdOps)}</td>
-                <td class="r" style="color:var(--blue);font-weight:700">${fmtN.format(m.fracCx)}</td>
-                <td class="r" style="color:#d8b4fe;font-weight:800">${fmtN.format(m.fullPlt)} plt</td>
-                <td class="r" style="color:var(--mute)">${fmtN.format(m.fullCx)}</td>
-                <td class="r" style="font-weight:800;color:var(--text-strong)">${fmtN.format(m.totalCx)}</td>
-              </tr>`).join('') : '<tr><td colspan="8">Nenhum mês encontrado.</td></tr>'}
-            <tr class="tot">
-              <td><b>Total Período</b></td>
-              <td class="r">${fmtN.format(diasUnicos)}</td>
-              <td class="r">${fmtN.format(osUnicas)}</td>
-              <td class="r">${fmtN.format(opsUnicos)}</td>
-              <td class="r" style="color:var(--blue)">${fmtN.format(fracCx)}</td>
-              <td class="r" style="color:#d8b4fe">${fmtN.format(fullPlt)} plt</td>
-              <td class="r">${fmtN.format(fullCx)}</td>
-              <td class="r" style="color:var(--ok)">${fmtN.format(totalCx)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    
       <div class="card">
-        <h3>${ICONS.store} DISTRIBUIÇÃO POR TURNO & TOP LOJAS</h3>
-        <div class="tw">
+
+        <h3>${ICONS.pie} COMPOSIÇÃO: SEPARAÇÃO FRACIONADO VS FULL ${dica}</h3>
+
+        <div class="donutwrap">${dnHtml}${lgHtml}</div>
+
+        <div class="tw" style="margin-top:12px">
+
           <table>
+
             <thead>
+
               <tr>
-                <th>Turno ${dica}</th>
+
+                <th>Modalidade</th>
+
                 <th class="r">Oper.</th>
-                <th class="r">Fracionado (cx)</th>
-                <th class="r">Full (plt)</th>
-                <th class="r">Total (cx)</th>
+
+                <th class="r">Paletes</th>
+
+                <th class="r">Volume (cx)</th>
+
+                <th class="r">% Vol.</th>
+
               </tr>
+
             </thead>
+
             <tbody>
-              ${porTurno.map(t => `
-                <tr class="clickable-row ${isSelectedArr(sepDadosFiltro.turno, t.turno) ? 'active-row' : ''}" data-sep-turno="${esc(t.turno)}">
-                  <td><b>${esc(t.turno)}</b></td>
-                  <td class="r">${fmtN.format(t.tOps)}</td>
-                  <td class="r" style="color:var(--blue);font-weight:700">${fmtN.format(t.tFracCx)}</td>
-                  <td class="r" style="color:#d8b4fe;font-weight:700">${fmtN.format(t.tFullPlt)} plt</td>
-                  <td class="r" style="font-weight:800">${fmtN.format(t.tTotalCx)}</td>
-                </tr>`).join('')}
+
+              <tr class="clickable-row ${isSelectedArr(sepDadosFiltro.operacao, 'Separação Fracionado') ? 'active-row' : ''}" data-sep-op="Separação Fracionado">
+
+                <td><span class="dot" style="background:#4285f4"></span><b>Separação Fracionado</b></td>
+
+                <td class="r">${fmtN.format(new Set(regsFrac.map(r => r.operador).filter(Boolean)).size)}</td>
+
+                <td class="r" style="color:var(--mute)">—</td>
+
+                <td class="r" style="font-weight:800;color:var(--accent-text)">${fmtN.format(fracCx)} cx</td>
+
+                <td class="r">${fmtP(totalCx ? (fracCx / totalCx) * 100 : 0, 1)}</td>
+
+              </tr>
+
+              <tr class="clickable-row ${isSelectedArr(sepDadosFiltro.operacao, 'Full') ? 'active-row' : ''}" data-sep-op="Full">
+
+                <td><span class="dot" style="background:#a855f7"></span><b>Full</b></td>
+
+                <td class="r">${fmtN.format(new Set(regsFull.map(r => r.operador).filter(Boolean)).size)}</td>
+
+                <td class="r" style="font-weight:800;color:#d8b4fe">${fmtN.format(fullPlt)} plt</td>
+
+                <td class="r" style="font-weight:700">${fmtN.format(fullCx)} cx</td>
+
+                <td class="r">${fmtP(totalCx ? (fullCx / totalCx) * 100 : 0, 1)}</td>
+
+              </tr>
+
+              <tr class="tot">
+
+                <td><b>Total Consolidado</b></td>
+
+                <td class="r">${fmtN.format(opsUnicos)}</td>
+
+                <td class="r" style="color:#d8b4fe">${fmtN.format(fullPlt)} plt</td>
+
+                <td class="r" style="color:var(--ok)">${fmtN.format(totalCx)} cx</td>
+
+                <td class="r">100,0%</td>
+
+              </tr>
+
             </tbody>
+
           </table>
+
         </div>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <h3>${ICONS.store} DISTRIBUIÇÃO POR TURNO & TOP LOJAS</h3>
+
+        <div class="tw">
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>Turno ${dica}</th>
+
+                <th class="r">Oper.</th>
+
+                <th class="r">Fracionado (cx)</th>
+
+                <th class="r">Full (plt)</th>
+
+                <th class="r">Total (cx)</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              ${porTurno.map(t => `
+
+                <tr class="clickable-row ${isSelectedArr(sepDadosFiltro.turno, t.turno) ? 'active-row' : ''}" data-sep-turno="${esc(t.turno)}">
+
+                  <td><b>${esc(t.turno)}</b></td>
+
+                  <td class="r">${fmtN.format(t.tOps)}</td>
+
+                  <td class="r" style="color:var(--blue);font-weight:700">${fmtN.format(t.tFracCx)}</td>
+
+                  <td class="r" style="color:#d8b4fe;font-weight:700">${fmtN.format(t.tFullPlt)} plt</td>
+
+                  <td class="r" style="font-weight:800">${fmtN.format(t.tTotalCx)}</td>
+
+                </tr>`).join('')}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+
 
         <div style="margin-top:16px">
+
           <div style="font-size:13px;font-weight:700;color:var(--mute);margin-bottom:8px;text-transform:uppercase">Top Lojas Destino (Volume em Caixas)</div>
+
           <div class="dept-hbar-list" style="grid-template-columns:minmax(0,1fr);gap:6px">
+
             ${topLojas.length ? topLojas.map(lj => {
+
               const pctL = maxLojaCx ? (lj.cx / maxLojaCx) * 100 : 0;
+
               return `
+
                 <div class="dept-hbar-row" style="grid-template-columns:minmax(220px, 260px) 1fr 145px;padding:6px 8px">
+
                 <div class="dept-hbar-name" style="white-space:normal;overflow:visible;text-overflow:clip;line-height:1.2" title="${esc(lj.loja)}">${esc(lj.loja)}</div>
+
                 <div class="dept-hbar-track"><div class="dept-hbar-fill" style="width:${Math.max(pctL, 3)}%;background:var(--accent)"></div></div>
+
                 <div class="dept-hbar-val">${fmtN.format(lj.cx)} cx <span style="color:#d8b4fe;font-size:12px;margin-left:4px">${lj.plt} plt</span></div>
+
               </div>`;
+
             }).join('') : '<p style="color:var(--mute);font-size:13px">Sem lojas no filtro atual.</p>'}
+
           </div>
+
         </div>
+
       </div>
+
     </div>
+
+
 
     <div class="card" style="margin-top:20px">
+
       <div class="card-header-action">
-        <h3>${ICONS.layers} DETALHAMENTO ANALÍTICO DE REGISTROS (${fmtN.format(lista.length)} REGISTROS)</h3>
-        <div class="prod-controls">
-          <select id="selSepAnualOrdem">
-            <option value="qtd" ${sepAnualOrdem === 'qtd' ? 'selected' : ''}>Ordem: maior volume (cx)</option>
-            <option value="os" ${sepAnualOrdem === 'os' ? 'selected' : ''}>Ordem: nº da OS</option>
-            <option value="hora" ${sepAnualOrdem === 'hora' ? 'selected' : ''}>Ordem: horário</option>
-            <option value="op" ${sepAnualOrdem === 'op' ? 'selected' : ''}>Ordem: operador (A-Z)</option>
-          </select>
-          <input type="text" id="inputSearchSepAnual" placeholder="Buscar operador, OS, loja, modalidade..." value="${esc(searchSepAnual)}" style="width:280px">
-        </div>
+
+        <h3>${ICONS.calendar} PRODUÇÃO DIÁRIA CONSOLIDADA (CLIQUE NO DIA PARA FILTRAR)</h3>
+
       </div>
+
       <div class="tw">
+
         <table>
+
           <thead>
+
             <tr>
-              <th>Modalidade</th>
+
               <th>Data</th>
-              <th>Turno</th>
-              <th>OS</th>
-              <th>Loja Destino</th>
-              <th>Operador</th>
-              <th class="r">Medida Oper.</th>
-              <th class="r">Caixas</th>
+
+              <th class="r">OS</th>
+
+              <th class="r">Oper.</th>
+
+              <th class="r">Separação Fracionado (cx)</th>
+
+              <th class="r">Full (Paletes)</th>
+
+              <th class="r">Full (cx)</th>
+
+              <th class="r">Total Geral (cx)</th>
+
             </tr>
+
           </thead>
+
           <tbody>
-            ${mostradas.length ? mostradas.map(r => {
-              const full = isFullOp(r.operacao);
-              return `
-              <tr>
-                <td><span class="dot" style="background:${full ? '#a855f7' : '#4285f4'}"></span><b>${esc(normalizarOpSep(r.operacao))}</b></td>
-                <td>${esc(r.data)}</td>
-                <td>${esc(r.turno)}</td>
-                <td><b style="color:var(--accent-text)">${esc(r.ordemServico || '-')}</b></td>
-                <td>${esc(r.lojaDestino || '-')}</td>
-                <td><b>${esc(r.operador)}</b></td>
-                <td class="r" style="font-weight:700;color:${full ? '#d8b4fe' : 'var(--accent-text)'}">${full ? '1 palete (linha)' : fmtN.format(r.qtd || 0) + ' cx'}</td>
-                <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(r.qtd || 0)}</td>
-              </tr>`;
-            }).join('') : '<tr><td colspan="8">Nenhum registro encontrado no filtro atual.</td></tr>'}
+
+            ${diasCrono.length ? diasCrono.map(d => `
+
+              <tr class="clickable-row ${isSelectedArr(sepDadosFiltro.data, d.data) ? 'active-row' : ''}" data-sep-dia="${esc(d.data)}">
+
+                <td><b>${esc(d.data)}</b></td>
+
+                <td class="r">${fmtN.format(d.qtdOs)}</td>
+
+                <td class="r">${fmtN.format(d.qtdOps)}</td>
+
+                <td class="r" style="color:var(--blue);font-weight:700">${fmtN.format(d.fracCx)}</td>
+
+                <td class="r" style="color:#d8b4fe;font-weight:800">${fmtN.format(d.fullPlt)} plt</td>
+
+                <td class="r" style="color:var(--mute)">${fmtN.format(d.fullCx)}</td>
+
+                <td class="r" style="font-weight:800;color:var(--text-strong)">${fmtN.format(d.totalCx)}</td>
+
+              </tr>`).join('') : '<tr><td colspan="7">Nenhum dia encontrado no filtro atual.</td></tr>'}
+
+            <tr class="tot">
+
+              <td><b>Total Período</b></td>
+
+              <td class="r">${fmtN.format(osUnicas)}</td>
+
+              <td class="r">${fmtN.format(opsUnicos)}</td>
+
+              <td class="r" style="color:var(--blue)">${fmtN.format(fracCx)}</td>
+
+              <td class="r" style="color:#d8b4fe">${fmtN.format(fullPlt)} plt</td>
+
+              <td class="r">${fmtN.format(fullCx)}</td>
+
+              <td class="r" style="color:var(--ok)">${fmtN.format(totalCx)}</td>
+
+            </tr>
+
           </tbody>
+
         </table>
+
       </div>
-      ${restam > 0 ? `<div style="text-align:center;margin-top:12px"><button class="btn-more" id="btnMoreSepAnual">Mostrar mais 150 (restam ${fmtN.format(restam)})</button></div>` : ''}
+
     </div>
+
+
+
+    <div class="card" style="margin-top:20px">
+
+      <div class="card-header-action">
+
+        <h3>${ICONS.calendar} TABELA MENSAL CONSOLIDADA (CLIQUE NO MÊS PARA ABRIR)</h3>
+
+      </div>
+
+      <div class="tw">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Mês / Ano</th>
+
+              <th class="r">Dias Oper.</th>
+
+              <th class="r">OS</th>
+
+              <th class="r">Oper.</th>
+
+              <th class="r">Separação Fracionado (cx)</th>
+
+              <th class="r">Full (Paletes)</th>
+
+              <th class="r">Full (cx)</th>
+
+              <th class="r">Total Geral (cx)</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            ${mesesCrono.length ? mesesCrono.map(m => `
+
+              <tr class="clickable-row ${sepMesSelecionado === m.mesChave ? 'active-row' : ''}" data-anual-mes="${esc(m.mesChave)}">
+
+                <td><b>${esc(m.label)}</b></td>
+
+                <td class="r">${fmtN.format(m.qtdDias)}</td>
+
+                <td class="r">${fmtN.format(m.qtdOs)}</td>
+
+                <td class="r">${fmtN.format(m.qtdOps)}</td>
+
+                <td class="r" style="color:var(--blue);font-weight:700">${fmtN.format(m.fracCx)}</td>
+
+                <td class="r" style="color:#d8b4fe;font-weight:800">${fmtN.format(m.fullPlt)} plt</td>
+
+                <td class="r" style="color:var(--mute)">${fmtN.format(m.fullCx)}</td>
+
+                <td class="r" style="font-weight:800;color:var(--text-strong)">${fmtN.format(m.totalCx)}</td>
+
+              </tr>`).join('') : '<tr><td colspan="8">Nenhum mês encontrado.</td></tr>'}
+
+            <tr class="tot">
+
+              <td><b>Total Período</b></td>
+
+              <td class="r">${fmtN.format(diasUnicos)}</td>
+
+              <td class="r">${fmtN.format(osUnicas)}</td>
+
+              <td class="r">${fmtN.format(opsUnicos)}</td>
+
+              <td class="r" style="color:var(--blue)">${fmtN.format(fracCx)}</td>
+
+              <td class="r" style="color:#d8b4fe">${fmtN.format(fullPlt)} plt</td>
+
+              <td class="r">${fmtN.format(fullCx)}</td>
+
+              <td class="r" style="color:var(--ok)">${fmtN.format(totalCx)}</td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="card" style="margin-top:20px">
+
+      <div class="card-header-action">
+
+        <h3>${ICONS.layers} DETALHAMENTO ANALÍTICO DE REGISTROS (${fmtN.format(lista.length)} REGISTROS)</h3>
+
+        <div class="prod-controls">
+
+          <select id="selSepAnualOrdem">
+
+            <option value="qtd" ${sepAnualOrdem === 'qtd' ? 'selected' : ''}>Ordem: maior volume (cx)</option>
+
+            <option value="os" ${sepAnualOrdem === 'os' ? 'selected' : ''}>Ordem: nº da OS</option>
+
+            <option value="hora" ${sepAnualOrdem === 'hora' ? 'selected' : ''}>Ordem: horário</option>
+
+            <option value="op" ${sepAnualOrdem === 'op' ? 'selected' : ''}>Ordem: operador (A-Z)</option>
+
+          </select>
+
+          <input type="text" id="inputSearchSepAnual" placeholder="Buscar operador, OS, loja, modalidade..." value="${esc(searchSepAnual)}" style="width:280px">
+
+        </div>
+
+      </div>
+
+      <div class="tw">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Modalidade</th>
+
+              <th>Data</th>
+
+              <th>Turno</th>
+
+              <th>OS</th>
+
+              <th>Loja Destino</th>
+
+              <th>Operador</th>
+
+              <th class="r">Medida Oper.</th>
+
+              <th class="r">Caixas</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            ${mostradas.length ? mostradas.map(r => {
+
+              const full = isFullOp(r.operacao);
+
+              return `
+
+              <tr>
+
+                <td><span class="dot" style="background:${full ? '#a855f7' : '#4285f4'}"></span><b>${esc(normalizarOpSep(r.operacao))}</b></td>
+
+                <td>${esc(r.data)}</td>
+
+                <td>${esc(r.turno)}</td>
+
+                <td><b style="color:var(--accent-text)">${esc(r.ordemServico || '-')}</b></td>
+
+                <td>${esc(r.lojaDestino || '-')}</td>
+
+                <td><b>${esc(r.operador)}</b></td>
+
+                <td class="r" style="font-weight:700;color:${full ? '#d8b4fe' : 'var(--accent-text)'}">${full ? '1 palete (linha)' : fmtN.format(r.qtd || 0) + ' cx'}</td>
+
+                <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(r.qtd || 0)}</td>
+
+              </tr>`;
+
+            }).join('') : '<tr><td colspan="8">Nenhum registro encontrado no filtro atual.</td></tr>'}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      ${restam > 0 ? `<div style="text-align:center;margin-top:12px"><button class="btn-more" id="btnMoreSepAnual">Mostrar mais 150 (restam ${fmtN.format(restam)})</button></div>` : ''}
+
+    </div>
+
   `;
 
+
+
   const selMod = $('#selSepAnualMod');
+
   if (selMod) selMod.addEventListener('change', e => {
+
     sepAnualModalidade = e.target.value;
+
     sepAnualLimite = 150;
+
     secSepAnual();
+
   });
+
+
+
+  document.querySelectorAll('[data-sep-dia]').forEach(el => el.addEventListener('click', () => {
+
+    toggleArr(sepDadosFiltro.data, el.getAttribute('data-sep-dia'));
+
+    sepAnualLimite = 150;
+
+    render();
+
+  }));
+
+
 
   document.querySelectorAll('[data-anual-mes]').forEach(el => el.addEventListener('click', async () => {
+
     const m = el.getAttribute('data-anual-mes');
+
     if (m) {
+
       await trocarMesSep(m);
+
       setActiveTab('sephora');
+
     }
+
   }));
+
+
 
   document.querySelectorAll('[data-sep-op]').forEach(el => el.addEventListener('click', () => {
+
     toggleArr(sepDadosFiltro.operacao, el.getAttribute('data-sep-op'));
+
     sepAnualLimite = 150;
+
     render();
+
   }));
+
+
 
   document.querySelectorAll('[data-sep-turno]').forEach(el => el.addEventListener('click', () => {
+
     toggleArr(sepDadosFiltro.turno, el.getAttribute('data-sep-turno'));
+
     sepAnualLimite = 150;
+
     render();
+
   }));
 
+
+
   const selO = $('#selSepAnualOrdem');
+
   if (selO) selO.addEventListener('change', e => { sepAnualOrdem = e.target.value; sepAnualLimite = 150; secSepAnual(); });
+
   const inS = $('#inputSearchSepAnual');
+
   if (inS) inS.addEventListener('input', e => {
+
     searchSepAnual = e.target.value; sepAnualLimite = 150;
+
     secSepAnual();
+
     keepFocus('#inputSearchSepAnual', () => searchSepAnual);
+
   });
+
   const bm = $('#btnMoreSepAnual');
+
   if (bm) bm.addEventListener('click', () => { sepAnualLimite += 150; secSepAnual(); });
+
   attachTooltipEvents();
+
 }
 
+
+
 /* ---------- PÁGINA DEDICADA: PRODUÇÃO HORA A HORA (DIA ATUAL E DIA ANTERIOR · FRACIONADO E FULL) ---------- */
+
 function renderBlocoFluxoHora(tituloFluxo, badgeUnid, dadosDia, corAccent, isFullFluxo) {
+
   const { gradeHoras, porHoraTotal, operadores, qtdOps, totalUnid, totalCx, metaEquipeHora, metaEquipeTurno, pctEquipeTurno } = dadosDia;
+
   const colSpanVazio = gradeHoras.length + 6;
 
+
+
   return `
+
     <div class="card" style="margin-top:20px;border-top:4px solid ${corAccent}">
+
       <div class="card-header-action">
+
         <h3>${ICONS.clock} ${esc(tituloFluxo)} (${esc(badgeUnid)})</h3>
+
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+
           <span class="badge-pill badge-lote">Operadores: ${fmtN.format(qtdOps)}</span>
+
           <span class="badge-pill badge-full">Total: ${fmtN.format(totalUnid)} ${esc(badgeUnid)}</span>
+
           ${isFullFluxo ? `<span class="badge-pill badge-verba-sim">Vol. Caixas: ${fmtN.format(totalCx)} cx</span>` : ''}
+
         </div>
+
       </div>
+
+
 
       <div class="tw" style="margin-bottom:14px">
-        <table>
-          <thead>
-            <tr>
-              <th>Resumo Equipe</th>
-              ${gradeHoras.map(h => `<th class="r">${h}hr</th>`).join('')}
-              <th class="r">Meta H.H</th>
-              <th class="r">Meta Turno</th>
-              <th class="r">Total (${esc(badgeUnid)})</th>
-              <th class="r">% Meta</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><b>PRD. HORA</b></td>
-              ${gradeHoras.map(h => `<td class="r" style="font-weight:700;color:${(porHoraTotal[h] || 0) > 0 ? 'var(--accent-text)' : 'var(--mute)'}">${fmtN.format(porHoraTotal[h] || 0)}</td>`).join('')}
-              <td class="r" style="font-weight:700">${fmtN.format(metaEquipeHora)}</td>
-              <td class="r" style="font-weight:700;color:var(--accent-text)">${fmtN.format(metaEquipeTurno)}</td>
-              <td class="r" style="font-weight:800;color:var(--ok)">${fmtN.format(totalUnid)} ${esc(badgeUnid)}</td>
-              <td class="r" style="font-weight:800;color:${pctEquipeTurno >= 100 ? 'var(--ok)' : 'var(--warn)'}">${fmtP(pctEquipeTurno, 1)}</td>
-            </tr>
-            <tr>
-              <td style="color:var(--mute);font-size:13px"><b>% Ritmo Hora</b></td>
-              ${gradeHoras.map(h => {
-                const pctH = metaEquipeHora > 0 ? ((porHoraTotal[h] || 0) / metaEquipeHora) * 100 : 0;
-                return `<td class="r" style="font-size:13px;color:${pctH >= 100 ? 'var(--ok)' : (pctH > 0 ? 'var(--warn)' : 'var(--mute)')}">${fmtP(pctH, 0)}</td>`;
-              }).join('')}
-              <td colspan="4" style="font-size:13px;color:var(--mute);text-align:right">${isFullFluxo ? `Volume em caixas no dia: <b>${fmtN.format(totalCx)} cx</b>` : `Meta unitária: <b>${fmtN.format(metaEquipeHora / Math.max(qtdOps, 1))} ${esc(badgeUnid)}/h</b>`}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Resumo Equipe</th>
+
+              ${gradeHoras.map(h => `<th class="r">${h}hr</th>`).join('')}
+
+              <th class="r">Meta H.H</th>
+
+              <th class="r">Meta Turno</th>
+
+              <th class="r">Total (${esc(badgeUnid)})</th>
+
+              <th class="r">% Meta</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr>
+
+              <td><b>PRD. HORA</b></td>
+
+              ${gradeHoras.map(h => `<td class="r" style="font-weight:700;color:${(porHoraTotal[h] || 0) > 0 ? 'var(--accent-text)' : 'var(--mute)'}">${fmtN.format(porHoraTotal[h] || 0)}</td>`).join('')}
+
+              <td class="r" style="font-weight:700">${fmtN.format(metaEquipeHora)}</td>
+
+              <td class="r" style="font-weight:700;color:var(--accent-text)">${fmtN.format(metaEquipeTurno)}</td>
+
+              <td class="r" style="font-weight:800;color:var(--ok)">${fmtN.format(totalUnid)} ${esc(badgeUnid)}</td>
+
+              <td class="r" style="font-weight:800;color:${pctEquipeTurno >= 100 ? 'var(--ok)' : 'var(--warn)'}">${fmtP(pctEquipeTurno, 1)}</td>
+
+            </tr>
+
+            <tr>
+
+              <td style="color:var(--mute);font-size:13px"><b>% Ritmo Hora</b></td>
+
+              ${gradeHoras.map(h => {
+
+                const pctH = metaEquipeHora > 0 ? ((porHoraTotal[h] || 0) / metaEquipeHora) * 100 : 0;
+
+                return `<td class="r" style="font-size:13px;color:${pctH >= 100 ? 'var(--ok)' : (pctH > 0 ? 'var(--warn)' : 'var(--mute)')}">${fmtP(pctH, 0)}</td>`;
+
+              }).join('')}
+
+              <td colspan="4" style="font-size:13px;color:var(--mute);text-align:right">${isFullFluxo ? `Volume em caixas no dia: <b>${fmtN.format(totalCx)} cx</b>` : `Meta unitária: <b>${fmtN.format(metaEquipeHora / Math.max(qtdOps, 1))} ${esc(badgeUnid)}/h</b>`}</td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
       <div class="tw" style="max-height:420px;overflow-y:auto">
         <table>
           <thead>
