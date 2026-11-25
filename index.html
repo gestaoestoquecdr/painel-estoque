@@ -5304,6 +5304,37 @@ function secSepOperadores() {
 }
 
 /* ================= SETORES + TABS + BARRA DE FILTROS ================= */
+const TURNOS_CDR = {
+  '1T': { nome: '1º Turno', inicio: '06:00', fim: '14:20', cruzaDia: false },
+  '2T': { nome: '2º Turno', inicio: '14:00', fim: '22:10', cruzaDia: false },
+  '3T': { nome: '3º Turno', inicio: '22:00', fim: '06:20', cruzaDia: true }
+};
+
+function parseHoraMinutos(valor) {
+  if (!valor) return null;
+  if (valor instanceof Date && !Number.isNaN(valor.getTime())) {
+    return valor.getHours() * 60 + valor.getMinutes();
+  }
+  const m = String(valor).match(/(\d{1,2}):(\d{2})/);
+  if (!m) return null;
+  const h = Number(m[1]);
+  const min = Number(m[2]);
+  if (h < 0 || h > 23 || min < 0 || min > 59) return null;
+  return h * 60 + min;
+}
+
+function getTurnoByHora(valor, fallbackTurno = '') {
+  const mins = parseHoraMinutos(valor);
+  if (mins === null) return fallbackTurno || 'OUTROS';
+  // 3T: 22:00 (1320) até 23:59 (1439) ou 00:00 (0) até 06:20 (380)
+  if (mins >= 22 * 60 || mins <= 6 * 60 + 20) return '3T';
+  // 1T: 06:00 (360) até 14:20 (860)
+  if (mins >= 6 * 60 && mins <= 14 * 60 + 20) return '1T';
+  // 2T: 14:00 (840) até 22:10 (1330)
+  if (mins >= 14 * 60 && mins <= 22 * 60 + 10) return '2T';
+  return fallbackTurno || 'OUTROS';
+}
+
 const SETORES = [
   { id:'estoque', nome:'Estoque', ico:ICONS.box, tabs:[
     { id:'geral',    nome:'Visão geral',        render:secGeral },
@@ -5332,6 +5363,7 @@ const TAB_SETOR  = Object.fromEntries(SETORES.flatMap(s => s.tabs.map(t => [t.id
 let activeSetor = 'estoque';
 let activeTab   = 'geral';
 let filterOcupGalpao = [];
+let geralPeriodo = 'mes'; // 'mes' | '15d' | 'ano'
 
 function renderSetores(){
   const box = $('#setores');
@@ -5387,6 +5419,11 @@ function getFilterControls(){
     const baseRua = filterArea.length > 0 ? D.rows.filter(r => hasArr(filterArea, r.area)) : D.rows;
     const ruas = uniqSorted(baseRua.map(r => r.rua).filter(r => r > 0)).map(v => ({v:String(v), l:'Rua ' + v}));
     return [
+      {id:'g_per',    lbl:'Janela / Status',  type:'single', val:geralPeriodo, all:'Mês Atual', opts:[
+        {v:'mes', l:'Mês Atual'},
+        {v:'15d', l:'Últimos 15 Dias'},
+        {v:'ano', l:'Status Anual'}
+      ], set:v => { geralPeriodo = v; }},
       {id:'g_local',  lbl:'Local de estoque', type:'multi', val:filterLocalEst,  all:'Todos', opts:locais, set:v => { filterLocalEst = v; }},
       {id:'g_status', lbl:'Status',           type:'multi', val:filterStatusEst, all:'Todos', opts:status, set:v => { filterStatusEst = v; }},
       {id:'g_area',   lbl:'Galpão',           type:'multi', val:filterArea,      all:'Todos', opts:areas,  set:v => { filterArea = v; filterRua = []; }},
@@ -5506,7 +5543,7 @@ function getFilterControls(){
 
 function resetTabFilters(){
   const t = activeTab;
-  if (t === 'geral') { filterLocalEst = []; filterStatusEst = []; filterArea = []; filterRua = []; }
+  if (t === 'geral') { geralPeriodo = 'mes'; filterLocalEst = []; filterStatusEst = []; filterArea = []; filterRua = []; }
   else if (t === 'shelf') filterShelfFaixa = [];
   else if (t === 'aging') filterAgingFaixa = [];
   else if (t === 'ocup') filterOcupGalpao = [];
@@ -5515,6 +5552,13 @@ function resetTabFilters(){
   else if (t === 'prealerta') { preFiltro = {loja:[], situacao:[], tipo:[], mes:[], stCd:[], stLoja:[]}; preLimite = 150; }
   else if (t === 'recebnotas' || t === 'recebverba') { recFiltro = {mes:[], loja:[], tipoCarga:[], statusNota:[], tipoOp:[], fornecedor:[], pagaVerba:'todos'}; recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }
   else if (t === 'sepanual' || t === 'sephora' || t === 'sepoperadores') { sepDadosFiltro = { operacao: [], turno: [], data: [], loja: [], operador: [] }; sepAnualModalidade = 'TODAS'; sepAnualLimite = 150; }
+}
+
+function getSingleDefault(ctrlId){
+  if (ctrlId === 'c_st') return 'pendente';
+  if (ctrlId === 's_mes') return sepMesesDisponiveis[0];
+  if (ctrlId === 'g_per') return 'mes';
+  return 'todos';
 }
 
 function renderFilterBar(){
@@ -5533,7 +5577,7 @@ function renderFilterBar(){
         ativos.push({ctrl:c, val:v, label:opt ? opt.l : v});
       });
     } else {
-      const def = c.id === 'c_st' ? 'pendente' : (c.id === 's_mes' ? sepMesesDisponiveis[0] : 'todos');
+      const def = getSingleDefault(c.id);
       if (c.val && c.val !== def) {
         const opt = c.opts.find(o => String(o.v) === String(c.val));
         ativos.push({ctrl:c, val:c.val, label:opt ? opt.l : c.val});
@@ -5546,9 +5590,9 @@ function renderFilterBar(){
       <span class="gf-title">${ICONS.filter} Filtros</span>
       ${ctrls.map(c => {
         if (c.type === 'single') {
-          const def = c.id === 'c_st' ? 'pendente' : (c.id === 's_mes' ? sepMesesDisponiveis[0] : 'todos');
+          const def = getSingleDefault(c.id);
           const on = c.val && c.val !== def;
-          const allOpt = c.opts.some(o => o.v === 'todos') ? '' : `<option value="todos">${esc(c.all)}</option>`;
+          const allOpt = (c.opts.some(o => o.v === 'todos') || c.id === 'g_per') ? '' : `<option value="todos">${esc(c.all)}</option>`;
           return `<label class="gf ${on ? 'on' : ''}">
             <span class="gf-lbl">${esc(c.lbl)}</span>
             <select data-gf="${c.id}">${allOpt}${c.opts.map(o => `<option value="${esc(o.v)}" ${String(o.v) === String(c.val) ? 'selected' : ''}>${esc(o.l)}</option>`).join('')}</select>
@@ -5675,7 +5719,7 @@ function renderFilterBar(){
       const next = (a.ctrl.val || []).filter(v => String(v) !== String(a.val));
       a.ctrl.set(next);
     } else {
-      const defVal = a.ctrl.id === 'c_st' ? 'pendente' : (a.ctrl.id === 's_mes' ? sepMesesDisponiveis[0] : 'todos');
+      const defVal = getSingleDefault(a.ctrl.id);
       a.ctrl.set(defVal);
       if (a.ctrl.id === 's_mes') return;
     }
