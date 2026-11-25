@@ -4142,7 +4142,7 @@ function descompactarArquivoSep(j, opPadrao) {
         turno: row[idx.turno] || '',
         operacao: opNome,
         lojaCd: row[idx.lojaCd] || '205',
-        lojaDestino: row[idx.lojaDestino] || '',
+        lojaDestino: row[idx.lojaDestino] ? getNomeLoja(row[idx.lojaDestino]) : '',
         ordemServico: row[idx.ordemServico] || '',
         dataHoraInicio: row[idx.dataHoraInicio] || '',
         dataHoraFim: row[idx.dataHoraFim] || '',
@@ -4768,7 +4768,6 @@ function secSepAnual() {
           </table>
         </div>
       </div>
-: '<p style="color:var(--mute);padding:20px">Nenhum dado mensal disponível no filtro atual.</p>'}</div>
 </div>
 
   <div class="card" style="margin-top:20px">
@@ -4848,8 +4847,8 @@ function secSepAnual() {
             ${topLojas.length ? topLojas.map(lj => {
               const pctL = maxLojaCx ? (lj.cx / maxLojaCx) * 100 : 0;
               return `
-              <div class="dept-hbar-row" style="grid-template-columns:165px 1fr 140px;padding:5px 8px">
-                <div class="dept-hbar-name" title="${esc(lj.loja)}">${esc(lj.loja)}</div>
+                <div class="dept-hbar-row" style="grid-template-columns:minmax(220px, 260px) 1fr 145px;padding:6px 8px">
+                <div class="dept-hbar-name" style="white-space:normal;overflow:visible;text-overflow:clip;line-height:1.2" title="${esc(lj.loja)}">${esc(lj.loja)}</div>
                 <div class="dept-hbar-track"><div class="dept-hbar-fill" style="width:${Math.max(pctL, 3)}%;background:var(--accent)"></div></div>
                 <div class="dept-hbar-val">${fmtN.format(lj.cx)} cx <span style="color:#d8b4fe;font-size:12px;margin-left:4px">${lj.plt} plt</span></div>
               </div>`;
