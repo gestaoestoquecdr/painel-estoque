@@ -34703,11 +34703,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 31.9,
-      "valorTotal": 31.9,
+      "valorTotal": 191.4,
       "origem": "Cd",
       "statusCd": "EM ANÁLISE",
       "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "observacao": "ANALISE"
     },
     {
       "carimboDataHora": "24/11/2026 00:00:00",
@@ -34722,11 +34722,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 26.49,
-      "valorTotal": 0,
+      "valorTotal": 953.64,
       "origem": "Cd",
       "statusCd": "EM ANÁLISE",
       "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "observacao": "ANALISE"
     },
     {
       "carimboDataHora": "24/11/2026 00:00:00",
@@ -34741,11 +34741,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 2.59,
-      "valorTotal": 0,
+      "valorTotal": 279.72,
       "origem": "Cd",
       "statusCd": "EM ANÁLISE",
       "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "observacao": "ANALISE"
     },
     {
       "carimboDataHora": "24/11/2026 00:00:00",
@@ -34760,11 +34760,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 76.9,
-      "valorTotal": 0,
+      "valorTotal": 461.4,
       "origem": "Cd",
       "statusCd": "EM ANÁLISE",
       "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "observacao": "ANALISE"
     },
     {
       "carimboDataHora": "24/11/2026 00:00:00",
@@ -34779,11 +34779,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 34.5,
-      "valorTotal": 0,
+      "valorTotal": 207,
       "origem": "Cd",
       "statusCd": "EM ANÁLISE",
       "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "observacao": "ANALISE"
     },
     {
       "carimboDataHora": "24/11/2026 00:00:00",
@@ -34798,11 +34798,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 24.89,
-      "valorTotal": 0,
+      "valorTotal": 2986.8,
       "origem": "Cd",
       "statusCd": "EM ANÁLISE",
       "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "observacao": "ANALISE"
     },
     {
       "carimboDataHora": "24/11/2026 00:00:00",
@@ -34817,11 +34817,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 20.6,
-      "valorTotal": 0,
+      "valorTotal": 494.4,
       "origem": "Cd",
       "statusCd": "EM ANÁLISE",
       "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "observacao": "ANALISE"
     },
     {
       "carimboDataHora": "24/11/2026 00:00:00",
@@ -34836,11 +34836,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 28.49,
-      "valorTotal": 0,
+      "valorTotal": 341.88,
       "origem": "Cd",
       "statusCd": "EM ANÁLISE",
       "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "observacao": "ANALISE"
     },
     {
       "carimboDataHora": "24/11/2026 00:00:00",
@@ -34855,11 +34855,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 3.79,
-      "valorTotal": 0,
+      "valorTotal": 545.76,
       "origem": "Cd",
       "statusCd": "EM ANÁLISE",
       "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "observacao": "ANALISE"
     },
     {
       "carimboDataHora": "24/11/2026 00:00:00",
@@ -34874,11 +34874,11 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 99.9,
-      "valorTotal": 0,
+      "valorTotal": 599.4,
       "origem": "Cd",
       "statusCd": "EM ANÁLISE",
       "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "observacao": "ANALISE"
     },
     {
       "carimboDataHora": "24/11/2026 00:00:00",
@@ -34893,12 +34893,12 @@
       "um": "UNIDADE",
       "ocorrencia": "FALTA",
       "valorUnitario": 114.01,
-      "valorTotal": 0,
+      "valorTotal": 114.01,
       "origem": "CD BARUERI",
       "statusCd": "EM ANÁLISE",
       "statusLoja": "AGUARDANDO CD",
-      "observacao": ""
+      "observacao": "ANALISE"
     }
   ],
-  "ultimaAtualizacao": "2026-11-25T10:48:48.323Z"
+  "ultimaAtualizacao": "2026-11-25T11:49:51.394Z"
 }
