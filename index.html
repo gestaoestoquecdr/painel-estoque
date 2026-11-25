@@ -652,6 +652,7 @@ body.tvmode .side, body.tvmode .gfbar{display:none !important}
 body.tvmode{padding-left:max(18px,env(safe-area-inset-left,0px)) !important}
 @media (max-width:820px){.gf{flex:1 1 140px}.gf-clear{margin-left:0}.side-label{display:none}}
 
+
 /* ===== MATRIZ EXECUTIVA CARTEIRA DE PEDIDO ===== */
 .cart-matrix th { background: var(--panel2); position: sticky; top: 0; z-index: 2; }
 .cart-matrix td { transition: background 0.15s ease; }
@@ -681,6 +682,7 @@ body.tvmode{padding-left:max(18px,env(safe-area-inset-left,0px)) !important}
 .badge-verba-sim { background: rgba(53, 212, 154, 0.18); border: 1px solid rgba(53, 212, 154, 0.5); color: var(--ok); }
 .badge-verba-nao { background: rgba(255, 93, 98, 0.18); border: 1px solid rgba(255, 93, 98, 0.5); color: var(--crit); }
 .badge-lote { background: rgba(255, 196, 0, 0.18); border: 1px solid rgba(255, 196, 0, 0.45); color: var(--accent-text); }
+
 
 /* Ícones SVG Lucide alinhados ao texto */
 .ico {
@@ -1188,7 +1190,7 @@ function attachTooltipEvents() {
   if (!tt) return;
 
   document.querySelectorAll('[data-tooltip-title]').forEach(el => {
-    el.addEventListener('mouseenter', () => {
+    el.addEventListener('mouseenter', (e) => {
       const title = el.getAttribute('data-tooltip-title');
       const items = JSON.parse(el.getAttribute('data-tooltip-items') || '[]');
       const color = el.getAttribute('data-tooltip-color') || 'var(--accent)';
@@ -2295,6 +2297,7 @@ function secCarteira(){
     return 'hm-low';
   };
 
+  // 1. TABELA POR DATA DE GERAÇÃO DA RESERVA
   const byRes = {};
   viewC.forEach(r => {
     const k = r.gerReserva || 'Sem data';
@@ -2322,6 +2325,7 @@ function secCarteira(){
   const totResBase = basis === 'custo' ? totValor : totPedida;
   const totFullLinhasRes = resRows.reduce((s, [, o]) => s + o.fullLinhas, 0);
 
+  // 2. TABELA POR TIPO DE SEPARAÇÃO
   const bySep = {};
   viewC.forEach(r => {
     const k = r.tipoSep || 'Não informado';
@@ -2334,6 +2338,7 @@ function secCarteira(){
   const sepRows = Object.entries(bySep).sort((a,b) => (basis === 'custo' ? b[1].valor - a[1].valor : b[1].pedida - a[1].pedida));
   const totLinhasSep = sepRows.reduce((s, [, o]) => s + o.linhas, 0);
 
+  // 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (CATEGORIA)
   const baseDept = C.filter(r => {
     if (dateReservaFilter.length > 0 && !hasArr(dateReservaFilter, r.gerReserva)) return false;
     if (sepFilter.length > 0 && !hasArr(sepFilter, r.tipoSep)) return false;
@@ -2355,6 +2360,7 @@ function secCarteira(){
   const totDeptVal = deptRows.reduce((s, [, o]) => s + (basis==='custo' ? o.valor : o.qtd), 0) || 1;
   const maxDeptVal = deptRows.length ? Math.max(...deptRows.map(([, o]) => basis==='custo' ? o.valor : o.qtd)) : 1;
 
+  // 4. RESUMO POR DESTINATÁRIO (LOJA)
   const byDest = {};
   viewC.forEach(r => {
     const k = r.dest || "Sem Destino";
@@ -2370,6 +2376,7 @@ function secCarteira(){
     destRows = destRows.filter(([k]) => k.toLowerCase().includes(destSearch.toLowerCase()));
   }
 
+  // 5. PRODUTOS AGRUPADOS
   const prodAggMap = {};
   filteredC.forEach(r => {
     const pendQtd = Math.max(0, r.qtdPedida - r.qtdSeparada);
@@ -2447,7 +2454,9 @@ function secCarteira(){
     ${kpi('Indicador de Atraso', `<span style="${isCritico ? 'color:var(--crit);' : 'color:var(--warn);'}">${atrasoStr}</span>`, atrasoSub, kpiClassAtraso, 'Datas em Atraso Crítico', Array.from(datasPendentesSet).map(d => ({prod: `Data Reserva: ${d}`, sub: 'Pendente de liberação'})), isCritico ? 'var(--crit)' : 'var(--warn)')}
   </div>
 
+  <!-- BLOCO SUPERIOR: GERAÇÃO RESERVA (DATAS) AO LADO DE TIPO DE SEPARAÇÃO -->
   <div class="grid two-even" style="margin-top:18px">
+    <!-- 1. GERAÇÃO RESERVA COM LINHAS / PALETES FULL -->
     <div class="card">
       <div class="card-header-action">
         <h3>${ICONS.calendar} GERAÇÃO RESERVA (${resRows.length} DATAS) · CLIQUE P/ FILTRAR</h3>
@@ -2481,7 +2490,7 @@ function secCarteira(){
                 <td class="r"><span class="hm-cell ${hmClass(pctRep)}">${pctStr}</span></td>
                 <td class="r">
                   ${o.fullLinhas > 0 
-                    ? `<span class="badge-pill badge-full" title="${fmtN.format(o.fullQtd)} unidades em ${fmtN.format(o.fullLinhas)} paletes Full">${fmtN.format(o.fullLinhas)}</span>` 
+                    ? `<span class="badge-pill badge-full" title="${fmtN.format(o.fullQtd)} unidades em ${o.fullLinhas} paletes Full">${fmtN.format(o.fullLinhas)}</span>` 
                     : `<span style="color:var(--mute)">0</span>`}
                 </td>
               </tr>`;
@@ -2498,6 +2507,7 @@ function secCarteira(){
       </div>
     </div>
 
+    <!-- 2. TIPO DE SEPARAÇÃO AO LADO DAS DATAS -->
     <div class="card">
       <div class="card-header-action">
         <h3>${ICONS.sliders} TIPO DE SEPARAÇÃO · CLIQUE P/ FILTRAR</h3>
@@ -2545,6 +2555,7 @@ function secCarteira(){
     </div>
   </div>
 
+  <!-- 3. PARTICIPAÇÃO POR DEPARTAMENTO CD (CATEGORIAS) EMBAIXO -->
   <div class="card" style="margin-top:18px">
     <div class="card-header-action">
       <h3>${ICONS.chart} PARTICIPAÇÃO POR DEPARTAMENTO CD / CATEGORIA (${basis === 'custo' ? 'VALOR R$' : 'QTD PEDIDA'})</h3>
@@ -2572,6 +2583,7 @@ function secCarteira(){
     </div>
   </div>
 
+  <!-- 4. RESUMO POR LOJA / DESTINATÁRIO -->
   <div class="card" style="margin-top:18px">
     <div class="card-header-action">
       <h3>${ICONS.store} RESUMO DE SEPARAÇÃO POR LOJA / DESTINATÁRIO (${destRows.length} LOJAS)</h3>
@@ -2619,6 +2631,7 @@ function secCarteira(){
     </div>
   </div>
 
+  <!-- 5. PRODUTOS DA CARTEIRA -->
   <div class="card" style="margin-top:18px">
     <div class="card-header-action">
       <h3>${ICONS.box} ${statusTitleText} (${prodsList.length} PRODUTOS ÚNICOS SOMADOS)</h3>
@@ -3891,13 +3904,13 @@ function secRecebVerba(){
             const barCol = isSel ? 'var(--accent)' : (idx < 3 ? '#35d49a' : '#4285f4');
             return `
             <div class="dept-hbar-row ${isSel ? 'active-dept' : ''}" data-verba-forn="${esc(f.fornecedor)}" title="${esc(f.fornecedor)}: Verba ${brl(f.verba)} (${fmtP(pctForn, 2)}) sobre ${brl(f.valorRec)}">
-              <div class="dept-hbar-name">${idx + 1}. ${esc(f.fornecedor)}</div>
+              <div class="dept-hbar-name">${esc(f.fornecedor)}</div>
               <div class="dept-hbar-track">
-                <div class="dept-hbar-fill" style="width:${Math.max(barW, 2)}%;background:${barCol}"></div>
+                <div class="dept-hbar-fill" style="width:${Math.max(barW, 3)}%;background:${barCol}"></div>
               </div>
               <div class="dept-hbar-val">
-                <span style="color:var(--ok)">${brlShort(f.verba)}</span>
-                <span style="color:var(--mute);font-size:12px;margin-left:4px">(${fmtP(pctForn, 1)})</span>
+                <span style="color:var(--ok)">${brlShort(f.verba).replace('R$ ', '')}</span>
+                <span style="color:var(--mute);font-size:13px;margin-left:4px">(${fmtP(pctForn, 2)})</span>
               </div>
             </div>`;
           }).join('') : '<p style="color:var(--mute)">Nenhum fornecedor com verba no filtro.</p>'}
@@ -3905,113 +3918,119 @@ function secRecebVerba(){
       </div>
     </div>
 
-    <div class="card" style="margin-top:20px;border-color:rgba(255,93,98,0.45)">
+    <div class="card" style="margin-top:20px;border-left:4px solid var(--crit)">
       <div class="card-header-action">
-        <h3>${ICONS.alert} FORNECEDORES QUE NÃO PAGAM VERBA LOGÍSTICA (${fmtN.format(listaSemVerba.length)} FORNECEDORES · ${brlShort(totValFornNaoPagam)})</h3>
-        <div class="prod-controls">
+        <h3>${ICONS.alert} FORNECEDORES QUE NÃO PAGAM VERBA LOGÍSTICA (${fmtN.format(fornNaoPagam.length)} FORNECEDORES · ${brlShort(totValFornNaoPagam)})</h3>
+        <button class="toggle-btn" id="btnToggleSemVerba">
+          ${semVerbaExpanded ? '▲ Ocultar Fornecedores sem Verba' : '▼ Exibir Fornecedores sem Verba (' + fmtN.format(fornNaoPagam.length) + ')'}
+        </button>
+      </div>
+      <div class="collapsible-content ${semVerbaExpanded ? 'open' : ''}" id="boxSemVerba">
+        <div class="prod-controls" style="margin-bottom:12px">
+          <input type="text" id="inputSearchSemVerba" placeholder="Buscar fornecedor ou CNPJ sem verba..." value="${esc(searchSemVerba)}" style="width:300px">
           <select id="selSemVerbaOrdem">
             <option value="valor" ${semVerbaOrdem === 'valor' ? 'selected' : ''}>Ordem: maior volume recebido (R$)</option>
             <option value="nfs" ${semVerbaOrdem === 'nfs' ? 'selected' : ''}>Ordem: maior qtd de NFs</option>
             <option value="nome" ${semVerbaOrdem === 'nome' ? 'selected' : ''}>Ordem: nome do fornecedor (A-Z)</option>
           </select>
-          <input type="text" id="inputSearchSemVerba" placeholder="Buscar fornecedor sem verba ou CNPJ..." value="${esc(searchSemVerba)}" style="width:260px">
-          <button class="toggle-btn" id="btnToggleSemVerba">
-            ${semVerbaExpanded ? '▲ Ocultar Lista' : '▼ Exibir Lista (' + listaSemVerba.length + ')'}
-          </button>
+          <span style="font-size:14px;color:var(--mute);margin-left:auto">Clique em um fornecedor para filtrar suas notas</span>
         </div>
-      </div>
-
-      <div class="collapsible-content ${semVerbaExpanded ? 'open' : ''}" id="boxSemVerba">
         <div class="tw">
           <table>
             <thead>
               <tr>
                 <th>Fornecedor</th>
                 <th>CNPJ</th>
+                <th>Última Entrada</th>
                 <th class="r">Qtd NFs</th>
                 <th class="r">Qtd Faturada</th>
-                <th>Última Entrada</th>
-                <th class="r">Volume Recebido (Sem Verba)</th>
-                <th class="r">% do Total Recebido</th>
+                <th class="r">Volume Recebido (R$)</th>
+                <th class="r">% Vol. Sem Verba</th>
               </tr>
             </thead>
             <tbody>
-              ${mostradosSem.length ? mostradosSem.map(f => {
-                const isSel = isSelectedArr(recFiltro.fornecedor, f.fornecedor);
-                return `
-                <tr class="clickable-row ${isSel ? 'active-row' : ''}" data-verba-forn="${esc(f.fornecedor)}">
+              ${mostradosSem.length ? mostradosSem.map(f => `
+                <tr class="clickable-row ${isSelectedArr(recFiltro.fornecedor, f.fornecedor) ? 'active-row' : ''}" data-verba-forn="${esc(f.fornecedor)}">
                   <td><b>${esc(f.fornecedor)}</b></td>
-                  <td><span class="num" style="color:var(--mute);font-size:14px">${esc(f.cnpj || '-')}</span></td>
+                  <td><span class="num" style="color:var(--mute)">${esc(f.cnpj || '-')}</span></td>
+                  <td>${esc(f.ultimaData || '-')}</td>
                   <td class="r">${fmtN.format(f.nfs)}</td>
                   <td class="r">${fmtN.format(f.qtd)}</td>
-                  <td>${esc(f.ultimaData || '-')}</td>
                   <td class="r" style="color:var(--crit);font-weight:700">${brl(f.valorRec)}</td>
-                  <td class="r">${fmtP(totValRec ? (f.valorRec / totValRec) * 100 : 0, 2)}</td>
-                </tr>`;
-              }).join('') : '<tr><td colspan="7">Nenhum fornecedor sem verba encontrado no filtro atual.</td></tr>'}
+                  <td class="r">${fmtP(totValFornNaoPagam ? (f.valorRec / totValFornNaoPagam) * 100 : 0, 2)}</td>
+                </tr>`).join('') : '<tr><td colspan="7">Nenhum fornecedor sem verba encontrado no filtro atual.</td></tr>'}
             </tbody>
           </table>
         </div>
-        ${restamSem > 0 ? `<div style="text-align:center;margin-top:12px"><button class="btn-more" id="btnMoreSemVerba">Mostrar mais 150 (restam ${fmtN.format(restamSem)})</button></div>` : ''}
+        ${restamSem > 0 ? `<div style="text-align:center;margin-top:12px"><button class="btn-more" id="btnMoreSemVerba">Mostrar mais 150 fornecedores (restam ${fmtN.format(restamSem)})</button></div>` : ''}
       </div>
     </div>
 
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>${ICONS.dollar} DETALHAMENTO DE NOTAS COM VERBA LOGÍSTICA (${fmtN.format(lista.length)} NFs)</h3>
+        <h3>${ICONS.dollar} DETALHAMENTO POR NOTA FISCAL - VERBA LOGÍSTICA (${fmtN.format(lista.length)} NFs)</h3>
         <div class="prod-controls">
           <select id="selVerbaOrdem">
-            <option value="verba" ${verbaOrdem === 'verba' ? 'selected' : ''}>Ordem: maior verba (R$)</option>
+            <option value="verba" ${verbaOrdem === 'verba' ? 'selected' : ''}>Ordem: maior verba R$</option>
             <option value="pct" ${verbaOrdem === 'pct' ? 'selected' : ''}>Ordem: maior % verba</option>
             <option value="valor" ${verbaOrdem === 'valor' ? 'selected' : ''}>Ordem: maior valor recebido</option>
           </select>
-          <input type="text" id="inputSearchRecVerba" placeholder="Buscar fornecedor, loja ou NF..." value="${esc(searchRecVerba)}" style="width:260px">
+          <input type="text" id="inputSearchRecVerba" placeholder="Buscar fornecedor, NF, CNPJ, loja..." value="${esc(searchRecVerba)}" style="width:280px">
         </div>
       </div>
       <div class="tw">
         <table>
           <thead>
             <tr>
-              <th>Fornecedor</th>
-              <th>Loja</th>
               <th>NF</th>
               <th>Recebimento</th>
+              <th>Loja</th>
+              <th>Fornecedor</th>
+              <th>CNPJ</th>
               <th class="r">Valor Recebido</th>
               <th class="r">% Verba</th>
-              <th class="r">Verba Logística (R$)</th>
+              <th class="r">Verba R$</th>
             </tr>
           </thead>
           <tbody>
             ${mostradas.length ? mostradas.map(n => `
               <tr>
-                <td><b>${esc(n.fornecedor)}</b></td>
-                <td>${esc(n.loja)}</td>
                 <td><b style="color:var(--accent-text)">${esc(n.nf)}</b></td>
                 <td>${esc(n.dataRecebimento || n.dataEmissao)}</td>
+                <td><b>${esc(n.loja)}</b></td>
+                <td>${esc(n.fornecedor)}</td>
+                <td style="color:var(--mute);font-size:14px">${esc(n.cnpj || '-')}</td>
                 <td class="r">${brl(n.valorRecebido)}</td>
                 <td class="r" style="color:var(--blue);font-weight:700">${fmtP(n.verbaPct, 2)}</td>
                 <td class="r" style="color:var(--ok);font-weight:700">${brl(n.verbaValor)}</td>
-              </tr>`).join('') : '<tr><td colspan="7">Nenhuma nota com verba encontrada.</td></tr>'}
+              </tr>`).join('') : '<tr><td colspan="8">Nenhum registro encontrado.</td></tr>'}
           </tbody>
         </table>
       </div>
-      ${restam > 0 ? `<div style="text-align:center;margin-top:12px"><button class="btn-more" id="btnMoreVerba">Mostrar mais 150 (restam ${fmtN.format(restam)})</button></div>` : ''}
+      ${restam > 0 ? `<div style="text-align:center;margin-top:12px"><button class="btn-more" id="btnMoreRecVerba">Mostrar mais 150 (restam ${fmtN.format(restam)})</button></div>` : ''}
     </div>
   `;
 
-  document.querySelectorAll('[data-verba-mes]').forEach(el => el.addEventListener('click', () => {
-    toggleArr(recFiltro.mes, el.getAttribute('data-verba-mes'));
-    verbaLimite = 150; semVerbaLimite = 150;
-    secRecebVerba();
-  }));
   document.querySelectorAll('[data-verba-forn]').forEach(el => el.addEventListener('click', () => {
     toggleArr(recFiltro.fornecedor, el.getAttribute('data-verba-forn'));
-    verbaLimite = 150; semVerbaLimite = 150;
+    verbaLimite = 150;
+    semVerbaLimite = 150;
     secRecebVerba();
   }));
 
-  const btnSem = $('#btnToggleSemVerba');
-  if (btnSem) btnSem.addEventListener('click', () => { semVerbaExpanded = !semVerbaExpanded; secRecebVerba(); });
+  document.querySelectorAll('[data-verba-mes]').forEach(el => el.addEventListener('click', () => {
+    toggleArr(recFiltro.mes, el.getAttribute('data-verba-mes'));
+    verbaLimite = 150;
+    semVerbaLimite = 150;
+    secRecebVerba();
+  }));
+
+  const btnToggleSem = $('#btnToggleSemVerba');
+  if (btnToggleSem) btnToggleSem.addEventListener('click', () => {
+    semVerbaExpanded = !semVerbaExpanded;
+    secRecebVerba();
+  });
+
   const selSemO = $('#selSemVerbaOrdem');
   if (selSemO) selSemO.addEventListener('change', e => { semVerbaOrdem = e.target.value; semVerbaLimite = 150; secRecebVerba(); });
   const inSem = $('#inputSearchSemVerba');
@@ -4025,797 +4044,1211 @@ function secRecebVerba(){
 
   const selO = $('#selVerbaOrdem');
   if (selO) selO.addEventListener('change', e => { verbaOrdem = e.target.value; verbaLimite = 150; secRecebVerba(); });
-  const inV = $('#inputSearchRecVerba');
-  if (inV) inV.addEventListener('input', e => {
+  const inS = $('#inputSearchRecVerba');
+  if (inS) inS.addEventListener('input', e => {
     searchRecVerba = e.target.value; verbaLimite = 150;
     secRecebVerba();
     keepFocus('#inputSearchRecVerba', () => searchRecVerba);
   });
-  const bm = $('#btnMoreVerba');
+  const bm = $('#btnMoreRecVerba');
   if (bm) bm.addEventListener('click', () => { verbaLimite += 150; secRecebVerba(); });
   attachTooltipEvents();
 }
 
-/* ================= SETOR SEPARAÇÃO ================= */
-let SepD = { manifesto: [], picking: [], pulmao: [], blocado: [] };
-let sepFiltro = { area:[], tipoSep:[], status:[], loja:[], usuario:[], dataRef:[] };
 
-// Estado específico da sub-aba "Separação Anual"
-let sepAnualModo = 'mes';
-let sepAnualPeriodoEspec = 'todos';
-let sepAnualOrdem = 'data_asc';
+//* ================= SETOR SEPARAÇÃO (SEPARAÇÃO FRACIONADO & FULL) ================= */
+let SepD = null;
+let sepManifesto = null;
+let sepMesesDisponiveis = [];
+let sepMesSelecionado = ''; // ex: "2026_11" ou "TODOS"
+let sepCacheMeses = {};
+let sepDadosFiltro = { operacao: [], turno: [], data: [], loja: [], operador: [] };
+let searchSepAnual = '';
+let searchSepOp = '';
+let sepAnualOrdem = 'qtd';
+let sepOpOrdem = 'hh';
+let sepAnualLimite = 150;
+let sepAnualModalidade = 'TODAS'; // 'TODAS' | 'Separação Fracionado' | 'Full'
+let sepAnualCarregando = false;
+let sepHoraModo = 'COMPARATIVO'; // 'COMPARATIVO' | 'ATUAL' | 'ANTERIOR'
+let sepHoraFluxoGrafico = 'FRAC'; // 'FRAC' | 'FULL'
 
-// Estado específico da sub-aba "Separação por Hora"
-let sepHoraModo = 'hora'; // 'hora' | 'dia'
-let sepHoraDiaEspec = 'todos';
+function normalizarOpSep(op) {
+  const s = String(op || '').trim();
+  const low = s.toLowerCase();
+  if (!s) return 'Separação Fracionado';
+  if (low.includes('full') || low.includes('pulm') || low.includes('palet')) return 'Full';
+  if (low.includes('frac') || low.includes('pick') || low.includes('cross') || low.includes('bloc')) return 'Separação Fracionado';
+  return 'Separação Fracionado';
+}
 
-// Estado específico da sub-aba "Separação Operadores"
-let sepOpOrdem = 'linhas';
-let sepOpSearch = '';
-let sepOpSelecionado = '';
+function isFullOp(op) {
+  return normalizarOpSep(op) === 'Full';
+}
 
-function parseSepDataStr(rawVal) {
-  if (!rawVal) return { br: '', iso: '', mesKey: '', mesLabel: '', hora: '', diaNum: '' };
-  const s = String(rawVal).trim();
-  let d = '', m = '', y = '', hora = '';
+function medicaoPrincipalReg(r) {
+  return isFullOp(r.operacao) ? 1 : (r.qtd || 0);
+}
 
-  // Ex: "25/11/2026 14:30:00" ou "25/11/2026"
-  let matchBR = s.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/);
-  if (matchBR) {
-    d = matchBR[1]; m = matchBR[2]; y = matchBR[3];
-    if (matchBR[4] !== undefined) hora = `${String(matchBR[4]).padStart(2, '0')}:00`;
-  } else {
-    // Ex: "2026-11-25T14:30:00" ou "2026-11-25 14:30:00"
-    let matchISO = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{1,2}):(\d{2}))?/);
-    if (matchISO) {
-      y = matchISO[1]; m = matchISO[2]; d = matchISO[3];
-      if (matchISO[4] !== undefined) hora = `${String(matchISO[4]).padStart(2, '0')}:00`;
-    }
+function labelUnidadeOp(op) {
+  return isFullOp(op) ? 'paletes (linhas)' : 'caixas';
+}
+
+function siglaUnidadeOp(op) {
+  return isFullOp(op) ? 'plt' : 'cx';
+}
+
+function formatarChaveMesSep(chave) {
+  if (!chave) return '';
+  if (chave === 'TODOS') return 'Todos os Meses (Ano Completo)';
+  const parts = String(chave).split('_');
+  if (parts.length === 2) {
+    const mesNome = MAPA_MESES[parts[1]] || parts[1];
+    return `${mesNome}/${parts[0]}`;
   }
-
-  if (!d || !m || !y) return { br: s, iso: s, mesKey: 'Sem data', mesLabel: 'Sem data', hora: '', diaNum: '' };
-
-  const br = `${d}/${m}/${y}`;
-  const iso = `${y}-${m}-${d}`;
-  const mesKey = `${m}/${y}`;
-  const mesLabel = getNomeMesAno(mesKey);
-  return { br, iso, mesKey, mesLabel, hora, diaNum: d };
+  return chave;
 }
 
-function normSepRow(obj, fontePadrao) {
-  const areaRaw = getProp(obj, ["Area", "Área", "AREA", "Galpão", "Galpao", "Setor"]);
-  const areaNorm = areaRaw ? String(areaRaw).trim().replace(/^0+(?=\d)/, '') : 'Sem Área';
-
-  const tipoRaw = getProp(obj, ["Tipo de separação", "Tipo de separacao", "Tipo Separação", "Tipo Separacao", "Tipo", "Fluxo"]) || fontePadrao || 'Não informado';
-  const tipoNorm = String(tipoRaw).trim();
-
-  const statusRaw = getProp(obj, ["Status", "Situação", "Situacao", "Estado", "Status Separação"]) || 'Pendente';
-  const statusNorm = String(statusRaw).trim();
-
-  const lojaRaw = getProp(obj, ["Destinatário", "Destinatario", "Loja", "Cod Loja", "Destino"]);
-  const lojaNorm = lojaRaw ? (/^\d+$/.test(lojaRaw.replace(/\.0$/, '')) ? getNomeLoja(lojaRaw.replace(/\.0$/, '')) : lojaRaw) : 'Sem Destino';
-
-  const userRaw = getProp(obj, ["Usuário", "Usuario", "Operador", "Separador", "Responsável", "Responsavel", "Usuário Confirmação", "Usuario Confirmacao"]) || 'Não informado';
-  const userNorm = String(userRaw).trim();
-
-  const dtRaw = getProp(obj, [
-    "Data Hora Separação", "Data Hora Separacao", "Data Separação", "Data Separacao",
-    "Data Confirmação", "Data Confirmacao", "Data", "Data Emissão", "Data Emissao",
-    "Geração Reserva", "Geracao Reserva", "Carimbo de data/hora"
-  ]);
-  const horaRaw = getProp(obj, ["Hora", "Hora Separação", "Hora Separacao", "Horário", "Horario"]);
-
-  const parsedDt = parseSepDataStr(dtRaw);
-  let horaFinal = parsedDt.hora;
-  if (!horaFinal && horaRaw) {
-    const mh = String(horaRaw).trim().match(/^(\d{1,2})/);
-    if (mh) horaFinal = `${String(mh[1]).padStart(2, '0')}:00`;
-  }
-
-  const qtdPedida = parseNum(getProp(obj, ["Qtd Pedida", "Qtd. Pedida", "Quantidade Pedida", "Qtd"]));
-  const qtdSeparada = parseNum(getProp(obj, ["Qtd Separada", "Qtd. Separada", "Quantidade Separada", "Qtd Atendida"]));
-  const linhas = Math.max(1, parseNum(getProp(obj, ["Linhas", "Qtd Linhas", "Paletes", "Qtd Paletes"])) || 1);
-  const valorTotal = parseNum(getProp(obj, ["Valor Total", "Valor", "Custo Total", "Valor Mercadoria"]));
-
-  const stLower = statusNorm.toLowerCase();
-  const isFinalizado = stLower.includes('separad') || stLower.includes('finaliz') || stLower.includes('conclu') || stLower.includes('baixad') || (qtdPedida > 0 && qtdSeparada >= qtdPedida && !stLower.includes('pend'));
-
-  return {
-    fonte: fontePadrao,
-    area: areaNorm,
-    tipoSep: tipoNorm,
-    status: statusNorm,
-    isFinalizado,
-    loja: lojaNorm,
-    usuario: userNorm,
-    dataBr: parsedDt.br,
-    dataIso: parsedDt.iso,
-    mesKey: parsedDt.mesKey,
-    mesLabel: parsedDt.mesLabel,
-    hora: horaFinal,
-    qtdPedida,
-    qtdSeparada,
-    linhas,
-    valorTotal,
-    codProd: getProp(obj, ["Código Interno", "Codigo Interno", "Código Produto", "Codigo Produto", "Cód. Prod.", "SKU"]) || '-',
-    prod: getProp(obj, ["Produto", "Descrição", "Descricao", "Desc. Produto"]) || '-',
-    documento: getProp(obj, ["Manifesto", "Nº Manifesto", "Pedido", "Nº Pedido", "Reserva", "NF"]) || '-'
-  };
+function extrairMesChaveDeData(dtStr) {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(dtStr || '').trim());
+  return m ? `${m[3]}_${m[2]}` : 'Sem_Data';
 }
 
-async function loadSeparacaoData() {
-  const timestamp = new Date().getTime();
-  const opts = {
-    method: 'GET',
-    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' }
-  };
-
-  const fontes = [
-    { key: 'manifesto', url: CONFIG.SEP_MANIFESTO_URL, label: 'Manifesto' },
-    { key: 'picking',   url: CONFIG.SEP_PICKING_URL,   label: 'Picking' },
-    { key: 'pulmao',    url: CONFIG.SEP_PULMAO_URL,    label: 'Pulmão' },
-    { key: 'blocado',   url: CONFIG.SEP_BLOCADO_URL,   label: 'Blocado' }
-  ];
-
-  await Promise.all(fontes.map(async (f) => {
-    try {
-      const res = await fetch(`${f.url}?v=${timestamp}`, opts);
-      if (!res.ok) return;
-      const json = await res.json();
-      const lista = extractList(json[f.key] || json.dados || json.registros || json);
-      SepD[f.key] = lista.map(item => normSepRow(item, f.label));
-    } catch (e) {
-      // Arquivo opcional caso ainda não exista no ambiente
-    }
-  }));
+function chaveDataOrdenavel(dtStr) {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(dtStr || '').trim());
+  if (m) return `${m[3]}${m[2]}${m[1]}`;
+  const parts = String(dtStr || '').split('/');
+  if (parts.length === 3) return parts.slice().reverse().join('');
+  return String(dtStr || '');
 }
 
-function sepTodasLinhas() {
-  const combined = [
-    ...(SepD.manifesto || []),
-    ...(SepD.picking || []),
-    ...(SepD.pulmao || []),
-    ...(SepD.blocado || [])
-  ];
-  if (combined.length > 0) return combined;
+function getDatasOrdenadasDesc(rows) {
+  return Array.from(new Set(rows.map(r => r.data).filter(Boolean)))
+    .sort((a, b) => chaveDataOrdenavel(b).localeCompare(chaveDataOrdenavel(a)));
+}
 
-  // Fallback inteligente usando dados da carteira quando os arquivos dedicados de separação ainda não estão populados
-  if (D && Array.isArray(D.cart) && D.cart.length > 0) {
-    return D.cart.map((r, idx) => {
-      const isSep = r.tipoSep === 'Separado' || (r.qtdPedida > 0 && r.qtdPedida <= r.qtdSeparada);
-      const areaSim = idx % 2 === 0 ? '1' : '7';
-      const horaSim = `${String(6 + (idx % 14)).padStart(2, '0')}:00`;
-      const mesList = ['08/2026', '09/2026', '10/2026', '11/2026'];
-      const mKey = mesList[idx % mesList.length];
-      const diaStr = String(1 + (idx % 25)).padStart(2, '0');
+function descompactarArquivoSep(j, opPadrao) {
+  const opNome = normalizarOpSep(j.operacao || opPadrao);
+  if (Array.isArray(j.colunas) && Array.isArray(j.dados)) {
+    const cols = j.colunas;
+    const idx = {};
+    cols.forEach((c, i) => { idx[c] = i; });
+    return j.dados.map(row => {
+      const qtd = parseNum(row[idx.qtd]);
+      const dataStr = row[idx.data] || '';
       return {
-        fonte: 'Carteira',
-        area: areaSim,
-        tipoSep: r.tipoSep || 'Não informado',
-        status: isSep ? 'Separado' : 'Pendente',
-        isFinalizado: isSep,
-        loja: r.dest || 'Sem Destino',
-        usuario: `Operador ${(idx % 8) + 1}`,
-        dataBr: `${diaStr}/${mKey}`,
-        dataIso: `${mKey.split('/')[1]}-${mKey.split('/')[0]}-${diaStr}`,
-        mesKey: mKey,
-        mesLabel: getNomeMesAno(mKey),
-        hora: horaSim,
-        qtdPedida: r.qtdPedida || 0,
-        qtdSeparada: r.qtdSeparada || 0,
-        linhas: 1,
-        valorTotal: r.valorTotal || 0,
-        codProd: r.codProd || '-',
-        prod: r.prod || '-',
-        documento: `RES-${1000 + idx}`
+        data: dataStr,
+        mesChave: extrairMesChaveDeData(dataStr),
+        turno: row[idx.turno] || '',
+        operacao: opNome,
+        lojaCd: row[idx.lojaCd] || '205',
+        lojaDestino: row[idx.lojaDestino] || '',
+        ordemServico: row[idx.ordemServico] || '',
+        dataHoraInicio: row[idx.dataHoraInicio] || '',
+        dataHoraFim: row[idx.dataHoraFim] || '',
+        tempoPausado: row[idx.tempoPausado] || '00:00',
+        tempoTotal: row[idx.tempoTotal] || '00:00',
+        operador: row[idx.operador] || 'Não identificado',
+        hora: +row[idx.hora] || 0,
+        qtd: qtd,
+        qtdConferida: parseNum(row[idx.qtdConferida] != null ? row[idx.qtdConferida] : qtd),
+        qtdPedida: parseNum(row[idx.qtdPedida] != null ? row[idx.qtdPedida] : qtd),
+        peso: parseNum(row[idx.peso]),
+        unitizadores: parseNum(row[idx.unitizadores]),
+        itens: parseNum(row[idx.itens])
       };
     });
   }
-  return [];
+  return (j.registros || []).map(r => {
+    const qtd = parseNum(r.qtd);
+    const dataStr = r.data || '';
+    return {
+      ...r,
+      data: dataStr,
+      mesChave: extrairMesChaveDeData(dataStr),
+      operacao: normalizarOpSep(r.operacao || opPadrao),
+      qtd: qtd,
+      qtdConferida: parseNum(r.qtdConferida != null ? r.qtdConferida : qtd),
+      qtdPedida: parseNum(r.qtdPedida != null ? r.qtdPedida : qtd),
+      peso: parseNum(r.peso),
+      unitizadores: parseNum(r.unitizadores),
+      itens: parseNum(r.itens),
+      hora: +r.hora || 0
+    };
+  });
 }
 
-function sepLinhasFiltradas() {
-  return sepTodasLinhas().filter(r => {
-    if (sepFiltro.area.length > 0 && !hasArr(sepFiltro.area, r.area)) return false;
-    if (sepFiltro.tipoSep.length > 0 && !hasArr(sepFiltro.tipoSep, r.tipoSep)) return false;
-    if (sepFiltro.status.length > 0 && !hasArr(sepFiltro.status, r.status)) return false;
-    if (sepFiltro.loja.length > 0 && !hasArr(sepFiltro.loja, r.loja)) return false;
-    if (sepFiltro.usuario.length > 0 && !hasArr(sepFiltro.usuario, r.usuario)) return false;
-    if (sepFiltro.dataRef.length > 0 && !hasArr(sepFiltro.dataRef, r.dataBr)) return false;
+async function baixarMesesParaCache(listaMeses) {
+  if (!sepManifesto || !sepManifesto.operacoes) return;
+  const timestamp = new Date().getTime();
+  const fetchOpts = { method: 'GET', headers: { 'Cache-Control': 'no-cache' } };
+  const promessas = [];
+
+  listaMeses.forEach(m => {
+    if (sepCacheMeses[m] && m !== sepMesesDisponiveis[0]) return;
+    const listaArquivosMes = [];
+    Object.values(sepManifesto.operacoes).forEach(opObj => {
+      const infoMes = opObj.meses && opObj.meses[m];
+      if (infoMes && Array.isArray(infoMes.arquivos)) {
+        infoMes.arquivos.forEach(arq => listaArquivosMes.push({ path: arq, op: normalizarOpSep(opObj.operacao) }));
+      }
+    });
+
+    promessas.push((async () => {
+      const resultados = await Promise.all(listaArquivosMes.map(async item => {
+        const cleanPath = item.path.startsWith('./') ? item.path : `./${item.path}`;
+        const res = await fetch(`${cleanPath}?v=${timestamp}`, fetchOpts).catch(() => null);
+        if (!res || !res.ok) return { regs: [], metas: null, att: '' };
+        const j = await res.json();
+        return {
+          regs: descompactarArquivoSep(j, item.op),
+          metas: j.metas || null,
+          att: j.ultimaAtualizacao || ''
+        };
+      }));
+      sepCacheMeses[m] = resultados;
+    })());
+  });
+
+  await Promise.all(promessas);
+}
+
+async function carregarMesSep(chaveMes) {
+  if (!sepManifesto || !sepManifesto.operacoes) return;
+  const mesesParaCarregar = chaveMes === 'TODOS' ? sepMesesDisponiveis : [chaveMes];
+  await baixarMesesParaCache(mesesParaCarregar);
+
+  const todosRegs = [];
+  let metasEncontradas = null;
+  let ultimaAtt = sepManifesto.ultimaAtualizacao || '';
+
+  mesesParaCarregar.forEach(m => {
+    const blocos = sepCacheMeses[m] || [];
+    blocos.forEach(b => {
+      for (let i = 0; i < b.regs.length; i++) todosRegs.push(b.regs[i]);
+      if (!metasEncontradas && b.metas) metasEncontradas = b.metas;
+      if (b.att && b.att > ultimaAtt) ultimaAtt = b.att;
+    });
+  });
+
+  SepD = {
+    todos: todosRegs,
+    metas: metasEncontradas || { hh: 100, hhFull: 15, hhPulmao: 15, horasTurno: 7 },
+    ultimaAtualizacao: ultimaAtt
+  };
+}
+
+async function garantirTodosMesesSep() {
+  if (!sepManifesto || !sepMesesDisponiveis.length) return;
+  const faltando = sepMesesDisponiveis.filter(m => !sepCacheMeses[m]);
+  if (!faltando.length) return;
+  sepAnualCarregando = true;
+  await baixarMesesParaCache(faltando);
+  sepAnualCarregando = false;
+}
+
+async function trocarMesSep(novoMes) {
+  if (!novoMes || novoMes === sepMesSelecionado) return;
+  sepMesSelecionado = novoMes;
+  sepDadosFiltro.data = [];
+  sepAnualLimite = 150;
+  $('#srctxt').textContent = `Carregando ${formatarChaveMesSep(novoMes)}...`;
+  await carregarMesSep(novoMes);
+  if (D && D.when) $('#srctxt').textContent = D.when;
+  render();
+}
+
+async function loadSeparacaoData() {
+  try {
+    const timestamp = new Date().getTime();
+    const fetchOpts = { method: 'GET', headers: { 'Cache-Control': 'no-cache' } };
+    const resMan = await fetch(`${CONFIG.SEP_MANIFESTO_URL}?v=${timestamp}`, fetchOpts).catch(() => null);
+
+    if (resMan && resMan.ok) {
+      sepManifesto = await resMan.json();
+      const setMeses = new Set();
+      if (sepManifesto && sepManifesto.operacoes) {
+        Object.values(sepManifesto.operacoes).forEach(opObj => {
+          if (opObj && opObj.meses) {
+            Object.keys(opObj.meses).forEach(m => setMeses.add(m));
+          }
+        });
+      }
+      sepMesesDisponiveis = Array.from(setMeses).sort((a, b) => b.localeCompare(a));
+
+      if (sepMesesDisponiveis.length > 0) {
+        if (!sepMesSelecionado || (sepMesSelecionado !== 'TODOS' && !sepMesesDisponiveis.includes(sepMesSelecionado))) {
+          sepMesSelecionado = sepMesesDisponiveis[0];
+        }
+        await carregarMesSep(sepMesSelecionado);
+        return;
+      }
+    }
+
+    // Fallback caso o manifesto ainda não tenha sido gerado
+    const [resPick, resPulm, resBloc] = await Promise.all([
+      fetch(`${CONFIG.SEP_PICKING_URL}?v=${timestamp}`, fetchOpts).catch(() => null),
+      fetch(`${CONFIG.SEP_PULMAO_URL}?v=${timestamp}`, fetchOpts).catch(() => null),
+      fetch(`${CONFIG.SEP_BLOCADO_URL}?v=${timestamp}`, fetchOpts).catch(() => null)
+    ]);
+
+    const parseSep = async (res, opNome) => {
+      if (!res || !res.ok) return { registros: [], ultimaAtualizacao: '', metas: null };
+      const j = await res.json();
+      return { registros: descompactarArquivoSep(j, opNome), ultimaAtualizacao: j.ultimaAtualizacao || '', metas: j.metas || null };
+    };
+
+    const [dPick, dPulm, dBloc] = await Promise.all([
+      parseSep(resPick, 'Separação Fracionado'),
+      parseSep(resPulm, 'Full'),
+      parseSep(resBloc, 'Separação Fracionado')
+    ]);
+
+    const datasAtt = [dPick.ultimaAtualizacao, dPulm.ultimaAtualizacao, dBloc.ultimaAtualizacao].filter(Boolean).sort();
+    const todos = [...dPick.registros, ...dPulm.registros, ...dBloc.registros];
+    sepMesesDisponiveis = Array.from(new Set(todos.map(r => r.mesChave).filter(m => m !== 'Sem_Data'))).sort((a, b) => b.localeCompare(a));
+    if (!sepMesSelecionado && sepMesesDisponiveis.length) sepMesSelecionado = 'TODOS';
+
+    const metasBase = dPick.metas || dPulm.metas || dBloc.metas || {};
+    SepD = {
+      todos,
+      metas: {
+        hh: metasBase.hh || 100,
+        hhFull: metasBase.hhFull || metasBase.hhPulmao || 15,
+        horasTurno: metasBase.horasTurno || 7
+      },
+      ultimaAtualizacao: datasAtt.length ? datasAtt[datasAtt.length - 1] : ''
+    };
+  } catch (e) {
+    console.error("Erro ao carregar JSONs de separação:", e);
+  }
+}
+
+function sepTodosRegistros() {
+  return (SepD && SepD.todos) || [];
+}
+
+function sepRegistrosFiltrados() {
+  return sepTodosRegistros().filter(r => {
+    if (sepDadosFiltro.operacao.length > 0 && !hasArr(sepDadosFiltro.operacao, r.operacao)) return false;
+    if (sepDadosFiltro.turno.length > 0 && !hasArr(sepDadosFiltro.turno, r.turno)) return false;
+    if (sepDadosFiltro.data.length > 0 && !hasArr(sepDadosFiltro.data, r.data)) return false;
+    if (sepDadosFiltro.loja.length > 0 && !hasArr(sepDadosFiltro.loja, r.lojaDestino)) return false;
+    if (sepDadosFiltro.operador.length > 0 && !hasArr(sepDadosFiltro.operador, r.operador)) return false;
     return true;
   });
 }
 
-/* ---------- SUB-ABA SEPARAÇÃO 1: SEPARAÇÃO ANUAL ---------- */
+function tempoStrParaHoras(tStr) {
+  if (!tStr) return 0;
+  const parts = String(tStr).trim().split(':').map(Number);
+  if (parts.length === 3 && !parts.some(isNaN)) return parts[0] + parts[1] / 60 + parts[2] / 3600;
+  if (parts.length === 2 && !parts.some(isNaN)) return parts[0] + parts[1] / 60;
+  return 0;
+}
+
+function sepAtualizadoTxt() {
+  const t = SepD && SepD.ultimaAtualizacao;
+  if (!t) return '';
+  const d = new Date(t);
+  return isNaN(d) ? '' : ` Base atualizada em ${d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}.`;
+}
+
+// Calcula HH respeitando a unidade de cada modalidade:
+// - Separação Fracionado -> Caixas / Hora (meta padrão: 100 cx/h)
+// - Full -> Paletes (Linhas) / Hora (meta padrão: 15 plt/h)
+function calcResumoOperadoresSep(rows, metaHhCx, horasTurno, metaHhPlt = 15) {
+  const mapOp = {};
+  rows.forEach(r => {
+    const opNorm = normalizarOpSep(r.operacao);
+    const key = `${r.operador}__${opNorm}__${r.turno}`;
+    if (!mapOp[key]) {
+      mapOp[key] = {
+        operador: r.operador || 'Não identificado',
+        operacao: opNorm,
+        turno: r.turno || '-',
+        osSet: new Set(),
+        horasAtivasSet: new Set(),
+        linhas: 0,
+        qtd: 0,
+        qtdConferida: 0,
+        qtdPedida: 0,
+        peso: 0,
+        unitizadores: 0,
+        itens: 0,
+        horasTempo: 0
+      };
+    }
+    const o = mapOp[key];
+    o.linhas++;
+    if (r.ordemServico) o.osSet.add(r.ordemServico);
+    o.horasAtivasSet.add(`${r.data}_${r.hora}`);
+    o.qtd += r.qtd || 0;
+    o.qtdConferida += r.qtdConferida || 0;
+    o.qtdPedida += r.qtdPedida || 0;
+    o.peso += r.peso || 0;
+    o.unitizadores += r.unitizadores || 0;
+    o.itens += r.itens || 0;
+    o.horasTempo += tempoStrParaHoras(r.tempoTotal);
+  });
+
+  return Object.values(mapOp).map(o => {
+    const isFull = isFullOp(o.operacao);
+    const horasConsideradas = o.horasTempo > 0 ? o.horasTempo : Math.max(o.horasAtivasSet.size, 1);
+    const prodPrincipal = isFull ? o.linhas : o.qtd;
+    const metaAplicada = isFull ? metaHhPlt : metaHhCx;
+    const hhReal = horasConsideradas > 0 ? (prodPrincipal / horasConsideradas) : 0;
+    const metaTurnoTotal = metaAplicada * horasTurno;
+    const pctMeta = metaAplicada > 0 ? (hhReal / metaAplicada) * 100 : 0;
+    return {
+      ...o,
+      isFull,
+      isPulmao: isFull,
+      prodPrincipal,
+      unidade: isFull ? 'plt' : 'cx',
+      metaAplicada,
+      qtdOs: o.osSet.size || o.linhas,
+      horasTrabalhadas: horasConsideradas,
+      hh: hhReal,
+      metaTurnoTotal,
+      pctMeta
+    };
+  });
+}
+
+function buildGradeHoraPorFluxo(rowsDia, isFullFluxo, metaHhFluxo, horasTurno) {
+  const sub = rowsDia.filter(r => isFullOp(r.operacao) === isFullFluxo);
+  const horasComMov = Array.from(new Set(sub.map(r => Math.max(0, Math.min(23, +r.hora || 0))))).sort((a, b) => a - b);
+  let gradeHoras = [];
+  if (horasComMov.length > 0) {
+    const minH = horasComMov[0];
+    const maxH = Math.max(horasComMov[horasComMov.length - 1], minH + 6);
+    for (let h = minH; h <= Math.min(23, maxH); h++) gradeHoras.push(h);
+  } else {
+    gradeHoras = [6, 7, 8, 9, 10, 11, 12, 13, 14];
+  }
+
+  const porHoraTotal = {};
+  gradeHoras.forEach(h => { porHoraTotal[h] = 0; });
+
+  const mapOp = {};
+  sub.forEach(r => {
+    const opNome = r.operador || 'Não identificado';
+    const turnoNome = r.turno || '-';
+    const key = `${opNome}__${turnoNome}`;
+    if (!mapOp[key]) {
+      mapOp[key] = {
+        operador: opNome,
+        turno: turnoNome,
+        porHora: {},
+        total: 0,
+        caixas: 0,
+        horasTempo: 0
+      };
+    }
+    const item = mapOp[key];
+    const h = Math.max(0, Math.min(23, +r.hora || 0));
+    const val = isFullFluxo ? 1 : (r.qtd || 0);
+    item.porHora[h] = (item.porHora[h] || 0) + val;
+    item.total += val;
+    item.caixas += (r.qtd || 0);
+    item.horasTempo += tempoStrParaHoras(r.tempoTotal);
+    if (porHoraTotal[h] !== undefined) porHoraTotal[h] += val;
+  });
+
+  const operadores = Object.values(mapOp).map(o => {
+    const hrsEfetivas = o.horasTempo > 0 ? o.horasTempo : Math.max(Object.keys(o.porHora).length, 1);
+    const hhCalc = hrsEfetivas > 0 ? (o.total / hrsEfetivas) : 0;
+    const metaTurno = metaHhFluxo * horasTurno;
+    const pctMetaTurno = metaTurno > 0 ? (o.total / metaTurno) * 100 : 0;
+    return { ...o, hrsEfetivas, hhCalc, metaTurno, pctMetaTurno };
+  }).sort((a, b) => b.total - a.total);
+
+  const qtdOps = operadores.length;
+  const totalUnid = sub.reduce((s, r) => s + (isFullFluxo ? 1 : (r.qtd || 0)), 0);
+  const totalCx = sub.reduce((s, r) => s + (r.qtd || 0), 0);
+  const metaEquipeHora = qtdOps * metaHhFluxo;
+  const metaEquipeTurno = metaEquipeHora * horasTurno;
+  const pctEquipeTurno = metaEquipeTurno > 0 ? (totalUnid / metaEquipeTurno) * 100 : 0;
+
+  return {
+    gradeHoras,
+    porHoraTotal,
+    operadores,
+    qtdOps,
+    totalUnid,
+    totalCx,
+    metaEquipeHora,
+    metaEquipeTurno,
+    pctEquipeTurno
+  };
+}
+
+function fmtDeltaPct(atual, anterior) {
+  if (!anterior || anterior <= 0) {
+    return atual > 0 ? '<span class="bar-var-tag up">Novo</span>' : '<span class="bar-var-tag">—</span>';
+  }
+  const diff = ((atual - anterior) / anterior) * 100;
+  const sinal = diff >= 0 ? '+' : '';
+  return `<span class="bar-var-tag ${diff >= 0 ? 'up' : 'down'}">${sinal}${fmtP(diff, 1)}</span>`;
+}
+
+/* ---------- TELA INICIAL DA SEPARAÇÃO: VISÃO GERAL & ANALÍTICO (SEM POLUIÇÃO DE METAS) ---------- */
 function secSepAnual() {
   const el = $('#s-sepanual');
   if (!el) return;
 
-  const baseRows = sepLinhasFiltradas();
-  const totLinhas = baseRows.reduce((s,r) => s + r.linhas, 0);
-  const totPedida = baseRows.reduce((s,r) => s + r.qtdPedida, 0);
-  const totSeparada = baseRows.reduce((s,r) => s + r.qtdSeparada, 0);
-  const totValor = baseRows.reduce((s,r) => s + r.valorTotal, 0);
-  const pctAtend = totPedida ? (totSeparada / totPedida) * 100 : 0;
-
-  // Agrupamento por Mês
-  const porMesMap = {};
-  baseRows.forEach(r => {
-    const k = r.mesKey || 'Sem data';
-    porMesMap[k] = porMesMap[k] || {
-      key: k,
-      label: r.mesLabel || k,
-      ordem: mesOrdem(k),
-      linhas: 0,
-      qtdPedida: 0,
-      qtdSeparada: 0,
-      valor: 0,
-      diasSet: new Set()
-    };
-    const o = porMesMap[k];
-    o.linhas += r.linhas;
-    o.qtdPedida += r.qtdPedida;
-    o.qtdSeparada += r.qtdSeparada;
-    o.valor += r.valorTotal;
-    if (r.dataBr) o.diasSet.add(r.dataBr);
-  });
-
-  const mesesOrdenados = Object.values(porMesMap).sort((a,b) => a.ordem.localeCompare(b.ordem));
-
-  // Agrupamento por Dia
-  const porDiaMap = {};
-  baseRows.forEach(r => {
-    if (!r.dataBr) return;
-    porDiaMap[r.dataBr] = porDiaMap[r.dataBr] || {
-      key: r.dataBr,
-      label: r.dataBr,
-      ordem: r.dataIso || r.dataBr,
-      mesKey: r.mesKey,
-      linhas: 0,
-      qtdPedida: 0,
-      qtdSeparada: 0,
-      valor: 0
-    };
-    const o = porDiaMap[r.dataBr];
-    o.linhas += r.linhas;
-    o.qtdPedida += r.qtdPedida;
-    o.qtdSeparada += r.qtdSeparada;
-    o.valor += r.valorTotal;
-  });
-  const diasOrdenados = Object.values(porDiaMap).sort((a,b) => a.ordem.localeCompare(b.ordem));
-
-  const periodosDisponiveis = sepAnualModo === 'mes' ? mesesOrdenados : diasOrdenados;
-
-  let serieGrafico = sepAnualModo === 'mes' ? mesesOrdenados.slice() : diasOrdenados.slice();
-  if (sepAnualPeriodoEspec !== 'todos') {
-    serieGrafico = serieGrafico.filter(item => item.key === sepAnualPeriodoEspec);
+  if (!SepD) {
+    el.innerHTML = `<h2>Separação · Visão Geral & Analítico</h2><p class="sub">Carregando dados de Separação Fracionado e Full...</p>`;
+    return;
   }
 
-  // Calcular variação percentual em relação ao período anterior
-  const serieComVar = serieGrafico.map((item, idx) => {
-    let varPct = null;
-    if (idx > 0 && serieGrafico[idx - 1].linhas > 0) {
-      varPct = ((item.linhas - serieGrafico[idx - 1].linhas) / serieGrafico[idx - 1].linhas) * 100;
-    }
-    const ef = item.qtdPedida ? (item.qtdSeparada / item.qtdPedida) * 100 : 0;
-    return { ...item, varPct, ef };
+  // Se estiver no modo 'TODOS' (ano todo) e ainda houver meses não baixados no manifesto, carrega automaticamente
+  if (sepMesSelecionado === 'TODOS' && sepManifesto && sepMesesDisponiveis.some(m => !sepCacheMeses[m]) && !sepAnualCarregando) {
+    el.innerHTML = `<h2>Separação · Visão Geral & Analítico</h2><p class="sub">Consolidando todos os meses disponíveis (${sepMesesDisponiveis.length} meses)...</p>`;
+    garantirTodosMesesSep().then(() => {
+      if (activeTab === 'sepanual') secSepAnual();
+    });
+    return;
+  }
+
+  let baseRegs = [];
+  if (sepMesSelecionado === 'TODOS' && sepManifesto && sepMesesDisponiveis.length > 0) {
+    sepMesesDisponiveis.forEach(m => {
+      const blocos = sepCacheMeses[m] || [];
+      blocos.forEach(b => {
+        for (let i = 0; i < b.regs.length; i++) baseRegs.push(b.regs[i]);
+      });
+    });
+  } else {
+    baseRegs = sepTodosRegistros();
+  }
+
+  const filtrados = baseRegs.filter(r => {
+    if (sepAnualModalidade !== 'TODAS' && normalizarOpSep(r.operacao) !== sepAnualModalidade) return false;
+    if (sepDadosFiltro.operacao.length > 0 && !hasArr(sepDadosFiltro.operacao, r.operacao)) return false;
+    if (sepDadosFiltro.turno.length > 0 && !hasArr(sepDadosFiltro.turno, r.turno)) return false;
+    if (sepDadosFiltro.data.length > 0 && !hasArr(sepDadosFiltro.data, r.data)) return false;
+    if (sepDadosFiltro.loja.length > 0 && !hasArr(sepDadosFiltro.loja, r.lojaDestino)) return false;
+    if (sepDadosFiltro.operador.length > 0 && !hasArr(sepDadosFiltro.operador, r.operador)) return false;
+    return true;
   });
 
-  const maxLinhas = serieComVar.length ? Math.max(...serieComVar.map(x => x.linhas)) * 1.22 : 1;
-  const melhorPeriodo = mesesOrdenados.length ? mesesOrdenados.slice().sort((a,b) => b.linhas - a.linhas)[0] : null;
+  const regsFrac = filtrados.filter(r => !isFullOp(r.operacao));
+  const regsFull = filtrados.filter(r => isFullOp(r.operacao));
 
-  // Tabela detalhada ordenada conforme seleção
-  let tabelaLinhas = mesesOrdenados.slice();
-  if (sepAnualOrdem === 'data_desc') tabelaLinhas.sort((a,b) => b.ordem.localeCompare(a.ordem));
-  else if (sepAnualOrdem === 'linhas') tabelaLinhas.sort((a,b) => b.linhas - a.linhas);
-  else if (sepAnualOrdem === 'qtd') tabelaLinhas.sort((a,b) => b.qtdSeparada - a.qtdSeparada);
-  else tabelaLinhas.sort((a,b) => a.ordem.localeCompare(b.ordem));
+  const fracCx = regsFrac.reduce((s, r) => s + (r.qtd || 0), 0);
+  const fullPlt = regsFull.length;
+  const fullCx = regsFull.reduce((s, r) => s + (r.qtd || 0), 0);
+  const totalCx = filtrados.reduce((s, r) => s + (r.qtd || 0), 0);
+  const totalPeso = filtrados.reduce((s, r) => s + (r.peso || 0), 0);
+  const osUnicas = new Set(filtrados.map(r => r.ordemServico).filter(Boolean)).size || filtrados.length;
+  const opsUnicos = new Set(filtrados.map(r => r.operador).filter(Boolean)).size;
+  const diasUnicos = new Set(filtrados.map(r => r.data).filter(Boolean)).size;
+  const lojasUnicas = new Set(filtrados.map(r => r.lojaDestino).filter(Boolean)).size;
+
+  // Agrupamento mês a mês em ordem cronológica
+  const porMesMap = {};
+  filtrados.forEach(r => {
+    const m = r.mesChave || extrairMesChaveDeData(r.data);
+    if (!porMesMap[m]) {
+      porMesMap[m] = {
+        mesChave: m,
+        label: formatarChaveMesSep(m),
+        fracCx: 0,
+        fullPlt: 0,
+        fullCx: 0,
+        totalCx: 0,
+        osSet: new Set(),
+        opsSet: new Set(),
+        diasSet: new Set()
+      };
+    }
+    const obj = porMesMap[m];
+    obj.totalCx += r.qtd || 0;
+    if (r.ordemServico) obj.osSet.add(r.ordemServico);
+    if (r.operador) obj.opsSet.add(r.operador);
+    if (r.data) obj.diasSet.add(r.data);
+
+    if (isFullOp(r.operacao)) {
+      obj.fullPlt += 1;
+      obj.fullCx += r.qtd || 0;
+    } else {
+      obj.fracCx += r.qtd || 0;
+    }
+  });
+
+  const mesesCrono = Object.values(porMesMap)
+    .filter(m => m.mesChave !== 'Sem_Data')
+    .sort((a, b) => a.mesChave.localeCompare(b.mesChave))
+    .map(m => ({
+      ...m,
+      qtdOs: m.osSet.size || (m.fracCx > 0 || m.fullPlt > 0 ? 1 : 0),
+      qtdOps: m.opsSet.size,
+      qtdDias: m.diasSet.size
+    }));
+
+  const mediaMensalCx = mesesCrono.length ? (totalCx / mesesCrono.length) : totalCx;
+  const mediaMensalFrac = mesesCrono.length ? (fracCx / mesesCrono.length) : fracCx;
+  const mediaMensalPlt = mesesCrono.length ? (fullPlt / mesesCrono.length) : fullPlt;
+
+  const isModoFull = sepAnualModalidade === 'Full';
+  const isModoFrac = sepAnualModalidade === 'Separação Fracionado';
+  const maxBarAnual = mesesCrono.length
+    ? Math.max(...mesesCrono.map(m => isModoFull ? m.fullPlt : (isModoFrac ? m.fracCx : m.totalCx))) * 1.22
+    : 1;
+
+  // Donut de composição: Separação Fracionado vs Full (em volume de caixas)
+  const donutItems = [
+    {
+      rawKey: 'Separação Fracionado',
+      n: 'Separação Fracionado (cx)',
+      v: fracCx,
+      c: '#4285f4',
+      topProd: `${fmtN.format(fracCx)} caixas · ${fmtN.format(regsFrac.length)} linhas`
+    },
+    {
+      rawKey: 'Full',
+      n: 'Full (Paletes / Linhas)',
+      v: fullCx,
+      c: '#a855f7',
+      topProd: `${fmtN.format(fullPlt)} paletes · ${fmtN.format(fullCx)} caixas`
+    }
+  ].filter(x => x.v > 0 || x.rawKey === 'Separação Fracionado');
+
+  const prevBasis = basis;
+  basis = 'qtd';
+  const dnHtml = donut(donutItems, fmtN.format(totalCx), 'caixas total', 'data-sep-op', sepDadosFiltro.operacao);
+  const lgHtml = legend(donutItems, 'data-sep-op', sepDadosFiltro.operacao);
+  basis = prevBasis;
+
+  // Resumo por Turno (sem coluna de meta, foco em volume e participação)
+  const turnosOrdem = ['1º TURNO', '2º TURNO', '3º TURNO'];
+  const porTurno = turnosOrdem.map(t => {
+    const sub = filtrados.filter(r => r.turno === t);
+    const tFracCx = sub.filter(r => !isFullOp(r.operacao)).reduce((s, r) => s + (r.qtd || 0), 0);
+    const tFullPlt = sub.filter(r => isFullOp(r.operacao)).length;
+    const tFullCx = sub.filter(r => isFullOp(r.operacao)).reduce((s, r) => s + (r.qtd || 0), 0);
+    const tTotalCx = sub.reduce((s, r) => s + (r.qtd || 0), 0);
+    const tOps = new Set(sub.map(r => r.operador).filter(Boolean)).size;
+    return { turno: t, tFracCx, tFullPlt, tFullCx, tTotalCx, tOps };
+  });
+
+  // Top Lojas Destino
+  const lojaMap = {};
+  filtrados.forEach(r => {
+    const lj = r.lojaDestino || 'Sem Destino';
+    if (!lojaMap[lj]) lojaMap[lj] = { loja: lj, cx: 0, plt: 0, osSet: new Set() };
+    lojaMap[lj].cx += r.qtd || 0;
+    if (isFullOp(r.operacao)) lojaMap[lj].plt += 1;
+    if (r.ordemServico) lojaMap[lj].osSet.add(r.ordemServico);
+  });
+  const topLojas = Object.values(lojaMap).sort((a, b) => b.cx - a.cx).slice(0, 8);
+  const maxLojaCx = topLojas.length ? Math.max(...topLojas.map(x => x.cx)) : 1;
+
+  // Tabela analítica de registros / OS
+  const q = searchSepAnual.trim().toLowerCase();
+  const busca = q ? filtrados.filter(r =>
+    String(r.operador || '').toLowerCase().includes(q) ||
+    String(r.ordemServico || '').toLowerCase().includes(q) ||
+    String(r.lojaDestino || '').toLowerCase().includes(q) ||
+    String(r.operacao || '').toLowerCase().includes(q) ||
+    String(r.turno || '').toLowerCase().includes(q)
+  ) : filtrados;
+
+  const cmp = {
+    qtd:  (a, b) => (b.qtd || 0) - (a.qtd || 0),
+    os:   (a, b) => String(b.ordemServico).localeCompare(String(a.ordemServico), undefined, { numeric: true }),
+    hora: (a, b) => (b.hora || 0) - (a.hora || 0),
+    op:   (a, b) => String(a.operador).localeCompare(String(b.operador))
+  }[sepAnualOrdem] || (() => 0);
+
+  const lista = busca.slice().sort(cmp);
+  const mostradas = lista.slice(0, sepAnualLimite);
+  const restam = lista.length - mostradas.length;
+  const dica = '<span style="color:var(--mute);font-weight:500;font-size:13px">(clique para filtrar)</span>';
 
   el.innerHTML = `
-    <h2>Separação Anual · Histórico e Volume</h2>
-    <p class="sub">Setor Separação · Evolução mensal e diária de linhas separadas, volumes e produtividade.</p>
+    <h2>Separação · Visão Geral & Analítico</h2>
+    <p class="sub">Visão analítica consolidada · Modalidades unificadas em <b>Separação Fracionado</b> (Caixas) e <b>Full</b> (Paletes/Linhas) · Período: <b>${esc(formatarChaveMesSep(sepMesSelecionado) || 'Atual')}</b>.${esc(sepAtualizadoTxt())}</p>
 
     <div class="grid kpis">
-      ${kpi('Total de Linhas Separadas', fmtN.format(totLinhas), `${fmtN.format(mesesOrdenados.length)} meses com registro`, 'hl')}
-      ${kpi('Qtd Separada / Pedida', fmtN.format(totSeparada), `De ${fmtN.format(totPedida)} un. (${fmtP(pctAtend, 1)})`)}
-      ${kpi('Valor Movimentado', brlShort(totValor), brl(totValor))}
-      ${kpi('Mês de Maior Volume', melhorPeriodo ? esc(melhorPeriodo.label) : '-', melhorPeriodo ? `${fmtN.format(melhorPeriodo.linhas)} linhas` : 'Sem registros')}
+      ${kpi('Volume Consolidado (cx)', fmtN.format(totalCx), `Média mensal: ${fmtN.format(mediaMensalCx)} cx · ${fmtN.format(diasUnicos)} dias oper.`, 'hl')}
+      ${kpi('Separação Fracionado', `${fmtN.format(fracCx)} <span style="font-size:18px;color:var(--mute)">cx</span>`, `${fmtP(totalCx ? (fracCx / totalCx) * 100 : 0, 1)} do volume · Média: ${fmtN.format(mediaMensalFrac)} cx/mês`, 'hl')}
+      ${kpi('Full (Paletes)', `${fmtN.format(fullPlt)} <span style="font-size:18px;color:var(--mute)">paletes</span>`, `Equivalente a ${fmtN.format(fullCx)} cx · Média: ${fmtN.format(mediaMensalPlt)} plt/mês`)}
+      ${kpi('Operação & Alcance', `${fmtN.format(osUnicas)} <span style="font-size:18px;color:var(--mute)">OS</span>`, `${fmtN.format(opsUnicos)} operadores · ${fmtN.format(lojasUnicas)} lojas · ${fmtN.format(totalPeso)} kg`)}
     </div>
 
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>${ICONS.chart} VOLUMETRIA DE LINHAS SEPARADAS (${sepAnualModo === 'mes' ? 'POR MÊS' : 'POR DIA'})</h3>
+        <h3>${ICONS.chart} EVOLUÇÃO MENSAL (${isModoFull ? 'PALETES FULL' : 'VOLUME EM CAIXAS'})</h3>
         <div class="prod-controls">
-          <select id="selSepAnualModo" style="font-weight:700;color:var(--accent-text)">
-            <option value="mes" ${sepAnualModo === 'mes' ? 'selected' : ''}>Agrupado por MÊS</option>
-            <option value="dia" ${sepAnualModo === 'dia' ? 'selected' : ''}>Detalhado por DIA</option>
-          </select>
-
-          <select id="selSepAnualPeriodo" style="font-weight:700;color:var(--ok)">
-            <option value="todos" ${sepAnualPeriodoEspec === 'todos' ? 'selected' : ''}>-- Todos (${periodosDisponiveis.length}) --</option>
-            ${periodosDisponiveis.map(p => `<option value="${esc(p.key)}" ${sepAnualPeriodoEspec === p.key ? 'selected' : ''}>${esc(p.label)}</option>`).join('')}
+          <select id="selSepAnualMod" style="font-weight:700;color:var(--accent-text)">
+            <option value="TODAS" ${sepAnualModalidade === 'TODAS' ? 'selected' : ''}>Consolidado (Volume Cx)</option>
+            <option value="Separação Fracionado" ${sepAnualModalidade === 'Separação Fracionado' ? 'selected' : ''}>Separação Fracionado (Caixas)</option>
+            <option value="Full" ${sepAnualModalidade === 'Full' ? 'selected' : ''}>Full (Paletes / Linhas)</option>
           </select>
         </div>
       </div>
 
-      ${serieComVar.length ? `
-        <div class="bar-chart-container" style="height:295px;padding-top:58px">
+      ${mesesCrono.length ? `
+        <div class="bar-chart-container" style="height:295px;padding-top:62px">
           <div class="bar-chart-wrapper">
-            ${serieComVar.map(item => {
-              const pctH = (item.linhas / maxLinhas) * 100;
-              const isSel = isSelectedArr(sepFiltro.dataRef, item.key) || sepAnualPeriodoEspec === item.key;
-              let varTag = '';
-              if (item.varPct !== null) {
-                const clsV = item.varPct >= 0 ? 'up' : 'down';
-                const sig = item.varPct >= 0 ? '+' : '';
-                varTag = `<span class="bar-var-tag ${clsV}">${sig}${fmtP(item.varPct, 0)}</span>`;
+            ${mesesCrono.map((m, idx) => {
+              const valAtual = isModoFull ? m.fullPlt : (isModoFrac ? m.fracCx : m.totalCx);
+              const pctH = (valAtual / maxBarAnual) * 100;
+              let tagVar = '';
+              if (idx > 0) {
+                const prev = mesesCrono[idx - 1];
+                const valPrev = isModoFull ? prev.fullPlt : (isModoFrac ? prev.fracCx : prev.totalCx);
+                tagVar = fmtDeltaPct(valAtual, valPrev);
               }
               const ttItems = [
-                { prod: `${item.label} · ${fmtN.format(item.linhas)} linhas`, sub: `Separado: ${fmtN.format(item.qtdSeparada)} / Pedida: ${fmtN.format(item.qtdPedida)}` },
-                { prod: `Valor: ${brlShort(item.valor)}`, sub: `Atendimento: ${fmtP(item.ef, 1)}` }
+                { prod: `Separação Fracionado: ${fmtN.format(m.fracCx)} cx`, sub: `Full: ${fmtN.format(m.fullPlt)} paletes (${fmtN.format(m.fullCx)} cx)` },
+                { prod: `Total Consolidado: ${fmtN.format(m.totalCx)} cx`, sub: `${fmtN.format(m.qtdDias)} dias · ${fmtN.format(m.qtdOs)} OS · Clique p/ abrir mês` }
               ];
               return `
-              <div class="bar-chart-col" data-sepanual-click="${esc(item.key)}" data-sepanual-tipo="${sepAnualModo}" style="cursor:pointer">
-                <div class="bar-chart-bar ${isSel ? 'is-proj' : ''}" style="height:${Math.max(pctH, 6)}%"
-                     data-tooltip-title="${esc(item.label)}"
-                     data-tooltip-color="${isSel ? 'var(--accent)' : 'var(--blue)'}"
+              <div class="bar-chart-col" data-anual-mes="${esc(m.mesChave)}" style="cursor:pointer">
+                <div class="bar-chart-bar" style="height:${Math.max(pctH, 6)}%;${isModoFull ? 'background:linear-gradient(180deg, #a855f7 0%, #581c87 100%);border-color:rgba(216,180,254,0.5)' : ''}"
+                     data-tooltip-title="${esc(m.label)}"
+                     data-tooltip-color="${isModoFull ? '#a855f7' : 'var(--accent)'}"
                      data-tooltip-items="${JSON.stringify(ttItems).replace(/"/g, '&quot;')}">
                   <div class="bar-val-label">
-                    <span>${fmtN.format(item.linhas)}</span>
-                    ${varTag}
+                    <span>${fmtN.format(valAtual)} ${isModoFull ? 'plt' : ''}</span>
+                    ${tagVar}
                   </div>
                 </div>
-                <div class="bar-date-label" style="${isSel ? 'color:var(--accent-text);font-weight:800' : ''}">${esc(sepAnualModo === 'dia' ? item.label.slice(0,5) : item.label)}</div>
+                <div class="bar-date-label">${esc(m.label)}</div>
               </div>`;
             }).join('')}
           </div>
         </div>
-      ` : '<p style="color:var(--mute);padding:16px">Nenhum dado de separação encontrado para os filtros selecionados.</p>'}
+      ` : '<p style="color:var(--mute);padding:20px">Nenhum dado mensal disponível no filtro atual.</p>'}
+    </div>
+
+    <div class="grid two" style="margin-top:20px">
+      <div class="card">
+        <h3>${ICONS.pie} COMPOSIÇÃO: SEPARAÇÃO FRACIONADO VS FULL ${dica}</h3>
+        <div class="donutwrap">${dnHtml}${lgHtml}</div>
+        <div class="tw" style="margin-top:12px">
+          <table>
+            <thead>
+              <tr>
+                <th>Modalidade</th>
+                <th class="r">Oper.</th>
+                <th class="r">Paletes</th>
+                <th class="r">Volume (cx)</th>
+                <th class="r">% Vol.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="clickable-row ${isSelectedArr(sepDadosFiltro.operacao, 'Separação Fracionado') ? 'active-row' : ''}" data-sep-op="Separação Fracionado">
+                <td><span class="dot" style="background:#4285f4"></span><b>Separação Fracionado</b></td>
+                <td class="r">${fmtN.format(new Set(regsFrac.map(r => r.operador).filter(Boolean)).size)}</td>
+                <td class="r" style="color:var(--mute)">—</td>
+                <td class="r" style="font-weight:800;color:var(--accent-text)">${fmtN.format(fracCx)} cx</td>
+                <td class="r">${fmtP(totalCx ? (fracCx / totalCx) * 100 : 0, 1)}</td>
+              </tr>
+              <tr class="clickable-row ${isSelectedArr(sepDadosFiltro.operacao, 'Full') ? 'active-row' : ''}" data-sep-op="Full">
+                <td><span class="dot" style="background:#a855f7"></span><b>Full</b></td>
+                <td class="r">${fmtN.format(new Set(regsFull.map(r => r.operador).filter(Boolean)).size)}</td>
+                <td class="r" style="font-weight:800;color:#d8b4fe">${fmtN.format(fullPlt)} plt</td>
+                <td class="r" style="font-weight:700">${fmtN.format(fullCx)} cx</td>
+                <td class="r">${fmtP(totalCx ? (fullCx / totalCx) * 100 : 0, 1)}</td>
+              </tr>
+              <tr class="tot">
+                <td><b>Total Consolidado</b></td>
+                <td class="r">${fmtN.format(opsUnicos)}</td>
+                <td class="r" style="color:#d8b4fe">${fmtN.format(fullPlt)} plt</td>
+                <td class="r" style="color:var(--ok)">${fmtN.format(totalCx)} cx</td>
+                <td class="r">100,0%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>${ICONS.store} DISTRIBUIÇÃO POR TURNO & TOP LOJAS</h3>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr>
+                <th>Turno ${dica}</th>
+                <th class="r">Oper.</th>
+                <th class="r">Fracionado (cx)</th>
+                <th class="r">Full (plt)</th>
+                <th class="r">Total (cx)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${porTurno.map(t => `
+                <tr class="clickable-row ${isSelectedArr(sepDadosFiltro.turno, t.turno) ? 'active-row' : ''}" data-sep-turno="${esc(t.turno)}">
+                  <td><b>${esc(t.turno)}</b></td>
+                  <td class="r">${fmtN.format(t.tOps)}</td>
+                  <td class="r" style="color:var(--blue);font-weight:700">${fmtN.format(t.tFracCx)}</td>
+                  <td class="r" style="color:#d8b4fe;font-weight:700">${fmtN.format(t.tFullPlt)} plt</td>
+                  <td class="r" style="font-weight:800">${fmtN.format(t.tTotalCx)}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:16px">
+          <div style="font-size:13px;font-weight:700;color:var(--mute);margin-bottom:8px;text-transform:uppercase">Top Lojas Destino (Volume em Caixas)</div>
+          <div class="dept-hbar-list" style="grid-template-columns:minmax(0,1fr);gap:6px">
+            ${topLojas.length ? topLojas.map(lj => {
+              const pctL = maxLojaCx ? (lj.cx / maxLojaCx) * 100 : 0;
+              return `
+              <div class="dept-hbar-row" style="grid-template-columns:165px 1fr 140px;padding:5px 8px">
+                <div class="dept-hbar-name" title="${esc(lj.loja)}">${esc(lj.loja)}</div>
+                <div class="dept-hbar-track"><div class="dept-hbar-fill" style="width:${Math.max(pctL, 3)}%;background:var(--accent)"></div></div>
+                <div class="dept-hbar-val">${fmtN.format(lj.cx)} cx <span style="color:#d8b4fe;font-size:12px;margin-left:4px">${lj.plt} plt</span></div>
+              </div>`;
+            }).join('') : '<p style="color:var(--mute);font-size:13px">Sem lojas no filtro atual.</p>'}
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>${ICONS.calendar} CONSOLIDADO MENSAL DE SEPARAÇÃO (${tabelaLinhas.length} MESES)</h3>
-        <div class="prod-controls">
-          <select id="selSepAnualOrdem">
-            <option value="data_asc" ${sepAnualOrdem === 'data_asc' ? 'selected' : ''}>Ordem: cronológica (antigo → recente)</option>
-            <option value="data_desc" ${sepAnualOrdem === 'data_desc' ? 'selected' : ''}>Ordem: cronológica (recente → antigo)</option>
-            <option value="linhas" ${sepAnualOrdem === 'linhas' ? 'selected' : ''}>Ordem: maior qtd de linhas</option>
-            <option value="qtd" ${sepAnualOrdem === 'qtd' ? 'selected' : ''}>Ordem: maior qtd separada</option>
-          </select>
-        </div>
+        <h3>${ICONS.calendar} TABELA MENSAL CONSOLIDADA (CLIQUE NO MÊS PARA ABRIR)</h3>
       </div>
       <div class="tw">
         <table>
           <thead>
             <tr>
               <th>Mês / Ano</th>
-              <th class="r">Dias Ativos</th>
-              <th class="r">Linhas Separadas</th>
-              <th class="r">Qtd Pedida</th>
-              <th class="r">Qtd Separada</th>
-              <th class="r">% Atend.</th>
-              <th class="r">Valor Total</th>
+              <th class="r">Dias Oper.</th>
+              <th class="r">OS</th>
+              <th class="r">Oper.</th>
+              <th class="r">Separação Fracionado (cx)</th>
+              <th class="r">Full (Paletes)</th>
+              <th class="r">Full (cx)</th>
+              <th class="r">Total Geral (cx)</th>
             </tr>
           </thead>
           <tbody>
-            ${tabelaLinhas.length ? tabelaLinhas.map(m => {
-              const ef = m.qtdPedida ? (m.qtdSeparada / m.qtdPedida) * 100 : 0;
-              const isSel = sepAnualPeriodoEspec === m.key;
-              return `
-              <tr class="clickable-row ${isSel ? 'active-row' : ''}" data-sepanual-row="${esc(m.key)}">
+            ${mesesCrono.length ? mesesCrono.map(m => `
+              <tr class="clickable-row ${sepMesSelecionado === m.mesChave ? 'active-row' : ''}" data-anual-mes="${esc(m.mesChave)}">
                 <td><b>${esc(m.label)}</b></td>
-                <td class="r">${fmtN.format(m.diasSet.size)}</td>
-                <td class="r" style="color:var(--accent-text);font-weight:800">${fmtN.format(m.linhas)}</td>
-                <td class="r">${fmtN.format(m.qtdPedida)}</td>
-                <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(m.qtdSeparada)}</td>
-                <td class="r">${fmtP(ef, 1)}</td>
-                <td class="r" style="font-weight:700">${brlShort(m.valor)}</td>
-              </tr>`;
-            }).join('') : '<tr><td colspan="7">Nenhum registro mensal encontrado.</td></tr>'}
+                <td class="r">${fmtN.format(m.qtdDias)}</td>
+                <td class="r">${fmtN.format(m.qtdOs)}</td>
+                <td class="r">${fmtN.format(m.qtdOps)}</td>
+                <td class="r" style="color:var(--blue);font-weight:700">${fmtN.format(m.fracCx)}</td>
+                <td class="r" style="color:#d8b4fe;font-weight:800">${fmtN.format(m.fullPlt)} plt</td>
+                <td class="r" style="color:var(--mute)">${fmtN.format(m.fullCx)}</td>
+                <td class="r" style="font-weight:800;color:var(--text-strong)">${fmtN.format(m.totalCx)}</td>
+              </tr>`).join('') : '<tr><td colspan="8">Nenhum mês encontrado.</td></tr>'}
             <tr class="tot">
-              <td><b>Total Consolidado</b></td>
-              <td class="r">${fmtN.format(diasOrdenados.length)}</td>
-              <td class="r" style="color:var(--accent-text)">${fmtN.format(totLinhas)}</td>
-              <td class="r">${fmtN.format(totPedida)}</td>
-              <td class="r" style="color:var(--ok)">${fmtN.format(totSeparada)}</td>
-              <td class="r">${fmtP(pctAtend, 1)}</td>
-              <td class="r">${brlShort(totValor)}</td>
+              <td><b>Total Período</b></td>
+              <td class="r">${fmtN.format(diasUnicos)}</td>
+              <td class="r">${fmtN.format(osUnicas)}</td>
+              <td class="r">${fmtN.format(opsUnicos)}</td>
+              <td class="r" style="color:var(--blue)">${fmtN.format(fracCx)}</td>
+              <td class="r" style="color:#d8b4fe">${fmtN.format(fullPlt)} plt</td>
+              <td class="r">${fmtN.format(fullCx)}</td>
+              <td class="r" style="color:var(--ok)">${fmtN.format(totalCx)}</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-header-action">
+        <h3>${ICONS.layers} DETALHAMENTO ANALÍTICO DE REGISTROS (${fmtN.format(lista.length)} REGISTROS)</h3>
+        <div class="prod-controls">
+          <select id="selSepAnualOrdem">
+            <option value="qtd" ${sepAnualOrdem === 'qtd' ? 'selected' : ''}>Ordem: maior volume (cx)</option>
+            <option value="os" ${sepAnualOrdem === 'os' ? 'selected' : ''}>Ordem: nº da OS</option>
+            <option value="hora" ${sepAnualOrdem === 'hora' ? 'selected' : ''}>Ordem: horário</option>
+            <option value="op" ${sepAnualOrdem === 'op' ? 'selected' : ''}>Ordem: operador (A-Z)</option>
+          </select>
+          <input type="text" id="inputSearchSepAnual" placeholder="Buscar operador, OS, loja, modalidade..." value="${esc(searchSepAnual)}" style="width:280px">
+        </div>
+      </div>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Modalidade</th>
+              <th>Data</th>
+              <th>Turno</th>
+              <th>OS</th>
+              <th>Loja Destino</th>
+              <th>Operador</th>
+              <th class="r">Medida Oper.</th>
+              <th class="r">Caixas</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${mostradas.length ? mostradas.map(r => {
+              const full = isFullOp(r.operacao);
+              return `
+              <tr>
+                <td><span class="dot" style="background:${full ? '#a855f7' : '#4285f4'}"></span><b>${esc(normalizarOpSep(r.operacao))}</b></td>
+                <td>${esc(r.data)}</td>
+                <td>${esc(r.turno)}</td>
+                <td><b style="color:var(--accent-text)">${esc(r.ordemServico || '-')}</b></td>
+                <td>${esc(r.lojaDestino || '-')}</td>
+                <td><b>${esc(r.operador)}</b></td>
+                <td class="r" style="font-weight:700;color:${full ? '#d8b4fe' : 'var(--accent-text)'}">${full ? '1 palete (linha)' : fmtN.format(r.qtd || 0) + ' cx'}</td>
+                <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(r.qtd || 0)}</td>
+              </tr>`;
+            }).join('') : '<tr><td colspan="8">Nenhum registro encontrado no filtro atual.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      ${restam > 0 ? `<div style="text-align:center;margin-top:12px"><button class="btn-more" id="btnMoreSepAnual">Mostrar mais 150 (restam ${fmtN.format(restam)})</button></div>` : ''}
+    </div>
   `;
 
-  const selModo = $('#selSepAnualModo');
-  if (selModo) selModo.addEventListener('change', e => {
-    sepAnualModo = e.target.value;
-    sepAnualPeriodoEspec = 'todos';
+  const selMod = $('#selSepAnualMod');
+  if (selMod) selMod.addEventListener('change', e => {
+    sepAnualModalidade = e.target.value;
+    sepAnualLimite = 150;
     secSepAnual();
   });
 
-  const selPer = $('#selSepAnualPeriodo');
-  if (selPer) selPer.addEventListener('change', e => {
-    sepAnualPeriodoEspec = e.target.value;
+  document.querySelectorAll('[data-anual-mes]').forEach(el => el.addEventListener('click', async () => {
+    const m = el.getAttribute('data-anual-mes');
+    if (m) {
+      await trocarMesSep(m);
+      setActiveTab('sephora');
+    }
+  }));
+
+  document.querySelectorAll('[data-sep-op]').forEach(el => el.addEventListener('click', () => {
+    toggleArr(sepDadosFiltro.operacao, el.getAttribute('data-sep-op'));
+    sepAnualLimite = 150;
+    render();
+  }));
+
+  document.querySelectorAll('[data-sep-turno]').forEach(el => el.addEventListener('click', () => {
+    toggleArr(sepDadosFiltro.turno, el.getAttribute('data-sep-turno'));
+    sepAnualLimite = 150;
+    render();
+  }));
+
+  const selO = $('#selSepAnualOrdem');
+  if (selO) selO.addEventListener('change', e => { sepAnualOrdem = e.target.value; sepAnualLimite = 150; secSepAnual(); });
+  const inS = $('#inputSearchSepAnual');
+  if (inS) inS.addEventListener('input', e => {
+    searchSepAnual = e.target.value; sepAnualLimite = 150;
     secSepAnual();
+    keepFocus('#inputSearchSepAnual', () => searchSepAnual);
   });
-
-  const selOrd = $('#selSepAnualOrdem');
-  if (selOrd) selOrd.addEventListener('change', e => {
-    sepAnualOrdem = e.target.value;
-    secSepAnual();
-  });
-
-  document.querySelectorAll('[data-sepanual-click]').forEach(el => {
-    el.addEventListener('click', () => {
-      const k = el.getAttribute('data-sepanual-click');
-      const tipo = el.getAttribute('data-sepanual-tipo');
-      if (tipo === 'dia') {
-        toggleArr(sepFiltro.dataRef, k);
-      } else {
-        sepAnualPeriodoEspec = (sepAnualPeriodoEspec === k) ? 'todos' : k;
-      }
-      render();
-    });
-  });
-
-  document.querySelectorAll('[data-sepanual-row]').forEach(el => {
-    el.addEventListener('click', () => {
-      const k = el.getAttribute('data-sepanual-row');
-      sepAnualModo = 'mes';
-      sepAnualPeriodoEspec = (sepAnualPeriodoEspec === k) ? 'todos' : k;
-      secSepAnual();
-    });
-  });
-
+  const bm = $('#btnMoreSepAnual');
+  if (bm) bm.addEventListener('click', () => { sepAnualLimite += 150; secSepAnual(); });
   attachTooltipEvents();
 }
 
-/* ---------- SUB-ABA SEPARAÇÃO 2: SEPARAÇÃO POR HORA ---------- */
+/* ---------- PÁGINA DEDICADA: PRODUÇÃO HORA A HORA (DIA ATUAL E DIA ANTERIOR · FRACIONADO E FULL) ---------- */
+function renderBlocoFluxoHora(tituloFluxo, badgeUnid, dadosDia, corAccent, isFullFluxo) {
+  const { gradeHoras, porHoraTotal, operadores, qtdOps, totalUnid, totalCx, metaEquipeHora, metaEquipeTurno, pctEquipeTurno } = dadosDia;
+  const colSpanVazio = gradeHoras.length + 6;
+
+  return `
+    <div class="card" style="margin-top:20px;border-top:4px solid ${corAccent}">
+      <div class="card-header-action">
+        <h3>${ICONS.clock} ${esc(tituloFluxo)} (${esc(badgeUnid)})</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <span class="badge-pill badge-lote">Operadores: ${fmtN.format(qtdOps)}</span>
+          <span class="badge-pill badge-full">Total: ${fmtN.format(totalUnid)} ${esc(badgeUnid)}</span>
+          ${isFullFluxo ? `<span class="badge-pill badge-verba-sim">Vol. Caixas: ${fmtN.format(totalCx)} cx</span>` : ''}
+        </div>
+      </div>
+
+      <div class="tw" style="margin-bottom:14px">
+        <table>
+          <thead>
+            <tr>
+              <th>Resumo Equipe</th>
+              ${gradeHoras.map(h => `<th class="r">${h}hr</th>`).join('')}
+              <th class="r">Meta H.H</th>
+              <th class="r">Meta Turno</th>
+              <th class="r">Total (${esc(badgeUnid)})</th>
+              <th class="r">% Meta</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>PRD. HORA</b></td>
+              ${gradeHoras.map(h => `<td class="r" style="font-weight:700;color:${(porHoraTotal[h] || 0) > 0 ? 'var(--accent-text)' : 'var(--mute)'}">${fmtN.format(porHoraTotal[h] || 0)}</td>`).join('')}
+              <td class="r" style="font-weight:700">${fmtN.format(metaEquipeHora)}</td>
+              <td class="r" style="font-weight:700;color:var(--accent-text)">${fmtN.format(metaEquipeTurno)}</td>
+              <td class="r" style="font-weight:800;color:var(--ok)">${fmtN.format(totalUnid)} ${esc(badgeUnid)}</td>
+              <td class="r" style="font-weight:800;color:${pctEquipeTurno >= 100 ? 'var(--ok)' : 'var(--warn)'}">${fmtP(pctEquipeTurno, 1)}</td>
+            </tr>
+            <tr>
+              <td style="color:var(--mute);font-size:13px"><b>% Ritmo Hora</b></td>
+              ${gradeHoras.map(h => {
+                const pctH = metaEquipeHora > 0 ? ((porHoraTotal[h] || 0) / metaEquipeHora) * 100 : 0;
+                return `<td class="r" style="font-size:13px;color:${pctH >= 100 ? 'var(--ok)' : (pctH > 0 ? 'var(--warn)' : 'var(--mute)')}">${fmtP(pctH, 0)}</td>`;
+              }).join('')}
+              <td colspan="4" style="font-size:13px;color:var(--mute);text-align:right">${isFullFluxo ? `Volume em caixas no dia: <b>${fmtN.format(totalCx)} cx</b>` : `Meta unitária: <b>${fmtN.format(metaEquipeHora / Math.max(qtdOps, 1))} ${esc(badgeUnid)}/h</b>`}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tw" style="max-height:420px;overflow-y:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Funcionário</th>
+              <th>Turno</th>
+              <th class="r">Horas</th>
+              ${gradeHoras.map(h => `<th class="r">${h}hr</th>`).join('')}
+              <th class="r">H.H</th>
+              <th class="r">Meta</th>
+              <th class="r">Total</th>
+              <th class="r">% Meta</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${operadores.length ? operadores.map(o => {
+              const metaUn = metaEquipeHora / Math.max(qtdOps, 1);
+              const okHh = o.hhCalc >= metaUn;
+              return `
+              <tr>
+                <td><b>${esc(o.operador)}</b></td>
+                <td>${esc(o.turno)}</td>
+                <td class="r">${o.hrsEfetivas.toFixed(1)}</td>
+                ${gradeHoras.map(h => {
+                  const v = o.porHora[h] || 0;
+                  return `<td class="r" style="${v > 0 ? 'background:rgba(255,196,0,0.14);color:var(--text-strong);font-weight:700' : 'color:var(--mute)'}">${fmtN.format(v)}</td>`;
+                }).join('')}
+                <td class="r" style="font-weight:800;color:${okHh ? 'var(--ok)' : 'var(--warn)'}">${o.hhCalc.toFixed(1)}</td>
+                <td class="r" style="color:var(--mute)">${fmtN.format(o.metaTurno)}</td>
+                <td class="r" style="font-weight:800;color:var(--text-strong)">${fmtN.format(o.total)} <span style="font-size:12px;color:var(--mute)">${esc(badgeUnid)}</span></td>
+                <td class="r" style="font-weight:700;color:${o.pctMetaTurno >= 100 ? 'var(--ok)' : 'var(--crit)'}">${fmtP(o.pctMetaTurno, 1)}</td>
+              </tr>`;
+            }).join('') : `<tr><td colspan="${colSpanVazio}">Sem apontamentos de ${esc(tituloFluxo)} para o dia selecionado.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 function secSepHora() {
   const el = $('#s-sephora');
   if (!el) return;
-
-  const baseRows = sepLinhasFiltradas();
-  const diasDisponiveis = Array.from(new Set(baseRows.map(r => r.dataBr).filter(Boolean))).sort((a,b) => a.split('/').reverse().join('').localeCompare(b.split('/').reverse().join('')));
-
-  let rowsHoraBase = baseRows;
-  if (sepHoraDiaEspec !== 'todos') {
-    rowsHoraBase = rowsHoraBase.filter(r => r.dataBr === sepHoraDiaEspec);
+  if (!SepD) {
+    el.innerHTML = `<h2>Separação · Produção Hora a Hora</h2><p class="sub">Carregando apontamentos hora a hora...</p>`;
+    return;
   }
 
-  // Agrupamento por Hora (00:00 a 23:00 ou horas presentes)
-  const porHoraMap = {};
-  rowsHoraBase.forEach(r => {
-    const h = r.hora || 'Sem Hora';
-    porHoraMap[h] = porHoraMap[h] || { hora: h, linhas: 0, qtdPedida: 0, qtdSeparada: 0, valor: 0, opsSet: new Set() };
-    porHoraMap[h].linhas += r.linhas;
-    porHoraMap[h].qtdPedida += r.qtdPedida;
-    porHoraMap[h].qtdSeparada += r.qtdSeparada;
-    porHoraMap[h].valor += r.valorTotal;
-    if (r.usuario && r.usuario !== 'Não informado') porHoraMap[h].opsSet.add(r.usuario);
+  const metaHhCx = (SepD.metas && SepD.metas.hh) || 100;
+  const metaHhFull = (SepD.metas && (SepD.metas.hhFull || SepD.metas.hhPulmao)) || 15;
+  const horasTurno = (SepD.metas && SepD.metas.horasTurno) || 7;
+
+  // Respeita filtros de modalidade, turno, loja e operador, mas descobre datas disponíveis para Dia Atual e Dia Anterior
+  const rowsSemData = sepTodosRegistros().filter(r => {
+    if (sepDadosFiltro.operacao.length > 0 && !hasArr(sepDadosFiltro.operacao, r.operacao)) return false;
+    if (sepDadosFiltro.turno.length > 0 && !hasArr(sepDadosFiltro.turno, r.turno)) return false;
+    if (sepDadosFiltro.loja.length > 0 && !hasArr(sepDadosFiltro.loja, r.lojaDestino)) return false;
+    if (sepDadosFiltro.operador.length > 0 && !hasArr(sepDadosFiltro.operador, r.operador)) return false;
+    return true;
   });
 
-  const horasOrdenadas = Object.values(porHoraMap).sort((a,b) => {
-    if (a.hora === 'Sem Hora') return 1;
-    if (b.hora === 'Sem Hora') return -1;
-    return a.hora.localeCompare(b.hora);
-  });
+  const datasDesc = getDatasOrdenadasDesc(rowsSemData);
+  const dataAtual = sepDadosFiltro.data.length >= 1 ? sepDadosFiltro.data[0] : (datasDesc[0] || '');
+  const dataAnterior = sepDadosFiltro.data.length >= 2
+    ? sepDadosFiltro.data[1]
+    : (datasDesc.find(d => d !== dataAtual) || '');
 
-  // Agrupamento por Dia
-  const porDiaMap = {};
-  baseRows.forEach(r => {
-    if (!r.dataBr) return;
-    porDiaMap[r.dataBr] = porDiaMap[r.dataBr] || { dia: r.dataBr, iso: r.dataIso, linhas: 0, qtdPedida: 0, qtdSeparada: 0, valor: 0, horasSet: new Set() };
-    porDiaMap[r.dataBr].linhas += r.linhas;
-    porDiaMap[r.dataBr].qtdPedida += r.qtdPedida;
-    porDiaMap[r.dataBr].qtdSeparada += r.qtdSeparada;
-    porDiaMap[r.dataBr].valor += r.valorTotal;
-    if (r.hora) porDiaMap[r.dataBr].horasSet.add(r.hora);
-  });
-  const diasOrdenados = Object.values(porDiaMap).sort((a,b) => b.iso.localeCompare(a.iso));
+  const rowsAtual = dataAtual ? rowsSemData.filter(r => r.data === dataAtual) : [];
+  const rowsAnterior = dataAnterior ? rowsSemData.filter(r => r.data === dataAnterior) : [];
 
-  const totLinhas = rowsHoraBase.reduce((s,r) => s + r.linhas, 0);
-  const totSeparada = rowsHoraBase.reduce((s,r) => s + r.qtdSeparada, 0);
-  const picoHora = horasOrdenadas.length ? horasOrdenadas.slice().sort((a,b) => b.linhas - a.linhas)[0] : null;
-  const mediaHora = horasOrdenadas.length ? (totLinhas / horasOrdenadas.length) : 0;
+  const fracAtual = buildGradeHoraPorFluxo(rowsAtual, false, metaHhCx, horasTurno);
+  const fullAtual = buildGradeHoraPorFluxo(rowsAtual, true, metaHhFull, horasTurno);
+  const fracAnt = buildGradeHoraPorFluxo(rowsAnterior, false, metaHhCx, horasTurno);
+  const fullAnt = buildGradeHoraPorFluxo(rowsAnterior, true, metaHhFull, horasTurno);
 
-  const serieGrafico = sepHoraModo === 'hora' ? horasOrdenadas : diasOrdenados.slice().reverse();
-  const maxValGraf = serieGrafico.length ? Math.max(...serieGrafico.map(x => x.linhas)) * 1.22 : 1;
+  const dataExibidaRef = sepHoraModo === 'ANTERIOR' ? (dataAnterior || 'Sem dia anterior') : (dataAtual || 'Sem data');
+  const fracExibido = sepHoraModo === 'ANTERIOR' ? fracAnt : fracAtual;
+  const fullExibido = sepHoraModo === 'ANTERIOR' ? fullAnt : fullAtual;
+
+  const isGrafFull = sepHoraFluxoGrafico === 'FULL';
+  const horasGraf = Array.from(new Set([
+    ...(isGrafFull ? fullAtual.gradeHoras : fracAtual.gradeHoras),
+    ...(isGrafFull ? fullAnt.gradeHoras : fracAnt.gradeHoras)
+  ])).sort((a, b) => a - b);
+
+  const maxGrafVal = horasGraf.length
+    ? Math.max(...horasGraf.map(h => Math.max(
+        (isGrafFull ? fullAtual.porHoraTotal[h] : fracAtual.porHoraTotal[h]) || 0,
+        (isGrafFull ? fullAnt.porHoraTotal[h] : fracAnt.porHoraTotal[h]) || 0
+      ))) * 1.2
+    : 1;
+
+  const mostrarFrac = sepDadosFiltro.operacao.length === 0 || hasArr(sepDadosFiltro.operacao, 'Separação Fracionado');
+  const mostrarFull = sepDadosFiltro.operacao.length === 0 || hasArr(sepDadosFiltro.operacao, 'Full');
 
   el.innerHTML = `
-    <h2>Separação por Hora · Ritmo e Pico</h2>
-    <p class="sub">Setor Separação · Distribuição horária e diária da produtividade de separação.</p>
+    <h2>Separação · Produção Hora a Hora</h2>
+    <p class="sub">Acompanhamento hora a hora com <b>Dia Atual</b> (${esc(dataAtual || '—')}) e <b>Dia Anterior</b> (${esc(dataAnterior || '—')}), dividido em <b>Separação Fracionado</b> e <b>Full</b>.${esc(sepAtualizadoTxt())}</p>
 
     <div class="grid kpis">
-      ${kpi('Linhas no Período', fmtN.format(totLinhas), sepHoraDiaEspec === 'todos' ? 'Todas as datas filtradas' : `Dia ${esc(sepHoraDiaEspec)}`, 'hl')}
-      ${kpi('Hora de Pico', picoHora ? esc(picoHora.hora) : '-', picoHora ? `${fmtN.format(picoHora.linhas)} linhas separadas` : 'Sem registros', 'hl')}
-      ${kpi('Média por Hora', fmtN.format(Math.round(mediaHora)), `Em ${fmtN.format(horasOrdenadas.length)} faixas horárias`)}
-      ${kpi('Unidades Separadas', fmtN.format(totSeparada), `${fmtN.format(diasOrdenados.length)} dias com atividade`)}
+      ${kpi('Fracionado · Dia Atual', `${fmtN.format(fracAtual.totalUnid)} <span style="font-size:18px;color:var(--mute)">cx</span>`, `Anterior (${esc(dataAnterior || '—')}): ${fmtN.format(fracAnt.totalUnid)} cx · ${fmtDeltaPct(fracAtual.totalUnid, fracAnt.totalUnid).replace(/<[^>]+>/g, '')}`, 'hl')}
+      ${kpi('Full · Dia Atual', `${fmtN.format(fullAtual.totalUnid)} <span style="font-size:18px;color:var(--mute)">plt</span>`, `Anterior (${esc(dataAnterior || '—')}): ${fmtN.format(fullAnt.totalUnid)} plt · ${fmtN.format(fullAtual.totalCx)} cx`, 'hl')}
+      ${kpi('Dia Anterior · Fracionado', `${fmtN.format(fracAnt.totalUnid)} <span style="font-size:18px;color:var(--mute)">cx</span>`, `Data: ${esc(dataAnterior || 'Não disponível')} · ${fmtN.format(fracAnt.qtdOps)} oper.`)}
+      ${kpi('Dia Anterior · Full', `${fmtN.format(fullAnt.totalUnid)} <span style="font-size:18px;color:var(--mute)">plt</span>`, `Data: ${esc(dataAnterior || 'Não disponível')} · ${fmtN.format(fullAnt.totalCx)} cx`)}
     </div>
 
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>${ICONS.clock} RITMO DE SEPARAÇÃO (${sepHoraModo === 'hora' ? 'POR FAIXA HORÁRIA' : 'POR DIA'})</h3>
+        <h3>${ICONS.clock} VISUALIZAÇÃO DO DIA & COMPARATIVO HORA A HORA (ATUAL VS ANTERIOR)</h3>
         <div class="prod-controls">
           <select id="selSepHoraModo" style="font-weight:700;color:var(--accent-text)">
-            <option value="hora" ${sepHoraModo === 'hora' ? 'selected' : ''}>Agrupado por HORA</option>
-            <option value="dia" ${sepHoraModo === 'dia' ? 'selected' : ''}>Agrupado por DIA</option>
+            <option value="COMPARATIVO" ${sepHoraModo === 'COMPARATIVO' ? 'selected' : ''}>Dia Atual + Dia Anterior (Comparativo)</option>
+            <option value="ATUAL" ${sepHoraModo === 'ATUAL' ? 'selected' : ''}>Somente Dia Atual (${esc(dataAtual || '-')})</option>
+            <option value="ANTERIOR" ${sepHoraModo === 'ANTERIOR' ? 'selected' : ''}>Somente Dia Anterior (${esc(dataAnterior || '-')})</option>
           </select>
-
-          <select id="selSepHoraDia" style="font-weight:700;color:var(--ok)">
-            <option value="todos" ${sepHoraDiaEspec === 'todos' ? 'selected' : ''}>-- Todos os Dias (${diasDisponiveis.length}) --</option>
-            ${diasDisponiveis.map(d => `<option value="${esc(d)}" ${sepHoraDiaEspec === d ? 'selected' : ''}>${esc(d)}</option>`).join('')}
+          <select id="selSepHoraFluxoGraf" style="font-weight:700">
+            <option value="FRAC" ${sepHoraFluxoGrafico === 'FRAC' ? 'selected' : ''}>Gráfico: Separação Fracionado (cx)</option>
+            <option value="FULL" ${sepHoraFluxoGrafico === 'FULL' ? 'selected' : ''}>Gráfico: Full (paletes)</option>
           </select>
         </div>
       </div>
 
-      ${serieGrafico.length ? `
-        <div class="bar-chart-container" style="height:285px;padding-top:54px">
+      ${horasGraf.length ? `
+        <div class="bar-chart-container" style="height:260px;padding-top:52px">
           <div class="bar-chart-wrapper">
-            ${serieGrafico.map(item => {
-              const lbl = sepHoraModo === 'hora' ? item.hora : item.dia;
-              const isPico = picoHora && sepHoraModo === 'hora' && item.hora === picoHora.hora;
-              const pctH = (item.linhas / maxValGraf) * 100;
-              const isSel = sepHoraModo === 'dia' && sepHoraDiaEspec === item.dia;
+            ${horasGraf.map(h => {
+              const vAtual = (isGrafFull ? fullAtual.porHoraTotal[h] : fracAtual.porHoraTotal[h]) || 0;
+              const vAnt = (isGrafFull ? fullAnt.porHoraTotal[h] : fracAnt.porHoraTotal[h]) || 0;
+              const vRef = sepHoraModo === 'ANTERIOR' ? vAnt : vAtual;
+              const pctH = (vRef / maxGrafVal) * 100;
+              const hLabel = `${h}hr`;
               const ttItems = [
-                { prod: `${lbl} · ${fmtN.format(item.linhas)} linhas`, sub: `Qtd Separada: ${fmtN.format(item.qtdSeparada)} un.` },
-                { prod: `Valor: ${brlShort(item.valor)}`, sub: sepHoraModo === 'hora' ? `${item.opsSet.size} operadores ativos` : `${item.horasSet.size} horas ativas` }
+                { prod: `Dia Atual (${dataAtual || '-'}): ${fmtN.format(vAtual)} ${isGrafFull ? 'plt' : 'cx'}`, sub: `Faixa ${hLabel}` },
+                { prod: `Dia Anterior (${dataAnterior || '-'}): ${fmtN.format(vAnt)} ${isGrafFull ? 'plt' : 'cx'}`, sub: `Variação vs Ontem: ${fmtDeltaPct(vAtual, vAnt).replace(/<[^>]+>/g, '')}` }
               ];
               return `
-              <div class="bar-chart-col" data-sephora-dia="${sepHoraModo === 'dia' ? esc(item.dia) : ''}" style="${sepHoraModo === 'dia' ? 'cursor:pointer' : ''}">
-                <div class="bar-chart-bar ${isPico || isSel ? 'is-proj' : ''}" style="height:${Math.max(pctH, 6)}%"
-                     data-tooltip-title="${esc(lbl)}"
-                     data-tooltip-color="${isPico || isSel ? 'var(--accent)' : 'var(--blue)'}"
+              <div class="bar-chart-col">
+                <div class="bar-chart-bar" style="height:${Math.max(pctH, 6)}%;${isGrafFull ? 'background:linear-gradient(180deg, #a855f7 0%, #581c87 100%);border-color:rgba(216,180,254,0.5)' : ''}"
+                     data-tooltip-title="${esc(hLabel)}"
+                     data-tooltip-color="${isGrafFull ? '#a855f7' : 'var(--accent)'}"
                      data-tooltip-items="${JSON.stringify(ttItems).replace(/"/g, '&quot;')}">
                   <div class="bar-val-label">
-                    <span>${fmtN.format(item.linhas)}</span>
+                    <span>${fmtN.format(vRef)}</span>
+                    ${sepHoraModo === 'COMPARATIVO' ? `<span style="font-size:11px;color:var(--mute)">ontem: ${fmtN.format(vAnt)}</span>` : ''}
                   </div>
                 </div>
-                <div class="bar-date-label" style="${isPico || isSel ? 'color:var(--accent-text);font-weight:800' : ''}">${esc(sepHoraModo === 'dia' ? lbl.slice(0,5) : lbl)}</div>
+                <div class="bar-date-label">${hLabel}</div>
               </div>`;
             }).join('')}
           </div>
         </div>
-      ` : '<p style="color:var(--mute);padding:16px">Nenhum dado horário encontrado.</p>'}
+      ` : '<p style="color:var(--mute);padding:16px">Sem dados horários disponíveis.</p>'}
     </div>
 
-    <div class="grid two" style="margin-top:20px">
-      <div class="card">
-        <h3>${ICONS.clock} DETALHAMENTO POR HORA (${horasOrdenadas.length} FAIXAS)</h3>
-        <div class="tw">
-          <table>
-            <thead>
-              <tr>
-                <th>Hora</th>
-                <th class="r">Operadores</th>
-                <th class="r">Linhas</th>
-                <th class="r">Qtd Separada</th>
-                <th class="r">% Part.</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${horasOrdenadas.length ? horasOrdenadas.map(h => {
-                const isPico = picoHora && h.hora === picoHora.hora;
-                return `
-                <tr class="${isPico ? 'active-row' : ''}">
-                  <td><b style="color:${isPico ? 'var(--accent-text)' : 'var(--text-strong)'}">${esc(h.hora)}</b> ${isPico ? '<span class="badge-pill badge-lote" style="font-size:11px;padding:1px 6px;margin-left:4px">PICO</span>' : ''}</td>
-                  <td class="r">${fmtN.format(h.opsSet.size)}</td>
-                  <td class="r" style="font-weight:700">${fmtN.format(h.linhas)}</td>
-                  <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(h.qtdSeparada)}</td>
-                  <td class="r">${fmtP(totLinhas ? (h.linhas / totLinhas) * 100 : 0, 1)}</td>
-                </tr>`;
-              }).join('') : '<tr><td colspan="5">Nenhuma faixa horária encontrada.</td></tr>'}
-            </tbody>
-          </table>
-        </div>
-      </div>
+    ${mostrarFrac ? renderBlocoFluxoHora(`Separação Fracionado · ${dataExibidaRef}`, 'cx', fracExibido, '#4285f4', false) : ''}
+    ${mostrarFull ? renderBlocoFluxoHora(`Full · ${dataExibidaRef}`, 'plt', fullExibido, '#a855f7', true) : ''}
 
-      <div class="card">
-        <h3>${ICONS.calendar} DETALHAMENTO POR DIA (${diasOrdenados.length} DIAS · CLIQUE P/ FILTRAR HORAS)</h3>
-        <div class="tw">
-          <table>
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th class="r">Horas Ativas</th>
-                <th class="r">Linhas</th>
-                <th class="r">Qtd Separada</th>
-                <th class="r">Valor</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${diasOrdenados.length ? diasOrdenados.map(d => {
-                const isSel = sepHoraDiaEspec === d.dia;
-                return `
-                <tr class="clickable-row ${isSel ? 'active-row' : ''}" data-sephora-dia="${esc(d.dia)}">
-                  <td><b>${esc(d.dia)}</b></td>
-                  <td class="r">${fmtN.format(d.horasSet.size)}</td>
-                  <td class="r" style="color:var(--accent-text);font-weight:700">${fmtN.format(d.linhas)}</td>
-                  <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(d.qtdSeparada)}</td>
-                  <td class="r">${brlShort(d.valor)}</td>
-                </tr>`;
-              }).join('') : '<tr><td colspan="5">Nenhum dia encontrado.</td></tr>'}
-            </tbody>
-          </table>
-        </div>
+    ${sepHoraModo === 'COMPARATIVO' && dataAnterior ? `
+      <div style="margin-top:26px;padding-top:16px;border-top:2px dashed var(--line)">
+        <h3 style="margin-bottom:4px">${ICONS.calendar} REFERÊNCIA DO DIA ANTERIOR (${esc(dataAnterior)})</h3>
+        <p class="sub" style="margin-bottom:0">Detalhamento hora a hora do dia anterior para comparação direta com o dia atual (${esc(dataAtual || '—')}).</p>
+        ${mostrarFrac ? renderBlocoFluxoHora(`Dia Anterior (${dataAnterior}) · Separação Fracionado`, 'cx', fracAnt, '#64748b', false) : ''}
+        ${mostrarFull ? renderBlocoFluxoHora(`Dia Anterior (${dataAnterior}) · Full`, 'plt', fullAnt, '#7e22ce', true) : ''}
       </div>
-    </div>
+    ` : ''}
   `;
 
   const selModo = $('#selSepHoraModo');
   if (selModo) selModo.addEventListener('change', e => { sepHoraModo = e.target.value; secSepHora(); });
-
-  const selDia = $('#selSepHoraDia');
-  if (selDia) selDia.addEventListener('change', e => { sepHoraDiaEspec = e.target.value; secSepHora(); });
-
-  document.querySelectorAll('[data-sephora-dia]').forEach(el => {
-    const dVal = el.getAttribute('data-sephora-dia');
-    if (!dVal) return;
-    el.addEventListener('click', () => {
-      sepHoraDiaEspec = (sepHoraDiaEspec === dVal) ? 'todos' : dVal;
-      sepHoraModo = 'hora';
-      secSepHora();
-    });
-  });
-
+  const selFlux = $('#selSepHoraFluxoGraf');
+  if (selFlux) selFlux.addEventListener('change', e => { sepHoraFluxoGrafico = e.target.value; secSepHora(); });
   attachTooltipEvents();
 }
 
-/* ---------- SUB-ABA SEPARAÇÃO 3: SEPARAÇÃO OPERADORES ---------- */
+/* ---------- ABA RANKING OPERADORES (SEPARAÇÃO FRACIONADO & FULL) ---------- */
 function secSepOperadores() {
   const el = $('#s-sepoperadores');
   if (!el) return;
-
-  const baseRows = sepLinhasFiltradas();
-
-  const porOpMap = {};
-  baseRows.forEach(r => {
-    const u = r.usuario || 'Não informado';
-    porOpMap[u] = porOpMap[u] || {
-      usuario: u,
-      linhas: 0,
-      qtdPedida: 0,
-      qtdSeparada: 0,
-      valor: 0,
-      diasSet: new Set(),
-      horasSet: new Set(),
-      tiposCount: {}
-    };
-    const o = porOpMap[u];
-    o.linhas += r.linhas;
-    o.qtdPedida += r.qtdPedida;
-    o.qtdSeparada += r.qtdSeparada;
-    o.valor += r.valorTotal;
-    if (r.dataBr) o.diasSet.add(r.dataBr);
-    if (r.hora) o.horasSet.add(r.hora);
-    o.tiposCount[r.tipoSep] = (o.tiposCount[r.tipoSep] || 0) + r.linhas;
-  });
-
-  let opsList = Object.values(porOpMap).map(o => {
-    const topTipo = Object.entries(o.tiposCount).sort((a,b) => b[1] - a[1])[0];
-    const mediaDia = o.diasSet.size ? (o.linhas / o.diasSet.size) : o.linhas;
-    const ef = o.qtdPedida ? (o.qtdSeparada / o.qtdPedida) * 100 : 100;
-    return {
-      ...o,
-      diasAtivos: o.diasSet.size,
-      horasAtivas: o.horasSet.size,
-      mediaDia,
-      ef,
-      tipoPredom: topTipo ? topTipo[0] : '-'
-    };
-  });
-
-  if (sepOpSearch.trim()) {
-    const q = sepOpSearch.trim().toLowerCase();
-    opsList = opsList.filter(o => o.usuario.toLowerCase().includes(q) || o.tipoPredom.toLowerCase().includes(q));
+  if (!SepD) {
+    el.innerHTML = `<h2>Ranking Operadores</h2><p class="sub">Carregando dados de Separação Fracionado e Full...</p>`;
+    return;
   }
 
+  const metaHh = (SepD.metas && SepD.metas.hh) || 100;
+  const metaHhFull = (SepD.metas && (SepD.metas.hhFull || SepD.metas.hhPulmao)) || 15;
+  const horasTurno = (SepD.metas && SepD.metas.horasTurno) || 7;
+  const rows = sepRegistrosFiltrados();
+  const opsAll = calcResumoOperadoresSep(rows, metaHh, horasTurno, metaHhFull);
+
+  const acimaMeta = opsAll.filter(o => o.hh >= o.metaAplicada);
+  const abaixoMeta = opsAll.filter(o => o.hh < o.metaAplicada);
+  const melhorFrac = opsAll.filter(o => !o.isFull).sort((a, b) => b.hh - a.hh)[0];
+  const melhorFull = opsAll.filter(o => o.isFull).sort((a, b) => b.hh - a.hh)[0];
+
+  const q = searchSepOp.trim().toLowerCase();
+  const busca = q ? opsAll.filter(o =>
+    o.operador.toLowerCase().includes(q) ||
+    o.operacao.toLowerCase().includes(q) ||
+    o.turno.toLowerCase().includes(q)
+  ) : opsAll;
+
   const cmp = {
-    linhas: (a,b) => b.linhas - a.linhas,
-    qtd:    (a,b) => b.qtdSeparada - a.qtdSeparada,
-    media:  (a,b) => b.mediaDia - a.mediaDia,
-    nome:   (a,b) => a.usuario.localeCompare(b.usuario)
-  }[sepOpOrdem] || ((a,b) => b.linhas - a.linhas);
+    hh:   (a, b) => b.pctMeta - a.pctMeta,
+    qtd:  (a, b) => b.prodPrincipal - a.prodPrincipal,
+    os:   (a, b) => b.qtdOs - a.qtdOs,
+    nome: (a, b) => a.operador.localeCompare(b.operador)
+  }[sepOpOrdem] || (() => 0);
 
-  opsList.sort(cmp);
-
-  const totLinhas = opsList.reduce((s,o) => s + o.linhas, 0);
-  const totQtdSep = opsList.reduce((s,o) => s + o.qtdSeparada, 0);
-  const topOp = opsList.length ? opsList.slice().sort((a,b) => b.linhas - a.linhas)[0] : null;
-  const mediaPorOp = opsList.length ? (totLinhas / opsList.length) : 0;
-
-  const top10Chart = opsList.slice(0, 10);
-  const maxOpLinhas = top10Chart.length ? Math.max(...top10Chart.map(o => o.linhas)) : 1;
-
-  // Histórico detalhado do operador selecionado
-  const opSelecionadoObj = sepOpSelecionado ? opsList.find(o => o.usuario === sepOpSelecionado) : (topOp || null);
-  const rowsOpDet = opSelecionadoObj ? baseRows.filter(r => r.usuario === opSelecionadoObj.usuario) : [];
+  const lista = busca.slice().sort(cmp);
+  const top15Frac = opsAll.filter(o => !o.isFull).sort((a, b) => b.qtd - a.qtd).slice(0, 15);
+  const maxTopQtd = top15Frac.length ? Math.max(...top15Frac.map(o => o.qtd)) : 1;
 
   el.innerHTML = `
-    <h2>Separação por Operadores · Produtividade</h2>
-    <p class="sub">Setor Separação · Ranking de operadores, linhas separadas, volumes e desempenho individual.</p>
+    <h2>Ranking Operadores · Separação Fracionado & Full</h2>
+    <p class="sub">Separação Fracionado medido em <b>Caixas/Hora (Meta ${metaHh} cx/h)</b> · Full medido em <b>Paletes/Hora (Meta ${metaHhFull} plt/h)</b>.${esc(sepAtualizadoTxt())}</p>
 
     <div class="grid kpis">
-      ${kpi('Operadores Ativos', fmtN.format(opsList.length), `${fmtN.format(totLinhas)} linhas no total`, 'hl')}
-      ${kpi('Destaque (Mais Linhas)', topOp ? esc(topOp.usuario) : '-', topOp ? `${fmtN.format(topOp.linhas)} linhas · ${fmtN.format(topOp.qtdSeparada)} un.` : 'Sem registros', 'hl')}
-      ${kpi('Média de Linhas / Operador', fmtN.format(Math.round(mediaPorOp)), `Total de ${fmtN.format(totQtdSep)} unidades separadas`)}
-      ${kpi('Maior Média Diária', topOp ? `${fmtN.format(Math.round(topOp.mediaDia))} lin/dia` : '-', topOp ? esc(topOp.usuario) : 'Sem registros')}
+      ${kpi('Equipe na Meta', `<span style="color:var(--ok)">${fmtN.format(acimaMeta.length)}</span>`, `${fmtP(opsAll.length ? (acimaMeta.length / opsAll.length) * 100 : 0, 1)} da equipe (${fmtN.format(abaixoMeta.length)} abaixo)`, 'hl')}
+      ${kpi('Líder Fracionado (Cx/h)', melhorFrac ? `<span style="color:var(--accent-text)">${melhorFrac.hh.toFixed(1)} cx/h</span>` : '—', melhorFrac ? `${esc(melhorFrac.operador)} (${fmtN.format(melhorFrac.qtd)} cx)` : 'Sem dados', 'hl')}
+      ${kpi('Líder Full (Paletes/h)', melhorFull ? `<span style="color:#d8b4fe">${melhorFull.hh.toFixed(1)} plt/h</span>` : '—', melhorFull ? `${esc(melhorFull.operador)} (${fmtN.format(melhorFull.linhas)} paletes)` : 'Sem dados')}
+      ${kpi('Metas do Turno (' + horasTurno + 'h)', `${fmtN.format(metaHh * horasTurno)} cx · ${fmtN.format(metaHhFull * horasTurno)} plt`, `Fracionado: ${metaHh} cx/h | Full: ${metaHhFull} plt/h`)}
     </div>
 
-    <div class="grid two" style="margin-top:20px">
-      <div class="card">
-        <h3>${ICONS.trophy} TOP 10 OPERADORES POR LINHAS SEPARADAS ${'<span style="color:var(--mute);font-weight:500;font-size:13px">(clique para inspecionar)</span>'}</h3>
-        <div class="dept-hbar-list" style="grid-template-columns:1fr">
-          ${top10Chart.length ? top10Chart.map((o, idx) => {
-            const barW = maxOpLinhas ? (o.linhas / maxOpLinhas) * 100 : 0;
-            const isSel = opSelecionadoObj && opSelecionadoObj.usuario === o.usuario;
-            const barCol = isSel ? 'var(--accent)' : (idx < 3 ? 'var(--ok)' : 'var(--blue)');
-            return `
-            <div class="dept-hbar-row ${isSel ? 'active-dept' : ''}" data-sepop-select="${esc(o.usuario)}" title="${esc(o.usuario)}: ${fmtN.format(o.linhas)} linhas | ${fmtN.format(o.qtdSeparada)} un.">
-              <div class="dept-hbar-name">${idx + 1}. ${esc(o.usuario)}</div>
-              <div class="dept-hbar-track">
-                <div class="dept-hbar-fill" style="width:${Math.max(barW, 2)}%;background:${barCol}"></div>
-              </div>
-              <div class="dept-hbar-val">
-                <span style="color:var(--accent-text)">${fmtN.format(o.linhas)}</span>
-                <span style="color:var(--mute);font-size:12px;margin-left:4px">linhas</span>
-              </div>
-            </div>`;
-          }).join('') : '<p style="color:var(--mute)">Nenhum operador encontrado.</p>'}
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>${ICONS.users} RAIO-X DO OPERADOR: <span style="color:var(--accent-text)">${opSelecionadoObj ? esc(opSelecionadoObj.usuario) : '-'}</span></h3>
-        ${opSelecionadoObj ? `
-          <div class="occ" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
-            <div class="mini g1"><div class="b"><small>Linhas Sep.</small><strong>${fmtN.format(opSelecionadoObj.linhas)}</strong></div></div>
-            <div class="mini g1"><div class="b"><small>Qtd Separada</small><strong>${fmtN.format(opSelecionadoObj.qtdSeparada)}</strong></div></div>
-            <div class="mini g2"><div class="b"><small>Média / Dia</small><strong>${fmtN.format(Math.round(opSelecionadoObj.mediaDia))}</strong></div></div>
-          </div>
-          <div class="tw">
-            <table>
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Hora</th>
-                  <th>Tipo</th>
-                  <th>Destino</th>
-                  <th class="r">Linhas</th>
-                  <th class="r">Qtd Sep.</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${rowsOpDet.slice(0, 10).map(r => `
-                  <tr>
-                    <td>${esc(r.dataBr || '-')}</td>
-                    <td>${esc(r.hora || '-')}</td>
-                    <td>${esc(r.tipoSep)}</td>
-                    <td><b>${esc(r.loja)}</b></td>
-                    <td class="r" style="font-weight:700">${fmtN.format(r.linhas)}</td>
-                    <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(r.qtdSeparada)}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-        ` : '<p style="color:var(--mute)">Selecione um operador ao lado para ver os detalhes.</p>'}
+    <div class="card" style="margin-top:20px">
+      <h3>${ICONS.trophy} Top 15 Operadores · Separação Fracionado (Caixas)</h3>
+      <div class="dept-hbar-list">
+        ${top15Frac.length ? top15Frac.map((o, idx) => {
+          const barW = maxTopQtd ? (o.qtd / maxTopQtd) * 100 : 0;
+          const barCol = o.hh >= o.metaAplicada ? '#35d49a' : (idx < 3 ? '#4285f4' : '#ffb020');
+          return `
+          <div class="dept-hbar-row" title="${esc(o.operador)}: ${fmtN.format(o.qtd)} cx | HH: ${o.hh.toFixed(1)} cx/h">
+            <div class="dept-hbar-name">${esc(o.operador)}</div>
+            <div class="dept-hbar-track">
+              <div class="dept-hbar-fill" style="width:${Math.max(barW, 3)}%;background:${barCol}"></div>
+            </div>
+            <div class="dept-hbar-val">
+              <span style="color:var(--text-strong)">${fmtN.format(o.qtd)} cx</span>
+              <span style="color:${o.hh >= o.metaAplicada ? 'var(--ok)' : 'var(--warn)'};font-size:13px;margin-left:6px">${o.hh.toFixed(1)} HH</span>
+            </div>
+          </div>`;
+        }).join('') : '<p style="color:var(--mute)">Sem dados de operadores no filtro.</p>'}
       </div>
     </div>
 
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>${ICONS.users} RANKING COMPLETO DE OPERADORES (${fmtN.format(opsList.length)} OPERADORES)</h3>
+        <h3>${ICONS.users} PERFORMANCE INDIVIDUAL DOS OPERADORES (${fmtN.format(lista.length)} REGISTROS)</h3>
         <div class="prod-controls">
           <select id="selSepOpOrdem">
-            <option value="linhas" ${sepOpOrdem === 'linhas' ? 'selected' : ''}>Ordem: maior qtd de linhas</option>
-            <option value="qtd" ${sepOpOrdem === 'qtd' ? 'selected' : ''}>Ordem: maior qtd separada</option>
-            <option value="media" ${sepOpOrdem === 'media' ? 'selected' : ''}>Ordem: maior média por dia</option>
-            <option value="nome" ${sepOpOrdem === 'nome' ? 'selected' : ''}>Ordem: nome do operador (A-Z)</option>
+            <option value="hh" ${sepOpOrdem === 'hh' ? 'selected' : ''}>Ordem: maior % de atingimento da meta</option>
+            <option value="qtd" ${sepOpOrdem === 'qtd' ? 'selected' : ''}>Ordem: maior produção (cx ou plt)</option>
+            <option value="os" ${sepOpOrdem === 'os' ? 'selected' : ''}>Ordem: maior qtd de OS</option>
+            <option value="nome" ${sepOpOrdem === 'nome' ? 'selected' : ''}>Ordem: nome (A-Z)</option>
           </select>
-          <input type="text" id="inputSearchSepOp" placeholder="Buscar operador ou tipo..." value="${esc(sepOpSearch)}" style="width:250px">
+          <input type="text" id="inputSearchSepOp" placeholder="Buscar operador, modalidade, turno..." value="${esc(searchSepOp)}" style="width:280px">
         </div>
       </div>
       <div class="tw">
@@ -4824,521 +5257,511 @@ function secSepOperadores() {
             <tr>
               <th>#</th>
               <th>Operador</th>
-              <th>Fluxo Predom.</th>
-              <th class="r">Dias</th>
-              <th class="r">Linhas</th>
-              <th class="r">Média / Dia</th>
-              <th class="r">Qtd Separada</th>
-              <th class="r">% Part. Linhas</th>
+              <th>Modalidade</th>
+              <th>Turno</th>
+              <th class="r">OS</th>
+              <th class="r">Horas</th>
+              <th class="r">Produção (Unid.)</th>
+              <th class="r">Vol. Caixas</th>
+              <th class="r">HH Real</th>
+              <th class="r">% Meta</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            ${opsList.length ? opsList.map((o, idx) => {
-              const isSel = opSelecionadoObj && opSelecionadoObj.usuario === o.usuario;
+            ${lista.length ? lista.map((o, idx) => {
+              const ok = o.hh >= o.metaAplicada;
               return `
-              <tr class="clickable-row ${isSel ? 'active-row' : ''}" data-sepop-select="${esc(o.usuario)}">
-                <td class="num" style="color:var(--mute);font-weight:700">${idx + 1}</td>
-                <td><b>${esc(o.usuario)}</b></td>
-                <td>${esc(o.tipoPredom)}</td>
-                <td class="r">${fmtN.format(o.diasAtivos)}</td>
-                <td class="r" style="color:var(--accent-text);font-weight:800">${fmtN.format(o.linhas)}</td>
-                <td class="r">${fmtN.format(Math.round(o.mediaDia))}</td>
-                <td class="r" style="color:var(--ok);font-weight:700">${fmtN.format(o.qtdSeparada)}</td>
-                <td class="r">${fmtP(totLinhas ? (o.linhas / totLinhas) * 100 : 0, 1)}</td>
+              <tr>
+                <td style="color:var(--mute);font-weight:700">${idx + 1}º</td>
+                <td><b>${esc(o.operador)}</b></td>
+                <td><span class="dot" style="background:${o.isFull ? '#a855f7' : '#4285f4'}"></span>${esc(o.operacao)}</td>
+                <td>${esc(o.turno)}</td>
+                <td class="r">${fmtN.format(o.qtdOs)}</td>
+                <td class="r">${o.horasTrabalhadas.toFixed(1)}h</td>
+                <td class="r" style="font-weight:800;color:${o.isFull ? '#d8b4fe' : 'var(--accent-text)'}">${fmtN.format(o.prodPrincipal)} ${o.unidade}</td>
+                <td class="r" style="color:var(--mute)">${fmtN.format(o.qtd)} cx</td>
+                <td class="r" style="color:${ok ? 'var(--ok)' : 'var(--warn)'};font-weight:800">${o.hh.toFixed(1)} ${o.unidade}/h</td>
+                <td class="r">${fmtP(o.pctMeta, 0)}</td>
+                <td>${ok ? '<span class="badge-pill badge-verba-sim">NA META</span>' : '<span class="badge-pill badge-verba-nao">ABAIXO</span>'}</td>
               </tr>`;
-            }).join('') : '<tr><td colspan="8">Nenhum operador encontrado.</td></tr>'}
+            }).join('') : '<tr><td colspan="11">Nenhum operador encontrado.</td></tr>'}
           </tbody>
         </table>
       </div>
     </div>
   `;
 
-  document.querySelectorAll('[data-sepop-select]').forEach(el => {
-    el.addEventListener('click', () => {
-      sepOpSelecionado = el.getAttribute('data-sepop-select');
-      secSepOperadores();
-    });
-  });
-
   const selO = $('#selSepOpOrdem');
   if (selO) selO.addEventListener('change', e => { sepOpOrdem = e.target.value; secSepOperadores(); });
-
   const inS = $('#inputSearchSepOp');
   if (inS) inS.addEventListener('input', e => {
-    sepOpSearch = e.target.value;
+    searchSepOp = e.target.value;
     secSepOperadores();
-    keepFocus('#inputSearchSepOp', () => sepOpSearch);
+    keepFocus('#inputSearchSepOp', () => searchSepOp);
   });
-
   attachTooltipEvents();
 }
 
-/* ================= SETORES + FILTROS GLOBAIS (MULTISELECT) ================= */
+* ================= SETORES + TABS + BARRA DE FILTROS ================= */
 const SETORES = [
-  {id:'estoque',     label:'Estoque',        icon:ICONS.box,   tabs:['geral','shelf','aging','ocup','carteira']},
-  {id:'admin',       label:'Administrativo', icon:ICONS.admin, tabs:['transito','prealerta']},
-  {id:'recebimento', label:'Recebimento',    icon:ICONS.inbox, tabs:['recebnotas','recebverba']},
-  {id:'separacao',   label:'Separação',      icon:ICONS.layers,tabs:['sepanual','sephora','sepoperadores']}
+  { id:'estoque', nome:'Estoque', ico:ICONS.box, tabs:[
+    { id:'geral',    nome:'Visão geral',        render:secGeral },
+    { id:'shelf',    nome:'Shelf Life',         render:secShelf },
+    { id:'aging',    nome:'Aging',              render:secAging },
+    { id:'ocup',     nome:'Ocupação',           render:secOcup },
+    { id:'carteira', nome:'Carteira de Pedido', render:secCarteira }
+  ]},
+  { id:'admin', nome:'Administrativo', ico:ICONS.admin, tabs:[
+    { id:'transito',  nome:`${ICONS.truck} Notas em Trânsito`, render:secTransito },
+    { id:'prealerta', nome:`${ICONS.alert} Pré-Alerta (Sobra/Falta)`, render:secPreAlerta }
+  ]},
+  { id:'recebimento', nome:'Recebimento', ico:ICONS.inbox, tabs:[
+    { id:'recebnotas', nome:`${ICONS.doc} Notas de Recebimento`, render:secRecebNotas },
+    { id:'recebverba', nome:`${ICONS.dollar} Verba Logística`, render:secRecebVerba }
+  ]},
+  { id:'separacao', nome:'Separação', ico:ICONS.layers, tabs:[
+    { id:'sepanual',      nome:`${ICONS.calendar} Visão Geral & Analítico`, render:secSepAnual },
+    { id:'sephora',       nome:`${ICONS.clock} Produção Hora a Hora`,       render:secSepHora },
+    { id:'sepoperadores', nome:`${ICONS.users} Ranking Operadores`,         render:secSepOperadores }
+  ]}
 ];
-const TABS = [
-  {id:'geral',         label:'Visão geral',        fn:secGeral},
-  {id:'shelf',         label:'Shelf life',         fn:secShelf},
-  {id:'aging',         label:'Aging',              fn:secAging},
-  {id:'ocup',          label:'Ocupação',           fn:secOcup},
-  {id:'carteira',      label:'Carteira de Pedido', fn:secCarteira},
-  {id:'transito',      label:'Notas em Trânsito',  icon:ICONS.truck,  fn:secTransito},
-  {id:'prealerta',     label:'Pré-Alerta',         icon:ICONS.alert,  fn:secPreAlerta},
-  {id:'recebnotas',  label:'Notas Recebimento',  icon:ICONS.doc,    fn:secRecebNotas},
-  {id:'recebverba',  label:'Verba Logística',    icon:ICONS.dollar, fn:secRecebVerba},
-  {id:'sepanual',      label:'Separação Anual',    icon:ICONS.chart,  fn:secSepAnual},
-  {id:'sephora',       label:'Separação por Hora', icon:ICONS.clock,  fn:secSepHora},
-  {id:'sepoperadores', label:'Separação Operadores',icon:ICONS.users, fn:secSepOperadores}
-];
-let setorAtual = 'estoque';
-let tabAtual = 'geral';
-let filterOcupGalpao = [];
+const TAB_RENDER = Object.fromEntries(SETORES.flatMap(s => s.tabs.map(t => [t.id, t.render])));
+const TAB_SETOR  = Object.fromEntries(SETORES.flatMap(s => s.tabs.map(t => [t.id, s.id])));
 
-const setorDeTab = id => (SETORES.find(s => s.tabs.includes(id)) || SETORES[0]).id;
-const tabsDoSetor = () => {
-  const s = SETORES.find(x => x.id === setorAtual) || SETORES[0];
-  return TABS.filter(t => s.tabs.includes(t.id));
-};
+let activeSetor = 'estoque';
+let activeTab   = 'geral';
+let filterOcupGalpao = [];
 
 function renderSetores(){
   const box = $('#setores');
   if (!box) return;
-  box.innerHTML = SETORES.map(s =>
-    `<button data-setor="${s.id}" aria-pressed="${s.id === setorAtual}"><span class="si">${s.icon}</span><span class="st">${s.label}</span></button>`
-  ).join('');
-  box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
-    setorAtual = b.dataset.setor;
-    const allowed = tabsDoSetor();
-    if (!allowed.some(t => t.id === tabAtual)) tabAtual = allowed[0].id;
-    renderNav();
-    render();
-  }));
+  box.innerHTML = SETORES.map(s => `<button type="button" data-setor="${s.id}" aria-pressed="${s.id === activeSetor}"><span class="si">${s.ico}</span><span class="st">${esc(s.nome)}</span></button>`).join('');
+  box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => setSetor(b.dataset.setor)));
 }
 
 function renderNav(){
-  const nav = $('#tabs'), list = tabsDoSetor();
-  nav.innerHTML = list.map(t =>
-    `<button role="tab" id="tab-${t.id}" data-t="${t.id}" aria-selected="${t.id === tabAtual}">${t.icon ? t.icon + ' ' : ''}${t.label}</button>`
-  ).join('');
+  const s = SETORES.find(x => x.id === activeSetor) || SETORES[0];
+  const nav = $('#tabs');
+  if (!nav) return;
+  nav.innerHTML = s.tabs.map(t => `<button type="button" role="tab" data-t="${t.id}" aria-selected="${t.id === activeTab}">${t.nome}</button>`).join('');
   nav.querySelectorAll('button').forEach(b => b.addEventListener('click', () => setActiveTab(b.dataset.t)));
 }
 
-function setActiveTab(id){
-  setorAtual = setorDeTab(id);
-  tabAtual = id;
+function setSetor(id){
+  const s = SETORES.find(x => x.id === id);
+  if (!s) return;
+  activeSetor = id;
+  document.body.dataset.setor = id;
+  if (activeSetor !== id || !s.tabs.some(t => t.id === activeTab)) activeTab = s.tabs[0].id;
   renderSetores();
   renderNav();
-  document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === id)));
-  document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === 's-' + id));
-  renderFilterBar();
-  render();
+  setActiveTab(activeTab);
 }
 
-function uniq(arr){ return Array.from(new Set(arr.filter(Boolean))); }
-
-/* COMPONENTE MULTISELECT CUSTOMIZADO */
-function msControl(id, label, opts, selectedArr, isActive){
-  const count = selectedArr.length;
-  let btnText = 'Todos';
-  if (count === 1) {
-    const found = opts.find(o => String(o.v).toLowerCase() === String(selectedArr[0]).toLowerCase());
-    btnText = found ? found.t : selectedArr[0];
-  } else if (count > 1) {
-    btnText = `${count} selecionados`;
+function setActiveTab(id){
+  const setor = TAB_SETOR[id];
+  if (setor && setor !== activeSetor) {
+    activeSetor = setor;
+    document.body.dataset.setor = setor;
+    renderSetores();
+    renderNav();
   }
-
-  return `<div class="gf${isActive ? ' on' : ''}">
-    <span class="gf-lbl">${esc(label)}</span>
-    <div class="ms-wrap" data-ms-id="${id}">
-      <button type="button" class="ms-btn" aria-expanded="false">
-        <span class="ms-btn-txt">${esc(btnText)}</span>
-        ${count > 0 ? `<span class="ms-badge">${count}</span>` : ''}
-        <span class="ms-arrow">▼</span>
-      </button>
-      <div class="ms-menu">
-        <input type="text" class="ms-search" placeholder="Filtrar opções..." autocomplete="off">
-        <div class="ms-actions">
-          <span>${opts.length} opções</span>
-          <div class="ms-actions-btns">
-            <button type="button" class="ms-all">Marcar visíveis</button>
-            <button type="button" class="ms-none">Limpar</button>
-          </div>
-        </div>
-        <div class="ms-list">
-          ${opts.map(o => {
-            const chk = isSelectedArr(selectedArr, o.v);
-            return `<label class="ms-item${chk ? ' checked' : ''}" data-val="${esc(o.v)}" data-txt="${esc(o.t.toLowerCase())}">
-              <input type="checkbox" ${chk ? 'checked' : ''}>
-              <span>${esc(o.t)}</span>
-            </label>`;
-          }).join('')}
-        </div>
-      </div>
-    </div>
-  </div>`;
+  activeTab = id;
+  document.querySelectorAll('#tabs button').forEach(x => x.setAttribute('aria-selected', x.dataset.t === id));
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === 's-' + id));
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
-function bindMultiselectEvents(barEl, onChangeCallback){
-  barEl.querySelectorAll('.ms-wrap').forEach(wrap => {
-    const id = wrap.getAttribute('data-ms-id');
-    const btn = wrap.querySelector('.ms-btn');
-    const menu = wrap.querySelector('.ms-menu');
-    const search = wrap.querySelector('.ms-search');
-    const items = Array.from(wrap.querySelectorAll('.ms-item'));
+/* ---------- BARRA DE FILTROS UNIVERSAL ---------- */
+const uniqSorted = arr => Array.from(new Set(arr.filter(x => x !== '' && x != null))).sort((a,b) => String(a).localeCompare(String(b), 'pt-BR', {numeric:true}));
 
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const wasOpen = wrap.classList.contains('open');
-      document.querySelectorAll('.ms-wrap.open').forEach(w => {
-        if (w !== wrap) { w.classList.remove('open'); w.querySelector('.ms-btn').setAttribute('aria-expanded', 'false'); }
-      });
-      wrap.classList.toggle('open', !wasOpen);
-      btn.setAttribute('aria-expanded', String(!wasOpen));
-      if (!wasOpen && search) { search.value = ''; items.forEach(it => it.style.display = ''); setTimeout(() => search.focus(), 30); }
-    });
-
-    menu.addEventListener('click', (e) => e.stopPropagation());
-
-    if (search) {
-      search.addEventListener('input', () => {
-        const q = search.value.trim().toLowerCase();
-        items.forEach(it => {
-          const txt = it.getAttribute('data-txt') || '';
-          it.style.display = (!q || txt.includes(q)) ? '' : 'none';
-        });
+function getFilterControls(){
+  if (!D) return [];
+  const t = activeTab;
+  if (t === 'geral') {
+    const locais = uniqSorted(D.rows.map(r => r.est)).map(v => ({v, l:nice(v)}));
+    const status = uniqSorted(D.rows.map(r => r.status)).map(v => ({v, l:v}));
+    const areas = uniqSorted(D.rows.map(r => r.area).filter(a => a === '1' || a === '7')).map(v => ({v, l:v === '1' ? 'Galpão 1 (Área 1)' : 'Galpão 2 (Área 7)'}));
+    const baseRua = filterArea.length > 0 ? D.rows.filter(r => hasArr(filterArea, r.area)) : D.rows;
+    const ruas = uniqSorted(baseRua.map(r => r.rua).filter(r => r > 0)).map(v => ({v:String(v), l:'Rua ' + v}));
+    return [
+      {id:'g_local',  lbl:'Local de estoque', type:'multi', val:filterLocalEst,  all:'Todos', opts:locais, set:v => { filterLocalEst = v; }},
+      {id:'g_status', lbl:'Status',           type:'multi', val:filterStatusEst, all:'Todos', opts:status, set:v => { filterStatusEst = v; }},
+      {id:'g_area',   lbl:'Galpão',           type:'multi', val:filterArea,      all:'Todos', opts:areas,  set:v => { filterArea = v; filterRua = []; }},
+      {id:'g_rua',    lbl:'Rua',              type:'multi', val:filterRua,       all:'Todas', opts:ruas,   set:v => { filterRua = v; }}
+    ];
+  }
+  if (t === 'shelf') {
+    const order = ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'];
+    const opts = [
+      {v:'ok', l:'Grupo: Saudável'}, {v:'warn', l:'Grupo: Atenção'}, {v:'crit', l:'Grupo: Crítico'}, {v:'none', l:'Grupo: Sem validade'},
+      ...order.map(f => ({v:f, l:f}))
+    ];
+    return [{id:'sh_faixa', lbl:'Faixa / Saúde', type:'multi', val:filterShelfFaixa, all:'Todas', opts, set:v => { filterShelfFaixa = v; }}];
+  }
+  if (t === 'aging') {
+    const order = ['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'];
+    const opts = [
+      {v:'ok', l:'Grupo: Saudável'}, {v:'warn', l:'Grupo: Atenção'}, {v:'crit', l:'Grupo: Crítico'},
+      ...order.map(f => ({v:f, l:f}))
+    ];
+    return [{id:'ag_faixa', lbl:'Faixa / Saúde', type:'multi', val:filterAgingFaixa, all:'Todas', opts, set:v => { filterAgingFaixa = v; }}];
+  }
+  if (t === 'ocup') {
+    return [{id:'oc_g', lbl:'Galpão', type:'multi', val:filterOcupGalpao, all:'Todos (G1 e G2)', opts:[{v:'g1', l:'Galpão 1'}, {v:'g2', l:'Galpão 2'}], set:v => { filterOcupGalpao = v; }}];
+  }
+  if (t === 'carteira') {
+    const C = D.cart || [];
+    const datas = uniqSorted(C.map(r => r.gerReserva)).map(v => ({v, l:v}));
+    const seps = uniqSorted(C.map(r => r.tipoSep)).map(v => ({v, l:v}));
+    const depts = uniqSorted(C.map(r => r.dept)).map(v => ({v, l:v}));
+    const lojas = uniqSorted(C.map(r => r.dest)).map(v => ({v, l:v}));
+    return [
+      {id:'c_st',   lbl:'Situação',       type:'single', val:statusFilter,     all:'Todos', opts:[{v:'pendente', l:'Pendentes'}, {v:'separado', l:'Separados'}, {v:'todos', l:'Todos'}], set:v => { statusFilter = v; }},
+      {id:'c_dt',   lbl:'Data reserva',   type:'multi',  val:dateReservaFilter,all:'Todas', opts:datas, set:v => { dateReservaFilter = v; }},
+      {id:'c_sep',  lbl:'Tipo separação', type:'multi',  val:sepFilter,        all:'Todos', opts:seps,  set:v => { sepFilter = v; }},
+      {id:'c_dept', lbl:'Departamento',   type:'multi',  val:deptFilter,       all:'Todos', opts:depts, set:v => { deptFilter = v; }},
+      {id:'c_dest', lbl:'Loja / destino', type:'multi',  val:targetDestFilter, all:'Todas', opts:lojas, set:v => { targetDestFilter = v; }}
+    ];
+  }
+  if (t === 'transito' && AdminD) {
+    const todas = admNotasTodas();
+    const meses = Array.from(new Set(todas.map(n => nfMes(n.dataEmissao)))).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(v => ({v, l:mesLabel(v)}));
+    const faixas = ['0-7','8-15','16-30','31-60','60+'].map(v => ({v, l:FAIXA_DIAS_LABEL[v]}));
+    const cods = Array.from(new Set(todas.flatMap(n => [sCod(n.origem), sCod(n.destino)]))).filter(c => c && c !== CD_COD);
+    const lojas = cods.map(c => ({v:c, l:getNomeLoja(c)})).sort((a,b) => a.l.localeCompare(b.l));
+    return [
+      {id:'a_sent',  lbl:'Sentido',   type:'multi', val:admFiltro.sentido, all:'Todos', opts:[{v:'saida', l:SENT_LABEL.saida}, {v:'entrada', l:SENT_LABEL.entrada}, {v:'outros', l:SENT_LABEL.outros}], set:v => { admFiltro.sentido = v; admLimite = 150; }},
+      {id:'a_mes',   lbl:'Mês',       type:'multi', val:admFiltro.mes,     all:'Todos', opts:meses,  set:v => { admFiltro.mes = v;     admLimite = 150; }},
+      {id:'a_faixa', lbl:'Trânsito',  type:'multi', val:admFiltro.faixa,   all:'Todos', opts:faixas, set:v => { admFiltro.faixa = v;   admLimite = 150; }},
+      {id:'a_loja',  lbl:'Loja',      type:'multi', val:admFiltro.loja,    all:'Todas', opts:lojas,  set:v => { admFiltro.loja = v;    admLimite = 150; }}
+    ];
+  }
+  if (t === 'prealerta' && AdminD) {
+    const todas = preTodas();
+    const lojas = uniqSorted(todas.map(r => r.loja)).map(v => ({v, l:v}));
+    const sits = uniqSorted(todas.map(r => r.situacao)).map(v => ({v, l:v}));
+    const meses = Array.from(new Set(todas.map(r => r.mes))).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(v => ({v, l:mesLabel(v)}));
+    const sts = uniqSorted(todas.map(r => r.statusCd).filter(Boolean)).map(v => ({v, l:v}));
+    const ctrls = [
+      {id:'p_loja', lbl:'Loja',      type:'multi', val:preFiltro.loja,     all:'Todas', opts:lojas, set:v => { preFiltro.loja = v;     preLimite = 150; }},
+      {id:'p_sit',  lbl:'Documento', type:'multi', val:preFiltro.situacao, all:'Todos', opts:sits,  set:v => { preFiltro.situacao = v; preLimite = 150; }},
+      {id:'p_mes',  lbl:'Mês',       type:'multi', val:preFiltro.mes,      all:'Todos', opts:meses, set:v => { preFiltro.mes = v;      preLimite = 150; }},
+      {id:'p_st',   lbl:'Status CD', type:'multi', val:preFiltro.stCd,     all:'Todos', opts:sts,   set:v => { preFiltro.stCd = v;     preLimite = 150; }}
+    ];
+    if (todas.some(r => r.tipo)) ctrls.splice(2, 0, {id:'p_tipo', lbl:'Tipo', type:'multi', val:preFiltro.tipo, all:'Todos', opts:[{v:'SOBRA', l:'Sobra'}, {v:'FALTA', l:'Falta'}], set:v => { preFiltro.tipo = v; preLimite = 150; }});
+    return ctrls;
+  }
+  if ((t === 'recebnotas' || t === 'recebverba') && RecebD) {
+    const todas = recNotasTodas();
+    const meses = Array.from(new Set(todas.map(n => n.mes))).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b))).map(v => ({v, l:mesLabel(v)}));
+    const lojas = uniqSorted(todas.map(n => n.loja)).map(v => ({v, l:v}));
+    const cargas = uniqSorted(todas.map(n => n.tipoCarga)).map(v => ({v, l:v}));
+    const ops = uniqSorted(todas.map(n => n.tipoOperacao)).map(v => ({v, l:v}));
+    const forns = uniqSorted(todas.map(n => n.fornecedor)).map(v => ({v, l:v}));
+    return [
+      {id:'r_mes',   lbl:'Mês',          type:'multi',  val:recFiltro.mes,        all:'Todos', opts:meses,  set:v => { recFiltro.mes = v;        recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }},
+      {id:'r_loja',  lbl:'Loja / CD',    type:'multi',  val:recFiltro.loja,       all:'Todas', opts:lojas,  set:v => { recFiltro.loja = v;       recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }},
+      {id:'r_verba', lbl:'Paga Verba?',  type:'single', val:recFiltro.pagaVerba,  all:'Todos', opts:[{v:'todos', l:'Todos (Com e Sem)'}, {v:'sim', l:'Somente Com Verba'}, {v:'nao', l:'Somente Sem Verba'}], set:v => { recFiltro.pagaVerba = v; recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }},
+      {id:'r_op',    lbl:'Operação',     type:'multi',  val:recFiltro.tipoOp,     all:'Todas', opts:ops,    set:v => { recFiltro.tipoOp = v;     recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }},
+      {id:'r_carga', lbl:'Tipo Carga',   type:'multi',  val:recFiltro.tipoCarga,  all:'Todos', opts:cargas, set:v => { recFiltro.tipoCarga = v;  recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }},
+      {id:'r_forn',  lbl:'Fornecedor',   type:'multi',  val:recFiltro.fornecedor, all:'Todos', opts:forns,  set:v => { recFiltro.fornecedor = v; recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }}
+    ];
+  }
+  if ((t === 'sepanual' || t === 'sephora' || t === 'sepoperadores') && SepD) {
+    const todas = sepTodosRegistros();
+    const ops = ['Separação Fracionado', 'Full'].map(v => ({v, l:v}));
+    const turnos = uniqSorted(todas.map(r => r.turno)).map(v => ({v, l:v}));
+    const datas = uniqSorted(todas.map(r => r.data)).map(v => ({v, l:v}));
+    const lojas = uniqSorted(todas.map(r => r.lojaDestino).filter(Boolean)).map(v => ({v, l:v}));
+    const operadores = uniqSorted(todas.map(r => r.operador).filter(Boolean)).map(v => ({v, l:v}));
+    const ctrls = [
+      {id:'s_op',    lbl:'Modalidade', type:'multi', val:sepDadosFiltro.operacao, all:'Todas', opts:ops,        set:v => { sepDadosFiltro.operacao = v; sepAnualLimite = 150; }},
+      {id:'s_turno', lbl:'Turno',      type:'multi', val:sepDadosFiltro.turno,    all:'Todos', opts:turnos,     set:v => { sepDadosFiltro.turno = v;    sepAnualLimite = 150; }},
+      {id:'s_data',  lbl:'Data',       type:'multi', val:sepDadosFiltro.data,     all:'Todas', opts:datas,      set:v => { sepDadosFiltro.data = v;     sepAnualLimite = 150; }},
+      {id:'s_loja',  lbl:'Loja Dest.', type:'multi', val:sepDadosFiltro.loja,     all:'Todas', opts:lojas,      set:v => { sepDadosFiltro.loja = v;     sepAnualLimite = 150; }},
+      {id:'s_func',  lbl:'Operador',   type:'multi', val:sepDadosFiltro.operador, all:'Todos', opts:operadores, set:v => { sepDadosFiltro.operador = v; sepAnualLimite = 150; }}
+    ];
+    if (sepMesesDisponiveis.length > 0) {
+      const mesOpts = [
+        ...sepMesesDisponiveis.map(m => ({ v: m, l: formatarChaveMesSep(m) })),
+        { v: 'TODOS', l: 'Todos os Meses (Ano Completo)' }
+      ];
+      ctrls.unshift({
+        id: 's_mes',
+        lbl: 'Mês',
+        type: 'single',
+        val: sepMesSelecionado,
+        all: formatarChaveMesSep(sepMesesDisponiveis[0]),
+        opts: mesOpts,
+        set: v => { trocarMesSep(v); }
       });
     }
-
-    items.forEach(it => {
-      const cb = it.querySelector('input[type="checkbox"]');
-      it.addEventListener('click', (e) => {
-        e.preventDefault();
-        const val = it.getAttribute('data-val');
-        onChangeCallback(id, 'toggle', val);
-      });
-      if (cb) cb.addEventListener('click', (e) => e.stopPropagation());
-    });
-
-    const btnAll = wrap.querySelector('.ms-all');
-    if (btnAll) btnAll.addEventListener('click', () => {
-      const visibleVals = items.filter(it => it.style.display !== 'none').map(it => it.getAttribute('data-val'));
-      onChangeCallback(id, 'addMany', visibleVals);
-    });
-
-    const btnNone = wrap.querySelector('.ms-none');
-    if (btnNone) btnNone.addEventListener('click', () => {
-      onChangeCallback(id, 'clearOne', null);
-    });
-  });
+    return ctrls;
+  }
+  return [];
 }
 
-document.addEventListener('click', () => {
-  document.querySelectorAll('.ms-wrap.open').forEach(w => {
-    w.classList.remove('open');
-    const b = w.querySelector('.ms-btn');
-    if (b) b.setAttribute('aria-expanded', 'false');
-  });
-});
-
-function hasGlobalFilter(){
-  if (setorAtual === 'admin') {
-    return tabAtual === 'transito'
-      ? (admFiltro.sentido.length || admFiltro.mes.length || admFiltro.faixa.length || admFiltro.loja.length)
-      : (preFiltro.loja.length || preFiltro.situacao.length || preFiltro.tipo.length || preFiltro.mes.length || preFiltro.stCd.length);
-  }
-  if (setorAtual === 'recebimento') {
-    return (recFiltro.mes.length || recFiltro.loja.length || recFiltro.tipoCarga.length || recFiltro.statusNota.length || recFiltro.tipoOp.length || recFiltro.fornecedor.length || recFiltro.pagaVerba !== 'todos');
-  }
-  if (setorAtual === 'separacao') {
-    return (sepFiltro.area.length || sepFiltro.tipoSep.length || sepFiltro.status.length || sepFiltro.loja.length || sepFiltro.usuario.length || sepFiltro.dataRef.length);
-  }
-  return (filterLocalEst.length || filterStatusEst.length || filterArea.length || filterRua.length ||
-          filterShelfFaixa.length || filterAgingFaixa.length || dateReservaFilter.length ||
-          sepFilter.length || targetDestFilter.length || deptFilter.length || filterOcupGalpao.length);
-}
-
-function clearGlobalFilters(){
-  if (setorAtual === 'admin') {
-    admFiltro = {sentido:[], mes:[], faixa:[], loja:[]};
-    preFiltro = {loja:[], situacao:[], tipo:[], mes:[], stCd:[], stLoja:[]};
-    admLimite = 150; preLimite = 150;
-  } else if (setorAtual === 'recebimento') {
-    recFiltro = {mes:[], loja:[], tipoCarga:[], statusNota:[], tipoOp:[], fornecedor:[], pagaVerba:'todos'};
-    recLimite = 150; verbaLimite = 150; semVerbaLimite = 150;
-  } else if (setorAtual === 'separacao') {
-    sepFiltro = {area:[], tipoSep:[], status:[], loja:[], usuario:[], dataRef:[]};
-    sepAnualPeriodoEspec = 'todos';
-    sepHoraDiaEspec = 'todos';
-    sepOpSelecionado = '';
-  } else {
-    clearAllFilters();
-  }
-  renderFilterBar();
-  render();
+function resetTabFilters(){
+  const t = activeTab;
+  if (t === 'geral') { filterLocalEst = []; filterStatusEst = []; filterArea = []; filterRua = []; }
+  else if (t === 'shelf') filterShelfFaixa = [];
+  else if (t === 'aging') filterAgingFaixa = [];
+  else if (t === 'ocup') filterOcupGalpao = [];
+  else if (t === 'carteira') { statusFilter = 'pendente'; dateReservaFilter = []; sepFilter = []; deptFilter = []; targetDestFilter = []; }
+  else if (t === 'transito') { admFiltro = {sentido:[], mes:[], faixa:[], loja:[]}; admLimite = 150; }
+  else if (t === 'prealerta') { preFiltro = {loja:[], situacao:[], tipo:[], mes:[], stCd:[], stLoja:[]}; preLimite = 150; }
+  else if (t === 'recebnotas' || t === 'recebverba') { recFiltro = {mes:[], loja:[], tipoCarga:[], statusNota:[], tipoOp:[], fornecedor:[], pagaVerba:'todos'}; recLimite = 150; verbaLimite = 150; semVerbaLimite = 150; }
+  else if (t === 'sepanual' || t === 'sephora' || t === 'sepoperadores') { sepDadosFiltro = { operacao: [], turno: [], data: [], loja: [], operador: [] }; sepAnualModalidade = 'TODAS'; sepAnualLimite = 150; }
 }
 
 function renderFilterBar(){
   const bar = $('#filterbar');
-  if (!bar || !D) return;
-  bar.classList.add('on');
+  if (!bar) return;
+  const openIds = Array.from(bar.querySelectorAll('.ms-wrap.open')).map(el => el.dataset.msId);
+  const ctrls = getFilterControls();
+  bar.classList.toggle('on', ctrls.length > 0);
+  if (!ctrls.length) { bar.innerHTML = ''; return; }
 
-  let controls = '', chips = [];
-  const addChips = (arr, lbl, mapFn) => arr.forEach(v => chips.push({lbl, txt: mapFn ? mapFn(v) : v, clear: () => { const i = arr.findIndex(x => String(x).toLowerCase() === String(v).toLowerCase()); if (i >= 0) arr.splice(i, 1); }}));
-  const optsFrom = (arr, mapFn) => arr.map(v => ({v, t: mapFn ? mapFn(v) : v}));
-
-  if (setorAtual === 'admin') {
-    const todasN = admNotasTodas(), todasP = preTodas();
-    if (tabAtual === 'transito') {
-      const meses = uniq(todasN.map(n => nfMes(n.dataEmissao))).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b)));
-      const lojas = uniq(todasN.flatMap(n => [sCod(n.origem), sCod(n.destino)])).filter(c => c && c !== CD_COD).sort((a,b) => getNomeLoja(a).localeCompare(getNomeLoja(b)));
-      controls = [
-        msControl('admSentido', 'Fluxo', optsFrom(['saida','entrada','outros'], k => SENT_LABEL[k]), admFiltro.sentido, admFiltro.sentido.length > 0),
-        msControl('admMes', 'Mês emissão', optsFrom(meses, mesLabel), admFiltro.mes, admFiltro.mes.length > 0),
-        msControl('admFaixa', 'Tempo trânsito', optsFrom(['0-7','8-15','16-30','31-60','60+'], k => FAIXA_DIAS_LABEL[k]), admFiltro.faixa, admFiltro.faixa.length > 0),
-        msControl('admLoja', 'Loja', optsFrom(lojas, getNomeLoja), admFiltro.loja, admFiltro.loja.length > 0)
-      ].join('');
-      addChips(admFiltro.sentido, 'Fluxo', k => SENT_LABEL[k]);
-      addChips(admFiltro.mes, 'Mês', mesLabel);
-      addChips(admFiltro.faixa, 'Trânsito', k => FAIXA_DIAS_LABEL[k]);
-      addChips(admFiltro.loja, 'Loja', getNomeLoja);
+  const ativos = [];
+  ctrls.forEach(c => {
+    if (c.type === 'multi') {
+      (c.val || []).forEach(v => {
+        const opt = c.opts.find(o => String(o.v) === String(v));
+        ativos.push({ctrl:c, val:v, label:opt ? opt.l : v});
+      });
     } else {
-      const lojas = uniq(todasP.map(r => r.loja)).sort();
-      const sits = uniq(todasP.map(r => r.situacao));
-      const tipos = uniq(todasP.map(r => r.tipo));
-      const meses = uniq(todasP.map(r => r.mes)).sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b)));
-      const sts = uniq(todasP.map(r => r.statusCd));
-      controls = [
-        msControl('preLoja', 'Loja', optsFrom(lojas), preFiltro.loja, preFiltro.loja.length > 0),
-        msControl('preSit', 'Documento', optsFrom(sits), preFiltro.situacao, preFiltro.situacao.length > 0),
-        tipos.length ? msControl('preTipo', 'Tipo', optsFrom(tipos), preFiltro.tipo, preFiltro.tipo.length > 0) : '',
-        msControl('preMes', 'Mês', optsFrom(meses, mesLabel), preFiltro.mes, preFiltro.mes.length > 0),
-        sts.length ? msControl('preSt', 'Status CD', optsFrom(sts), preFiltro.stCd, preFiltro.stCd.length > 0) : ''
-      ].join('');
-      addChips(preFiltro.loja, 'Loja'); addChips(preFiltro.situacao, 'Documento');
-      addChips(preFiltro.tipo, 'Tipo'); addChips(preFiltro.mes, 'Mês', mesLabel); addChips(preFiltro.stCd, 'Status CD');
-    }
-  } else if (setorAtual === 'recebimento') {
-    const todasR = recNotasTodas();
-    const meses = uniq(todasR.map(n => n.mes)).filter(m => m && m !== 'Sem data').sort((a,b) => mesOrdem(a).localeCompare(mesOrdem(b)));
-    const lojas = uniq(todasR.map(n => n.loja)).sort();
-    const cargas = uniq(todasR.map(n => n.tipoCarga)).sort();
-    const ops = uniq(todasR.map(n => n.tipoOperacao)).sort();
-    const forns = uniq(todasR.map(n => n.fornecedor)).sort();
-    const verbaOpts = [{v:'sim', t:'Com Verba Logística'}, {v:'nao', t:'Sem Verba Logística'}];
-
-    controls = [
-      msControl('recMes', 'Mês', optsFrom(meses, mesLabel), recFiltro.mes, recFiltro.mes.length > 0),
-      msControl('recLoja', 'Loja / CD', optsFrom(lojas), recFiltro.loja, recFiltro.loja.length > 0),
-      msControl('recCarga', 'Tipo Carga', optsFrom(cargas), recFiltro.tipoCarga, recFiltro.tipoCarga.length > 0),
-      msControl('recOp', 'Operação', optsFrom(ops), recFiltro.tipoOp, recFiltro.tipoOp.length > 0),
-      msControl('recForn', 'Fornecedor', optsFrom(forns), recFiltro.fornecedor, recFiltro.fornecedor.length > 0),
-      `<div class="gf${recFiltro.pagaVerba !== 'todos' ? ' on' : ''}"><span class="gf-lbl">Verba</span><select id="gfRecVerba"><option value="todos"${recFiltro.pagaVerba==='todos'?' selected':''}>Todos</option>${verbaOpts.map(o => `<option value="${esc(o.v)}"${recFiltro.pagaVerba===o.v?' selected':''}>${esc(o.t)}</option>`).join('')}</select></div>`
-    ].join('');
-
-    addChips(recFiltro.mes, 'Mês', mesLabel);
-    addChips(recFiltro.loja, 'Loja');
-    addChips(recFiltro.tipoCarga, 'Carga');
-    addChips(recFiltro.tipoOp, 'Operação');
-    addChips(recFiltro.fornecedor, 'Fornecedor');
-    if (recFiltro.pagaVerba !== 'todos') {
-      chips.push({lbl:'Verba', txt: recFiltro.pagaVerba === 'sim' ? 'Com Verba' : 'Sem Verba', clear: () => { recFiltro.pagaVerba = 'todos'; }});
-    }
-  } else if (setorAtual === 'separacao') {
-    const todasS = sepLinhasTodas();
-    const areas = uniq(todasS.map(r => r.area)).sort();
-    const tipos = uniq(todasS.map(r => r.tipoSep)).sort();
-    const statuses = uniq(todasS.map(r => r.status)).sort();
-    const lojas = uniq(todasS.map(r => r.loja)).sort();
-    const users = uniq(todasS.map(r => r.usuario)).sort();
-    const datas = uniq(todasS.map(r => r.dataBr)).sort((a,b) => b.split('/').reverse().join('').localeCompare(a.split('/').reverse().join('')));
-
-    controls = [
-      msControl('sepArea', 'Área / Galpão', optsFrom(areas, a => a === '1' ? 'Galpão 1 (Área 1)' : (a === '7' ? 'Galpão 2 (Área 7)' : a)), sepFiltro.area, sepFiltro.area.length > 0),
-      msControl('sepTipo', 'Tipo Separação', optsFrom(tipos), sepFiltro.tipoSep, sepFiltro.tipoSep.length > 0),
-      msControl('sepStatus', 'Status', optsFrom(statuses), sepFiltro.status, sepFiltro.status.length > 0),
-      msControl('sepLoja', 'Loja / Destino', optsFrom(lojas), sepFiltro.loja, sepFiltro.loja.length > 0),
-      msControl('sepUser', 'Operador', optsFrom(users), sepFiltro.usuario, sepFiltro.usuario.length > 0),
-      msControl('sepData', 'Data', optsFrom(datas), sepFiltro.dataRef, sepFiltro.dataRef.length > 0)
-    ].join('');
-
-    addChips(sepFiltro.area, 'Área', a => a === '1' ? 'Galpão 1' : (a === '7' ? 'Galpão 2' : a));
-    addChips(sepFiltro.tipoSep, 'Tipo');
-    addChips(sepFiltro.status, 'Status');
-    addChips(sepFiltro.loja, 'Loja');
-    addChips(sepFiltro.usuario, 'Operador');
-    addChips(sepFiltro.dataRef, 'Data');
-  } else {
-    const locais = uniq(D.rows.map(r => r.est)).sort();
-    const galpoes = [{v:'1', t:'Galpão 1 (Área 1)'}, {v:'7', t:'Galpão 2 (Área 7)'}];
-    const ruas = uniq(D.rows.map(r => r.rua).filter(r => r > 0)).sort((a,b) => a - b).map(r => ({v:String(r), t:'Rua ' + r}));
-    const dests = uniq(D.cart.map(r => r.dest)).sort();
-    const depts = uniq(D.cart.map(r => r.dept)).sort();
-    const tipos = uniq(D.cart.map(r => r.tipoSep)).sort();
-    const datas = uniq(D.cart.map(r => r.gerReserva)).sort();
-    const ocupOpts = [{v:'g1', t:'Galpão 1'}, {v:'g2', t:'Galpão 2'}];
-
-    if (tabAtual === 'geral') {
-      controls = [
-        msControl('estLocal', 'Local estoque', optsFrom(locais, nice), filterLocalEst, filterLocalEst.length > 0),
-        msControl('estGalpao', 'Galpão', galpoes, filterArea, filterArea.length > 0),
-        msControl('estRua', 'Rua', ruas, filterRua, filterRua.length > 0)
-      ].join('');
-    } else if (tabAtual === 'shelf') {
-      const faixas = ['0 a 5 dias','06 a 15 dias','16 a 30 dias','31 a 60 dias','61 a 90 dias','Acima de 90 dias','Sem data de Validade'];
-      controls = [msControl('estShelf', 'Faixa shelf life', optsFrom(faixas), filterShelfFaixa, filterShelfFaixa.length > 0)].join('');
-    } else if (tabAtual === 'aging') {
-      const faixas = ['0 a 15 dias','16 a 30 dias','30 a 60 dias','Acima de 60 dias'];
-      controls = [msControl('estAging', 'Faixa aging', optsFrom(faixas), filterAgingFaixa, filterAgingFaixa.length > 0)].join('');
-    } else if (tabAtual === 'ocup') {
-      controls = [msControl('estOcup', 'Galpão', ocupOpts, filterOcupGalpao, filterOcupGalpao.length > 0)].join('');
-    } else if (tabAtual === 'carteira') {
-      controls = [
-        msControl('cartData', 'Geração reserva', optsFrom(datas), dateReservaFilter, dateReservaFilter.length > 0),
-        msControl('cartTipo', 'Tipo separação', optsFrom(tipos), sepFilter, sepFilter.length > 0),
-        msControl('cartDest', 'Destino', optsFrom(dests), targetDestFilter, targetDestFilter.length > 0),
-        msControl('cartDept', 'Departamento', optsFrom(depts), deptFilter, deptFilter.length > 0)
-      ].join('');
-    }
-    addChips(filterLocalEst, 'Local', nice);
-    addChips(filterArea, 'Galpão', v => v === '1' ? 'Galpão 1' : 'Galpão 2');
-    addChips(filterRua, 'Rua', v => 'Rua ' + v);
-    addChips(filterShelfFaixa, 'Shelf');
-    addChips(filterAgingFaixa, 'Aging');
-    addChips(filterOcupGalpao, 'Ocupação', v => v === 'g1' ? 'Galpão 1' : 'Galpão 2');
-    addChips(dateReservaFilter, 'Reserva');
-    addChips(sepFilter, 'Tipo');
-    addChips(targetDestFilter, 'Destino');
-    addChips(deptFilter, 'Depto');
-  }
-
-  const anyOn = hasGlobalFilter();
-  bar.innerHTML = `<div class="gf-row">
-    <span class="gf-title">${ICONS.filter} Filtros</span>
-    ${controls}
-    <button type="button" class="gf-clear" id="gfClear"${anyOn ? '' : ' disabled'}>Limpar filtros</button>
-  </div>
-  <div class="gf-chips">${chips.map((c,i) => `<button type="button" class="chip" data-ci="${i}" title="Remover filtro"><b>${esc(c.lbl)}:</b> ${esc(c.txt)} ×</button>`).join('')}</div>`;
-
-  const applyArrAction = (arr, action, val) => {
-    if (action === 'toggle') toggleArr(arr, val);
-    else if (action === 'addMany') (val || []).forEach(v => { if (!isSelectedArr(arr, v)) arr.push(v); });
-    else if (action === 'clearOne') arr.length = 0;
-  };
-
-  const mapIdToArr = {
-    admSentido: admFiltro.sentido, admMes: admFiltro.mes, admFaixa: admFiltro.faixa, admLoja: admFiltro.loja,
-    preLoja: preFiltro.loja, preSit: preFiltro.situacao, preTipo: preFiltro.tipo, preMes: preFiltro.mes, preSt: preFiltro.stCd,
-    recMes: recFiltro.mes, recLoja: recFiltro.loja, recCarga: recFiltro.tipoCarga, recOp: recFiltro.tipoOp, recForn: recFiltro.fornecedor,
-    sepArea: sepFiltro.area, sepTipo: sepFiltro.tipoSep, sepStatus: sepFiltro.status, sepLoja: sepFiltro.loja, sepUser: sepFiltro.usuario, sepData: sepFiltro.dataRef,
-    estLocal: filterLocalEst, estGalpao: filterArea, estRua: filterRua,
-    estShelf: filterShelfFaixa, estAging: filterAgingFaixa, estOcup: filterOcupGalpao,
-    cartData: dateReservaFilter, cartTipo: sepFilter, cartDest: targetDestFilter, cartDept: deptFilter
-  };
-
-  bindMultiselectEvents(bar, (msId, action, val) => {
-    const targetArr = mapIdToArr[msId];
-    if (targetArr) {
-      applyArrAction(targetArr, action, val);
-      admLimite = 150; preLimite = 150; recLimite = 150; verbaLimite = 150; semVerbaLimite = 150;
-      renderFilterBar();
-      render();
+      const def = c.id === 'c_st' ? 'pendente' : (c.id === 's_mes' ? sepMesesDisponiveis[0] : 'todos');
+      if (c.val && c.val !== def) {
+        const opt = c.opts.find(o => String(o.v) === String(c.val));
+        ativos.push({ctrl:c, val:c.val, label:opt ? opt.l : c.val});
+      }
     }
   });
 
-  const selRecV = $('#gfRecVerba');
-  if (selRecV) selRecV.addEventListener('change', e => {
-    recFiltro.pagaVerba = e.target.value;
-    recLimite = 150; verbaLimite = 150; semVerbaLimite = 150;
-    renderFilterBar();
-    render();
+  bar.innerHTML = `
+    <div class="gf-row">
+      <span class="gf-title">${ICONS.filter} Filtros</span>
+      ${ctrls.map(c => {
+        if (c.type === 'single') {
+          const def = c.id === 'c_st' ? 'pendente' : (c.id === 's_mes' ? sepMesesDisponiveis[0] : 'todos');
+          const on = c.val && c.val !== def;
+          const allOpt = c.opts.some(o => o.v === 'todos') ? '' : `<option value="todos">${esc(c.all)}</option>`;
+          return `<label class="gf ${on ? 'on' : ''}">
+            <span class="gf-lbl">${esc(c.lbl)}</span>
+            <select data-gf="${c.id}">${allOpt}${c.opts.map(o => `<option value="${esc(o.v)}" ${String(o.v) === String(c.val) ? 'selected' : ''}>${esc(o.l)}</option>`).join('')}</select>
+          </label>`;
+        } else {
+          const selArr = c.val || [];
+          const on = selArr.length > 0;
+          let btnLabel = c.all;
+          if (selArr.length === 1) {
+            const found = c.opts.find(o => String(o.v) === String(selArr[0]));
+            btnLabel = found ? found.l : selArr[0];
+          } else if (selArr.length > 1) {
+            btnLabel = `${selArr.length} selecionados`;
+          }
+          const showSearch = c.opts.length > 6;
+          return `<div class="gf ${on ? 'on' : ''}">
+            <span class="gf-lbl">${esc(c.lbl)}</span>
+            <div class="ms-wrap" data-ms-id="${c.id}">
+              <button type="button" class="ms-btn" aria-expanded="false">
+                <span class="ms-btn-txt">${esc(btnLabel)}</span>
+                ${selArr.length > 0 ? `<span class="ms-badge">${selArr.length}</span>` : ''}
+                <span class="ms-arrow">▼</span>
+              </button>
+              <div class="ms-menu">
+                ${showSearch ? `<input type="text" class="ms-search" placeholder="Pesquisar..." />` : ''}
+                <div class="ms-actions">
+                  <span>${selArr.length} de ${c.opts.length}</span>
+                  <div class="ms-actions-btns">
+                    <button type="button" data-ms-all="${c.id}">Todos</button>
+                    <button type="button" data-ms-none="${c.id}">Limpar</button>
+                  </div>
+                </div>
+                <div class="ms-list">
+                  ${c.opts.map(o => {
+                    const checked = isSelectedArr(selArr, o.v);
+                    return `<label class="ms-item ${checked ? 'checked' : ''}" data-ms-text="${esc(String(o.l).toLowerCase())}">
+                      <input type="checkbox" data-ms-ctrl="${c.id}" value="${esc(o.v)}" ${checked ? 'checked' : ''} />
+                      <span title="${esc(o.l)}">${esc(o.l)}</span>
+                    </label>`;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+          </div>`;
+        }
+      }).join('')}
+      <button type="button" class="gf-clear" id="gfClear" ${ativos.length ? '' : 'disabled'}>✕ Limpar</button>
+    </div>
+    ${ativos.length ? `<div class="gf-chips">${ativos.map((a, idx) => `<button type="button" class="chip" data-chip-idx="${idx}" title="Remover filtro"><b>${esc(a.ctrl.lbl)}:</b> ${esc(a.label)} ✕</button>`).join('')}</div>` : ''}
+  `;
+
+  openIds.forEach(id => {
+    const wrap = bar.querySelector(`.ms-wrap[data-ms-id="${id}"]`);
+    if (wrap) {
+      wrap.classList.add('open');
+      const btn = wrap.querySelector('.ms-btn');
+      if (btn) btn.setAttribute('aria-expanded', 'true');
+    }
   });
 
-  const clrBtn = $('#gfClear');
-  if (clrBtn) clrBtn.addEventListener('click', clearGlobalFilters);
-
-  bar.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', () => {
-    const c = chips[+ch.dataset.ci];
-    if (c) { c.clear(); renderFilterBar(); render(); }
+  bar.querySelectorAll('select[data-gf]').forEach(sel => sel.addEventListener('change', () => {
+    const c = ctrls.find(x => x.id === sel.dataset.gf);
+    if (c) {
+      c.set(sel.value);
+      if (c.id !== 's_mes') render();
+    }
   }));
+
+  bar.querySelectorAll('.ms-btn').forEach(btn => btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const wrap = btn.closest('.ms-wrap');
+    const wasOpen = wrap.classList.contains('open');
+    bar.querySelectorAll('.ms-wrap.open').forEach(w => {
+      w.classList.remove('open');
+      const b = w.querySelector('.ms-btn');
+      if (b) b.setAttribute('aria-expanded', 'false');
+    });
+    if (!wasOpen) {
+      wrap.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      const inp = wrap.querySelector('.ms-search');
+      if (inp) setTimeout(() => inp.focus(), 10);
+    }
+  }));
+
+  bar.querySelectorAll('.ms-menu').forEach(menu => menu.addEventListener('click', e => e.stopPropagation()));
+
+  bar.querySelectorAll('.ms-search').forEach(inp => inp.addEventListener('input', () => {
+    const q = inp.value.trim().toLowerCase();
+    const list = inp.closest('.ms-menu').querySelector('.ms-list');
+    list.querySelectorAll('.ms-item').forEach(item => {
+      const txt = item.dataset.msText || '';
+      item.style.display = (!q || txt.includes(q)) ? 'flex' : 'none';
+    });
+  }));
+
+  bar.querySelectorAll('input[data-ms-ctrl]').forEach(chk => chk.addEventListener('change', () => {
+    const c = ctrls.find(x => x.id === chk.dataset.msCtrl);
+    if (!c) return;
+    const next = [...(c.val || [])];
+    toggleArr(next, chk.value);
+    c.set(next);
+    render();
+  }));
+
+  bar.querySelectorAll('button[data-ms-all]').forEach(btn => btn.addEventListener('click', () => {
+    const c = ctrls.find(x => x.id === btn.dataset.msAll);
+    if (!c) return;
+    c.set(c.opts.map(o => String(o.v)));
+    render();
+  }));
+
+  bar.querySelectorAll('button[data-ms-none]').forEach(btn => btn.addEventListener('click', () => {
+    const c = ctrls.find(x => x.id === btn.dataset.msNone);
+    if (!c) return;
+    c.set([]);
+    render();
+  }));
+
+  bar.querySelectorAll('[data-chip-idx]').forEach(btn => btn.addEventListener('click', () => {
+    const a = ativos[+btn.dataset.chipIdx];
+    if (!a) return;
+    if (a.ctrl.type === 'multi') {
+      const next = (a.ctrl.val || []).filter(v => String(v) !== String(a.val));
+      a.ctrl.set(next);
+    } else {
+      const defVal = a.ctrl.id === 'c_st' ? 'pendente' : (a.ctrl.id === 's_mes' ? sepMesesDisponiveis[0] : 'todos');
+      a.ctrl.set(defVal);
+      if (a.ctrl.id === 's_mes') return;
+    }
+    render();
+  }));
+
+  const clr = $('#gfClear');
+  if (clr) clr.addEventListener('click', () => { resetTabFilters(); render(); });
 }
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.ms-wrap')) {
+    document.querySelectorAll('.ms-wrap.open').forEach(w => {
+      w.classList.remove('open');
+      const b = w.querySelector('.ms-btn');
+      if (b) b.setAttribute('aria-expanded', 'false');
+    });
+  }
+});
 
 function render(){
   if (!D) return;
-  document.body.setAttribute('data-setor', setorAtual);
+  const fn = TAB_RENDER[activeTab] || secGeral;
+  fn();
   renderFilterBar();
-  const currentTabObj = TABS.find(t => t.id === tabAtual) || TABS[0];
-  currentTabObj.fn();
 }
 
-function tick(){
-  const ms = CONFIG.ATUALIZAR_MIN*60*1000, t0 = Date.now(), b = $('#bar');
-  const step = () => {
-    const p = ((Date.now()-t0)%ms)/ms;
-    b.style.width = (p*100)+'%';
-    if(p < .02 && Date.now()-t0 > 1000) load();
-    requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
-}
+renderSetores();
+renderNav();
+document.body.dataset.setor = activeSetor;
+setActiveTab(activeTab);
 
-function initTheme(){
-  const savedTheme = localStorage.getItem('cdr-theme') || 'dark';
-  if(savedTheme === 'light'){
-    document.body.classList.add('light-theme');
-    $('#themeToggle').innerHTML = `${ICONS.moon} <span>Tema Escuro</span>`;
-  } else {
-    $('#themeToggle').innerHTML = `${ICONS.sun} <span>Tema Claro</span>`;
+const sideToggle = $('#sideToggle');
+if (sideToggle) sideToggle.addEventListener('click', () => document.body.classList.toggle('side-collapsed'));
+
+/* ===== CONTROLE DE TEMA CLARO / ESCURO ===== */
+const themeToggle = $('#themeToggle');
+function applyTheme(isLight) {
+  document.body.classList.toggle('light-theme', isLight);
+  if (themeToggle) {
+    themeToggle.innerHTML = isLight
+      ? `${ICONS.moon} <span>Tema Escuro</span>`
+      : `${ICONS.sun} <span>Tema Claro</span>`;
   }
 }
-
-$('#themeToggle').addEventListener('click', () => {
-  const isLight = document.body.classList.toggle('light-theme');
-  localStorage.setItem('cdr-theme', isLight ? 'light' : 'dark');
-  $('#themeToggle').innerHTML = isLight ? `${ICONS.moon} <span>Tema Escuro</span>` : `${ICONS.sun} <span>Tema Claro</span>`;
-});
-
-$('#basis').addEventListener('click', e => {
-  const b = e.target.closest('button'); if(!b) return;
-  basis = b.dataset.b;
-  $('#basis').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
-  render();
-});
-
-function setTv(on){
-  document.body.classList.toggle('tvmode', on);
-  $('#tv').setAttribute('aria-pressed', String(on));
-  clearInterval(tvTimer);
-  if(on){
-    const list = tabsDoSetor().map(t => t.id);
-    tvTimer = setInterval(() => {
-      const next = list[(list.indexOf(tabAtual)+1)%list.length];
-      setActiveTab(next);
-    }, CONFIG.TV_SEGUNDOS*1000);
-  }
+const savedTheme = localStorage.getItem('cdr_theme');
+if (savedTheme === 'light') {
+  applyTheme(true);
 }
-$('#tv').addEventListener('click', () => setTv(!document.body.classList.contains('tvmode')));
-document.addEventListener('keydown', e => {
-  if(e.key === 'Escape' && document.body.classList.contains('tvmode')) setTv(false);
-});
-
-const sideToggleBtn = $('#sideToggle');
-if (sideToggleBtn) {
-  sideToggleBtn.addEventListener('click', () => {
-    document.body.classList.toggle('side-collapsed');
+if (themeToggle) {
+  themeToggle.addEventListener('click', () => {
+    const nextIsLight = !document.body.classList.contains('light-theme');
+    applyTheme(nextIsLight);
+    localStorage.setItem('cdr_theme', nextIsLight ? 'light' : 'dark');
   });
 }
 
-initTheme();
-renderSetores();
-renderNav();
-renderFilterBar();
-$('#s-geral').classList.add('on');
+$('#basis').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  basis=b.dataset.b;
+  $('#basis').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  render();
+}));
+
+function setTv(on){
+  document.body.classList.toggle('tvmode',on);
+  $('#tv').setAttribute('aria-pressed',on);
+  clearInterval(tvTimer);
+  const bar=$('#bar'); bar.style.transition='none'; bar.style.width='0%';
+  if(!on) return;
+  const tabs=[...document.querySelectorAll('#tabs button')];
+  if (!tabs.length) return;
+  const step=()=>{
+    bar.style.transition='none'; bar.style.width='0%';
+    requestAnimationFrame(()=>{bar.style.transition=`width ${CONFIG.TV_SEGUNDOS}s linear`;bar.style.width='100%';});
+  };
+  step();
+  tvTimer=setInterval(()=>{
+    const i=tabs.findIndex(t=>t.getAttribute('aria-selected')==='true');
+    tabs[(i+1)%tabs.length].click(); step();
+  },CONFIG.TV_SEGUNDOS*1000);
+}
+$('#tv').addEventListener('click',()=>setTv(!document.body.classList.contains('tvmode')));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')setTv(false);});
+
 load();
-tick();
+if(CONFIG.ATUALIZAR_MIN>0) setInterval(load, CONFIG.ATUALIZAR_MIN*60*1000);
 </script>
 </body>
 </html>
