@@ -4861,51 +4861,6 @@ function secSepAnual() {
 
     <div class="card" style="margin-top:20px">
       <div class="card-header-action">
-        <h3>${ICONS.calendar} TABELA MENSAL CONSOLIDADA (CLIQUE NO MÊS PARA ABRIR)</h3>
-      </div>
-      <div class="tw">
-        <table>
-          <thead>
-            <tr>
-              <th>Mês / Ano</th>
-              <th class="r">Dias Oper.</th>
-              <th class="r">OS</th>
-              <th class="r">Oper.</th>
-              <th class="r">Separação Fracionado (cx)</th>
-              <th class="r">Full (Paletes)</th>
-              <th class="r">Full (cx)</th>
-              <th class="r">Total Geral (cx)</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${mesesCrono.length ? mesesCrono.map(m => `
-              <tr class="clickable-row ${sepMesSelecionado === m.mesChave ? 'active-row' : ''}" data-anual-mes="${esc(m.mesChave)}">
-                <td><b>${esc(m.label)}</b></td>
-                <td class="r">${fmtN.format(m.qtdDias)}</td>
-                <td class="r">${fmtN.format(m.qtdOs)}</td>
-                <td class="r">${fmtN.format(m.qtdOps)}</td>
-                <td class="r" style="color:var(--blue);font-weight:700">${fmtN.format(m.fracCx)}</td>
-                <td class="r" style="color:#d8b4fe;font-weight:800">${fmtN.format(m.fullPlt)} plt</td>
-                <td class="r" style="color:var(--mute)">${fmtN.format(m.fullCx)}</td>
-                <td class="r" style="font-weight:800;color:var(--text-strong)">${fmtN.format(m.totalCx)}</td>
-              </tr>`).join('') : '<tr><td colspan="8">Nenhum mês encontrado.</td></tr>'}
-            <tr class="tot">
-              <td><b>Total Período</b></td>
-              <td class="r">${fmtN.format(diasUnicos)}</td>
-              <td class="r">${fmtN.format(osUnicas)}</td>
-              <td class="r">${fmtN.format(opsUnicos)}</td>
-              <td class="r" style="color:var(--blue)">${fmtN.format(fracCx)}</td>
-              <td class="r" style="color:#d8b4fe">${fmtN.format(fullPlt)} plt</td>
-              <td class="r">${fmtN.format(fullCx)}</td>
-              <td class="r" style="color:var(--ok)">${fmtN.format(totalCx)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:20px">
-      <div class="card-header-action">
         <h3>${ICONS.layers} DETALHAMENTO ANALÍTICO DE REGISTROS (${fmtN.format(lista.length)} REGISTROS)</h3>
         <div class="prod-controls">
           <select id="selSepAnualOrdem">
