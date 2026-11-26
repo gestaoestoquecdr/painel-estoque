@@ -102,12 +102,13 @@
           ]
         },
         "2026_11": {
-          "registros": 24591,
+          "registros": 26008,
           "arquivos": [
             "dados/picking_2026_11_p1.json",
             "dados/picking_2026_11_p2.json",
             "dados/picking_2026_11_p3.json",
-            "dados/picking_2026_11_p4.json"
+            "dados/picking_2026_11_p4.json",
+            "dados/picking_2026_11_p5.json"
           ]
         }
       }
@@ -177,7 +178,7 @@
           ]
         },
         "2026_11": {
-          "registros": 2984,
+          "registros": 3230,
           "arquivos": [
             "dados/pulmao_2026_11.json"
           ]
@@ -275,7 +276,7 @@
           ]
         },
         "2026_11": {
-          "registros": 1795,
+          "registros": 3186,
           "arquivos": [
             "dados/blocado_2026_11.json"
           ]
@@ -283,5 +284,5 @@
       }
     }
   },
-  "ultimaAtualizacao": "2026-11-24T20:16:39.886Z"
+  "ultimaAtualizacao": "2026-11-26T12:02:16.372Z"
 }
