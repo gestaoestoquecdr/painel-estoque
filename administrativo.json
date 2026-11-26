@@ -32088,6 +32088,25 @@
       "observacao": "100383"
     },
     {
+      "carimboDataHora": "09/11/2026 00:00:00",
+      "diasSemRetorno": 17,
+      "loja": "SANTOS",
+      "pedido": "100363",
+      "dataEmissao": "",
+      "nf": "17900000000000",
+      "codProd": "227055 -",
+      "prod": "MAC OVOS NINHO DONA BENTA 500G",
+      "qtd": 1,
+      "um": "CAIXA",
+      "ocorrencia": "FALTA",
+      "valorUnitario": 64.9,
+      "valorTotal": 64.9,
+      "origem": "CD BARUERI",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
+      "observacao": ""
+    },
+    {
       "carimboDataHora": "10/11/2026 00:00:00",
       "diasSemRetorno": 1,
       "loja": "GUARUJÁ",
@@ -32373,6 +32392,25 @@
       "observacao": ""
     },
     {
+      "carimboDataHora": "14/11/2026 00:00:00",
+      "diasSemRetorno": 12,
+      "loja": "CAMPO LIMPO",
+      "pedido": "SEM PEDIDO",
+      "dataEmissao": "",
+      "nf": "100580-1",
+      "codProd": "246000000",
+      "prod": "LAVA ROUPA PO ARES GOLD CT 1,6KG",
+      "qtd": 20,
+      "um": "CAIXA",
+      "ocorrencia": "SOBRA",
+      "valorUnitario": 144.72,
+      "valorTotal": 2894.4,
+      "origem": "CD BARUERI",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
+      "observacao": "100865"
+    },
+    {
       "carimboDataHora": "16/11/2026 00:00:00",
       "diasSemRetorno": 1,
       "loja": "SANTOS",
@@ -32387,8 +32425,8 @@
       "valorUnitario": 0.04,
       "valorTotal": 0.48,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32406,8 +32444,8 @@
       "valorUnitario": 1.41,
       "valorTotal": 8.46,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32425,8 +32463,8 @@
       "valorUnitario": 1.11,
       "valorTotal": 13.32,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32444,8 +32482,8 @@
       "valorUnitario": 1.61,
       "valorTotal": 19.32,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32463,8 +32501,8 @@
       "valorUnitario": 1.98,
       "valorTotal": 23.76,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32482,8 +32520,8 @@
       "valorUnitario": 2.07,
       "valorTotal": 24.84,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32501,8 +32539,8 @@
       "valorUnitario": 5.28,
       "valorTotal": 31.68,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32520,8 +32558,8 @@
       "valorUnitario": 3.45,
       "valorTotal": 41.4,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32539,8 +32577,8 @@
       "valorUnitario": 1.41,
       "valorTotal": 42.3,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32558,8 +32596,8 @@
       "valorUnitario": 3.56,
       "valorTotal": 42.72,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32577,8 +32615,8 @@
       "valorUnitario": 3.85,
       "valorTotal": 46.2,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32596,8 +32634,8 @@
       "valorUnitario": 3.92,
       "valorTotal": 47.04,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32615,8 +32653,8 @@
       "valorUnitario": 3.92,
       "valorTotal": 47.04,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32634,8 +32672,8 @@
       "valorUnitario": 3.96,
       "valorTotal": 47.52,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32653,8 +32691,8 @@
       "valorUnitario": 4.1,
       "valorTotal": 49.2,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32672,8 +32710,8 @@
       "valorUnitario": 4.15,
       "valorTotal": 49.8,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32691,8 +32729,8 @@
       "valorUnitario": 4.44,
       "valorTotal": 53.28,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32710,8 +32748,8 @@
       "valorUnitario": 4.62,
       "valorTotal": 55.44,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32729,8 +32767,8 @@
       "valorUnitario": 6.73,
       "valorTotal": 80.76,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32748,8 +32786,8 @@
       "valorUnitario": 18.41,
       "valorTotal": 110.46,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32767,8 +32805,8 @@
       "valorUnitario": 18.41,
       "valorTotal": 110.46,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32786,8 +32824,8 @@
       "valorUnitario": 5.23,
       "valorTotal": 156.9,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32824,8 +32862,8 @@
       "valorUnitario": 14.61,
       "valorTotal": 175.32,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32881,8 +32919,8 @@
       "valorUnitario": 18.41,
       "valorTotal": 552.3,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -32900,8 +32938,8 @@
       "valorUnitario": 18.41,
       "valorTotal": 552.3,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33014,8 +33052,8 @@
       "valorUnitario": 66.99,
       "valorTotal": 66.99,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33109,8 +33147,8 @@
       "valorUnitario": 131.48,
       "valorTotal": 131.48,
       "origem": "CD BARUERI",
-      "statusCd": "EM ANALISE",
-      "statusLoja": "AGUARDANDO CD",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": ""
     },
     {
@@ -33204,8 +33242,8 @@
       "valorUnitario": 9.9,
       "valorTotal": 237.6,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "AGUARDANDO SALDO CD"
     },
     {
@@ -33432,8 +33470,8 @@
       "valorUnitario": 17.9,
       "valorTotal": 1074,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "AGUARDANDO SALDO CD"
     },
     {
@@ -34682,107 +34720,12 @@
       "prod": "CERV BUDWEISER MULTPACK 15 LT 269ML",
       "qtd": 295,
       "um": "FARDO",
-      "ocorrencia": "SEM NOTA",
+      "ocorrencia": "SOBRA",
       "valorUnitario": 12658.45,
       "valorTotal": 12658.45,
       "origem": "CD BARUERI",
       "statusCd": "FINALIZADO",
       "statusLoja": "FINALIZADO",
-      "observacao": ""
-    },
-    {
-      "carimboDataHora": "24/11/2026 00:00:00",
-      "diasSemRetorno": 2,
-      "loja": "ITÚ",
-      "pedido": "*",
-      "dataEmissao": "",
-      "nf": "*",
-      "codProd": "242000000",
-      "prod": "BATATA CHIPS KARITOS 40G, CEB/SALSA",
-      "qtd": 4,
-      "um": "CAIXA",
-      "ocorrencia": "SEM NOTA",
-      "valorUnitario": 89.7,
-      "valorTotal": 114.01,
-      "origem": "CD BARUERI",
-      "statusCd": "EM ANÁLISE",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": "ESPERAR DAR GANHO DE 2CX"
-    },
-    {
-      "carimboDataHora": "24/11/2026 00:00:00",
-      "diasSemRetorno": 2,
-      "loja": "ITÚ",
-      "pedido": "*",
-      "dataEmissao": "",
-      "nf": "*",
-      "codProd": "201758",
-      "prod": "GELAT EM PO DR OETKER DIET 12g, FRAMB",
-      "qtd": 2,
-      "um": "CAIXA",
-      "ocorrencia": "SEM NOTA",
-      "valorUnitario": 161.64,
-      "valorTotal": 191.4,
-      "origem": "CD BARUERI",
-      "statusCd": "EM ANÁLISE",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": "aguardando saldo CD 25.11"
-    },
-    {
-      "carimboDataHora": "24/11/2026 00:00:00",
-      "diasSemRetorno": 2,
-      "loja": "ITÚ",
-      "pedido": "*",
-      "dataEmissao": "",
-      "nf": "*",
-      "codProd": "241289",
-      "prod": "BATATA PALHA PRECIATO 100G, EXTRA FINA",
-      "qtd": 7,
-      "um": "CAIXA",
-      "ocorrencia": "SEM NOTA",
-      "valorUnitario": 149.75,
-      "valorTotal": 207,
-      "origem": "CD BARUERI",
-      "statusCd": "EM ANÁLISE",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": "ESPERAR DA GANHO DE 4 CX"
-    },
-    {
-      "carimboDataHora": "24/11/2026 00:00:00",
-      "diasSemRetorno": 2,
-      "loja": "ITÚ",
-      "pedido": "*",
-      "dataEmissao": "",
-      "nf": "*",
-      "codProd": "239000000",
-      "prod": "DROPS FREEGELLS 12X27 9G, CEREJA",
-      "qtd": 1,
-      "um": "CAIXA",
-      "ocorrencia": "SEM NOTA",
-      "valorUnitario": 13.3,
-      "valorTotal": 279.72,
-      "origem": "CD BARUERI",
-      "statusCd": "EM ANÁLISE",
-      "statusLoja": "AGUARDANDO CD",
-      "observacao": "FATURAR SALDO NO PRE LERTA"
-    },
-    {
-      "carimboDataHora": "24/11/2026 00:00:00",
-      "diasSemRetorno": 2,
-      "loja": "SANTANA",
-      "pedido": "1167028",
-      "dataEmissao": "",
-      "nf": "101366-1",
-      "codProd": "220069",
-      "prod": "BOBINA PDV 80MMX60MTS AMARELO CX/24 UN",
-      "qtd": 96,
-      "um": "UNIDADE",
-      "ocorrencia": "FALTA",
-      "valorUnitario": 114.01,
-      "valorTotal": 341.88,
-      "origem": "ROLDAO BARUERI CD",
-      "statusCd": "EM ANÁLISE",
-      "statusLoja": "AGUARDANDO CD",
       "observacao": ""
     },
     {
@@ -34822,6 +34765,101 @@
       "statusCd": "FINALIZADO",
       "statusLoja": "FINALIZADO",
       "observacao": ""
+    },
+    {
+      "carimboDataHora": "24/11/2026 00:00:00",
+      "diasSemRetorno": 2,
+      "loja": "ITÚ",
+      "pedido": "*",
+      "dataEmissao": "",
+      "nf": "*",
+      "codProd": "242000000",
+      "prod": "BATATA CHIPS KARITOS 40G, CEB/SALSA",
+      "qtd": 4,
+      "um": "CAIXA",
+      "ocorrencia": "SOBRA",
+      "valorUnitario": 89.7,
+      "valorTotal": 114.01,
+      "origem": "CD BARUERI",
+      "statusCd": "AGUARDANDO GANHO INVENTARIO",
+      "statusLoja": "PENDENTE",
+      "observacao": "ESPERAR DAR GANHO DE 2CX"
+    },
+    {
+      "carimboDataHora": "24/11/2026 00:00:00",
+      "diasSemRetorno": 2,
+      "loja": "ITÚ",
+      "pedido": "*",
+      "dataEmissao": "",
+      "nf": "*",
+      "codProd": "201758",
+      "prod": "GELAT EM PO DR OETKER DIET 12g, FRAMB",
+      "qtd": 2,
+      "um": "CAIXA",
+      "ocorrencia": "SOBRA",
+      "valorUnitario": 161.64,
+      "valorTotal": 191.4,
+      "origem": "CD BARUERI",
+      "statusCd": "AGUARDANDO GANHO INVENTARIO",
+      "statusLoja": "PENDENTE",
+      "observacao": "aguardando saldo CD 25.11"
+    },
+    {
+      "carimboDataHora": "24/11/2026 00:00:00",
+      "diasSemRetorno": 2,
+      "loja": "ITÚ",
+      "pedido": "*",
+      "dataEmissao": "",
+      "nf": "*",
+      "codProd": "241289",
+      "prod": "BATATA PALHA PRECIATO 100G, EXTRA FINA",
+      "qtd": 7,
+      "um": "CAIXA",
+      "ocorrencia": "SOBRA",
+      "valorUnitario": 149.75,
+      "valorTotal": 207,
+      "origem": "CD BARUERI",
+      "statusCd": "AGUARDANDO GANHO INVENTARIO",
+      "statusLoja": "PENDENTE",
+      "observacao": "ESPERAR DA GANHO DE 4 CX"
+    },
+    {
+      "carimboDataHora": "24/11/2026 00:00:00",
+      "diasSemRetorno": 2,
+      "loja": "ITÚ",
+      "pedido": "*",
+      "dataEmissao": "",
+      "nf": "*",
+      "codProd": "239000000",
+      "prod": "DROPS FREEGELLS 12X27 9G, CEREJA",
+      "qtd": 1,
+      "um": "CAIXA",
+      "ocorrencia": "SOBRA",
+      "valorUnitario": 13.3,
+      "valorTotal": 279.72,
+      "origem": "CD BARUERI",
+      "statusCd": "AGUARDANDO GANHO INVENTARIO",
+      "statusLoja": "PENDENTE",
+      "observacao": "FALTA FATURAR"
+    },
+    {
+      "carimboDataHora": "24/11/2026 00:00:00",
+      "diasSemRetorno": 2,
+      "loja": "SANTANA",
+      "pedido": "1167028",
+      "dataEmissao": "",
+      "nf": "101366-1",
+      "codProd": "220069",
+      "prod": "BOBINA PDV 80MMX60MTS AMARELO CX/24 UN",
+      "qtd": 96,
+      "um": "UNIDADE",
+      "ocorrencia": "FALTA",
+      "valorUnitario": 114.01,
+      "valorTotal": 341.88,
+      "origem": "CD BARUERI",
+      "statusCd": "EM ANALISE",
+      "statusLoja": "AGUARDANDO CD",
+      "observacao": "INSUMO"
     },
     {
       "carimboDataHora": "24/11/2026 00:00:00",
@@ -35014,44 +35052,6 @@
       "observacao": "6645 - 10"
     },
     {
-      "carimboDataHora": "14/11/2026 00:00:00",
-      "diasSemRetorno": 12,
-      "loja": "CAMPO LIMPO",
-      "pedido": "SEM PEDIDO",
-      "dataEmissao": "",
-      "nf": "100580-1",
-      "codProd": "246000000",
-      "prod": "LAVA ROUPA PO ARES GOLD CT 1,6KG",
-      "qtd": 20,
-      "um": "CAIXA",
-      "ocorrencia": "SEM CADASTRO",
-      "valorUnitario": 144.72,
-      "valorTotal": 2894.4,
-      "origem": "CD BARUERI",
-      "statusCd": "FINALIZADO",
-      "statusLoja": "FINALIZADO",
-      "observacao": "100865"
-    },
-    {
-      "carimboDataHora": "09/11/2026 00:00:00",
-      "diasSemRetorno": 17,
-      "loja": "SANTOS",
-      "pedido": "100363",
-      "dataEmissao": "",
-      "nf": "17900000000000",
-      "codProd": "227055 -",
-      "prod": "MAC OVOS NINHO DONA BENTA 500G",
-      "qtd": 1,
-      "um": "CAIXA",
-      "ocorrencia": "FALTA",
-      "valorUnitario": 64.9,
-      "valorTotal": 64.9,
-      "origem": "CD BARUERI",
-      "statusCd": "FINALIZADO",
-      "statusLoja": "FINALIZADO",
-      "observacao": ""
-    },
-    {
       "carimboDataHora": "25/11/2026 00:00:00",
       "diasSemRetorno": 1,
       "loja": "CIDADE DUTRA",
@@ -35090,5 +35090,5 @@
       "observacao": "101461"
     }
   ],
-  "ultimaAtualizacao": "2026-11-26T18:48:57.408Z"
+  "ultimaAtualizacao": "2026-11-26T19:31:30.060Z"
 }
