@@ -37072,8 +37072,8 @@
       "valorUnitario": 13.3,
       "valorTotal": 279.72,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "FALTA FATURAR"
     },
     {
@@ -37091,8 +37091,8 @@
       "valorUnitario": 149.75,
       "valorTotal": 207,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "ESPERAR DA GANHO DE 4 CX"
     },
     {
@@ -37110,8 +37110,8 @@
       "valorUnitario": 161.64,
       "valorTotal": 191.4,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "aguardando saldo CD 25.11"
     },
     {
@@ -37129,8 +37129,8 @@
       "valorUnitario": 89.7,
       "valorTotal": 114.01,
       "origem": "CD BARUERI",
-      "statusCd": "AGUARDANDO GANHO INVENTARIO",
-      "statusLoja": "PENDENTE",
+      "statusCd": "FINALIZADO",
+      "statusLoja": "FINALIZADO",
       "observacao": "ESPERAR DAR GANHO DE 2CX"
     },
     {
@@ -37229,5 +37229,5 @@
       "observacao": "7571 - 10"
     }
   ],
-  "ultimaAtualizacao": "2026-11-27T10:53:52.563Z"
+  "ultimaAtualizacao": "2026-11-27T11:48:48.697Z"
 }
