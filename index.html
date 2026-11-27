@@ -202,6 +202,17 @@ nav button[aria-selected="true"]{
 #src{font-size:14px;color:var(--mute);width:100%;display:flex;gap:8px;align-items:center}
 #src i{width:10px;height:10px;border-radius:50%;background:var(--warn);display:inline-block}
 #src.live i{background:var(--ok)}
+#btnRefresh{margin-left:6px;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--mute);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+#btnRefresh:hover{color:var(--text);border-color:var(--accent)}
+#btnRefresh svg{transition:transform .2s}
+#btnRefresh.girando svg{animation:cdrGirar .9s linear infinite}
+@keyframes cdrGirar{to{transform:rotate(360deg)}}
+#tvStatus{display:none}
+body.tvmode #tvStatus{display:flex;align-items:center;gap:8px;position:fixed;right:16px;bottom:12px;z-index:98;padding:6px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--mute);font-size:14px;font-weight:600;opacity:.92}
+#tvStatus::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--warn)}
+#tvStatus.live::before{background:var(--ok)}
+#tvStatus.error::before{background:var(--crit)}
+#tvStatus.error,#tvStatus.stale{color:var(--text);border-color:var(--crit)}
 #src.error i{background:var(--crit)}
 #bar{height:3px;background:var(--accent);width:0;position:fixed;left:0;top:0;z-index:99}
 
@@ -739,13 +750,14 @@ nav button:focus-visible,.setores button:focus-visible{outline-offset:3px}
   nav button{padding:8px 12px;font-size:14px}
   .card{padding:16px}
 }
-@media print{#floating-tooltip,#bar,.side,.tools,#filterbar{display:none !important}body{padding-left:18px !important}}
+@media print{#floating-tooltip,#bar,.side,.tools,#filterbar,#btnRefresh,#tvStatus{display:none !important}body{padding-left:18px !important}}
 </style>
 </head>
 <body>
 <div id="bar"></div>
 
 <div id="floating-tooltip"></div>
+<div id="tvStatus" aria-live="polite"></div>
 
 <aside class="side" id="side" aria-label="Setores">
   <div class="roldao-logo-wrap" title="Roldão Atacadista CD">
@@ -776,7 +788,7 @@ nav button:focus-visible,.setores button:focus-visible{outline-offset:3px}
     </button>
     <button class="tv" id="tv" aria-pressed="false"><span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg></span> Modo TV</button>
   </div>
-  <div id="src"><i></i><span id="srctxt">Carregando…</span></div>
+  <div id="src"><i></i><span id="srctxt">Carregando…</span><button type="button" id="btnRefresh" title="Buscar dados agora"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>Atualizar</button></div>
 </header>
 
 <div class="gfbar" id="filterbar" aria-label="Filtros"></div>
@@ -834,7 +846,9 @@ const CONFIG = {
   SEP_BLOCADO_URL: "./separacao_blocado.json",
   ESTOQUE_FISICO: "ESTOQUE REVENDA",
   ATUALIZAR_MIN: 1,
-  TV_SEGUNDOS: 20
+  TV_SEGUNDOS: 20,
+  TV_TODOS_SETORES: false,    // true = Modo TV passa por todas as abas de todos os setores (também via ?tv=todos na URL)
+  RENDER_FORCADO_MIN: 10      // mesmo sem mudança nos dados, redesenha a tela a cada X min (horários, "há X dias" etc.)
 };
 
 const MAPA_MESES = {
@@ -912,6 +926,8 @@ function brlShort(v){
   if(Math.abs(v)>=1e3) return 'R$ '+(v/1e3).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+' mil';
   return brl(v);
 }
+// JSON seguro para atributos HTML (nomes de produto com &, <, " não quebram o tooltip)
+const attrJSON = o => JSON.stringify(o).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 const esc = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nice = s => String(s).replace(/^ESTOQUE\s+/i,'').toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase());
 
@@ -1212,9 +1228,80 @@ async function fromJsonFile(){
 }
 
 let _loading = false;
-async function load(){
+let _jaRenderizou = false;
+let _ultimaAssinatura = '';
+let _ultimoRender = 0;
+let _renderPendente = false;
+let _ultimaInteracao = 0;
+let _statusTxt = 'Carregando…';
+
+function setStatus(cls, txt){
+  _statusTxt = txt;
+  const s = $('#src'); if (s) s.className = cls;
+  const t = $('#srctxt'); if (t) t.textContent = txt;
+  const tv = $('#tvStatus'); if (tv) { tv.className = cls; tv.textContent = txt; }
+}
+
+// "impressão digital" barata dos dados: se nada mudou, não redesenha a tela
+function assinaturaDados(){
+  const soma = (arr, f) => { let s = 0; (arr || []).forEach(x => { s += (+f(x) || 0); }); return Math.round(s * 100); };
+  const tam = o => { try { return o ? JSON.stringify(o).length : 0; } catch (e) { return -1; } };
+  return JSON.stringify([
+    D ? [D.when, D.rows.length, soma(D.rows, r => r.custo), soma(D.rows, r => r.qtd),
+         D.addr.length, D.addr.filter(a => a.occ).length,
+         D.cart.length, soma(D.cart, c => c.qtdPedida), soma(D.cart, c => c.qtdSeparada),
+         D.acum.length, soma(D.acum, a => a.custoTotal)] : null,
+    tam(AdminD), tam(RecebD),
+    SepD ? [SepD.todos.length, SepD.ultimaAtualizacao] : null,
+    sepMesSelecionado
+  ]);
+}
+
+// usuário mexendo em filtro/pesquisa: adia o redesenho para não fechar menu nem perder o que digitou
+function usuarioInteragindo(){
+  if (document.querySelector('.ms-wrap.open')) return true;
+  return (Date.now() - _ultimaInteracao) < 8000;
+}
+['input', 'keydown', 'pointerdown', 'wheel'].forEach(ev =>
+  document.addEventListener(ev, () => { _ultimaInteracao = Date.now(); }, { passive: true, capture: true }));
+
+// redesenha mantendo rolagem da página, rolagem das tabelas e o campo em foco
+function renderPreservandoEstado(){
+  const y = window.scrollY;
+  const sec = document.querySelector('section.on');
+  const rolagens = [];
+  if (sec) sec.querySelectorAll('*').forEach((el, i) => {
+    if (el.scrollTop > 0 || el.scrollLeft > 0) rolagens.push([i, el.tagName, el.className, el.scrollTop, el.scrollLeft]);
+  });
+  const ativo = document.activeElement;
+  const focoId = ativo && ativo.id && ativo !== document.body ? ativo.id : '';
+  const selIni = focoId && typeof ativo.selectionStart === 'number' ? ativo.selectionStart : null;
+
+  render();
+
+  if (sec) {
+    const todos = sec.querySelectorAll('*');
+    rolagens.forEach(([i, tag, cls, t, l]) => {
+      const el = todos[i];
+      if (el && el.tagName === tag && el.className === cls) { el.scrollTop = t; el.scrollLeft = l; }
+    });
+  }
+  window.scrollTo(0, y);
+  if (focoId) {
+    const el = document.getElementById(focoId);
+    if (el && el !== document.activeElement) {
+      el.focus({ preventScroll: true });
+      if (selIni !== null && el.setSelectionRange) { try { el.setSelectionRange(selIni, selIni); } catch (e) {} }
+    }
+  }
+  _ultimoRender = Date.now();
+}
+
+async function load(forcar = false){
   if (_loading) return; // evita duas atualizações ao mesmo tempo
   _loading = true;
+  const btn = $('#btnRefresh');
+  if (btn) btn.classList.add('girando');
   try {
     // módulos secundários carregam em paralelo; se um falhar, o resto do painel continua
     const nomes = ['Administrativo', 'Recebimento', 'Separação'];
@@ -1223,66 +1310,91 @@ async function load(){
     sec.forEach((r, i) => { if (r.status === 'rejected') { falhas.push(nomes[i]); console.warn('Falha em ' + nomes[i] + ':', r.reason); } });
     const d = await fromJsonFile();
     D = d;
-    $('#src').className = (d.stale || falhas.length) ? 'stale' : 'live';
-    $('#srctxt').textContent = d.when
+    setStatus((d.stale || falhas.length) ? 'stale' : 'live',
+      d.when
       + (d.stale ? ' · dados desatualizados (+3h)' : '')
-      + (falhas.length ? ' · falha em: ' + falhas.join(', ') : '');
-    renderNav();
-    render();
+      + (falhas.length ? ' · falha em: ' + falhas.join(', ') : ''));
+
+    const assinatura = assinaturaDados();
+    const mudou = assinatura !== _ultimaAssinatura;
+    _ultimaAssinatura = assinatura;
+    const vencido = (Date.now() - _ultimoRender) > CONFIG.RENDER_FORCADO_MIN * 60 * 1000;
+
+    if (!_jaRenderizou) {
+      _jaRenderizou = true;
+      renderNav();
+      render();
+      _ultimoRender = Date.now();
+    } else if (mudou || vencido || forcar || _renderPendente) {
+      if (!forcar && usuarioInteragindo()) _renderPendente = true;
+      else { _renderPendente = false; renderPreservandoEstado(); }
+    }
   } catch(err) {
     console.error('Erro ao carregar dados:', err);
-    $('#src').className = 'error';
-    try { renderNav(); render(); } catch(e) {}
-    $('#srctxt').textContent = 'Erro de atualização (' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ')' + (D ? ' · exibindo últimos dados carregados' : '');
+    if (!_jaRenderizou) { try { renderNav(); render(); } catch(e) {} }
+    setStatus('error', 'Erro de atualização (' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ')' + (D ? ' · exibindo últimos dados carregados' : ''));
   } finally {
     _loading = false;
+    if (btn) btn.classList.remove('girando');
   }
 }
 
+// aplica a atualização adiada assim que o usuário parar de mexer
+setInterval(() => {
+  if (_renderPendente && D && !_loading && !usuarioInteragindo()) {
+    _renderPendente = false;
+    renderPreservandoEstado();
+  }
+}, 2000);
+
+// Tooltip com um único conjunto de eventos (delegação): não acumula listeners a cada
+// redesenho e não fica "preso" na tela quando o conteúdo é atualizado por baixo do mouse.
+let _ttIniciado = false;
+let _ttAtual = null;
 function attachTooltipEvents() {
   const tt = $('#floating-tooltip');
   if (!tt) return;
+  _ttAtual = null;
+  tt.style.display = 'none';
+  if (_ttIniciado) return;
+  _ttIniciado = true;
 
-  document.querySelectorAll('[data-tooltip-title]').forEach(el => {
-    el.addEventListener('mouseenter', (e) => {
-      const title = el.getAttribute('data-tooltip-title');
-      const items = JSON.parse(el.getAttribute('data-tooltip-items') || '[]');
-      const color = el.getAttribute('data-tooltip-color') || 'var(--accent)';
+  const esconder = () => { _ttAtual = null; tt.style.display = 'none'; };
+  const mostrar = el => {
+    const title = el.getAttribute('data-tooltip-title');
+    let items = [];
+    try { items = JSON.parse(el.getAttribute('data-tooltip-items') || '[]'); } catch (e) {}
+    const color = el.getAttribute('data-tooltip-color') || 'var(--accent)';
+    let html = `<div class="tt-title" style="color:${color}; border-color:${color}">${esc(title)}</div>`;
+    if (items.length) {
+      items.forEach(it => { html += `<div class="tt-item"><b>${esc(it.prod)}</b><span>${esc(it.sub || '')}</span></div>`; });
+    } else {
+      html += `<div class="tt-item"><span>Sem detalhes disponíveis.</span></div>`;
+    }
+    tt.innerHTML = html;
+    tt.style.borderColor = color;
+    tt.style.display = 'block';
+  };
 
-      let html = `<div class="tt-title" style="color:${color}; border-color:${color}">${esc(title)}</div>`;
-      if (items.length) {
-        items.forEach(it => {
-          html += `<div class="tt-item"><b>${esc(it.prod)}</b><span>${esc(it.sub || '')}</span></div>`;
-        });
-      } else {
-        html += `<div class="tt-item"><span>Sem detalhes disponíveis.</span></div>`;
-      }
-
-      tt.innerHTML = html;
-      tt.style.borderColor = color;
-      tt.style.display = 'block';
-    });
-
-    el.addEventListener('mousemove', (e) => {
-      const x = e.clientX + 15;
-      const y = e.clientY + 15;
-      
-      const ttWidth = tt.offsetWidth;
-      const ttHeight = tt.offsetHeight;
-      const winWidth = window.innerWidth;
-      const winHeight = window.innerHeight;
-
-      const finalX = (x + ttWidth > winWidth) ? e.clientX - ttWidth - 10 : x;
-      const finalY = (y + ttHeight > winHeight) ? e.clientY - ttHeight - 10 : y;
-
-      tt.style.left = finalX + 'px';
-      tt.style.top = finalY + 'px';
-    });
-
-    el.addEventListener('mouseleave', () => {
-      tt.style.display = 'none';
-    });
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest ? e.target.closest('[data-tooltip-title]') : null;
+    if (el === _ttAtual) return;
+    if (!el) { esconder(); return; }
+    _ttAtual = el;
+    mostrar(el);
   });
+  document.addEventListener('mousemove', e => {
+    if (!_ttAtual) return;
+    const x = e.clientX + 15, y = e.clientY + 15;
+    const w = tt.offsetWidth, h = tt.offsetHeight;
+    tt.style.left = ((x + w > window.innerWidth) ? e.clientX - w - 10 : x) + 'px';
+    tt.style.top = ((y + h > window.innerHeight) ? e.clientY - h - 10 : y) + 'px';
+  });
+  document.documentElement.addEventListener('mouseleave', esconder);
+  window.addEventListener('scroll', esconder, { passive: true });
+  document.addEventListener('touchstart', e => {
+    if (!(e.target.closest && e.target.closest('[data-tooltip-title]'))) esconder();
+  }, { passive: true });
 }
 
 function donut(items,center,sub, filterAttr = 'data-filter-local', activeArr = []){
@@ -1291,7 +1403,7 @@ function donut(items,center,sub, filterAttr = 'data-filter-local', activeArr = [
   items.forEach(i=>{ 
     const L=C*i.v/tot; 
     const topProd = i.topProd ? [{prod: i.topProd, sub: `${brlShort(i.v)} (${fmtP(i.v/tot*100)})`}] : [];
-    const tooltipData = JSON.stringify(topProd).replace(/"/g, '&quot;');
+    const tooltipData = attrJSON(topProd);
     const isSelected = isSelectedArr(activeArr, i.rawKey);
     
     if(L>0) {
@@ -1308,14 +1420,14 @@ function legend(items, filterAttr = 'data-filter-local', activeArr = []){
   const tot = items.reduce((s,i)=>s+i.v,0)||1;
   return `<div class="legend">${items.map(i=> {
     const topProd = i.topProd ? [{prod: i.topProd, sub: `${brlShort(i.v)} (${fmtP(i.v/tot*100)})`}] : [];
-    const tooltipData = JSON.stringify(topProd).replace(/"/g, '&quot;');
+    const tooltipData = attrJSON(topProd);
     const isSelected = isSelectedArr(activeArr, i.rawKey);
     return `<div class="${isSelected ? 'active-item' : ''}" ${filterAttr}="${esc(i.rawKey)}" data-tooltip-title="${esc(i.n)}" data-tooltip-color="${i.c}" data-tooltip-items="${tooltipData}"><i style="background:${i.c}"></i><span>${esc(i.n)}</span><span>${fmtV(i.v)} · ${fmtP(i.v/tot*100)}</span></div>`;
   }).join('')}</div>`;
 }
 
 const kpi = (l,v,s,cls='', tooltipTitle='', tooltipItems=[], tooltipColor='', clickTab='') => {
-  const ttAttr = tooltipTitle ? `data-tooltip-title="${esc(tooltipTitle)}" data-tooltip-color="${tooltipColor || 'var(--accent)'}" data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}"` : '';
+  const ttAttr = tooltipTitle ? `data-tooltip-title="${esc(tooltipTitle)}" data-tooltip-color="${tooltipColor || 'var(--accent)'}" data-tooltip-items="${attrJSON(tooltipItems)}"` : '';
   const clickAttr = clickTab ? `onclick="switchTab('${clickTab}')" class="card kpi ${cls} clickable-card"` : `class="card kpi ${cls}"`;
   return `<div ${clickAttr} ${ttAttr}><h3>${l} ${clickTab ? '↗' : ''}</h3><div class="v">${v}</div><div class="s">${s||''}</div></div>`;
 };
@@ -1716,7 +1828,7 @@ function secGeral(){
               <div class="bar-chart-bar ${item.isProj ? 'is-proj' : ''}" style="height: ${Math.max(pctHeight, 6)}%;" 
                    data-tooltip-title="${esc(item.tooltipTitle)}" 
                    data-tooltip-color="${item.isProj ? 'var(--accent)' : 'var(--blue)'}" 
-                   data-tooltip-items="${JSON.stringify(tooltipItems).replace(/"/g, '&quot;')}">
+                   data-tooltip-items="${attrJSON(tooltipItems)}">
                 <div class="bar-val-label">
                   <span>${brlShort(valBar)}${item.isProj ? ' *' : ''}</span>
                   ${tagVarHtml}
@@ -2079,7 +2191,7 @@ function faixaSection(id,title,sub,field,order,cmap,topCls,topTitle, filterFisic
         const topData = topF ? [{prod: topF.prod, sub: `Maior Valor: ${brl(topF.custo)}`}] : [];
         const isSelectedFaixa = isSelectedArr(activeFaixaArr, f);
 
-        return `<tr class="clickable-row ${isSelectedFaixa ? 'active-row' : ''}" data-filter-faixa="${esc(f)}" data-tooltip-title="${esc(f)}" data-tooltip-color="${c}" data-tooltip-items="${JSON.stringify(topData).replace(/"/g, '&quot;')}">
+        return `<tr class="clickable-row ${isSelectedFaixa ? 'active-row' : ''}" data-filter-faixa="${esc(f)}" data-tooltip-title="${esc(f)}" data-tooltip-color="${c}" data-tooltip-items="${attrJSON(topData)}">
           <td><span class="dot" style="background:${c}"></span><b>${esc(f)}</b></td>
           <td class="r">${fmtN.format(o.n)}</td>
           <td class="r">${fmtN.format(o.qtd)}</td>
@@ -2238,7 +2350,7 @@ function ruaBars(g,livreCor){
   <div class="rua-container"><div class="rua">${ruas.map(([n,r])=>{
     const o=r.o/r.t*100,l=100-o;
     const ttData = [{prod: `Rua ${n}`, sub: `Ocupados: ${fmtN.format(r.o)} / Total: ${fmtN.format(r.t)} (${fmtP(o)})`}];
-    return `<div class="c"><div class="stk" data-tooltip-title="Detalhamento Rua ${n}" data-tooltip-color="var(--accent)" data-tooltip-items="${JSON.stringify(ttData).replace(/"/g, '&quot;')}" style="cursor:pointer">
+    return `<div class="c"><div class="stk" data-tooltip-title="Detalhamento Rua ${n}" data-tooltip-color="var(--accent)" data-tooltip-items="${attrJSON(ttData)}" style="cursor:pointer">
     <div class="lv" style="flex:${l};background:${livreCor};color:#fff">${l>=8?fmtP(l,1):''}</div>
     <div class="lv oc" style="flex:${Math.max(o,2)}">${o>=8?fmtP(o,1):''}</div></div><div class="name${o>=90?' crit':''}">${n}<small>${Math.round(o)}%</small></div></div>`;
   }).join('')}</div></div>`;
@@ -2873,10 +2985,12 @@ let preLimite = 150;
 async function loadAdminData(){
   try {
     const timestamp = new Date().getTime();
-    const res = await fetch(`${CONFIG.ADMIN_URL}?v=${timestamp}`);
-    if (res.ok) AdminD = await res.json();
+    const res = await fetch(`${CONFIG.ADMIN_URL}?v=${timestamp}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    AdminD = await res.json();
   } catch(e) {
     console.error("Erro ao carregar administrativo.json:", e);
+    throw e; // mantém os últimos dados e deixa o load() sinalizar a falha no topo
   }
 }
 
@@ -3440,10 +3554,12 @@ let semVerbaExpanded = true;
 async function loadRecebimentoData(){
   try {
     const timestamp = new Date().getTime();
-    const res = await fetch(`${CONFIG.RECEBIMENTO_URL}?v=${timestamp}`);
-    if (res.ok) RecebD = await res.json();
+    const res = await fetch(`${CONFIG.RECEBIMENTO_URL}?v=${timestamp}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    RecebD = await res.json();
   } catch(e) {
     console.error("Erro ao carregar recebimento.json:", e);
+    throw e; // mantém os últimos dados e deixa o load() sinalizar a falha no topo
   }
 }
 
@@ -3647,7 +3763,7 @@ function secRecebNotas(){
                   <div class="bar-chart-bar ${isSel ? 'is-proj' : ''}" style="height:${Math.max(pctH, 6)}%"
                        data-tooltip-title="${esc(mesLabel(m.mes))}"
                        data-tooltip-color="${isSel ? 'var(--accent)' : 'var(--blue)'}"
-                       data-tooltip-items="${JSON.stringify(ttItems).replace(/"/g, '&quot;')}">
+                       data-tooltip-items="${attrJSON(ttItems)}">
                     <div class="bar-val-label">
                       <span>${brlShort(m.valorRec).replace('R$ ', '')}</span>
                       ${varTag}
@@ -3959,7 +4075,7 @@ function secRecebVerba(){
                   <div class="bar-chart-bar ${isSel ? 'is-proj' : ''}" style="height:${Math.max(pctH, 6)}%;background:linear-gradient(180deg, #35d49a 0%, #166548 100%);border-color:rgba(53,212,154,0.5)"
                        data-tooltip-title="${esc(mesLabel(m.mes))}"
                        data-tooltip-color="var(--ok)"
-                       data-tooltip-items="${JSON.stringify(ttItems).replace(/"/g, '&quot;')}">
+                       data-tooltip-items="${attrJSON(ttItems)}">
                     <div class="bar-val-label" style="color:var(--ok)">
                       <span>${brlShort(m.verba).replace('R$ ', '')}</span>
                       ${varTag}
@@ -4576,7 +4692,7 @@ async function trocarMesSep(novoMes) {
 
   await carregarMesSep(novoMes);
 
-  if (D && D.when) $('#srctxt').textContent = D.when;
+  $('#srctxt').textContent = _statusTxt;
 
   render();
 
@@ -4711,6 +4827,7 @@ async function loadSeparacaoData() {
   } catch (e) {
 
     console.error("Erro ao carregar JSONs de separação:", e);
+    throw e; // mantém os últimos dados e deixa o load() sinalizar a falha no topo
 
   }
 
@@ -5570,7 +5687,7 @@ function secSepAnual() {
 
                      data-tooltip-color="${isModoFull ? '#a855f7' : 'var(--accent)'}"
 
-                     data-tooltip-items="${JSON.stringify(ttItems).replace(/"/g, '&quot;')}">
+                     data-tooltip-items="${attrJSON(ttItems)}">
 
                   <div class="bar-val-label">
 
@@ -6367,7 +6484,7 @@ function secSepHora() {
                 <div class="bar-chart-bar" style="height:${Math.max(pctH, 6)}%;${isGrafFull ? 'background:linear-gradient(180deg, #a855f7 0%, #581c87 100%);border-color:rgba(216,180,254,0.5)' : ''}"
                      data-tooltip-title="${esc(hLabel)}"
                      data-tooltip-color="${isGrafFull ? '#a855f7' : 'var(--accent)'}"
-                     data-tooltip-items="${JSON.stringify(ttItems).replace(/"/g, '&quot;')}">
+                     data-tooltip-items="${attrJSON(ttItems)}">
                   <div class="bar-val-label">
                     <span>${fmtN.format(vRef)}</span>
                     ${sepHoraModo === 'COMPARATIVO' ? `<span style="font-size:11px;color:var(--mute)">ontem: ${fmtN.format(vAnt)}</span>` : ''}
@@ -6633,6 +6750,7 @@ function setActiveTab(id){
     renderNav();
   }
   activeTab = id;
+  try { if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id); } catch (e) {}
   document.querySelectorAll('#tabs button').forEach(x => x.setAttribute('aria-selected', x.dataset.t === id));
   document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === 's-' + id));
   render();
@@ -6980,6 +7098,16 @@ function render(){
   renderFilterBar();
 }
 
+// link direto para uma aba: ...workers.dev/#sephora abre em "Produção Hora a Hora"
+(function(){
+  const h = decodeURIComponent((location.hash || '').slice(1));
+  if (TAB_SETOR[h]) { activeTab = h; activeSetor = TAB_SETOR[h]; }
+})();
+window.addEventListener('hashchange', () => {
+  const h = decodeURIComponent((location.hash || '').slice(1));
+  if (TAB_SETOR[h] && h !== activeTab) setActiveTab(h);
+});
+
 renderSetores();
 renderNav();
 document.body.dataset.setor = activeSetor;
@@ -7019,22 +7147,43 @@ $('#basis').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=
   render();
 }));
 
+// mantém a tela da TV ligada enquanto o Modo TV estiver ativo (navegadores compatíveis)
+let _wakeLock = null;
+async function manterTelaLigada(on){
+  try {
+    if (on && 'wakeLock' in navigator) _wakeLock = await navigator.wakeLock.request('screen');
+    else if (!on && _wakeLock) { await _wakeLock.release(); _wakeLock = null; }
+  } catch (e) { /* sem suporte ou sem permissão: segue normal */ }
+}
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && document.body.classList.contains('tvmode')) manterTelaLigada(true);
+});
+
+function abasTv(){
+  if (CONFIG.TV_TODOS_SETORES) return SETORES.flatMap(s => s.tabs.map(t => t.id));
+  const s = SETORES.find(x => x.id === activeSetor) || SETORES[0];
+  return s.tabs.map(t => t.id);
+}
+
 function setTv(on){
   document.body.classList.toggle('tvmode',on);
   $('#tv').setAttribute('aria-pressed',on);
-  clearInterval(tvTimer);
+  clearInterval(tvTimer); tvTimer = null;
   const bar=$('#bar'); bar.style.transition='none'; bar.style.width='0%';
+  manterTelaLigada(on);
   if(!on) return;
-  const tabs=[...document.querySelectorAll('#tabs button')];
-  if (!tabs.length) return;
   const step=()=>{
     bar.style.transition='none'; bar.style.width='0%';
     requestAnimationFrame(()=>{bar.style.transition=`width ${CONFIG.TV_SEGUNDOS}s linear`;bar.style.width='100%';});
   };
   step();
+  // usa sempre a aba ativa atual (antes usava botões antigos e travava depois da atualização automática)
   tvTimer=setInterval(()=>{
-    const i=tabs.findIndex(t=>t.getAttribute('aria-selected')==='true');
-    tabs[(i+1)%tabs.length].click(); step();
+    const ids = abasTv();
+    if (!ids.length) return;
+    const i = ids.indexOf(activeTab);
+    setActiveTab(ids[(i + 1) % ids.length]);
+    step();
   },CONFIG.TV_SEGUNDOS*1000);
 }
 $('#tv').addEventListener('click',()=>setTv(!document.body.classList.contains('tvmode')));
@@ -7057,6 +7206,16 @@ document.addEventListener('keydown', e => {
   const novo = document.querySelector('#tabs button[data-t="' + n.dataset.t + '"]');
   if (novo) novo.focus();
 });
+
+const btnRefresh = $('#btnRefresh');
+if (btnRefresh) btnRefresh.addEventListener('click', () => load(true));
+
+// ?tv=1 abre direto no Modo TV (ideal para as TVs do CD) · ?tv=todos gira por todos os setores
+(function(){
+  const tvParam = new URLSearchParams(location.search).get('tv');
+  if (tvParam === 'todos') CONFIG.TV_TODOS_SETORES = true;
+  if (tvParam === '1' || tvParam === 'todos') setTv(true);
+})();
 
 load();
 if(CONFIG.ATUALIZAR_MIN>0) setInterval(() => {
