@@ -1116,7 +1116,7 @@ async function fromJsonFile(){
       occ: ocupVal.toLowerCase() === 'ocupado',
       ativo: statusVal.toLowerCase() === 'ativo' || statusVal.toLowerCase() === 'ativa' || statusVal === ''
     };
-  }).filter(a => a.ativo);
+  }).filter(a => a.ativo && !String(a.end || '').trim().startsWith('206'));
 
   const cart = rawCart.map(o => {
     let dtRes = getProp(o, ["Geração Reserva", "Geracao Reserva"]);
