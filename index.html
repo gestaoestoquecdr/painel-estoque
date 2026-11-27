@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b192c">
 <title>Painel CDR - Roldão Atacadista</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -718,6 +719,27 @@ nav button {
 }
 
 .active-filters-bar{display:none !important}
+
+/* ===== MELHORIAS ===== */
+#src.stale i{background:var(--warn);box-shadow:0 0 0 3px rgba(255,176,32,.25)}
+.rua .name.crit{color:var(--crit)}
+.rua .name small{display:block;font-size:11px;font-weight:600;opacity:.85;line-height:1.1;margin-top:1px}
+.ocup-ins{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0 0}
+.ocup-ins .pill{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:14px;color:var(--mute)}
+.ocup-ins .pill b{color:var(--text-strong);font-family:var(--f-num);font-size:16px}
+.ocup-ins .pill.crit{border-color:var(--crit)}
+.ocup-ins .pill.ok{border-color:var(--ok)}
+nav button:focus-visible,.setores button:focus-visible{outline-offset:3px}
+@media (max-width:640px){
+  body{font-size:15px}
+  h2{font-size:24px}
+  .kpi .v{font-size:34px}
+  header{gap:10px 12px}
+  .tools{margin-left:0;width:100%}
+  nav button{padding:8px 12px;font-size:14px}
+  .card{padding:16px}
+}
+@media print{#floating-tooltip,#bar,.side,.tools,#filterbar{display:none !important}body{padding-left:18px !important}}
 </style>
 </head>
 <body>
@@ -1178,29 +1200,42 @@ async function fromJsonFile(){
   const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
   let whenTxt = 'Atualizado às ' + timeStr;
+  let stale = false;
   if (data.ultimaAtualizacao) {
     const dt = new Date(data.ultimaAtualizacao);
-    if (!isNaN(dt)) whenTxt = 'Dados de ' + dt.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    if (!isNaN(dt)) {
+      whenTxt = 'Dados de ' + dt.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+      stale = (Date.now() - dt.getTime()) > 3 * 60 * 60 * 1000; // mais de 3h sem atualizar
+    }
   }
-  return { rows, addr, addrStats, cart, acum, live: true, when: whenTxt };
+  return { rows, addr, addrStats, cart, acum, live: true, when: whenTxt, stale };
 }
 
+let _loading = false;
 async function load(){
+  if (_loading) return; // evita duas atualizações ao mesmo tempo
+  _loading = true;
   try {
-    await loadAdminData();
-    await loadRecebimentoData();
-    await loadSeparacaoData();
+    // módulos secundários carregam em paralelo; se um falhar, o resto do painel continua
+    const nomes = ['Administrativo', 'Recebimento', 'Separação'];
+    const sec = await Promise.allSettled([loadAdminData(), loadRecebimentoData(), loadSeparacaoData()]);
+    const falhas = [];
+    sec.forEach((r, i) => { if (r.status === 'rejected') { falhas.push(nomes[i]); console.warn('Falha em ' + nomes[i] + ':', r.reason); } });
     const d = await fromJsonFile();
     D = d;
-    $('#src').className = 'live';
-    $('#srctxt').textContent = d.when;
+    $('#src').className = (d.stale || falhas.length) ? 'stale' : 'live';
+    $('#srctxt').textContent = d.when
+      + (d.stale ? ' · dados desatualizados (+3h)' : '')
+      + (falhas.length ? ' · falha em: ' + falhas.join(', ') : '');
     renderNav();
     render();
   } catch(err) {
     console.error('Erro ao carregar dados:', err);
     $('#src').className = 'error';
     try { renderNav(); render(); } catch(e) {}
-    $('#srctxt').textContent = 'Erro de atualização (' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ')';
+    $('#srctxt').textContent = 'Erro de atualização (' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ')' + (D ? ' · exibindo últimos dados carregados' : '');
+  } finally {
+    _loading = false;
   }
 }
 
@@ -2205,7 +2240,7 @@ function ruaBars(g,livreCor){
     const ttData = [{prod: `Rua ${n}`, sub: `Ocupados: ${fmtN.format(r.o)} / Total: ${fmtN.format(r.t)} (${fmtP(o)})`}];
     return `<div class="c"><div class="stk" data-tooltip-title="Detalhamento Rua ${n}" data-tooltip-color="var(--accent)" data-tooltip-items="${JSON.stringify(ttData).replace(/"/g, '&quot;')}" style="cursor:pointer">
     <div class="lv" style="flex:${l};background:${livreCor};color:#fff">${l>=8?fmtP(l,1):''}</div>
-    <div class="lv oc" style="flex:${Math.max(o,2)}">${o>=8?fmtP(o,1):''}</div></div><div class="name">${n}</div></div>`;
+    <div class="lv oc" style="flex:${Math.max(o,2)}">${o>=8?fmtP(o,1):''}</div></div><div class="name${o>=90?' crit':''}">${n}<small>${Math.round(o)}%</small></div></div>`;
   }).join('')}</div></div>`;
 }
 
@@ -2232,6 +2267,22 @@ function secOcup(){
     ? `<div class="card" style="border-left:4px solid #ffc400;margin-bottom:14px"><strong>⚠ Nenhum endereço válido para calcular a ocupação.</strong><p class="sub" style="margin:6px 0 0">O arquivo trouxe ${fmtN.format(st.lidos)} endereços, mas ${fmtN.format(st.ignorados206)} começam com 206 (ignorados) e os demais não pertencem a Galpão 1, Galpão 2 ou Blocado. Verifique se o dados_ocupacao.json está exportando os endereços de porta-palete (205...) e a coluna "Endereço ocupado".</p></div>`
     : (st.lidos === 0 ? `<div class="card" style="border-left:4px solid #ffc400;margin-bottom:14px"><strong>⚠ O arquivo de ocupação veio vazio.</strong></div>` : '');
   const blPct = O.bl.total ? O.bl.ocup/O.bl.total*100 : 0;
+  const ruasIns = [];
+  [['G1', O.g1, hasArr(filterOcupGalpao, 'g1')], ['G2', O.g2, hasArr(filterOcupGalpao, 'g2')]].forEach(([gn, g, show]) => {
+    if (!show) return;
+    Object.entries(g.ruas).forEach(([r, x]) => { if (x.t > 0) ruasIns.push({g: gn, r, p: x.o / x.t * 100, v: x.t - x.o}); });
+  });
+  let insights = '';
+  if (ruasIns.length) {
+    const cheia = ruasIns.reduce((a, b) => b.p > a.p ? b : a);
+    const vagas = ruasIns.reduce((a, b) => b.v > a.v ? b : a);
+    const criticas = ruasIns.filter(x => x.p >= 90).length;
+    insights = `<div class="ocup-ins">
+      <div class="pill ${cheia.p >= 90 ? 'crit' : ''}">Rua mais cheia: <b>${cheia.g} · Rua ${cheia.r}</b> (${fmtP(cheia.p,1)})</div>
+      <div class="pill ok">Mais vagas livres: <b>${vagas.g} · Rua ${vagas.r}</b> (${fmtN.format(vagas.v)} endereços)</div>
+      <div class="pill ${criticas ? 'crit' : ''}">Ruas com 90% ou mais: <b>${criticas}</b></div>
+    </div>`;
+  }
 
   $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos da chave ocupacao (endereços iniciados em 206 são ignorados).</p>
   ${aviso}
@@ -2252,6 +2303,7 @@ function secOcup(){
       <div class="b big"><small>% Ocupação total CD</small><strong>${fmtP(O.pct,2)}</strong></div>
     </div>
   </div>
+  ${insights}
   ${showG1 ? `<div class="card" style="margin-top:18px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'#4285f4')}</div>` : ''}
   ${showG2 ? `<div class="card" style="margin-top:18px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'#3a5db0')}</div>` : ''}
   <p class="foot">Considerados: ${fmtN.format(O.total + O.bl.total)} endereços · Ignorados (206): ${fmtN.format(st.ignorados206)} · Lidos no arquivo: ${fmtN.format(st.lidos)}.</p>`;
@@ -6566,7 +6618,7 @@ function setSetor(id){
   if (!s) return;
   activeSetor = id;
   document.body.dataset.setor = id;
-  if (activeSetor !== id || !s.tabs.some(t => t.id === activeTab)) activeTab = s.tabs[0].id;
+  if (!s.tabs.some(t => t.id === activeTab)) activeTab = s.tabs[0].id;
   renderSetores();
   renderNav();
   setActiveTab(activeTab);
@@ -6940,13 +6992,16 @@ if (sideToggle) sideToggle.addEventListener('click', () => document.body.classLi
 const themeToggle = $('#themeToggle');
 function applyTheme(isLight) {
   document.body.classList.toggle('light-theme', isLight);
+  const mt = document.querySelector('meta[name="theme-color"]');
+  if (mt) mt.setAttribute('content', isLight ? '#f0f4f8' : '#0b192c');
   if (themeToggle) {
     themeToggle.innerHTML = isLight
       ? `${ICONS.moon} <span>Tema Escuro</span>`
       : `${ICONS.sun} <span>Tema Claro</span>`;
   }
 }
-const savedTheme = localStorage.getItem('cdr_theme');
+let savedTheme = null;
+try { savedTheme = localStorage.getItem('cdr_theme'); } catch (e) {}
 if (savedTheme === 'light') {
   applyTheme(true);
 }
@@ -6954,7 +7009,7 @@ if (themeToggle) {
   themeToggle.addEventListener('click', () => {
     const nextIsLight = !document.body.classList.contains('light-theme');
     applyTheme(nextIsLight);
-    localStorage.setItem('cdr_theme', nextIsLight ? 'light' : 'dark');
+    try { localStorage.setItem('cdr_theme', nextIsLight ? 'light' : 'dark'); } catch (e) {}
   });
 }
 
@@ -6985,8 +7040,31 @@ function setTv(on){
 $('#tv').addEventListener('click',()=>setTv(!document.body.classList.contains('tvmode')));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')setTv(false);});
 
+// menu lateral recolhido por padrão em telas pequenas
+if (window.innerWidth <= 820) document.body.classList.add('side-collapsed');
+
+// setas ← → navegam entre as abas
+document.addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  const t = e.target;
+  if (!t || !t.closest || !t.closest('#tabs')) return;
+  const btns = [...document.querySelectorAll('#tabs button')];
+  const i = btns.indexOf(t);
+  if (i < 0) return;
+  e.preventDefault();
+  const n = btns[(i + (e.key === 'ArrowRight' ? 1 : btns.length - 1)) % btns.length];
+  n.click();
+  const novo = document.querySelector('#tabs button[data-t="' + n.dataset.t + '"]');
+  if (novo) novo.focus();
+});
+
 load();
-if(CONFIG.ATUALIZAR_MIN>0) setInterval(load, CONFIG.ATUALIZAR_MIN*60*1000);
+if(CONFIG.ATUALIZAR_MIN>0) setInterval(() => {
+  // não gasta rede com a aba escondida (exceto no modo TV)
+  if (document.hidden && !document.body.classList.contains('tvmode')) return;
+  load();
+}, CONFIG.ATUALIZAR_MIN*60*1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
 </script>
 </body>
 </html>
