@@ -954,6 +954,14 @@ const AGING_CLASS = {'0 a 15 dias':'ok','16 a 30 dias':'ok','30 a 60 dias':'warn
 const CLS = {ok:{n:'Saudável',c:'var(--ok)'},warn:{n:'Atenção',c:'var(--warn)'},crit:{n:'Crítico',c:'var(--crit)'},none:{n:'Sem validade',c:'var(--none)'}};
 const normF = s => String(s||'').replace(/\s+/g,' ').trim();
 
+// Endereços que começam com 206 (picking/recebimento) NÃO entram na ocupação
+function isEnd206(end){
+  return String(end == null ? '' : end).replace(/\s+/g,'').startsWith('206');
+}
+function normOcup(v){
+  return String(v == null ? '' : v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+}
+
 function parseEnderecoInfo(endStr) {
   if (!endStr) return { area: '0', rua: 0 };
   const str = String(endStr);
@@ -1102,6 +1110,7 @@ async function fromJsonFile(){
     };
   }).filter(r => r.est !== "" && r.est.toLowerCase() !== "null");
 
+  const addrLidos = rawAddr.length;
   const addr = rawAddr.map(o => {
     const statusVal = getProp(o, ["Status"]);
     const ocupVal = getProp(o, ["Endereço ocupado", "Endereco ocupado", "Status da Ocupação", "Status da Ocupacao"]);
@@ -1113,10 +1122,15 @@ async function fromJsonFile(){
       end: endStr,
       area: areaVal,
       rua: +ruaVal || 0,
-      occ: ocupVal.toLowerCase() === 'ocupado',
-      ativo: statusVal.toLowerCase() === 'ativo' || statusVal.toLowerCase() === 'ativa' || statusVal === ''
+      occ: normOcup(ocupVal) === 'ocupado',
+      ativo: ['ativo','ativa',''].includes(normOcup(statusVal))
     };
-  }).filter(a => a.ativo && !String(a.end || '').trim().startsWith('206'));
+  }).filter(a => a.ativo && !isEnd206(a.end));
+  const addrStats = {
+    lidos: addrLidos,
+    ignorados206: rawAddr.filter(o => isEnd206(getProp(o, ["Endereço", "Endereco", "Endereço Logístico", "Endereco Logistico"]))).length,
+    usados: addr.length
+  };
 
   const cart = rawCart.map(o => {
     let dtRes = getProp(o, ["Geração Reserva", "Geracao Reserva"]);
@@ -1163,7 +1177,12 @@ async function fromJsonFile(){
 
   const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-  return { rows, addr, cart, acum, live: true, when: 'Atualizado às ' + timeStr };
+  let whenTxt = 'Atualizado às ' + timeStr;
+  if (data.ultimaAtualizacao) {
+    const dt = new Date(data.ultimaAtualizacao);
+    if (!isNaN(dt)) whenTxt = 'Dados de ' + dt.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+  }
+  return { rows, addr, addrStats, cart, acum, live: true, when: whenTxt };
 }
 
 async function load(){
@@ -2139,6 +2158,7 @@ function occData(){
     D.addr.forEach(a=>{
       const area = String(a.area);
       const end = String(a.end);
+      if (isEnd206(end)) return;
       
       const isG1 = area === '1' || end.includes("205.1041.1.");
       const isG2 = area === '7' || end.includes("205.1041.7.");
@@ -2173,7 +2193,7 @@ function occData(){
 
   const total = g1.total + g2.total;
   const ocup = g1.ocup + g2.ocup;
-  return {g1, g2, bl, total, ocup, pct: total ? (ocup/total)*100 : 0};
+  return {g1, g2, bl, total, ocup, pct: total ? (ocup/total)*100 : 0, stats: (D && D.addrStats) || {lidos:0, ignorados206:0, usados:0}};
 }
 
 function ruaBars(g,livreCor){
@@ -2207,12 +2227,19 @@ function secOcup(){
   const showG1 = hasArr(filterOcupGalpao, 'g1');
   const showG2 = hasArr(filterOcupGalpao, 'g2');
 
-  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos processados da chave ocupacao.</p>
+  const st = O.stats;
+  const aviso = (O.total === 0 && st.lidos > 0)
+    ? `<div class="card" style="border-left:4px solid #ffc400;margin-bottom:14px"><strong>⚠ Nenhum endereço válido para calcular a ocupação.</strong><p class="sub" style="margin:6px 0 0">O arquivo trouxe ${fmtN.format(st.lidos)} endereços, mas ${fmtN.format(st.ignorados206)} começam com 206 (ignorados) e os demais não pertencem a Galpão 1, Galpão 2 ou Blocado. Verifique se o dados_ocupacao.json está exportando os endereços de porta-palete (205...) e a coluna "Endereço ocupado".</p></div>`
+    : (st.lidos === 0 ? `<div class="card" style="border-left:4px solid #ffc400;margin-bottom:14px"><strong>⚠ O arquivo de ocupação veio vazio.</strong></div>` : '');
+  const blPct = O.bl.total ? O.bl.ocup/O.bl.total*100 : 0;
+
+  $('#s-ocup').innerHTML = `<h2>Ocupação · Porta-palete e blocado</h2><p class="sub">Endereços ativos da chave ocupacao (endereços iniciados em 206 são ignorados).</p>
+  ${aviso}
   <div class="occ">
     ${box('g1','Galpão 1',O.g1)}
     ${box('g2','Galpão 2',O.g2)}
     ${box('','Endereços Total',all)}
-    ${box('','Blocados',O.bl)}
+    ${box('','Blocados · '+fmtP(blPct,1),O.bl)}
     <div class="card donutcard">
       <h3>% de ocupação CD</h3>
       <div class="donutwrap">${dn}</div>
@@ -2227,7 +2254,7 @@ function secOcup(){
   </div>
   ${showG1 ? `<div class="card" style="margin-top:18px"><h3>% de ocupação por rua · Galpão 1</h3>${ruaBars(O.g1,'#4285f4')}</div>` : ''}
   ${showG2 ? `<div class="card" style="margin-top:18px"><h3>% de ocupação por rua · Galpão 2</h3>${ruaBars(O.g2,'#3a5db0')}</div>` : ''}
-  <p class="foot">Todas as ruas ativas são exibidas nos gráficos e contam nos totais.</p>`;
+  <p class="foot">Considerados: ${fmtN.format(O.total + O.bl.total)} endereços · Ignorados (206): ${fmtN.format(st.ignorados206)} · Lidos no arquivo: ${fmtN.format(st.lidos)}.</p>`;
 
   attachTooltipEvents();
 }
